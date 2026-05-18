@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
-import type { MockProduct } from "@/data/mock-products";
+import type { CatalogProduct } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { StockBadge } from "./stock-badge";
 
-export function ProductCard({ product }: { product: MockProduct }) {
+export function ProductCard({ product }: { product: CatalogProduct }) {
   return (
     <article className="rounded-md border border-border bg-card p-4">
       <Link
