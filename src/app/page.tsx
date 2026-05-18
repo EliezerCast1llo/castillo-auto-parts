@@ -4,10 +4,12 @@ import { ProductCard } from "@/components/product/product-card";
 import { ProductFilters } from "@/components/product/product-filters";
 import { VehicleSearchPanel } from "@/components/product/vehicle-search-panel";
 import { SiteHeader } from "@/components/site-header";
-import { getFeaturedProducts } from "@/data/mock-products";
+import { getFeaturedCatalogProducts } from "@/data/products";
 
-export default function Home() {
-  const products = getFeaturedProducts();
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const products = await getFeaturedCatalogProducts();
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -21,7 +23,7 @@ export default function Home() {
 
         <section className="space-y-5">
           <div className="rounded-md border border-border bg-card p-5">
-            <p className="text-sm font-semibold text-success">MVP con datos mock</p>
+            <p className="text-sm font-semibold text-success">Catalogo inicial</p>
             <h2 className="mt-1 text-2xl font-bold text-primary">
               Encuentra el repuesto correcto para tu vehiculo
             </h2>

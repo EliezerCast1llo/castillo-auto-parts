@@ -55,7 +55,7 @@ Objetivo:
 
 Crear base del proyecto.
 
-Estado: iniciado.
+Estado: en progreso.
 
 Entregables:
 
@@ -90,7 +90,7 @@ Objetivo:
 
 Permitir descubrir repuestos.
 
-Estado: iniciado.
+Estado: en progreso.
 
 Entregables:
 
@@ -114,7 +114,10 @@ Avance actual:
 - Ruta `/product/[slug]` creada.
 - Componentes reutilizables de catalogo creados.
 - Mock data enriquecida con compatibilidad, stock y detalles tecnicos.
-- Build genera paginas estaticas de producto.
+- Capa `src/data/products.ts` creada para leer desde Prisma/PostgreSQL con fallback mock.
+- Seed inicial creado para categorias, productos, compatibilidad e inventario.
+- Paginas marcadas como dinamicas para no congelar stock en el build.
+- Build, lint y pruebas pasan con fallback mock.
 
 ## Fase 4 - Carrito
 

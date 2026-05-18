@@ -4,8 +4,14 @@ import { CheckCircle2, MessageCircle, ShoppingCart, Truck } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
-import { getProductBySlug, getRelatedProducts, mockProducts } from "@/data/mock-products";
+import {
+  getCatalogProductBySlug,
+  getCatalogProductSlugs,
+  getRelatedCatalogProducts,
+} from "@/data/products";
 import { formatCurrency } from "@/lib/money";
+
+export const dynamic = "force-dynamic";
 
 type ProductPageProps = {
   params: Promise<{
@@ -13,15 +19,13 @@ type ProductPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return mockProducts.map((product) => ({
-    slug: product.slug,
-  }));
+export async function generateStaticParams() {
+  return getCatalogProductSlugs();
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getCatalogProductBySlug(slug);
 
   if (!product) {
     return {
@@ -37,13 +41,13 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getCatalogProductBySlug(slug);
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = getRelatedProducts(product);
+  const relatedProducts = await getRelatedCatalogProducts(product);
 
   return (
     <main className="min-h-screen bg-background text-foreground">

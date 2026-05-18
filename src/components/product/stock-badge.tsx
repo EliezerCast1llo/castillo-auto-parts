@@ -1,6 +1,6 @@
-import type { MockProduct } from "@/data/mock-products";
+import type { CatalogProduct } from "@/data/products";
 
-export function StockBadge({ status }: { status: MockProduct["stockStatus"] }) {
+export function StockBadge({ status }: { status: CatalogProduct["stockStatus"] }) {
   const styles = {
     "En stock": "bg-success/10 text-success",
     "Bajo stock": "bg-accent/20 text-accent-foreground",

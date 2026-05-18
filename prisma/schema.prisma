@@ -96,6 +96,7 @@ model Product {
   partNumber       String?
   shortDescription String?
   description      String?
+  technicalDetails Json?
   categoryId       String
   category         ProductCategory        @relation(fields: [categoryId], references: [id])
   priceCents       Int

@@ -255,19 +255,24 @@ Implementado:
 - Vitest.
 - ESLint.
 - Mock data inicial.
+- Docker Compose para PostgreSQL local.
+- Seed Prisma desde mock data.
+- Capa de datos `src/data/products.ts` con lectura Prisma y fallback mock.
 
 Decisiones tecnicas:
 
 - Prisma 6 estable por simplicidad.
 - Wompi detras de `PaymentProvider`.
 - DTE detras de `InvoiceProvider`.
-- UI inicial con mock data antes de conectar DB.
+- UI inicial con fallback mock mientras se valida PostgreSQL real.
+- Home, catalogo y detalle son dinamicos para evitar stock congelado por build.
 
 Documentos clave:
 
 - `docs/technical-architecture.md`
 - `docs/database-schema.md`
 - `docs/phase-2-technical-setup.md`
+- `docs/phase-3-data-persistence.md`
 
 ## Estado Implementado
 
@@ -283,11 +288,15 @@ Ya existe:
   - `VehicleSearchPanel`;
   - `StockBadge`;
 - mock products enriquecidos con slug, categoria, compatibilidad, stock, descripcion y detalles tecnicos;
+- seed inicial de categorias, productos, compatibilidad e inventario;
+- capa de datos para catalogo desde Prisma/PostgreSQL;
+- fallback mock si PostgreSQL no responde o esta vacio;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
 
 - `docs/phase-3-catalog-product.md`
+- `docs/phase-3-data-persistence.md`
 
 ## GitHub
 
@@ -303,10 +312,15 @@ PRs previos:
 
 - project foundation mergeado.
 - catalog/product foundation mergeado.
+- QA/design workflow mergeado.
 
-Rama actual al crear este archivo:
+Rama actual de trabajo:
 
-- `codex/qa-design-workflow`.
+- `codex/prisma-seed-catalog`.
+
+Notas actuales:
+
+- Docker no esta instalado en la Mac actual; queda pendiente ejecutar `db:push` y `db:seed` contra PostgreSQL real.
 
 ## Verificaciones Habituales
 
@@ -331,8 +345,7 @@ Negocio:
 
 Tecnico:
 
-- crear seed Prisma;
-- conectar catalogo a PostgreSQL;
+- ejecutar seed Prisma contra PostgreSQL real cuando Docker este disponible;
 - agregar filtros funcionales;
 - crear carrito guest;
 - crear checkout guest;
@@ -356,4 +369,3 @@ QA:
 - El admin debe ser operativo y sobrio.
 - Mobile es obligatorio desde el inicio.
 - Los checklists QA son parte central del workflow, no un extra.
-
