@@ -123,6 +123,7 @@ El MVP debe permitir:
 - `docs/phase-1-market-validation-protocol.md`
 - `docs/phase-1-sourcing-plan.md`
 - `docs/phase-2-technical-setup.md`
+- `docs/phase-3-catalog-product.md`
 - `docs/reused-agent-patterns.md`
 - `docs/commercial-validation-workflow.md`
 - `docs/templates/supplier-outreach.md`
