@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
+import { addCartItem } from "@/app/cart/actions";
 import type { CatalogProduct } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { ProductVisual } from "./product-visual";
@@ -30,14 +31,17 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         <p className="mt-2 min-h-10 text-sm leading-5 text-muted-foreground">{product.compatibility}</p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <span className="text-xl font-bold text-primary">{formatCurrency(product.priceCents)}</span>
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white disabled:bg-muted disabled:text-muted-foreground"
-            disabled={!isAvailable}
-            type="button"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {isAvailable ? "Agregar" : "No disponible"}
-          </button>
+          <form action={addCartItem}>
+            <input name="sku" type="hidden" value={product.sku} />
+            <input name="quantity" type="hidden" value="1" />
+            <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white disabled:bg-muted disabled:text-muted-foreground"
+              disabled={!isAvailable}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {isAvailable ? "Agregar" : "No disponible"}
+            </button>
+          </form>
         </div>
       </div>
     </article>

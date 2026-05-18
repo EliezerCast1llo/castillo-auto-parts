@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { Languages, Search, ShoppingCart } from "lucide-react";
+import { getGuestCartItemCount } from "@/lib/cart";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const cartItemCount = await getGuestCartItemCount();
+
   return (
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
@@ -19,12 +22,18 @@ export function SiteHeader() {
             >
               <Languages className="h-5 w-5" />
             </button>
-            <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white"
-              aria-label="Ver carrito"
+            <Link
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white"
+              aria-label={`Ver carrito, ${formatCartCount(cartItemCount)}`}
+              href="/cart"
             >
               <ShoppingCart className="h-5 w-5" />
-            </button>
+              {cartItemCount > 0 ? (
+                <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-xs font-bold text-white">
+                  {cartItemCount}
+                </span>
+              ) : null}
+            </Link>
           </div>
         </div>
 
@@ -47,4 +56,8 @@ export function SiteHeader() {
       </div>
     </header>
   );
+}
+
+function formatCartCount(count: number) {
+  return count === 1 ? "1 producto" : `${count} productos`;
 }

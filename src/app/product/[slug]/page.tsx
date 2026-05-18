@@ -6,6 +6,7 @@ import { ProductVisual } from "@/components/product/product-visual";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
+import { addCartItem } from "@/app/cart/actions";
 import {
   getCatalogProductBySlug,
   getCatalogProductSlugs,
@@ -123,7 +124,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </p>
             </div>
 
-            <div className="mt-5 grid gap-3">
+            <form action={addCartItem} className="mt-5 grid gap-3">
+              <input name="sku" type="hidden" value={product.sku} />
               <label className="text-sm font-semibold">
                 Cantidad
                 <div className="mt-2">
@@ -133,11 +135,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <button
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white disabled:bg-muted disabled:text-muted-foreground"
                 disabled={!isAvailable}
-                type="button"
               >
                 <ShoppingCart className="h-4 w-4" />
                 {isAvailable ? "Agregar al carrito" : "No disponible"}
               </button>
+            </form>
+
+            <div className="mt-3 grid gap-3">
               <button
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-primary"
                 type="button"

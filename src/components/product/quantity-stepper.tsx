@@ -4,6 +4,7 @@ import { Minus, Plus } from "lucide-react";
 import { useState } from "react";
 
 type QuantityStepperProps = {
+  defaultValue?: number;
   disabled?: boolean;
   max?: number;
   min?: number;
@@ -11,6 +12,7 @@ type QuantityStepperProps = {
 };
 
 export function QuantityStepper({
+  defaultValue,
   disabled = false,
   max = 99,
   min = 1,
@@ -18,7 +20,10 @@ export function QuantityStepper({
 }: QuantityStepperProps) {
   const safeMin = disabled ? 0 : Math.max(min, 0);
   const safeMax = Math.max(max, safeMin);
-  const [rawQuantity, setRawQuantity] = useState(String(disabled ? 0 : safeMin));
+  const initialQuantity = disabled
+    ? 0
+    : Math.min(Math.max(defaultValue ?? safeMin, safeMin), safeMax);
+  const [rawQuantity, setRawQuantity] = useState(String(initialQuantity));
   const quantity = Number(rawQuantity) || safeMin;
 
   function updateQuantity(nextValue: number) {
