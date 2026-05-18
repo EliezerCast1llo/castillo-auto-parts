@@ -114,6 +114,7 @@ El MVP debe permitir:
 - `docs/market-research-plan.md`
 - `docs/roadmap.md`
 - `docs/project-tracking.md`
+- `docs/learning-file.md`
 - `docs/phase-1-kickoff.md`
 - `docs/phase-1-market-research-report.md`
 - `docs/phase-1-payments-dte-analysis.md`
