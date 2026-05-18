@@ -1,0 +1,318 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  SALES
+  WAREHOUSE
+  SUPPORT
+  ACCOUNTING
+  MARKETING
+}
+
+enum InventoryStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+  PREORDER
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID_PENDING_SHIPMENT
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PENDING_MANUAL
+  ISSUED
+  FAILED
+  VOIDED
+  MANUAL_REVIEW
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String?
+  email     String    @unique
+  phone     String?
+  role      UserRole  @default(CUSTOMER)
+  orders    Order[]
+  carts     Cart[]
+  addresses Address[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model GuestSession {
+  id               String   @id @default(cuid())
+  sessionTokenHash String   @unique
+  email            String?
+  phone            String?
+  expiresAt        DateTime
+  cart             Cart?
+  orders           Order[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id               String                 @id @default(cuid())
+  name             String
+  slug             String                 @unique
+  brand            String
+  sku              String                 @unique
+  partNumber       String?
+  shortDescription String?
+  description      String?
+  categoryId       String
+  category         ProductCategory        @relation(fields: [categoryId], references: [id])
+  priceCents       Int
+  currency         String                 @default("USD")
+  ivaRate          Decimal                @default(0.13)
+  isActive         Boolean                @default(true)
+  isFeatured       Boolean                @default(false)
+  images           ProductImage[]
+  compatibilities  VehicleCompatibility[]
+  inventoryStocks  InventoryStock[]
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  url       String
+  alt       String
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+}
+
+model VehicleCompatibility {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  make      String
+  model     String
+  yearFrom  Int
+  yearTo    Int
+
+  @@index([make, model, yearFrom, yearTo])
+}
+
+model InventoryLocation {
+  id        String           @id @default(cuid())
+  name      String
+  code      String           @unique
+  address   String?
+  isDefault Boolean          @default(false)
+  isActive  Boolean          @default(true)
+  stocks    InventoryStock[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model InventoryStock {
+  id               String            @id @default(cuid())
+  productId        String
+  product          Product           @relation(fields: [productId], references: [id])
+  locationId       String
+  location         InventoryLocation @relation(fields: [locationId], references: [id])
+  quantityOnHand   Int               @default(0)
+  quantityReserved Int               @default(0)
+  reorderPoint     Int               @default(0)
+  status           InventoryStatus   @default(OUT_OF_STOCK)
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([productId, locationId])
+}
+
+model Cart {
+  id             String        @id @default(cuid())
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  guestSessionId String?       @unique
+  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id])
+  items          CartItem[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model CartItem {
+  id                 String   @id @default(cuid())
+  cartId             String
+  cart               Cart     @relation(fields: [cartId], references: [id])
+  productId          String
+  product            Product  @relation(fields: [productId], references: [id])
+  quantity           Int
+  priceSnapshotCents Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+model Address {
+  id               String   @id @default(cuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
+  formattedAddress String
+  addressLine1     String
+  addressLine2     String?
+  city             String
+  department       String
+  country          String   @default("SV")
+  postalCode       String?
+  placeId          String?
+  latitude         Decimal?
+  longitude        Decimal?
+  deliveryNotes    String?
+  orders           Order[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Order {
+  id             String        @id @default(cuid())
+  orderNumber    String        @unique
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  guestSessionId String?
+  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id])
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  status         OrderStatus   @default(PENDING_PAYMENT)
+  subtotalCents  Int
+  taxCents       Int
+  shippingCents  Int           @default(0)
+  totalCents     Int
+  currency       String        @default("USD")
+  addressId      String?
+  address        Address?      @relation(fields: [addressId], references: [id])
+  notes          String?
+  paidAt         DateTime?
+  items          OrderItem[]
+  payment        Payment?
+  invoice        InvoiceDte?
+  shipment       Shipment?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+  @@index([customerEmail])
+}
+
+model OrderItem {
+  id                  String  @id @default(cuid())
+  orderId             String
+  order               Order   @relation(fields: [orderId], references: [id])
+  productId           String
+  product             Product @relation(fields: [productId], references: [id])
+  productNameSnapshot String
+  skuSnapshot         String
+  partNumberSnapshot  String?
+  brandSnapshot       String
+  unitPriceCents      Int
+  quantity            Int
+  taxCents            Int
+  lineTotalCents      Int
+}
+
+model Payment {
+  id                String         @id @default(cuid())
+  orderId           String         @unique
+  order             Order          @relation(fields: [orderId], references: [id])
+  provider          String
+  status            PaymentStatus  @default(PENDING)
+  amountCents       Int
+  currency          String         @default("USD")
+  externalPaymentId String?
+  externalReference String?
+  checkoutUrl       String?
+  rawStatus         String?
+  paidAt            DateTime?
+  events            PaymentEvent[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([externalPaymentId])
+}
+
+model PaymentEvent {
+  id              String   @id @default(cuid())
+  paymentId       String
+  payment         Payment  @relation(fields: [paymentId], references: [id])
+  provider        String
+  eventType       String
+  externalEventId String?
+  payloadJson     Json
+  receivedAt      DateTime @default(now())
+  isValid         Boolean  @default(false)
+}
+
+model InvoiceDte {
+  id               String        @id @default(cuid())
+  orderId          String        @unique
+  order            Order         @relation(fields: [orderId], references: [id])
+  status           InvoiceStatus @default(PENDING_MANUAL)
+  documentType     String?
+  generationCode   String?
+  controlNumber    String?
+  receptionSeal    String?
+  issuedAt         DateTime?
+  receiverName     String?
+  receiverDocument String?
+  receiverEmail    String?
+  jsonUrl          String?
+  pdfUrl           String?
+  errorMessage     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Shipment {
+  id                  String    @id @default(cuid())
+  orderId             String    @unique
+  order               Order     @relation(fields: [orderId], references: [id])
+  method              String
+  status              String    @default("PENDING")
+  deliveryZone        String?
+  estimatedDeliveryAt DateTime?
+  deliveredAt         DateTime?
+  notes               String?
+}
