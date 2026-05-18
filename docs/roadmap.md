@@ -90,6 +90,8 @@ Objetivo:
 
 Permitir descubrir repuestos.
 
+Estado: iniciado.
+
 Entregables:
 
 - modelos Prisma de catalogo;
@@ -105,6 +107,14 @@ Criterio de salida:
 - cliente puede encontrar producto;
 - producto sin stock se muestra correctamente;
 - responsive validado.
+
+Avance actual:
+
+- Ruta `/catalog` creada con mock data.
+- Ruta `/product/[slug]` creada.
+- Componentes reutilizables de catalogo creados.
+- Mock data enriquecida con compatibilidad, stock y detalles tecnicos.
+- Build genera paginas estaticas de producto.
 
 ## Fase 4 - Carrito
 
