@@ -1,0 +1,3 @@
+sku_conceptual,categoria,vehiculos,fuente_compatibilidad,talleres_menciones,proveedores_disponibles,costo_estimado,precio_sugerido,margen_estimado,moq,garantia,riesgo_compatibilidad,demanda_digital_score,score_total,decision,razones,siguiente_accion
+MOCK-FIL-TOY-18,Filtros,"Toyota Corolla/Yaris",Pendiente,0,0,,,,,,Medio,0,,validate,"Hipotesis inicial basada en parque vehicular","Validar con talleres y proveedores"
+
