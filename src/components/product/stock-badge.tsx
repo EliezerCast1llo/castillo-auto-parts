@@ -2,9 +2,9 @@ import type { CatalogProduct } from "@/data/products";
 
 export function StockBadge({ status }: { status: CatalogProduct["stockStatus"] }) {
   const styles = {
-    "En stock": "bg-success/10 text-success",
-    "Bajo stock": "bg-accent/20 text-accent-foreground",
-    Preorder: "bg-muted text-muted-foreground",
+    Disponible: "bg-success/10 text-success",
+    "Últimas unidades": "bg-warning/10 text-warning",
+    "No disponible": "bg-danger/10 text-danger",
   };
 
   return (

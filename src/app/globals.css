@@ -1,18 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f7f8;
-  --foreground: #1e252b;
+  --background: #f6f7f9;
+  --foreground: #111827;
   --card: #ffffff;
-  --card-foreground: #1e252b;
-  --primary: #12324a;
+  --card-foreground: #111827;
+  --graphite: #1f2933;
+  --steel: #56616f;
+  --primary: #0b5cad;
   --primary-foreground: #ffffff;
-  --accent: #f2b705;
-  --accent-foreground: #1e252b;
-  --success: #19a974;
-  --muted: #e8edf0;
-  --muted-foreground: #62717d;
-  --border: #d9e1e6;
+  --accent: #f59e0b;
+  --accent-foreground: #1a1200;
+  --success: #16803c;
+  --warning: #b7791f;
+  --danger: #b42318;
+  --info: #0f766e;
+  --muted: #eef2f6;
+  --muted-foreground: #56616f;
+  --border: #d8dee6;
 }
 
 @theme inline {
@@ -20,11 +25,16 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-graphite: var(--graphite);
+  --color-steel: var(--steel);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -43,8 +53,11 @@ body {
 }
 
 a {
-  color: inherit;
   text-decoration: none;
+}
+
+a:not([class]) {
+  color: inherit;
 }
 
 button,
@@ -53,3 +66,7 @@ select {
   font: inherit;
 }
 
+:where(a, button, input, select):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 75%, white);
+  outline-offset: 2px;
+}

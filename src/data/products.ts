@@ -106,7 +106,7 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
     category: product.category.name,
     brand: product.brand,
     sku: product.sku,
-    partNumber: product.partNumber ?? "Sin numero de parte",
+    partNumber: product.partNumber ?? "Sin número de parte",
     compatibility: formatCompatibilitySummary(product),
     compatibleVehicles: formatCompatibleVehicles(product),
     description: product.description ?? "",
@@ -144,8 +144,8 @@ function toStringArray(value: unknown): string[] {
 }
 
 function toStockStatus(status: string | undefined, quantity: number): CatalogProduct["stockStatus"] {
-  if (status === "PREORDER") return "Preorder";
-  if (status === "LOW_STOCK") return "Bajo stock";
-  if (quantity > 0) return "En stock";
-  return "Preorder";
+  if (status === "PREORDER" || status === "OUT_OF_STOCK") return "No disponible";
+  if (status === "LOW_STOCK") return "Últimas unidades";
+  if (quantity > 0) return "Disponible";
+  return "No disponible";
 }

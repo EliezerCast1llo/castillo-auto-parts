@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, MessageCircle, ShoppingCart, Truck } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductVisual } from "@/components/product/product-visual";
+import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
 import {
@@ -48,6 +50,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const relatedProducts = await getRelatedCatalogProducts(product);
+  const isAvailable = product.stockStatus !== "No disponible";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -55,17 +58,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Link href="/catalog" className="text-sm font-semibold text-primary">
-          Volver al catalogo
+          Volver al catálogo
         </Link>
 
         <section className="mt-5 grid gap-6 lg:grid-cols-[1fr_420px]">
           <div className="space-y-5">
-            <div className="flex min-h-[360px] items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-muted-foreground">
-              Galeria de imagenes
+            <div className="grid gap-3 rounded-md border border-border bg-card p-4 sm:grid-cols-[96px_1fr]">
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-1">
+                {[0, 1, 2, 3].map((item) => (
+                  <div
+                    className="flex aspect-square items-center justify-center rounded-md border border-border bg-background"
+                    key={item}
+                  >
+                    <ProductVisual seed={`${product.sku}-${item}`} size="thumb" />
+                  </div>
+                ))}
+              </div>
+              <div className="flex min-h-[360px] items-center justify-center rounded-md bg-background p-8">
+                <ProductVisual seed={product.sku} size="large" />
+              </div>
             </div>
 
             <div className="rounded-md border border-border bg-card p-5">
-              <h2 className="text-lg font-semibold text-primary">Descripcion</h2>
+              <h2 className="text-lg font-semibold text-primary">Descripción</h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{product.description}</p>
             </div>
 
@@ -85,10 +100,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
 
-          <aside className="h-fit rounded-md border border-border bg-card p-5">
+          <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">{product.category}</p>
+                <p className="text-sm font-bold text-success">{product.category}</p>
                 <h1 className="mt-1 text-2xl font-bold text-primary">{product.name}</h1>
               </div>
               <StockBadge status={product.stockStatus} />
@@ -111,17 +126,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="mt-5 grid gap-3">
               <label className="text-sm font-semibold">
                 Cantidad
-                <select className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm">
-                  <option>1</option>
-                  <option>2</option>
-                  <option>3</option>
-                </select>
+                <div className="mt-2">
+                  <QuantityStepper disabled={!isAvailable} max={product.stockQuantity} />
+                </div>
               </label>
-              <button className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
+              <button
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white disabled:bg-muted disabled:text-muted-foreground"
+                disabled={!isAvailable}
+                type="button"
+              >
                 <ShoppingCart className="h-4 w-4" />
-                Agregar al carrito
+                {isAvailable ? "Agregar al carrito" : "No disponible"}
               </button>
-              <button className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-primary">
+              <button
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-primary"
+                type="button"
+              >
                 <MessageCircle className="h-4 w-4" />
                 Validar con asesor
               </button>
@@ -130,16 +150,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="mt-5 rounded-md bg-background p-4 text-sm text-muted-foreground">
               <div className="flex gap-2 font-semibold text-foreground">
                 <Truck className="h-4 w-4 text-success" />
-                Retiro en bodega o envio local
+                Retiro en bodega o envío local
               </div>
               <p className="mt-2">
-                Entrega inicial en San Salvador y Santa Tecla. La tarifa final se validara en
-                checkout.
+                Entrega inicial en San Salvador y Santa Tecla. La tarifa final se validará al pagar.
               </p>
             </div>
 
             <div className="mt-5">
-              <h2 className="text-base font-semibold text-primary">Detalles tecnicos</h2>
+              <h2 className="text-base font-semibold text-primary">Detalles técnicos</h2>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                 {product.technicalDetails.map((detail) => (
                   <li key={detail} className="flex gap-2">

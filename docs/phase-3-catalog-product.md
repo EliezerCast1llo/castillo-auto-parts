@@ -25,8 +25,10 @@
   - detalles tecnicos;
   - stock.
 - Capa `src/data/products.ts` para leer desde Prisma/PostgreSQL con fallback mock.
+- Capa `src/data/catalog-filters.ts` para filtros por query params.
 - Seed Prisma inicial para categorias, productos, compatibilidad e inventario.
 - Paginas dinamicas para evitar stock congelado en build.
+- Filtros funcionales por busqueda, categoria, marca, disponibilidad y vehiculo.
 - Tests unitarios para helpers de productos.
 
 ## Alcance
@@ -47,12 +49,14 @@ La conexion real con PostgreSQL queda pendiente de validacion local completa por
 
 - `/`
 - `/catalog`
+- `/catalog?q=sentra`
+- `/catalog?category=Filtros`
+- `/catalog?vehicleMake=Toyota&vehicleModel=Corolla&vehicleYear=2015`
 - `/product/filtro-aceite-toyota-18l`
 - `/product/pastillas-delanteras-nissan-sentra`
 
 ## Pendientes siguientes
 
 1. Ejecutar `db:push` y `db:seed` cuando Docker/PostgreSQL este disponible.
-2. Agregar filtros funcionales por query params.
-3. Crear carrito inicial.
-4. Agregar pruebas E2E cuando el flujo tenga navegacion completa.
+2. Crear carrito inicial.
+3. Agregar pruebas E2E cuando el flujo tenga navegacion completa.

@@ -15,9 +15,9 @@ function slugify(value: string) {
 }
 
 function toInventoryStatus(status: string) {
-  if (status === "En stock") return InventoryStatus.IN_STOCK;
-  if (status === "Bajo stock") return InventoryStatus.LOW_STOCK;
-  return InventoryStatus.PREORDER;
+  if (status === "Disponible") return InventoryStatus.IN_STOCK;
+  if (status === "Últimas unidades") return InventoryStatus.LOW_STOCK;
+  return InventoryStatus.OUT_OF_STOCK;
 }
 
 function parseVehicle(value: string) {

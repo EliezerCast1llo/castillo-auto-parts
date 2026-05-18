@@ -11,7 +11,7 @@ export type MockProduct = {
   technicalDetails: string[];
   priceCents: number;
   stockQuantity: number;
-  stockStatus: "En stock" | "Bajo stock" | "Preorder";
+  stockStatus: "Disponible" | "Últimas unidades" | "No disponible";
 };
 
 export const vehicleMakes = ["Toyota", "Nissan", "Hyundai", "Kia", "Honda", "Mitsubishi"];
@@ -19,7 +19,7 @@ export const vehicleMakes = ["Toyota", "Nissan", "Hyundai", "Kia", "Honda", "Mit
 export const mockCategories = [
   "Filtros",
   "Frenos",
-  "Bujias",
+  "Bujías",
   "Escobillas",
   "Focos",
   "Fluidos",
@@ -36,11 +36,11 @@ export const mockProducts: MockProduct[] = [
     compatibility: "Corolla 2009-2022 · Yaris 2007-2020",
     compatibleVehicles: ["Toyota Corolla 2009-2022", "Toyota Yaris 2007-2020"],
     description:
-      "Filtro de aceite para mantenimiento preventivo en motores Toyota 1.8L y aplicaciones compatibles por catalogo.",
-    technicalDetails: ["Rosca y empaque segun especificacion", "Uso con aceite recomendado por fabricante"],
+      "Filtro de aceite para mantenimiento preventivo en motores Toyota 1.8L y aplicaciones compatibles por catálogo.",
+    technicalDetails: ["Rosca y empaque según especificación", "Uso con aceite recomendado por fabricante"],
     priceCents: 895,
     stockQuantity: 8,
-    stockStatus: "En stock",
+    stockStatus: "Disponible",
   },
   {
     slug: "pastillas-delanteras-nissan-sentra",
@@ -52,16 +52,16 @@ export const mockProducts: MockProduct[] = [
     compatibility: "Sentra 2013-2022",
     compatibleVehicles: ["Nissan Sentra 2013-2022"],
     description:
-      "Juego de pastillas delanteras para Nissan Sentra. Validar version y sistema de frenos antes de compra.",
-    technicalDetails: ["Eje delantero", "Juego por par", "Validar por VIN si hay duda de version"],
+      "Juego de pastillas delanteras para Nissan Sentra. Validar versión y sistema de frenos antes de compra.",
+    technicalDetails: ["Eje delantero", "Juego por par", "Validar por VIN si hay duda de versión"],
     priceCents: 3495,
     stockQuantity: 2,
-    stockStatus: "Bajo stock",
+    stockStatus: "Últimas unidades",
   },
   {
     slug: "bujia-iridio-hyundai-kia-16l",
-    name: "Bujia iridio Hyundai/Kia 1.6L",
-    category: "Bujias",
+    name: "Bujía iridio Hyundai/Kia 1.6L",
+    category: "Bujías",
     brand: "NGK",
     sku: "MOCK-SPK-HK-16",
     partNumber: "IR-HK16",
@@ -73,11 +73,11 @@ export const mockProducts: MockProduct[] = [
       "Kia Soul 2010-2022",
     ],
     description:
-      "Bujia de iridio para motores Hyundai/Kia 1.6L compatibles. Confirmar motor MPI/GDI antes de compra.",
-    technicalDetails: ["Electrodo de iridio", "Venta por unidad", "Validar calibracion segun motor"],
+      "Bujía de iridio para motores Hyundai/Kia 1.6L compatibles. Confirmar motor MPI/GDI antes de compra.",
+    technicalDetails: ["Electrodo de iridio", "Venta por unidad", "Validar calibración según motor"],
     priceCents: 1195,
     stockQuantity: 12,
-    stockStatus: "En stock",
+    stockStatus: "Disponible",
   },
   {
     slug: "escobilla-universal-22-pulgadas",
@@ -89,11 +89,11 @@ export const mockProducts: MockProduct[] = [
     compatibility: "Universal por medida",
     compatibleVehicles: ["Universal por medida 22 pulgadas"],
     description:
-      "Escobilla universal de 22 pulgadas para reemplazo rapido. Validar medida del lado conductor/pasajero.",
+      "Escobilla universal de 22 pulgadas para reemplazo rápido. Validar medida del lado conductor/pasajero.",
     technicalDetails: ["Medida 22 pulgadas", "Incluye adaptadores comunes", "Venta por unidad"],
     priceCents: 750,
     stockQuantity: 18,
-    stockStatus: "En stock",
+    stockStatus: "Disponible",
   },
   {
     slug: "filtro-cabina-nissan-rogue",
@@ -105,27 +105,27 @@ export const mockProducts: MockProduct[] = [
     compatibility: "Rogue 2014-2022",
     compatibleVehicles: ["Nissan Rogue 2014-2022"],
     description:
-      "Filtro de cabina para Nissan Rogue. Producto marcado como preorder mientras se valida inventario real.",
-    technicalDetails: ["Filtro de habitaculo", "Validar generacion y origen", "Preorder/consultar disponibilidad"],
+      "Filtro de cabina para Nissan Rogue. Producto marcado como no disponible mientras se valida inventario real.",
+    technicalDetails: ["Filtro de habitáculo", "Validar generación y origen", "No disponible/consultar disponibilidad"],
     priceCents: 1295,
     stockQuantity: 0,
-    stockStatus: "Preorder",
+    stockStatus: "No disponible",
   },
   {
     slug: "refrigerante-premix-1-galon",
-    name: "Refrigerante premix 1 galon",
+    name: "Refrigerante premix 1 galón",
     category: "Fluidos",
     brand: "Prestone",
     sku: "MOCK-FLD-COOL",
     partNumber: "COOL-PM",
-    compatibility: "Uso segun especificacion del fabricante",
-    compatibleVehicles: ["Universal segun especificacion del fabricante"],
+    compatibility: "Uso según especificación del fabricante",
+    compatibleVehicles: ["Universal según especificación del fabricante"],
     description:
-      "Refrigerante premix listo para uso. Confirmar especificacion requerida por el fabricante del vehiculo.",
-    technicalDetails: ["Presentacion 1 galon", "Premix listo para uso", "No mezclar con formulas incompatibles"],
+      "Refrigerante premix listo para uso. Confirmar especificación requerida por el fabricante del vehículo.",
+    technicalDetails: ["Presentación 1 galón", "Premix listo para uso", "No mezclar con fórmulas incompatibles"],
     priceCents: 1095,
     stockQuantity: 10,
-    stockStatus: "En stock",
+    stockStatus: "Disponible",
   },
 ];
 

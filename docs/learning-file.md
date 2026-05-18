@@ -209,13 +209,20 @@ Paleta provisional:
 
 Canva:
 
-- Plugin instalado, pero el conector devolvio `token_expired`.
-- Pendiente reautorizar Canva para crear el moodboard/doc.
+- Plugin disponible.
+- No hay brand kits configurados en Canva para esta cuenta.
+- Se generaron 4 candidatos de documento visual para `Castillo Auto Parts - UI Design Direction MVP`.
+- Se creo una ruta local `http://localhost:3000/design` para ver catalogo y producto materializados como UI real.
+- Se agrego investigacion UX/UI y teoria de color en `docs/design-ux-research.md`.
+- Tema base actualizado a `Taller Tecnico Moderno`.
+- Pendiente escoger candidato y convertirlo en documento editable final.
 
 Documentos clave:
 
 - `docs/design-agent-brief.md`
 - `docs/design-qa-checklist.md`
+- `docs/design-canva-sync.md`
+- `docs/design-ux-research.md`
 - `docs/phase-1-brand-ux-direction.md`
 
 ## QA
@@ -258,6 +265,7 @@ Implementado:
 - Docker Compose para PostgreSQL local.
 - Seed Prisma desde mock data.
 - Capa de datos `src/data/products.ts` con lectura Prisma y fallback mock.
+- Capa de filtros `src/data/catalog-filters.ts` por query params.
 
 Decisiones tecnicas:
 
@@ -266,6 +274,7 @@ Decisiones tecnicas:
 - DTE detras de `InvoiceProvider`.
 - UI inicial con fallback mock mientras se valida PostgreSQL real.
 - Home, catalogo y detalle son dinamicos para evitar stock congelado por build.
+- Filtros de catalogo via URL para que QA pueda compartir escenarios reproducibles.
 
 Documentos clave:
 
@@ -291,6 +300,7 @@ Ya existe:
 - seed inicial de categorias, productos, compatibilidad e inventario;
 - capa de datos para catalogo desde Prisma/PostgreSQL;
 - fallback mock si PostgreSQL no responde o esta vacio;
+- filtros por busqueda, categoria, marca, disponibilidad y vehiculo;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
@@ -346,7 +356,6 @@ Negocio:
 Tecnico:
 
 - ejecutar seed Prisma contra PostgreSQL real cuando Docker este disponible;
-- agregar filtros funcionales;
 - crear carrito guest;
 - crear checkout guest;
 - preparar mapa/pin;

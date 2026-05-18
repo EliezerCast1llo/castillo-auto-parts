@@ -8,7 +8,7 @@ export function SiteHeader() {
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Codename
+              Marca provisional
             </p>
             <h1 className="text-2xl font-bold text-primary">Castillo Auto Parts</h1>
           </Link>
@@ -20,7 +20,7 @@ export function SiteHeader() {
               <Languages className="h-5 w-5" />
             </button>
             <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white"
               aria-label="Ver carrito"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -33,12 +33,12 @@ export function SiteHeader() {
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
               className="w-full bg-transparent text-sm outline-none"
-              placeholder="Busca por repuesto, SKU, numero de parte o vehiculo"
+              placeholder="Busca por repuesto, SKU, número de parte o vehículo"
             />
           </label>
           <Link
             href="/catalog"
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
           >
             <Search className="h-4 w-4" />
             Buscar
