@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createPendingOrderFromGuestCart } from "@/lib/orders";
+import { createPaidGuestOrderFromCart } from "@/lib/orders";
 
-export async function createPendingOrder(formData: FormData) {
-  const result = await createPendingOrderFromGuestCart(formData);
+export async function createGuestOrder(formData: FormData) {
+  const result = await createPaidGuestOrderFromCart(formData);
 
   if (result.status === "created") {
     redirect(`/orders/${result.orderNumber}`);

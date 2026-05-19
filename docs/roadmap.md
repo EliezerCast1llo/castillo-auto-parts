@@ -132,7 +132,7 @@ Entregables:
 - carrito usuario registrado si auth ya esta activo;
 - agregar/eliminar/cambiar cantidad;
 - validacion de stock;
-- totales con IVA incluido.
+- totales con productos, envio y total, mas nota de IVA incluido.
 
 Criterio de salida:
 
@@ -144,7 +144,7 @@ Criterio de salida:
 
 Objetivo:
 
-Crear orden antes de pago.
+Crear orden despues del pago web confirmado o simulado.
 
 Entregables:
 
@@ -154,7 +154,7 @@ Entregables:
 - selector de retiro en bodega o envio local;
 - mapa con ubicacion actual y pin manual;
 - calculo de tarifa de envio;
-- creacion de orden `PENDING_PAYMENT`;
+- creacion de orden `PAID_PENDING_SHIPMENT`;
 - snapshot de precios;
 - vista de resumen.
 

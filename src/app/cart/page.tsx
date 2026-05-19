@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, PackageCheck, ShoppingCart, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Info, PackageCheck, ShoppingCart, Trash2 } from "lucide-react";
 import { ProductVisual } from "@/components/product/product-visual";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
@@ -67,8 +67,12 @@ export default async function CartPage({ searchParams }: CartPageProps) {
             <dl className="mt-5 space-y-3 text-sm">
               <SummaryRow label="Productos" value={formatUnits(cart.itemCount)} />
               <SummaryRow label="Subtotal" value={formatCurrency(cart.subtotalCents)} strong />
-              <SummaryRow label="IVA" value="Incluido" />
             </dl>
+
+            <div className="mt-4 flex gap-2 rounded-md bg-primary/5 p-3 text-sm font-semibold text-primary">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              Los precios ya incluyen IVA.
+            </div>
 
             {cart.hasBlockingIssues ? (
               <div className="mt-5 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">

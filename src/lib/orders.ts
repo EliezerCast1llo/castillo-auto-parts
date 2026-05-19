@@ -1,4 +1,4 @@
-import { InventoryStatus, OrderStatus, type Prisma } from "@prisma/client";
+import { InventoryStatus, OrderStatus, PaymentStatus, type Prisma } from "@prisma/client";
 import { clearGuestCart, getGuestCart } from "./cart";
 import {
   buildFormattedAddress,
@@ -11,7 +11,7 @@ import {
 } from "./checkout";
 import { db } from "./db";
 
-export type CreatePendingOrderResult =
+export type CreateGuestOrderResult =
   | { orderNumber: string; status: "created" }
   | {
       status:
@@ -23,14 +23,14 @@ export type CreatePendingOrderResult =
     };
 
 class CheckoutDomainError extends Error {
-  constructor(readonly code: Exclude<CreatePendingOrderResult["status"], "created">) {
+  constructor(readonly code: Exclude<CreateGuestOrderResult["status"], "created">) {
     super(code);
   }
 }
 
-export async function createPendingOrderFromGuestCart(
+export async function createPaidGuestOrderFromCart(
   formData: FormData,
-): Promise<CreatePendingOrderResult> {
+): Promise<CreateGuestOrderResult> {
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
 
@@ -53,7 +53,7 @@ export async function createPendingOrderFromGuestCart(
         },
       });
       const productBySku = new Map(dbProducts.map((product) => [product.sku, product]));
-      const orderLines = cart.lines.map((line) => {
+      const preparedLines = cart.lines.map((line) => {
         const product = productBySku.get(line.product.sku);
         if (!product) throw new CheckoutDomainError("stock_issue");
 
@@ -67,24 +67,59 @@ export async function createPendingOrderFromGuestCart(
         }
 
         const lineTotalCents = product.priceCents * line.quantity;
+        const nextAvailableQuantity = availableQuantity - line.quantity;
 
         return {
-          brandSnapshot: product.brand,
-          lineTotalCents,
-          partNumberSnapshot: product.partNumber,
-          productId: product.id,
-          productNameSnapshot: product.name,
+          orderItem: {
+            brandSnapshot: product.brand,
+            lineTotalCents,
+            partNumberSnapshot: product.partNumber,
+            productId: product.id,
+            productNameSnapshot: product.name,
+            quantity: line.quantity,
+            skuSnapshot: product.sku,
+            taxCents: calculateIncludedTaxCents(lineTotalCents),
+            unitPriceCents: product.priceCents,
+          },
           quantity: line.quantity,
-          skuSnapshot: product.sku,
-          taxCents: calculateIncludedTaxCents(lineTotalCents),
-          unitPriceCents: product.priceCents,
+          requiredQuantityOnHand: stock.quantityReserved + line.quantity,
+          stockId: stock.id,
+          stockStatus: getNextStockStatus(nextAvailableQuantity, stock.reorderPoint),
         };
       });
 
+      const stockUpdates = await Promise.all(
+        preparedLines.map((line) =>
+          tx.inventoryStock.updateMany({
+            data: {
+              quantityOnHand: {
+                decrement: line.quantity,
+              },
+              status: line.stockStatus,
+            },
+            where: {
+              id: line.stockId,
+              quantityOnHand: {
+                gte: line.requiredQuantityOnHand,
+              },
+              status: {
+                notIn: [InventoryStatus.OUT_OF_STOCK, InventoryStatus.PREORDER],
+              },
+            },
+          }),
+        ),
+      );
+
+      if (stockUpdates.some((update) => update.count !== 1)) {
+        throw new CheckoutDomainError("stock_issue");
+      }
+
+      const orderLines = preparedLines.map((line) => line.orderItem);
       const subtotalCents = orderLines.reduce((total, line) => total + line.lineTotalCents, 0);
       const totalCents = subtotalCents + shippingCents;
       const addressId = await createDeliveryAddress(tx, parsed.data);
       const orderNumber = buildOrderNumber();
+      const paidAt = new Date();
 
       return tx.order.create({
         data: {
@@ -108,8 +143,22 @@ export async function createPendingOrderFromGuestCart(
               notes: parsed.data.deliveryNotes,
             },
           },
+          paidAt,
+          payment: {
+            create: {
+              amountCents: totalCents,
+              checkoutUrl: `/orders/${orderNumber}`,
+              currency: "USD",
+              externalPaymentId: `SIM-${orderNumber}`,
+              externalReference: orderNumber,
+              paidAt,
+              provider: "simulated_web_checkout",
+              rawStatus: "SIMULATED_PAID",
+              status: PaymentStatus.PAID,
+            },
+          },
           shippingCents,
-          status: OrderStatus.PENDING_PAYMENT,
+          status: OrderStatus.PAID_PENDING_SHIPMENT,
           subtotalCents,
           taxCents: calculateIncludedTaxCents(totalCents),
           totalCents,
@@ -167,4 +216,10 @@ function buildOrderNotes(input: CheckoutInput) {
 
 function isUnavailable(status: InventoryStatus | undefined) {
   return !status || status === InventoryStatus.OUT_OF_STOCK || status === InventoryStatus.PREORDER;
+}
+
+function getNextStockStatus(availableQuantity: number, reorderPoint: number) {
+  if (availableQuantity <= 0) return InventoryStatus.OUT_OF_STOCK;
+  if (availableQuantity <= reorderPoint) return InventoryStatus.LOW_STOCK;
+  return InventoryStatus.IN_STOCK;
 }

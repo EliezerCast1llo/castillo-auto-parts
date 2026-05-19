@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, CreditCard, PackageCheck } from "lucide-react";
+import { CheckCircle2, CreditCard, Info, PackageCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
@@ -47,7 +47,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
               <p className="text-sm font-semibold text-success">Orden creada</p>
               <h1 className="mt-1 text-2xl font-bold text-primary">{order.orderNumber}</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Estado actual: pendiente de pago.
+                Estado actual: pendiente de entrega.
               </p>
             </div>
 
@@ -94,19 +94,23 @@ export default async function OrderPage({ params }: OrderPageProps) {
             </div>
 
             <dl className="mt-5 space-y-3 text-sm">
-              <SummaryRow label="Subtotal" value={formatCurrency(order.subtotalCents)} />
+              <SummaryRow label="Productos" value={formatCurrency(order.subtotalCents)} />
               <SummaryRow label="Envío" value={formatCurrency(order.shippingCents)} />
-              <SummaryRow label="IVA incluido" value={formatCurrency(order.taxCents)} />
               <SummaryRow label="Total" value={formatCurrency(order.totalCents)} strong />
             </dl>
+
+            <div className="mt-4 flex gap-2 rounded-md bg-primary/5 p-3 text-sm font-semibold text-primary">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              Los precios ya incluyen IVA.
+            </div>
 
             <div className="mt-5 rounded-md bg-background p-4 text-sm">
               <div className="flex gap-2 font-semibold text-foreground">
                 <CreditCard className="h-4 w-4 text-primary" />
-                Pago pendiente
+                Pago confirmado
               </div>
               <p className="mt-2 text-muted-foreground">
-                Aún no se ha registrado un pago para esta orden.
+                Pago simulado por plataforma web para el MVP. La orden ya está lista para preparación.
               </p>
             </div>
 

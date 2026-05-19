@@ -8,7 +8,7 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-05-18.
+- Fecha de ultima actualizacion: 2026-05-19.
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
@@ -54,8 +54,8 @@ La experiencia debe sentirse mas cercana a retail moderno tipo Siman, pero adapt
 - Data inicial: mock data mientras se valida inventario real.
 - Compra guest: obligatoria desde MVP.
 - Moneda: USD.
-- IVA: 13%, precios visibles con IVA incluido.
-- Pago MVP: pago completo en linea.
+- IVA: 13%, precios visibles con IVA incluido; no mostrar un calculo separado de IVA en el desglose de compra.
+- Pago MVP: pago completo en linea, simulado por plataforma web hasta integrar proveedor local.
 - Pago objetivo: Wompi SV.
 - Pago fallback: BAC Compra Click.
 - Stripe: no es prioridad por limitaciones locales.
@@ -64,11 +64,13 @@ La experiencia debe sentirse mas cercana a retail moderno tipo Siman, pero adapt
 - Entrega inicial: equipo propio.
 - Entrega futura: tercerizada para departamentos.
 - Retiro en bodega: gratis, con horarios/dias pendientes.
+- En retiro en bodega no se solicitan campos de entrega a domicilio; se muestra direccion/mapa de bodega.
 - Envio Santa Tecla: referencia USD 2.
 - Envio San Salvador: referencia USD 3 a USD 5.
 - Direccion: mapa, ubicacion actual y pin manual.
 - Idioma: espanol principal, opcion/base para ingles.
 - Bodega: una bodega inicial, escalable a multiples bodegas.
+- Estado de orden para compra pagada: `PAID_PENDING_SHIPMENT`, mostrado al cliente como "pendiente de entrega".
 
 ## Marca
 

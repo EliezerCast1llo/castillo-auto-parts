@@ -116,7 +116,7 @@ Necesidades:
 - Retiro en bodega gratis en dias/horarios definidos.
 - Envio local por zona: Santa Tecla con tarifa inicial de referencia de USD 2; San Salvador con tarifa inicial de referencia de USD 3 a USD 5.
 - Direccion con mapa: usar ubicacion actual del cliente cuando sea posible y permitir mover/escoger pin manualmente.
-- Orden en estado `PENDING_PAYMENT`.
+- Orden en estado `PAID_PENDING_SHIPMENT` despues del pago web confirmado o simulado.
 - Integracion con proveedor de pagos local mediante abstraccion.
 - Webhook o confirmacion equivalente del proveedor de pagos.
 - Cambio de orden a `PAID_PENDING_SHIPMENT`.
@@ -232,7 +232,8 @@ Necesidades:
 - Agregar producto.
 - Cambiar cantidad.
 - Eliminar producto.
-- Ver subtotal, IVA incluido y total.
+- Ver productos, envio y total.
+- Ver nota informativa indicando que los precios ya incluyen IVA.
 - Persistir carrito invitado con cookie/session segura.
 - Mantener carrito por usuario registrado.
 
