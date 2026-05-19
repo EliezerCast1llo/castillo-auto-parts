@@ -76,8 +76,17 @@ export default async function CartPage({ searchParams }: CartPageProps) {
               </div>
             ) : null}
 
+            {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
+              <Link
+                className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
+                href="/checkout"
+              >
+                Continuar al pago
+              </Link>
+            ) : null}
+
             <Link
-              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
+              className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-semibold text-primary"
               href="/catalog"
             >
               Agregar más productos
@@ -221,8 +230,10 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
 function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
     added: "Producto agregado al carrito.",
+    empty_cart: "Agrega productos antes de continuar con la compra.",
     quantity_adjusted: "Ajustamos la cantidad al stock disponible.",
     removed: "Producto eliminado del carrito.",
+    stock_issue: "Revisa disponibilidad y cantidades antes de continuar.",
     unavailable: "Este producto ya no está disponible.",
     updated: "Carrito actualizado.",
   };

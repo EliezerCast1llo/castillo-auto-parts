@@ -102,6 +102,10 @@ export async function removeGuestCartItem(sku: string) {
   await writeGuestCartItems(removeStoredCartItem(items, sku));
 }
 
+export async function clearGuestCart() {
+  await writeGuestCartItems([]);
+}
+
 async function readGuestCartItems(): Promise<StoredCartItem[]> {
   const cookieStore = await cookies();
   return parseStoredCart(cookieStore.get(GUEST_CART_COOKIE)?.value);
