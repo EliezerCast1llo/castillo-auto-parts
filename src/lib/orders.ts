@@ -1,4 +1,9 @@
-import { InventoryStatus, OrderStatus, PaymentStatus, type Prisma } from "@prisma/client";
+import {
+  InventoryStatus,
+  OrderStatus,
+  PaymentStatus as PrismaPaymentStatus,
+  type Prisma,
+} from "@prisma/client";
 import { clearGuestCart, getGuestCart } from "./cart";
 import {
   buildFormattedAddress,
@@ -10,6 +15,7 @@ import {
   type CheckoutInput,
 } from "./checkout";
 import { db } from "./db";
+import { getPaymentProvider, type CreatePaymentResult, type PaymentStatus } from "./payments";
 
 export type CreateGuestOrderResult =
   | { orderNumber: string; status: "created" }
@@ -19,6 +25,7 @@ export type CreateGuestOrderResult =
         | "db_unavailable"
         | "empty_cart"
         | "invalid"
+        | "payment_unavailable"
         | "stock_issue";
     };
 
@@ -119,7 +126,18 @@ export async function createPaidGuestOrderFromCart(
       const totalCents = subtotalCents + shippingCents;
       const addressId = await createDeliveryAddress(tx, parsed.data);
       const orderNumber = buildOrderNumber();
-      const paidAt = new Date();
+      const payment = await createPayment({
+        amountCents: totalCents,
+        customerEmail: parsed.data.customerEmail,
+        orderNumber,
+        redirectUrl: `/orders/${orderNumber}`,
+      });
+
+      if (payment.status !== "PAID") {
+        throw new CheckoutDomainError("payment_unavailable");
+      }
+
+      const paidAt = payment.paidAt ?? new Date();
 
       return tx.order.create({
         data: {
@@ -147,14 +165,23 @@ export async function createPaidGuestOrderFromCart(
           payment: {
             create: {
               amountCents: totalCents,
-              checkoutUrl: `/orders/${orderNumber}`,
+              checkoutUrl: payment.checkoutUrl,
               currency: "USD",
-              externalPaymentId: `SIM-${orderNumber}`,
-              externalReference: orderNumber,
+              events: {
+                create: {
+                  eventType: "payment.confirmed",
+                  externalEventId: payment.externalPaymentId,
+                  isValid: true,
+                  payloadJson: toJsonPayload(payment.rawPayload),
+                  provider: payment.provider,
+                },
+              },
+              externalPaymentId: payment.externalPaymentId,
+              externalReference: payment.externalReference,
               paidAt,
-              provider: "simulated_web_checkout",
-              rawStatus: "SIMULATED_PAID",
-              status: PaymentStatus.PAID,
+              provider: payment.provider,
+              rawStatus: payment.rawStatus,
+              status: mapPaymentStatus(payment.status),
             },
           },
           shippingCents,
@@ -222,4 +249,48 @@ function getNextStockStatus(availableQuantity: number, reorderPoint: number) {
   if (availableQuantity <= 0) return InventoryStatus.OUT_OF_STOCK;
   if (availableQuantity <= reorderPoint) return InventoryStatus.LOW_STOCK;
   return InventoryStatus.IN_STOCK;
+}
+
+async function createPayment({
+  amountCents,
+  customerEmail,
+  orderNumber,
+  redirectUrl,
+}: {
+  amountCents: number;
+  customerEmail: string;
+  orderNumber: string;
+  redirectUrl: string;
+}): Promise<CreatePaymentResult> {
+  try {
+    return await getPaymentProvider().createPayment({
+      amountCents,
+      currency: "USD",
+      customerEmail,
+      metadata: {
+        source: "guest_checkout",
+      },
+      orderNumber,
+      redirectUrl,
+    });
+  } catch (error) {
+    console.error(error);
+    throw new CheckoutDomainError("payment_unavailable");
+  }
+}
+
+function mapPaymentStatus(status: PaymentStatus) {
+  const statusMap: Record<PaymentStatus, PrismaPaymentStatus> = {
+    CANCELLED: PrismaPaymentStatus.CANCELLED,
+    FAILED: PrismaPaymentStatus.FAILED,
+    PAID: PrismaPaymentStatus.PAID,
+    PENDING: PrismaPaymentStatus.PENDING,
+    REFUNDED: PrismaPaymentStatus.REFUNDED,
+  };
+
+  return statusMap[status];
+}
+
+function toJsonPayload(value: unknown) {
+  return (value ?? {}) as Prisma.InputJsonValue;
 }

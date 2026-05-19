@@ -144,6 +144,15 @@ export interface PaymentProvider {
 }
 ```
 
+Implementación actual:
+
+- `mock`: activo por defecto para MVP.
+- `wompi`: reservado para integración real.
+- `pagadito`: reservado como alternativa.
+- `bac_manual`: reservado para fallback operativo/manual.
+
+El dominio de órdenes no debe depender directamente de APIs externas. Debe consumir `getPaymentProvider()` y guardar `Payment`/`PaymentEvent` con datos normalizados y payload crudo.
+
 ## Envio y direccion
 
 El MVP debe soportar dos metodos:

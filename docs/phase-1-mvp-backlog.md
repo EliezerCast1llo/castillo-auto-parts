@@ -41,7 +41,7 @@
 | PAY-001 | Contactar Wompi y validar requisitos | Research | P0 | Product/Backend | Backlog |
 | PAY-002 | Contactar BAC Compra Click como fallback | Research | P1 | Product | Backlog |
 | PAY-003 | Validar Pagadito como alternativa | Research | P2 | Product/Backend | Backlog |
-| PAY-004 | Disenar interfaz `PaymentProvider` | Spike | P0 | Backend | Backlog |
+| PAY-004 | Disenar interfaz `PaymentProvider` | Spike | P0 | Backend | Done |
 | DTE-001 | Confirmar estrategia DTE con contador | Decision | P0 | Product/Backend | Backlog |
 | DTE-002 | Comparar proveedores DTE API | Research | P0 | Backend | Backlog |
 | DTE-003 | Definir datos fiscales obligatorios de checkout | Decision | P0 | Product/QA | Backlog |

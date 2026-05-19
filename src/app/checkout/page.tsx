@@ -200,6 +200,7 @@ function getStatusMessage(status: string) {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura inicial.",
     db_unavailable: "No pudimos crear la orden. Revisa que PostgreSQL esté activo.",
     invalid: "Revisa los datos del formulario.",
+    payment_unavailable: "No pudimos confirmar el pago en línea. Intenta nuevamente.",
   };
 
   return messages[status] ?? "";

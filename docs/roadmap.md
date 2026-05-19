@@ -126,6 +126,8 @@ Objetivo:
 
 Permitir construir una compra.
 
+Estado: primera versión implementada.
+
 Entregables:
 
 - carrito invitado;
@@ -145,6 +147,8 @@ Criterio de salida:
 Objetivo:
 
 Crear orden despues del pago web confirmado o simulado.
+
+Estado: primera versión implementada con pago simulado.
 
 Entregables:
 
@@ -171,6 +175,8 @@ Objetivo:
 
 Integrar proveedor local aprobado.
 
+Estado: en progreso como capa de proveedor reemplazable.
+
 Entregables:
 
 - `PaymentProvider`;
@@ -187,6 +193,13 @@ Criterio de salida:
 - pago confirmado actualiza orden;
 - webhook duplicado no descuenta dos veces;
 - errores quedan auditados.
+
+Avance actual:
+
+- contrato `PaymentProvider`;
+- proveedor `mock` por defecto;
+- checkout conectado a `getPaymentProvider()`;
+- `Payment` y `PaymentEvent` se guardan desde el adaptador mock.
 
 ## Fase 7 - Admin basico
 

@@ -18,7 +18,7 @@ Primera versión implementada en rama `codex/guest-checkout`.
   - Santa Tecla: USD 2.00;
   - San Salvador: USD 3.00.
 - Simulación de pago web para crear la orden en estado `PAID_PENDING_SHIPMENT`.
-- Registro `Payment` con proveedor simulado para dejar lista la integración real posterior.
+- Registro `Payment` con proveedor `mock` para dejar lista la integración real posterior.
 - Snapshot de productos, precios, cantidades, subtotal, envío, IVA fiscal interno y total.
 - Descuento de inventario en la misma transacción después del pago simulado.
 - Ruta `/orders/[orderNumber]` para ver orden creada.

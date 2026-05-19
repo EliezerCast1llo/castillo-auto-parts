@@ -268,11 +268,14 @@ Implementado:
 - Seed Prisma desde mock data.
 - Capa de datos `src/data/products.ts` con lectura Prisma y fallback mock.
 - Capa de filtros `src/data/catalog-filters.ts` por query params.
+- Capa de pagos `src/lib/payments` con `PaymentProvider` y adaptador `mock`.
 
 Decisiones tecnicas:
 
 - Prisma 6 estable por simplicidad.
-- Wompi detras de `PaymentProvider`.
+- Wompi/Pagadito/BAC detras de `PaymentProvider`.
+- Proveedor de pagos activo por defecto: `mock`.
+- `PAYMENT_PROVIDER` debe quedarse en `mock` hasta que exista adaptador real y credenciales sandbox/produccion.
 - DTE detras de `InvoiceProvider`.
 - UI inicial con fallback mock mientras se valida PostgreSQL real.
 - Home, catalogo y detalle son dinamicos para evitar stock congelado por build.
@@ -292,6 +295,9 @@ Ya existe:
 - home inicial;
 - `/catalog`;
 - `/product/[slug]`;
+- `/cart`;
+- `/checkout`;
+- `/orders/[orderNumber]`;
 - componentes reutilizables:
   - `SiteHeader`;
   - `ProductCard`;
@@ -303,12 +309,20 @@ Ya existe:
 - capa de datos para catalogo desde Prisma/PostgreSQL;
 - fallback mock si PostgreSQL no responde o esta vacio;
 - filtros por busqueda, categoria, marca, disponibilidad y vehiculo;
+- carrito invitado con cookie;
+- checkout invitado con retiro en bodega/envio local;
+- pago simulado mediante `PaymentProvider`;
+- orden en estado `PAID_PENDING_SHIPMENT`;
+- registro `Payment` y evento inicial `PaymentEvent`;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
 
 - `docs/phase-3-catalog-product.md`
 - `docs/phase-3-data-persistence.md`
+- `docs/phase-4-cart.md`
+- `docs/phase-5-checkout-orders.md`
+- `docs/phase-6-payments.md`
 
 ## GitHub
 
@@ -357,11 +371,9 @@ Negocio:
 
 Tecnico:
 
-- ejecutar seed Prisma contra PostgreSQL real cuando Docker este disponible;
-- crear carrito guest;
-- crear checkout guest;
 - preparar mapa/pin;
 - preparar admin basico.
+- reemplazar pago mock por proveedor local real cuando haya onboarding/credenciales.
 
 QA:
 
