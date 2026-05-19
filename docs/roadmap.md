@@ -117,6 +117,7 @@ Avance actual:
 - Capa `src/data/products.ts` creada para leer desde Prisma/PostgreSQL con fallback mock.
 - Seed inicial creado para categorias, productos, compatibilidad e inventario.
 - Paginas marcadas como dinamicas para no congelar stock en el build.
+- Filtros funcionales por query params para busqueda, categoria, marca, disponibilidad y vehiculo.
 - Build, lint y pruebas pasan con fallback mock.
 
 ## Fase 4 - Carrito
