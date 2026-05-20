@@ -445,6 +445,9 @@ Tecnico:
 - las cookies de carrito deben aceptar solo SKUs/cantidades normalizadas para evitar payloads basura o cantidades fuera de rango.
 - los cambios de admin deben quedar auditados desde el MVP para rastrear inventario, ordenes y ajustes aunque el login temporal todavia no tenga usuarios nominales.
 - emails transaccionales deben tener adaptador y log de entrega desde el inicio; el proveedor real se cambia por configuracion cuando existan credenciales.
+- checkout local ya exige coordenadas; el pin actual usa OpenStreetMap sin API key y queda listo para conectar Google Places/proveedor final.
+- las solicitudes de aviso por stock quedan como `StockAlertRequest` y deben disparar notificaciones cuando inventario vuelva a disponibilidad.
+- Playwright queda como base E2E inicial; las pruebas de checkout completo deben usar una base aislada para no consumir stock real.
 
 QA:
 

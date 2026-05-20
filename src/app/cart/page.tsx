@@ -16,7 +16,7 @@ import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
 import { getGuestCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
-import { removeCartItem, updateCartItem } from "./actions";
+import { createStockAlert, removeCartItem, updateCartItem } from "./actions";
 
 export const metadata = {
   title: "Carrito | Castillo Auto Parts",
@@ -232,9 +232,30 @@ function LineIssue({ line }: { line: CartLine }) {
       : `Solo hay ${formatUnits(line.availableQuantity)} disponibles. Ajusta la cantidad.`;
 
   return (
-    <div className="mt-3 flex gap-2 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
-      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-      {message}
+    <div className="mt-3 rounded-md bg-danger/10 p-3">
+      <div className="flex gap-2 text-sm font-semibold text-danger">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        {message}
+      </div>
+      <form action={createStockAlert} className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_160px_120px]">
+        <input name="sku" type="hidden" value={line.product.sku} />
+        <input name="requestedQuantity" type="hidden" value={line.quantity} />
+        <input
+          className="h-10 rounded-md border border-border bg-card px-3 text-sm"
+          name="customerEmail"
+          placeholder="Email para aviso"
+          type="email"
+        />
+        <input
+          className="h-10 rounded-md border border-border bg-card px-3 text-sm"
+          name="customerPhone"
+          placeholder="Teléfono"
+          type="tel"
+        />
+        <button className="h-10 rounded-md bg-primary px-3 text-sm font-semibold text-white">
+          Avisarme
+        </button>
+      </form>
     </div>
   );
 }
@@ -258,7 +279,12 @@ function EmptyCart() {
 }
 
 function CartNotice({ message, status }: { message: string; status: string }) {
-  const isError = status === "unavailable";
+  const isError = [
+    "stock_alert_db_unavailable",
+    "stock_alert_invalid",
+    "stock_alert_not_found",
+    "unavailable",
+  ].includes(status);
 
   return (
     <div
@@ -288,6 +314,10 @@ function getStatusMessage(status: string) {
     invalid: "No pudimos procesar esa acción del carrito. Intenta de nuevo.",
     quantity_adjusted: "Ajustamos la cantidad al stock disponible.",
     removed: "Producto eliminado del carrito.",
+    stock_alert_created: "Listo. Guardamos tus datos para avisarte cuando tengamos disponibilidad.",
+    stock_alert_db_unavailable: "No pudimos guardar el aviso. Revisa la conexión de base de datos.",
+    stock_alert_invalid: "Ingresa un email o teléfono válido para avisarte.",
+    stock_alert_not_found: "No encontramos ese producto para crear el aviso.",
     stock_issue: "Revisa disponibilidad y cantidades antes de continuar.",
     unavailable: "Este producto ya no está disponible.",
     updated: "Carrito actualizado.",

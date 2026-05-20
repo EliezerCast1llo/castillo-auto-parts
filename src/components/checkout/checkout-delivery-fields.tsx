@@ -5,6 +5,7 @@ import { useState } from "react";
 import { formatCurrency } from "@/lib/money";
 import type { FulfillmentMethod } from "@/lib/checkout";
 import type { DeliveryZoneOption, PickupLocationOption } from "@/lib/fulfillment";
+import { CheckoutLocationPicker } from "./checkout-location-picker";
 
 export function CheckoutDeliveryFields({
   deliveryZones,
@@ -32,7 +33,10 @@ export function CheckoutDeliveryFields({
   return (
     <>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <label className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold">
+        <label
+          className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold"
+          onClick={() => selectMethod("PICKUP")}
+        >
           <input
             checked={method === "PICKUP"}
             className="h-4 w-4 accent-primary"
@@ -43,7 +47,10 @@ export function CheckoutDeliveryFields({
           />
           Retiro en bodega
         </label>
-        <label className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold">
+        <label
+          className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold"
+          onClick={() => selectMethod("LOCAL_DELIVERY")}
+        >
           <input
             checked={method === "LOCAL_DELIVERY"}
             className="h-4 w-4 accent-primary"
@@ -97,6 +104,8 @@ export function CheckoutDeliveryFields({
               placeholder="Indicaciones, horario preferido o referencia del lugar"
             />
           </label>
+
+          <CheckoutLocationPicker />
         </div>
       ) : (
         <div className="mt-4 overflow-hidden rounded-md border border-border bg-background">

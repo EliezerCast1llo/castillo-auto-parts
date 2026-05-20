@@ -24,8 +24,12 @@ export const checkoutSchema = z
     deliveryNotes: optionalLimitedString(500),
     deliveryZoneSlug: optionalLimitedString(80),
     department: optionalLimitedString(80),
+    formattedAddress: optionalLimitedString(260),
     fulfillmentMethod: z.enum(fulfillmentMethods),
+    latitude: optionalCoordinate(-90, 90, "latitud"),
+    longitude: optionalCoordinate(-180, 180, "longitud"),
     paymentMethod: z.literal("online_card"),
+    placeId: optionalLimitedString(160),
   })
   .superRefine((data, context) => {
     if (data.fulfillmentMethod !== "LOCAL_DELIVERY") return;
@@ -45,6 +49,14 @@ export const checkoutSchema = z
         path: ["deliveryZoneSlug"],
       });
     }
+
+    if (typeof data.latitude !== "number" || typeof data.longitude !== "number") {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Selecciona la ubicación exacta en el mapa.",
+        path: ["latitude"],
+      });
+    }
   });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
@@ -60,8 +72,12 @@ export function parseCheckoutFormData(formData: FormData) {
     deliveryNotes: optionalFormString(formData, "deliveryNotes"),
     deliveryZoneSlug: optionalFormString(formData, "deliveryZoneSlug"),
     department: optionalFormString(formData, "department"),
+    formattedAddress: optionalFormString(formData, "formattedAddress"),
     fulfillmentMethod: formString(formData, "fulfillmentMethod"),
+    latitude: formString(formData, "latitude"),
+    longitude: formString(formData, "longitude"),
     paymentMethod: formString(formData, "paymentMethod"),
+    placeId: optionalFormString(formData, "placeId"),
   });
 }
 
@@ -91,6 +107,8 @@ export function getFulfillmentLabel(method: FulfillmentMethod) {
 }
 
 export function buildFormattedAddress(input: CheckoutInput) {
+  if (input.formattedAddress) return input.formattedAddress;
+
   const parts = [
     input.addressLine1,
     input.addressLine2,
@@ -114,6 +132,17 @@ function optionalFormString(formData: FormData, key: string) {
 
 function optionalLimitedString(maxLength: number) {
   return z.string().trim().max(maxLength, `Máximo ${maxLength} caracteres.`).optional();
+}
+
+function optionalCoordinate(min: number, max: number, label: string) {
+  return z.preprocess((value) => {
+    if (typeof value === "string") {
+      const trimmedValue = value.trim();
+      return trimmedValue ? Number(trimmedValue) : undefined;
+    }
+
+    return value;
+  }, z.number({ invalid_type_error: `Ingresa una ${label} válida.` }).min(min).max(max).optional());
 }
 
 function randomOrderSuffix() {

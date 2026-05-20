@@ -87,29 +87,30 @@ model ProductCategory {
 }
 
 model Product {
-  id               String                 @id @default(cuid())
-  name             String
-  slug             String                 @unique
-  brand            String
-  sku              String                 @unique
-  partNumber       String?
-  shortDescription String?
-  description      String?
-  technicalDetails Json?
-  categoryId       String
-  category         ProductCategory        @relation(fields: [categoryId], references: [id])
-  priceCents       Int
-  currency         String                 @default("USD")
-  ivaRate          Decimal                @default(0.13)
-  isActive         Boolean                @default(true)
-  isFeatured       Boolean                @default(false)
-  images           ProductImage[]
-  compatibilities  VehicleCompatibility[]
-  inventoryStocks  InventoryStock[]
-  cartItems        CartItem[]
-  orderItems       OrderItem[]
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
+  id                 String                 @id @default(cuid())
+  name               String
+  slug               String                 @unique
+  brand              String
+  sku                String                 @unique
+  partNumber         String?
+  shortDescription   String?
+  description        String?
+  technicalDetails   Json?
+  categoryId         String
+  category           ProductCategory        @relation(fields: [categoryId], references: [id])
+  priceCents         Int
+  currency           String                 @default("USD")
+  ivaRate            Decimal                @default(0.13)
+  isActive           Boolean                @default(true)
+  isFeatured         Boolean                @default(false)
+  images             ProductImage[]
+  compatibilities    VehicleCompatibility[]
+  inventoryStocks    InventoryStock[]
+  stockAlertRequests StockAlertRequest[]
+  cartItems          CartItem[]
+  orderItems         OrderItem[]
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 }
 
 model ProductImage {
@@ -368,4 +369,24 @@ model EmailLog {
   @@index([recipient])
   @@index([status])
   @@index([template])
+}
+
+model StockAlertRequest {
+  id                  String   @id @default(cuid())
+  productId           String?
+  product             Product? @relation(fields: [productId], references: [id])
+  skuSnapshot         String
+  productNameSnapshot String
+  email               String?
+  phone               String?
+  requestedQuantity   Int      @default(1)
+  status              String   @default("OPEN")
+  source              String   @default("cart")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([email])
+  @@index([productId])
+  @@index([skuSnapshot])
+  @@index([status])
 }
