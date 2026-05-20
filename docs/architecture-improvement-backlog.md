@@ -10,6 +10,12 @@ Problema: `src/data/products.ts` usa mock data cuando la base de datos falla. Es
 
 Decision sugerida: agregar `ENABLE_MOCK_CATALOG_FALLBACK`, permitirlo por defecto en desarrollo y desactivarlo en produccion.
 
+Implementado en `codex/catalog-production-fallback`:
+
+- Mock catalog fallback solo fuera de produccion.
+- Catálogo muestra estado `Catálogo temporalmente no disponible` si falla DB en produccion.
+- Home no muestra productos mock si la DB falla en produccion.
+
 ### Compatibilidad vehicular estructurada
 
 Problema: filtros de vehiculo dependen de strings como `Toyota Corolla 2009-2022`.

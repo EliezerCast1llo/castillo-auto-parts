@@ -5,8 +5,19 @@ import {
   mockProducts,
   type MockProduct,
 } from "./mock-products";
+import { shouldUseMockCatalogFallback } from "./catalog-source";
+
+export { shouldUseMockCatalogFallback } from "./catalog-source";
 
 export type CatalogProduct = MockProduct;
+export type CatalogProductSource = "database" | "mock";
+export type CatalogProductStatus = "empty" | "ready" | "unavailable";
+
+export type CatalogProductsResult = {
+  products: CatalogProduct[];
+  source: CatalogProductSource | null;
+  status: CatalogProductStatus;
+};
 
 type DbProduct = Awaited<ReturnType<typeof findDbProducts>>[number];
 
@@ -25,15 +36,59 @@ async function findDbProducts() {
 }
 
 export async function getCatalogProducts(): Promise<CatalogProduct[]> {
+  const result = await getCatalogProductsResult();
+  return result.products;
+}
+
+export async function getCatalogProductsResult(): Promise<CatalogProductsResult> {
   try {
     const products = await findDbProducts();
-    return products.length > 0 ? products.map(mapDbProduct) : mockProducts;
-  } catch {
-    return mockProducts;
+    if (products.length > 0) {
+      return {
+        products: products.map(mapDbProduct),
+        source: "database",
+        status: "ready",
+      };
+    }
+
+    if (shouldUseMockCatalogFallback()) {
+      return {
+        products: mockProducts,
+        source: "mock",
+        status: "ready",
+      };
+    }
+
+    return {
+      products: [],
+      source: "database",
+      status: "empty",
+    };
+  } catch (error) {
+    logCatalogDataError(error);
+
+    if (shouldUseMockCatalogFallback()) {
+      return {
+        products: mockProducts,
+        source: "mock",
+        status: "ready",
+      };
+    }
+
+    return {
+      products: [],
+      source: null,
+      status: "unavailable",
+    };
   }
 }
 
 export async function getFeaturedCatalogProducts(): Promise<CatalogProduct[]> {
+  const result = await getFeaturedCatalogProductsResult();
+  return result.products;
+}
+
+export async function getFeaturedCatalogProductsResult(): Promise<CatalogProductsResult> {
   try {
     const products = await db.product.findMany({
       where: { isActive: true, isFeatured: true },
@@ -42,9 +97,43 @@ export async function getFeaturedCatalogProducts(): Promise<CatalogProduct[]> {
       take: 6,
     });
 
-    return products.length > 0 ? products.map(mapDbProduct) : mockProducts.slice(0, 6);
-  } catch {
-    return mockProducts.slice(0, 6);
+    if (products.length > 0) {
+      return {
+        products: products.map(mapDbProduct),
+        source: "database",
+        status: "ready",
+      };
+    }
+
+    if (shouldUseMockCatalogFallback()) {
+      return {
+        products: mockProducts.slice(0, 6),
+        source: "mock",
+        status: "ready",
+      };
+    }
+
+    return {
+      products: [],
+      source: "database",
+      status: "empty",
+    };
+  } catch (error) {
+    logCatalogDataError(error);
+
+    if (shouldUseMockCatalogFallback()) {
+      return {
+        products: mockProducts.slice(0, 6),
+        source: "mock",
+        status: "ready",
+      };
+    }
+
+    return {
+      products: [],
+      source: null,
+      status: "unavailable",
+    };
   }
 }
 
@@ -55,9 +144,10 @@ export async function getCatalogProductBySlug(slug: string): Promise<CatalogProd
       include: productInclude,
     });
 
-    return product ? mapDbProduct(product) : getProductBySlug(slug);
-  } catch {
-    return getProductBySlug(slug);
+    return product ? mapDbProduct(product) : getFallbackProductBySlug(slug);
+  } catch (error) {
+    logCatalogDataError(error);
+    return getFallbackProductBySlug(slug);
   }
 }
 
@@ -69,11 +159,18 @@ export async function getCatalogProductSlugs() {
       orderBy: { name: "asc" },
     });
 
-    return products.length > 0
-      ? products.map((product) => ({ slug: product.slug }))
-      : mockProducts.map((product) => ({ slug: product.slug }));
-  } catch {
-    return mockProducts.map((product) => ({ slug: product.slug }));
+    if (products.length > 0) {
+      return products.map((product) => ({ slug: product.slug }));
+    }
+
+    return shouldUseMockCatalogFallback()
+      ? mockProducts.map((product) => ({ slug: product.slug }))
+      : [];
+  } catch (error) {
+    logCatalogDataError(error);
+    return shouldUseMockCatalogFallback()
+      ? mockProducts.map((product) => ({ slug: product.slug }))
+      : [];
   }
 }
 
@@ -90,9 +187,12 @@ export async function getRelatedCatalogProducts(product: CatalogProduct) {
       take: 3,
     });
 
-    return products.length > 0 ? products.map(mapDbProduct) : getRelatedProducts(product);
-  } catch {
-    return getRelatedProducts(product);
+    return products.length > 0
+      ? products.map(mapDbProduct)
+      : getFallbackRelatedProducts(product);
+  } catch (error) {
+    logCatalogDataError(error);
+    return getFallbackRelatedProducts(product);
   }
 }
 
@@ -152,4 +252,16 @@ function toStockStatus(status: string | undefined, quantity: number): CatalogPro
   if (status === "LOW_STOCK") return "Últimas unidades";
   if (quantity > 0) return "Disponible";
   return "No disponible";
+}
+
+function getFallbackProductBySlug(slug: string) {
+  return shouldUseMockCatalogFallback() ? getProductBySlug(slug) : undefined;
+}
+
+function getFallbackRelatedProducts(product: CatalogProduct) {
+  return shouldUseMockCatalogFallback() ? getRelatedProducts(product) : [];
+}
+
+function logCatalogDataError(error: unknown) {
+  console.error("Catalog data source unavailable.", error);
 }
