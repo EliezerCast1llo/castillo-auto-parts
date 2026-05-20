@@ -1,7 +1,7 @@
 import type { OrderStatus } from "@prisma/client";
 import { ArrowRight, ClipboardList, PackageCheck } from "lucide-react";
 import Link from "next/link";
-import { AdminSessionControls } from "@/components/admin/admin-session-controls";
+import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
@@ -61,7 +61,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
-              <AdminSessionControls />
+              <AdminNav active="orders" />
               <StatusFilter selectedStatus={status} />
             </div>
           </div>

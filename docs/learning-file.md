@@ -319,6 +319,9 @@ Ya existe:
 - cambio operativo de estado de orden;
 - login temporal admin en `/admin/login`;
 - protección de rutas/admin actions mediante cookie firmada `httpOnly`;
+- admin de productos en `/admin/products`;
+- creación/edición manual de productos en `/admin/products/new` y `/admin/products/[slug]/edit`;
+- ajuste manual de inventario para la bodega principal `MAIN`;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
@@ -329,6 +332,7 @@ Documentos clave:
 - `docs/phase-5-checkout-orders.md`
 - `docs/phase-6-payments.md`
 - `docs/phase-7-admin-orders.md`
+- `docs/phase-7-admin-products-inventory.md`
 
 ## GitHub
 
