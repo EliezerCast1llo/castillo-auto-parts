@@ -10,15 +10,24 @@ type ProductFiltersProps = {
 
 export function ProductFilters({ activeFilterCount, filters, options }: ProductFiltersProps) {
   return (
-    <section className="rounded-md border border-border bg-card p-4">
-      <div className="mb-4 flex items-center gap-2">
-        <SlidersHorizontal className="h-5 w-5 text-primary" />
-        <h2 className="text-base font-semibold">Filtros</h2>
+    <section className="rounded-md border border-border bg-card p-4 shadow-[0_10px_26px_rgba(18,50,74,0.04)]">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="rounded-md bg-primary/10 p-2 text-primary">
+            <SlidersHorizontal className="h-5 w-5" />
+          </span>
+          <h2 className="text-base font-semibold">Filtros</h2>
+        </div>
+        {activeFilterCount > 0 ? (
+          <span className="rounded-md bg-primary px-2 py-1 text-xs font-bold text-white">
+            {activeFilterCount}
+          </span>
+        ) : null}
       </div>
 
       <label className="block text-sm font-semibold">
         Buscar
-        <div className="mt-2 flex h-11 items-center gap-2 rounded-md border border-border bg-background px-3">
+        <div className="mt-2 flex h-11 items-center gap-2 rounded-md border border-border bg-background px-3 transition focus-within:border-primary focus-within:bg-card">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             className="w-full bg-transparent text-sm outline-none"
@@ -33,7 +42,7 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
       <fieldset className="mt-5 space-y-2">
         <legend className="mb-2 text-sm font-semibold">Categoría</legend>
         {options.categories.map((category) => (
-          <label key={category} className="flex items-center gap-2 text-sm">
+          <label key={category} className="flex min-h-8 items-center gap-2 rounded-md px-2 text-sm transition hover:bg-background">
             <input
               className="h-4 w-4 accent-primary"
               defaultChecked={filters.categories.includes(category)}
@@ -49,7 +58,7 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
       <fieldset className="mt-5 space-y-2">
         <legend className="mb-2 text-sm font-semibold">Marca</legend>
         {options.brands.map((brand) => (
-          <label key={brand} className="flex items-center gap-2 text-sm">
+          <label key={brand} className="flex min-h-8 items-center gap-2 rounded-md px-2 text-sm transition hover:bg-background">
             <input
               className="h-4 w-4 accent-primary"
               defaultChecked={filters.brands.includes(brand)}
@@ -65,7 +74,7 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
       <fieldset className="mt-5 space-y-2">
         <legend className="mb-2 text-sm font-semibold">Disponibilidad</legend>
         {options.stockStatuses.map((status) => (
-          <label key={status} className="flex items-center gap-2 text-sm">
+          <label key={status} className="flex min-h-8 items-center gap-2 rounded-md px-2 text-sm transition hover:bg-background">
             <input
               className="h-4 w-4 accent-primary"
               defaultChecked={filters.stockStatuses.includes(status)}

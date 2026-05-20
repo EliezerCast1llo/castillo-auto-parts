@@ -6,6 +6,8 @@ Fecha: 2026-05-20.
 
 El candidato 1 de Canva queda como base visual para extender el sistema de componentes de Castillo Auto Parts.
 
+La ruta local `/design` funciona como laboratorio visual implementable. Debe usarse para revisar componentes reales antes de promover estilos a pantallas productivas.
+
 Regla de producto:
 
 - Home no tiene filtros.
@@ -31,6 +33,12 @@ Regla de producto:
 - `CategoryRail`: categorías visuales iniciales, sin comportamiento de filtro lateral.
 - `TrustBand`: retiro en bodega, envío local, compra invitada y pago en línea.
 
+Implementado:
+
+- `src/components/home/home-hero.tsx`
+- `src/components/home/category-rail.tsx`
+- `src/components/product/popular-searches.tsx`
+
 ### Catálogo
 
 - `VehicleSelector`: marca, modelo y año, solo en `/catalog`.
@@ -39,6 +47,13 @@ Regla de producto:
 - `AppliedFilterChips`: filtros activos removibles.
 - `ProductCard`: imagen, categoría, nombre, marca, SKU, compatibilidad, stock, precio y CTA.
 - `CatalogEmptyState`: sugerencias y limpiar filtros.
+
+Implementado:
+
+- `src/components/product/vehicle-search-panel.tsx`
+- `src/components/product/product-filters.tsx`
+- `src/components/product/catalog-active-filters.tsx`
+- `src/components/product/product-card.tsx`
 
 ### Producto
 

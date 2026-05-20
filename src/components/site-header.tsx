@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Languages, Search, ShoppingCart } from "lucide-react";
+import { Languages, Search, ShoppingCart, Wrench } from "lucide-react";
 import { getGuestCartItemCount } from "@/lib/cart";
 
 export async function SiteHeader() {
@@ -9,13 +9,24 @@ export async function SiteHeader() {
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Repuestos automotrices
-            </p>
-            <h1 className="text-2xl font-bold text-primary">Castillo Auto Parts</h1>
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-graphite text-white">
+              <Wrench className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Repuestos automotrices
+              </span>
+              <span className="block truncate text-2xl font-bold text-primary">Castillo Auto Parts</span>
+            </span>
           </Link>
           <div className="flex items-center gap-2">
+            <Link
+              className="hidden h-10 items-center rounded-md border border-border bg-card px-3 text-sm font-semibold text-primary sm:inline-flex"
+              href="/catalog"
+            >
+              Catálogo
+            </Link>
             <button
               className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card text-primary"
               aria-label="Cambiar idioma"

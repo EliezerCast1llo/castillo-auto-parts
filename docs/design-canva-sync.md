@@ -55,6 +55,10 @@ Pendiente:
 - QA/PO debe aprobar este outline en Canva.
 - Luego se genera una presentacion visual editable con componentes y pantallas.
 
+Nota 2026-05-20:
+
+Canva sirve como referencia visual, pero la validacion principal de componentes se hara en `/design`, porque ahi se ven los componentes reales implementables con Tailwind, iconos y datos mock del MVP.
+
 ## Candidatos Generados
 
 Canva genero candidatos para un documento editable de direccion visual llamado:
