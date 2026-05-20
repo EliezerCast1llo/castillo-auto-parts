@@ -7,14 +7,22 @@ export type FulfillmentMethod = (typeof fulfillmentMethods)[number];
 
 export const checkoutSchema = z
   .object({
-    addressLine1: z.string().trim().optional(),
-    addressLine2: z.string().trim().optional(),
-    city: z.string().trim().optional(),
-    customerEmail: z.string().trim().email("Ingresa un email válido."),
-    customerName: z.string().trim().min(2, "Ingresa el nombre completo."),
-    customerPhone: z.string().trim().min(8, "Ingresa un teléfono válido."),
-    deliveryNotes: z.string().trim().optional(),
-    department: z.string().trim().optional(),
+    addressLine1: optionalLimitedString(160),
+    addressLine2: optionalLimitedString(120),
+    city: optionalLimitedString(80),
+    customerEmail: z.string().trim().email("Ingresa un email válido.").max(254, "El email es demasiado largo."),
+    customerName: z
+      .string()
+      .trim()
+      .min(2, "Ingresa el nombre completo.")
+      .max(120, "El nombre es demasiado largo."),
+    customerPhone: z
+      .string()
+      .trim()
+      .min(8, "Ingresa un teléfono válido.")
+      .max(32, "El teléfono es demasiado largo."),
+    deliveryNotes: optionalLimitedString(500),
+    department: optionalLimitedString(80),
     fulfillmentMethod: z.enum(fulfillmentMethods),
     paymentMethod: z.literal("online_card"),
   })
@@ -108,6 +116,10 @@ function formString(formData: FormData, key: string) {
 function optionalFormString(formData: FormData, key: string) {
   const value = formString(formData, key).trim();
   return value || undefined;
+}
+
+function optionalLimitedString(maxLength: number) {
+  return z.string().trim().max(maxLength, `Máximo ${maxLength} caracteres.`).optional();
 }
 
 function randomOrderSuffix() {

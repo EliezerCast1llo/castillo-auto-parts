@@ -46,4 +46,10 @@ describe("mock payment provider", () => {
     expect(resolvePaymentProviderId()).toBe("mock");
     expect(getPaymentProvider("mock")).toBe(mockPaymentProvider);
   });
+
+  it("blocks the mock provider in production", () => {
+    expect(() => getPaymentProvider("mock", "production")).toThrow(
+      "The mock payment provider cannot be used in production.",
+    );
+  });
 });
