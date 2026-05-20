@@ -235,6 +235,7 @@ Decision visual 2026-05-20:
 
 - Se adopta `Taller Tecnico Moderno` como sistema visual base del MVP.
 - Header debe buscar realmente en catalogo.
+- Home no debe tener filtros; los filtros viven en `/catalog`.
 - Catalogo debe mostrar chips de filtros activos.
 - Home debe incluir busquedas populares para validar demanda.
 - Carrito debe mostrar SKU y senales de revision antes de pagar.
@@ -248,13 +249,14 @@ Canva:
 - Se agrego investigacion UX/UI y teoria de color en `docs/design-ux-research.md`.
 - Tema base actualizado a `Taller Tecnico Moderno`.
 - El outline de Canva tiene 5 paginas propuestas: objetivo, 3 identidades visuales y comparacion MVP.
-- Pendiente que QA/PO apruebe el outline para generar el diseno editable.
+- El QA/PO eligio el candidato 1 y se convirtio en diseno editable de Canva.
 
 Documentos clave:
 
 - `docs/design-agent-brief.md`
 - `docs/design-qa-checklist.md`
 - `docs/design-canva-sync.md`
+- `docs/design-component-guide.md`
 - `docs/design-system.md`
 - `docs/design-ux-research.md`
 - `docs/phase-1-brand-ux-direction.md`

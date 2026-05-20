@@ -7,6 +7,8 @@ Fecha: 2026-05-20.
 Aplicado:
 
 - Búsqueda global funcional desde el header.
+- Home sin filtros; los filtros quedan concentrados en Catálogo.
+- `HomeHero` y `CategoryRail` implementados como componentes reutilizables.
 - Búsquedas populares para validar categorías de demanda.
 - Mensajes de confianza enfocados en compatibilidad, envío local y compra invitada.
 

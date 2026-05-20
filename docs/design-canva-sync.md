@@ -13,9 +13,51 @@ Conectar el trabajo visual de Canva con lo que ya funciona en la aplicacion:
 
 ## Estado
 
-Fecha: 2026-05-18.
+Fecha: 2026-05-20.
 
 Canva no tiene brand kits configurados para esta cuenta, asi que el primer pase se genero sin brand kit formal.
+
+## Candidato Aprobado 2026-05-20
+
+El QA/PO eligio el candidato 1 del set `Castillo Auto Parts - Propuestas de identidad visual y pantallas MVP`.
+
+Diseno editable final:
+
+- Canva ID: `DAHKOIK3IR4`
+- Edit URL: https://www.canva.com/d/MnVjKxaq03kPRJi
+- View URL: https://www.canva.com/d/AZV5aTViDF42jhF
+
+Decision de producto derivada:
+
+- Home no debe tener filtros.
+- Los filtros viven en `/catalog`.
+- Home debe funcionar como entrada clara hacia catalogo, busquedas populares y productos destacados.
+- Catalogo debe concentrar comparacion, filtros activos, busqueda por vehiculo y decision de compra.
+
+## Outline Para Componentes Implementables
+
+Se preparo un nuevo outline de Canva para extender el candidato 1 hacia componentes implementables.
+
+Tema:
+
+`Castillo Auto Parts - Guía visual de componentes implementables`
+
+Paginas:
+
+1. Sistema de componentes MVP.
+2. Home sin filtros.
+3. Catalogo como centro de decision.
+4. Producto y compatibilidad.
+5. Carrito y responsive QA.
+
+Pendiente:
+
+- QA/PO debe aprobar este outline en Canva.
+- Luego se genera una presentacion visual editable con componentes y pantallas.
+
+Nota 2026-05-20:
+
+Canva sirve como referencia visual, pero la validacion principal de componentes se hara en `/design`, porque ahi se ven los componentes reales implementables con Tailwind, iconos y datos mock del MVP.
 
 ## Candidatos Generados
 
@@ -107,12 +149,11 @@ Esta ruta es temporal de diseno y no reemplaza todavia las rutas productivas `/c
 Documento de investigacion relacionado:
 
 - `docs/design-ux-research.md`
+- `docs/design-component-guide.md`
 
 ## Siguiente Paso
 
-El QA/PO debe escoger uno de los candidatos visuales materializados para convertirlo en el documento editable final dentro de Canva.
-
-Despues de elegirlo, el UI Agent debe extraer:
+El UI Agent debe extraer y extender desde el candidato aprobado:
 
 - tokens visuales;
 - reglas de botones;
