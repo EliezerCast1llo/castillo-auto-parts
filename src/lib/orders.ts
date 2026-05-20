@@ -19,6 +19,8 @@ import {
   getDeliveryZoneBySlug,
   type DeliveryZoneOption,
 } from "./fulfillment";
+import { sendOrderConfirmationEmail } from "./email/transactional";
+import { buildAbsoluteAppUrl } from "./email/templates";
 import { buildOrderAccessHref, createOrderAccessToken, hashOrderAccessToken } from "./order-access-token";
 import { getPaymentProvider, type CreatePaymentResult, type PaymentStatus } from "./payments";
 
@@ -209,11 +211,22 @@ export async function createPaidGuestOrderFromCart(
 
       return {
         accessToken,
+        customerEmail: parsed.data.customerEmail,
+        customerName: parsed.data.customerName,
         orderNumber: savedOrder.orderNumber,
+        totalCents,
       };
     });
 
     await clearGuestCart();
+    await sendOrderConfirmationEmail({
+      customerEmail: order.customerEmail,
+      customerName: order.customerName,
+      orderNumber: order.orderNumber,
+      orderUrl: buildAbsoluteAppUrl(buildOrderAccessHref(order.orderNumber, order.accessToken)),
+      totalCents: order.totalCents,
+    });
+
     return { accessToken: order.accessToken, orderNumber: order.orderNumber, status: "created" };
   } catch (error) {
     if (error instanceof CheckoutDomainError) {

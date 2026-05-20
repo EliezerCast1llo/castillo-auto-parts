@@ -351,3 +351,21 @@ model AdminAuditLog {
   @@index([createdAt])
   @@index([entityType, entityId])
 }
+
+model EmailLog {
+  id           String    @id @default(cuid())
+  recipient    String
+  subject      String
+  template     String
+  status       String
+  provider     String
+  externalId   String?
+  errorMessage String?
+  payloadJson  Json?
+  sentAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([recipient])
+  @@index([status])
+  @@index([template])
+}

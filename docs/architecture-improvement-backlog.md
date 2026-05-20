@@ -60,6 +60,15 @@ Completado en `codex/vehicle-compatibility-structure`:
 - Registro de cambios en productos, inventario, ordenes, retiro en bodega y zonas de entrega.
 - Vista `/admin/audit` con los ultimos eventos.
 
+### Emails transaccionales
+
+Implementado en `codex/vehicle-compatibility-structure`:
+
+- Proveedor de email `console/mock` para MVP sin credenciales reales.
+- Plantilla de confirmacion de orden.
+- Registro `EmailLog` con estado `SENT` o `FAILED`.
+- Envio de confirmacion despues de crear una orden pagada simulada.
+
 ## PRs sugeridos
 
 1. `codex/catalog-production-fallback`.

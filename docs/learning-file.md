@@ -444,6 +444,7 @@ Tecnico:
 - checkout no debe confiar en ciudad/departamento escritos por el cliente; debe resolver la zona de entrega desde un identificador controlado por servidor.
 - las cookies de carrito deben aceptar solo SKUs/cantidades normalizadas para evitar payloads basura o cantidades fuera de rango.
 - los cambios de admin deben quedar auditados desde el MVP para rastrear inventario, ordenes y ajustes aunque el login temporal todavia no tenga usuarios nominales.
+- emails transaccionales deben tener adaptador y log de entrega desde el inicio; el proveedor real se cambia por configuracion cuando existan credenciales.
 
 QA:
 
