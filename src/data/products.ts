@@ -213,6 +213,12 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
     partNumber: product.partNumber ?? "Sin número de parte",
     compatibility: formatCompatibilitySummary(product),
     compatibleVehicles: formatCompatibleVehicles(product),
+    vehicleCompatibilities: product.compatibilities.map((compatibility) => ({
+      make: compatibility.make,
+      model: compatibility.model,
+      yearFrom: compatibility.yearFrom,
+      yearTo: compatibility.yearTo,
+    })),
     description: product.description ?? "",
     technicalDetails: toStringArray(product.technicalDetails),
     priceCents: product.priceCents,

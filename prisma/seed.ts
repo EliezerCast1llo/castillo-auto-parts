@@ -20,21 +20,6 @@ function toInventoryStatus(status: string) {
   return InventoryStatus.OUT_OF_STOCK;
 }
 
-function parseVehicle(value: string) {
-  const match = value.match(/^([A-Za-z]+)\s+(.+)\s+(\d{4})-(\d{4})$/);
-
-  if (!match) {
-    return null;
-  }
-
-  return {
-    make: match[1],
-    model: match[2],
-    yearFrom: Number(match[3]),
-    yearTo: Number(match[4]),
-  };
-}
-
 async function main() {
   const location = await prisma.inventoryLocation.upsert({
     where: { code: DEFAULT_LOCATION_CODE },
@@ -162,11 +147,7 @@ async function main() {
       where: { productId: savedProduct.id },
     });
 
-    const compatibilities = product.compatibleVehicles
-      .map(parseVehicle)
-      .filter((compatibility): compatibility is NonNullable<ReturnType<typeof parseVehicle>> =>
-        Boolean(compatibility),
-      );
+    const compatibilities = product.vehicleCompatibilities;
 
     if (compatibilities.length > 0) {
       await prisma.vehicleCompatibility.createMany({

@@ -1,3 +1,12 @@
+export type CatalogVehicleCompatibility = {
+  make: string;
+  model: string;
+  yearFrom: number;
+  yearTo: number;
+  engine?: string;
+  notes?: string;
+};
+
 export type MockProduct = {
   slug: string;
   name: string;
@@ -7,6 +16,7 @@ export type MockProduct = {
   partNumber: string;
   compatibility: string;
   compatibleVehicles: string[];
+  vehicleCompatibilities: CatalogVehicleCompatibility[];
   description: string;
   technicalDetails: string[];
   priceCents: number;
@@ -35,6 +45,10 @@ export const mockProducts: MockProduct[] = [
     partNumber: "WL-T18",
     compatibility: "Corolla 2009-2022 · Yaris 2007-2020",
     compatibleVehicles: ["Toyota Corolla 2009-2022", "Toyota Yaris 2007-2020"],
+    vehicleCompatibilities: [
+      { make: "Toyota", model: "Corolla", yearFrom: 2009, yearTo: 2022 },
+      { make: "Toyota", model: "Yaris", yearFrom: 2007, yearTo: 2020 },
+    ],
     description:
       "Filtro de aceite para mantenimiento preventivo en motores Toyota 1.8L y aplicaciones compatibles por catálogo.",
     technicalDetails: ["Rosca y empaque según especificación", "Uso con aceite recomendado por fabricante"],
@@ -51,6 +65,9 @@ export const mockProducts: MockProduct[] = [
     partNumber: "PAD-NS-F",
     compatibility: "Sentra 2013-2022",
     compatibleVehicles: ["Nissan Sentra 2013-2022"],
+    vehicleCompatibilities: [
+      { make: "Nissan", model: "Sentra", yearFrom: 2013, yearTo: 2022 },
+    ],
     description:
       "Juego de pastillas delanteras para Nissan Sentra. Validar versión y sistema de frenos antes de compra.",
     technicalDetails: ["Eje delantero", "Juego por par", "Validar por VIN si hay duda de versión"],
@@ -72,6 +89,12 @@ export const mockProducts: MockProduct[] = [
       "Kia Forte 2014-2022",
       "Kia Soul 2010-2022",
     ],
+    vehicleCompatibilities: [
+      { make: "Hyundai", model: "Accent", yearFrom: 2012, yearTo: 2022 },
+      { make: "Kia", model: "Rio", yearFrom: 2012, yearTo: 2022 },
+      { make: "Kia", model: "Forte", yearFrom: 2014, yearTo: 2022 },
+      { make: "Kia", model: "Soul", yearFrom: 2010, yearTo: 2022 },
+    ],
     description:
       "Bujía de iridio para motores Hyundai/Kia 1.6L compatibles. Confirmar motor MPI/GDI antes de compra.",
     technicalDetails: ["Electrodo de iridio", "Venta por unidad", "Validar calibración según motor"],
@@ -88,6 +111,7 @@ export const mockProducts: MockProduct[] = [
     partNumber: "WIP-22",
     compatibility: "Universal por medida",
     compatibleVehicles: ["Universal por medida 22 pulgadas"],
+    vehicleCompatibilities: [],
     description:
       "Escobilla universal de 22 pulgadas para reemplazo rápido. Validar medida del lado conductor/pasajero.",
     technicalDetails: ["Medida 22 pulgadas", "Incluye adaptadores comunes", "Venta por unidad"],
@@ -104,6 +128,9 @@ export const mockProducts: MockProduct[] = [
     partNumber: "CAB-NR",
     compatibility: "Rogue 2014-2022",
     compatibleVehicles: ["Nissan Rogue 2014-2022"],
+    vehicleCompatibilities: [
+      { make: "Nissan", model: "Rogue", yearFrom: 2014, yearTo: 2022 },
+    ],
     description:
       "Filtro de cabina para Nissan Rogue. Producto marcado como no disponible mientras se valida inventario real.",
     technicalDetails: ["Filtro de habitáculo", "Validar generación y origen", "No disponible/consultar disponibilidad"],
@@ -120,6 +147,7 @@ export const mockProducts: MockProduct[] = [
     partNumber: "COOL-PM",
     compatibility: "Uso según especificación del fabricante",
     compatibleVehicles: ["Universal según especificación del fabricante"],
+    vehicleCompatibilities: [],
     description:
       "Refrigerante premix listo para uso. Confirmar especificación requerida por el fabricante del vehículo.",
     technicalDetails: ["Presentación 1 galón", "Premix listo para uso", "No mezclar con fórmulas incompatibles"],

@@ -39,6 +39,37 @@ describe("catalog filters", () => {
     expect(products.map((product) => product.slug)).toEqual(["filtro-aceite-toyota-18l"]);
   });
 
+  it("uses structured compatibility instead of parsing vehicle text", () => {
+    const filters = parseCatalogFilters({
+      vehicleMake: "Mercedes Benz",
+      vehicleModel: "Clase C",
+      vehicleYear: "2018",
+    });
+    const products = filterCatalogProducts(
+      [
+        {
+          ...mockProducts[0],
+          slug: "filtro-mercedes-clase-c",
+          compatibleVehicles: ["Mercedes Benz Clase C 2010-2020"],
+          vehicleCompatibilities: [
+            { make: "Mercedes Benz", model: "Clase C", yearFrom: 2010, yearTo: 2020 },
+          ],
+        },
+      ],
+      filters,
+    );
+
+    expect(products.map((product) => product.slug)).toEqual(["filtro-mercedes-clase-c"]);
+  });
+
+  it("does not match universal products when vehicle filters are active", () => {
+    const filters = parseCatalogFilters({ vehicleMake: "Toyota" });
+    const products = filterCatalogProducts(mockProducts, filters);
+
+    expect(products.map((product) => product.slug)).not.toContain("escobilla-universal-22-pulgadas");
+    expect(products.map((product) => product.slug)).not.toContain("refrigerante-premix-1-galon");
+  });
+
   it("builds catalog filter options from products", () => {
     const options = getCatalogFilterOptions(mockProducts);
 

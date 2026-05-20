@@ -22,6 +22,13 @@ Problema: filtros de vehiculo dependen de strings como `Toyota Corolla 2009-2022
 
 Decision sugerida: introducir datos estructurados para marca, modelo, anio inicial, anio final, motor/version y notas. Mantener texto solo como presentacion.
 
+Implementado en `codex/vehicle-compatibility-structure`:
+
+- `CatalogProduct` ahora expone `vehicleCompatibilities` estructurado.
+- Los filtros de vehiculo usan marca, modelo y rango de anios desde datos estructurados.
+- Los textos `compatibleVehicles` quedan para busqueda/presentacion, no para logica critica.
+- Los productos universales no aparecen por filtro vehicular hasta que exista una regla explicita de compatibilidad.
+
 ## P1
 
 - Separar estado interno de inventario de label publico.

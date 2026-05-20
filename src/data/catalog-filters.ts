@@ -70,10 +70,7 @@ export function filterCatalogProducts(products: CatalogProduct[], filters: Catal
 }
 
 export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilterOptions {
-  const vehicles = products
-    .flatMap((product) => product.compatibleVehicles)
-    .map(parseVehicleCompatibility)
-    .filter((vehicle): vehicle is VehicleCompatibility => Boolean(vehicle));
+  const vehicles = products.flatMap((product) => product.vehicleCompatibilities);
 
   const vehicleModelsByMake = vehicles.reduce<Record<string, Set<string>>>((accumulator, vehicle) => {
     accumulator[vehicle.make] ??= new Set<string>();
@@ -133,51 +130,23 @@ function productMatchesVehicle(product: CatalogProduct, filters: CatalogFilters)
     return true;
   }
 
-  return product.compatibleVehicles.some((vehicle) => {
-    const normalizedVehicle = normalize(vehicle);
-
-    if (filters.vehicleMake && !normalizedVehicle.includes(normalize(filters.vehicleMake))) return false;
-    if (filters.vehicleModel && !normalizedVehicle.includes(normalize(filters.vehicleModel))) return false;
+  return product.vehicleCompatibilities.some((vehicle) => {
+    if (filters.vehicleMake && normalize(vehicle.make) !== normalize(filters.vehicleMake)) return false;
+    if (filters.vehicleModel && normalize(vehicle.model) !== normalize(filters.vehicleModel)) return false;
     if (filters.vehicleYear && !vehicleSupportsYear(vehicle, filters.vehicleYear)) return false;
 
     return true;
   });
 }
 
-function vehicleSupportsYear(vehicle: string, yearValue: string) {
+function vehicleSupportsYear(vehicle: VehicleCompatibility, yearValue: string) {
   const year = Number(yearValue);
   if (!Number.isInteger(year)) return false;
 
-  const ranges = [...vehicle.matchAll(/(\d{4})-(\d{4})/g)];
-  if (ranges.length === 0) {
-    return normalize(vehicle).includes(String(year));
-  }
-
-  return ranges.some((rangeMatch) => {
-    const yearFrom = Number(rangeMatch[1]);
-    const yearTo = Number(rangeMatch[2]);
-    return year >= yearFrom && year <= yearTo;
-  });
+  return year >= vehicle.yearFrom && year <= vehicle.yearTo;
 }
 
-type VehicleCompatibility = {
-  make: string;
-  model: string;
-  yearFrom: number;
-  yearTo: number;
-};
-
-function parseVehicleCompatibility(value: string): VehicleCompatibility | null {
-  const match = value.match(/^([A-Za-z]+)\s+(.+?)\s+(\d{4})-(\d{4})$/);
-  if (!match) return null;
-
-  return {
-    make: match[1],
-    model: match[2],
-    yearFrom: Number(match[3]),
-    yearTo: Number(match[4]),
-  };
-}
+type VehicleCompatibility = CatalogProduct["vehicleCompatibilities"][number];
 
 function firstValue(value: string | string[] | undefined) {
   const first = Array.isArray(value) ? value[0] : value;

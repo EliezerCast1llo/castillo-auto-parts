@@ -440,6 +440,7 @@ Tecnico:
 - preparar mapa/pin;
 - reemplazar login temporal admin por auth real con roles antes de producción.
 - reemplazar pago mock por proveedor local real cuando haya onboarding/credenciales.
+- la compatibilidad vehicular debe vivir como datos estructurados; el texto solo debe ser presentacion o busqueda secundaria.
 
 QA:
 
