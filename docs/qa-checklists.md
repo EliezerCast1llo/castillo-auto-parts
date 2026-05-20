@@ -130,8 +130,11 @@ Antes de aprobar una feature:
 - [ ] Admin ve estado DTE/manual.
 - [ ] Admin ve direccion y metodo de entrega.
 - [ ] Admin puede cambiar estado operativo de orden.
+- [ ] Admin puede buscar productos por nombre, marca, SKU o número de parte.
+- [ ] Admin puede filtrar productos por estado de inventario.
 - [ ] Admin puede crear/editar productos.
-- [ ] Admin puede actualizar stock manual.
+- [ ] Admin puede actualizar stock manual desde el listado.
+- [ ] Cambios de stock se reflejan en catálogo y detalle.
 - [ ] Cambios sensibles quedan auditados.
 
 ## DTE Semiautomatico
