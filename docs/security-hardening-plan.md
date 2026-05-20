@@ -14,7 +14,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 | --- | --- |
 | Fuerza bruta en login admin | Implementado en `codex/security-hardening-mvp`: rate limit por IP en server action de login. |
 | Pago mock en produccion | Implementado en `codex/security-hardening-mvp`: bloqueo de `PAYMENT_PROVIDER=mock` cuando `NODE_ENV=production`. |
-| Orden publica adivinable | Agregar token guest firmado/hasheado para ver detalle de orden. |
+| Orden publica adivinable | Implementado en `codex/order-access-token`: token guest aleatorio, hash en DB y `?token=` requerido para ver la orden pública. |
 | Sesion admin con secretos debiles | Implementado parcialmente en `codex/security-hardening-mvp`: rechazo de credenciales debiles en produccion y cookie `SameSite=strict`. |
 | Stock descontado en momento incorrecto | Con proveedor real, descontar solo con webhook verificado o usar reserva idempotente. |
 
@@ -33,7 +33,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 ## Orden sugerido de PRs
 
 1. `codex/security-hardening-mvp`: bloquear pago mock en produccion, validar secretos admin, rate limit login y headers. En progreso/completado para revision.
-2. `codex/order-access-token`: proteger pagina publica de orden con token guest.
+2. `codex/order-access-token`: proteger pagina publica de orden con token guest. En progreso/completado para revision.
 3. `codex/cart-cookie-hardening`: firmar cookie o migrar carrito guest a DB.
 4. `codex/admin-audit-log`: registrar cambios admin relevantes.
 

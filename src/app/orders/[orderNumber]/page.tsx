@@ -4,6 +4,7 @@ import { CheckCircle2, CreditCard, Info, PackageCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
+import { verifyOrderAccessToken } from "@/lib/order-access-token";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ type OrderPageProps = {
   params: Promise<{
     orderNumber: string;
   }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: OrderPageProps) {
@@ -21,8 +23,10 @@ export async function generateMetadata({ params }: OrderPageProps) {
   };
 }
 
-export default async function OrderPage({ params }: OrderPageProps) {
+export default async function OrderPage({ params, searchParams }: OrderPageProps) {
   const { orderNumber } = await params;
+  const paramsValue = searchParams ? await searchParams : {};
+  const accessToken = firstValue(paramsValue.token);
   const order = await db.order.findUnique({
     where: { orderNumber },
     include: {
@@ -33,6 +37,10 @@ export default async function OrderPage({ params }: OrderPageProps) {
   });
 
   if (!order) {
+    notFound();
+  }
+
+  if (!verifyOrderAccessToken(accessToken, order.accessTokenHash)) {
     notFound();
   }
 
@@ -150,4 +158,8 @@ function formatShipmentMethod(method: string | undefined) {
   if (method === "PICKUP") return "Retiro en bodega";
   if (method === "LOCAL_DELIVERY") return "Envío local";
   return "Pendiente";
+}
+
+function firstValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }

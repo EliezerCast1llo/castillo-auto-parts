@@ -16,10 +16,11 @@ import {
 } from "./checkout";
 import { db } from "./db";
 import { getActiveDeliveryZones } from "./fulfillment";
+import { buildOrderAccessHref, createOrderAccessToken, hashOrderAccessToken } from "./order-access-token";
 import { getPaymentProvider, type CreatePaymentResult, type PaymentStatus } from "./payments";
 
 export type CreateGuestOrderResult =
-  | { orderNumber: string; status: "created" }
+  | { accessToken: string; orderNumber: string; status: "created" }
   | {
       status:
         | "coverage_unavailable"
@@ -132,11 +133,12 @@ export async function createPaidGuestOrderFromCart(
       const totalCents = subtotalCents + shippingCents;
       const addressId = await createDeliveryAddress(tx, parsed.data);
       const orderNumber = buildOrderNumber();
+      const accessToken = createOrderAccessToken();
       const payment = await createPayment({
         amountCents: totalCents,
         customerEmail: parsed.data.customerEmail,
         orderNumber,
-        redirectUrl: `/orders/${orderNumber}`,
+        redirectUrl: buildOrderAccessHref(orderNumber, accessToken),
       });
 
       if (payment.status !== "PAID") {
@@ -145,8 +147,9 @@ export async function createPaidGuestOrderFromCart(
 
       const paidAt = payment.paidAt ?? new Date();
 
-      return tx.order.create({
+      const savedOrder = await tx.order.create({
         data: {
+          accessTokenHash: hashOrderAccessToken(accessToken),
           addressId,
           currency: "USD",
           customerEmail: parsed.data.customerEmail,
@@ -200,10 +203,15 @@ export async function createPaidGuestOrderFromCart(
           orderNumber: true,
         },
       });
+
+      return {
+        accessToken,
+        orderNumber: savedOrder.orderNumber,
+      };
     });
 
     await clearGuestCart();
-    return { orderNumber: order.orderNumber, status: "created" };
+    return { accessToken: order.accessToken, orderNumber: order.orderNumber, status: "created" };
   } catch (error) {
     if (error instanceof CheckoutDomainError) {
       return { status: error.code };

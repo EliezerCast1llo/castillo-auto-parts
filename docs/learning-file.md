@@ -188,6 +188,12 @@ Implementado en rama `codex/security-hardening-mvp`:
 - Headers de seguridad base.
 - Limites de longitud en inputs de checkout.
 
+Implementado en rama `codex/order-access-token`:
+
+- Las ordenes guest publicas requieren `?token=...`.
+- La base de datos guarda solo `accessTokenHash`, no el token plano.
+- Checkout redirige a `/orders/{orderNumber}?token={token}` despues de crear la orden.
+
 Documento clave:
 
 - `docs/security-hardening-plan.md`
