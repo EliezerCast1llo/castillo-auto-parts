@@ -39,15 +39,67 @@ async function main() {
   const location = await prisma.inventoryLocation.upsert({
     where: { code: DEFAULT_LOCATION_CODE },
     update: {
-      name: "Bodega principal",
+      address: "Bodega principal, San Salvador, El Salvador",
       isDefault: true,
       isActive: true,
+      latitude: 13.6929,
+      longitude: -89.2182,
+      name: "Bodega principal",
+      pickupHours: "Lunes a sábado, 8:00 a. m. a 5:00 p. m.",
+      pickupInstructions: "Presenta tu número de orden al llegar a bodega.",
     },
     create: {
+      address: "Bodega principal, San Salvador, El Salvador",
       code: DEFAULT_LOCATION_CODE,
-      name: "Bodega principal",
       isDefault: true,
       isActive: true,
+      latitude: 13.6929,
+      longitude: -89.2182,
+      name: "Bodega principal",
+      pickupHours: "Lunes a sábado, 8:00 a. m. a 5:00 p. m.",
+      pickupInstructions: "Presenta tu número de orden al llegar a bodega.",
+    },
+  });
+
+  await prisma.deliveryZone.upsert({
+    where: { slug: "santa-tecla" },
+    update: {
+      city: "Santa Tecla",
+      department: "La Libertad",
+      feeCents: 200,
+      isActive: true,
+      name: "Santa Tecla",
+      sortOrder: 1,
+    },
+    create: {
+      city: "Santa Tecla",
+      department: "La Libertad",
+      feeCents: 200,
+      isActive: true,
+      name: "Santa Tecla",
+      slug: "santa-tecla",
+      sortOrder: 1,
+    },
+  });
+
+  await prisma.deliveryZone.upsert({
+    where: { slug: "san-salvador" },
+    update: {
+      city: "San Salvador",
+      department: "San Salvador",
+      feeCents: 300,
+      isActive: true,
+      name: "San Salvador",
+      sortOrder: 2,
+    },
+    create: {
+      city: "San Salvador",
+      department: "San Salvador",
+      feeCents: 300,
+      isActive: true,
+      name: "San Salvador",
+      slug: "san-salvador",
+      sortOrder: 2,
     },
   });
 

@@ -15,6 +15,7 @@ import {
   type CheckoutInput,
 } from "./checkout";
 import { db } from "./db";
+import { getActiveDeliveryZones } from "./fulfillment";
 import { getPaymentProvider, type CreatePaymentResult, type PaymentStatus } from "./payments";
 
 export type CreateGuestOrderResult =
@@ -45,10 +46,15 @@ export async function createPaidGuestOrderFromCart(
   if (cart.lines.length === 0) return { status: "empty_cart" };
   if (cart.hasBlockingIssues) return { status: "stock_issue" };
 
-  const shippingCents = calculateShippingCents(parsed.data.fulfillmentMethod, parsed.data.city);
-  if (shippingCents === null) return { status: "coverage_unavailable" };
-
   try {
+    const deliveryZones = await getActiveDeliveryZones();
+    const shippingCents = calculateShippingCents(
+      parsed.data.fulfillmentMethod,
+      parsed.data.city,
+      deliveryZones,
+    );
+    if (shippingCents === null) return { status: "coverage_unavailable" };
+
     const order = await db.$transaction(async (tx) => {
       const dbProducts = await tx.product.findMany({
         where: {

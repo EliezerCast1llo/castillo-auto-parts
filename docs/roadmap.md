@@ -207,7 +207,7 @@ Objetivo:
 
 Operar ventas e inventario inicial.
 
-Estado: en progreso con órdenes, login y productos/inventario.
+Estado: en progreso con órdenes, login, productos/inventario y ajustes de entrega.
 
 Entregables:
 
@@ -232,18 +232,20 @@ Avance actual:
 - `/admin/products`;
 - `/admin/products/new`;
 - `/admin/products/[slug]/edit`;
+- `/admin/settings`;
 - filtro por estado;
 - métricas por estado;
 - cambio de estado de orden;
 - detalle de pago y eventos.
 - alta/edición manual de productos;
 - ajuste manual de stock para la bodega principal.
+- configuración de retiro en bodega;
+- configuración de zonas y tarifas de envío.
 
 Pendiente de la fase:
 
 - roles/permisos;
-- auditoría de cambios sensibles;
-- configuración de datos base de retiro/zona.
+- auditoría de cambios sensibles.
 
 ## Fase 8 - Facturacion DTE
 

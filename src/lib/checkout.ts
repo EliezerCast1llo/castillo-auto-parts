@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getDeliveryFeeCents, type DeliveryZoneOption } from "./fulfillment";
 
 export const fulfillmentMethods = ["PICKUP", "LOCAL_DELIVERY"] as const;
 
@@ -47,11 +48,6 @@ export const checkoutSchema = z
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
-const deliveryFeesByCity = new Map([
-  ["san salvador", 300],
-  ["santa tecla", 200],
-]);
-
 export function parseCheckoutFormData(formData: FormData) {
   return checkoutSchema.safeParse({
     addressLine1: optionalFormString(formData, "addressLine1"),
@@ -67,9 +63,13 @@ export function parseCheckoutFormData(formData: FormData) {
   });
 }
 
-export function calculateShippingCents(method: FulfillmentMethod, city?: string) {
+export function calculateShippingCents(
+  method: FulfillmentMethod,
+  city?: string,
+  zones?: DeliveryZoneOption[],
+) {
   if (method === "PICKUP") return 0;
-  return deliveryFeesByCity.get(normalizeCoverageValue(city ?? "")) ?? null;
+  return getDeliveryFeeCents(city, zones);
 }
 
 export function calculateIncludedTaxCents(totalCents: number) {
@@ -98,14 +98,6 @@ export function buildFormattedAddress(input: CheckoutInput) {
   ].filter(Boolean);
 
   return parts.join(", ");
-}
-
-function normalizeCoverageValue(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
 }
 
 function formString(formData: FormData, key: string) {
