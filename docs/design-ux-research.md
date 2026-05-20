@@ -59,9 +59,12 @@ Fecha: 2026-05-18.
 - CTA de compra actualizado a azul por decisión de QA.
 - Limpiar filtros fuerza remount del formulario para limpiar selector de vehículo.
 - Catálogo y detalle productivo actualizados con visuales de producto, hero y alineación de cards.
+- Header actualizado para ejecutar búsqueda real hacia catálogo.
+- Catálogo actualizado con chips de filtros activos y estado vacío accionable.
+- Home actualizada con búsquedas populares para validar demanda inicial.
+- Carrito actualizado con SKU visible y señales de revisión antes de pagar.
 
 ## Pendientes De Diseño
 
-- Agregar filtros activos como chips.
 - Evaluar drawer mobile para filtros.
 - Agregar imágenes reales o placeholders de producto más cercanos a repuestos.

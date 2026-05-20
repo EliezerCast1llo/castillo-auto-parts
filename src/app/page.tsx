@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2, MapPin, ShoppingCart } from "lucide-react";
 import { CatalogFilterForm } from "@/components/product/catalog-filter-form";
+import { PopularSearches } from "@/components/product/popular-searches";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductFilters } from "@/components/product/product-filters";
 import { VehicleSearchPanel } from "@/components/product/vehicle-search-panel";
@@ -29,13 +30,13 @@ export default async function Home() {
 
         <section className="space-y-5">
           <div className="rounded-md border border-border bg-card p-5">
-            <p className="text-sm font-semibold text-success">Catálogo inicial</p>
+            <p className="text-sm font-semibold text-success">Castillo Auto Parts</p>
             <h2 className="mt-1 text-2xl font-bold text-primary">
               Encuentra el repuesto correcto para tu vehículo
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Catálogo inicial para validar búsqueda, filtros, compatibilidad, retiro en bodega y
-              envío local en San Salvador y Santa Tecla.
+              Compra repuestos con compatibilidad visible, stock claro y opciones de retiro en
+              bodega o envío local en San Salvador y Santa Tecla.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <TrustBadge icon={<CheckCircle2 className="h-5 w-5" />} label="Compatibilidad clara" />
@@ -47,6 +48,18 @@ export default async function Home() {
               className="mt-5 inline-flex h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
             >
               Ver catálogo
+            </Link>
+          </div>
+
+          <PopularSearches />
+
+          <div className="flex flex-col justify-between gap-2 md:flex-row md:items-end">
+            <div>
+              <p className="text-sm font-semibold text-success">Catálogo MVP</p>
+              <h2 className="text-xl font-bold text-primary">Productos destacados</h2>
+            </div>
+            <Link className="text-sm font-semibold text-primary" href="/catalog">
+              Ver todo el catálogo
             </Link>
           </div>
 

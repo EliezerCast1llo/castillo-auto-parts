@@ -8,7 +8,7 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-05-19.
+- Fecha de ultima actualizacion: 2026-05-20.
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
@@ -170,6 +170,19 @@ Reglas criticas:
 - Proteger rutas admin.
 - No descontar inventario dos veces.
 
+Hallazgos 2026-05-20:
+
+- Existe una contrasena admin local temporal en `.env`; no debe versionarse y debe rotarse antes de cualquier deploy publico.
+- Antes de produccion se debe bloquear `PAYMENT_PROVIDER=mock` en `NODE_ENV=production`.
+- El login admin necesita rate limit simple para reducir fuerza bruta.
+- Las paginas publicas de orden deben protegerse con token guest firmado/hasheado antes de manejar datos reales.
+- Agregar headers de seguridad en `next.config.ts`.
+- Firmar cookie de carrito guest o mover carrito guest a DB cuando suba el riesgo.
+
+Documento clave:
+
+- `docs/security-hardening-plan.md`
+
 ## Agentes Del Proyecto
 
 - Product Agent.
@@ -209,6 +222,14 @@ Paleta provisional:
 - Carbon: `#1E252B`.
 - Blanco: `#FFFFFF`.
 
+Decision visual 2026-05-20:
+
+- Se adopta `Taller Tecnico Moderno` como sistema visual base del MVP.
+- Header debe buscar realmente en catalogo.
+- Catalogo debe mostrar chips de filtros activos.
+- Home debe incluir busquedas populares para validar demanda.
+- Carrito debe mostrar SKU y senales de revision antes de pagar.
+
 Canva:
 
 - Plugin disponible.
@@ -217,15 +238,18 @@ Canva:
 - Se creo una ruta local `http://localhost:3000/design` para ver catalogo y producto materializados como UI real.
 - Se agrego investigacion UX/UI y teoria de color en `docs/design-ux-research.md`.
 - Tema base actualizado a `Taller Tecnico Moderno`.
-- Pendiente escoger candidato y convertirlo en documento editable final.
+- El outline de Canva tiene 5 paginas propuestas: objetivo, 3 identidades visuales y comparacion MVP.
+- Pendiente que QA/PO apruebe el outline para generar el diseno editable.
 
 Documentos clave:
 
 - `docs/design-agent-brief.md`
 - `docs/design-qa-checklist.md`
 - `docs/design-canva-sync.md`
+- `docs/design-system.md`
 - `docs/design-ux-research.md`
 - `docs/phase-1-brand-ux-direction.md`
+- `docs/ui-ux-page-opportunities.md`
 
 ## QA
 

@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { CatalogActiveFilters } from "@/components/product/catalog-active-filters";
 import { CatalogFilterForm } from "@/components/product/catalog-filter-form";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductFilters } from "@/components/product/product-filters";
@@ -65,6 +67,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             </div>
           </div>
 
+          <CatalogActiveFilters filters={filters} />
+
           {filteredProducts.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredProducts.map((product) => (
@@ -72,8 +76,18 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               ))}
             </div>
           ) : (
-            <div className="rounded-md border border-border bg-card p-6 text-sm text-muted-foreground">
-              No encontramos productos con esos filtros.
+            <div className="rounded-md border border-border bg-card p-6">
+              <h3 className="text-lg font-bold text-primary">No encontramos productos con esos filtros</h3>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                Prueba quitar un filtro activo, buscar por número de parte o revisar otra combinación
+                de vehículo.
+              </p>
+              <Link
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
+                href="/catalog"
+              >
+                Limpiar filtros
+              </Link>
             </div>
           )}
         </section>
