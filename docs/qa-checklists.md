@@ -76,7 +76,8 @@ Antes de aprobar una feature:
 - [ ] Permite cambiar cantidad.
 - [ ] Bloquea cantidad mayor al stock.
 - [ ] Permite eliminar producto.
-- [ ] Muestra subtotal, IVA incluido y total.
+- [ ] Muestra productos, envio y total.
+- [ ] Muestra nota de que los precios ya incluyen IVA, sin calculo separado de IVA.
 - [ ] Muestra productos sin stock/preorder correctamente.
 - [ ] Persiste carrito guest.
 - [ ] Estado vacio invita a volver al catalogo.
@@ -90,7 +91,7 @@ Antes de aprobar una feature:
 - [ ] Pide direccion o retiro en bodega.
 - [ ] Valida campos obligatorios.
 - [ ] Revalida stock antes de pago.
-- [ ] Crea orden `PENDING_PAYMENT`.
+- [ ] Crea orden `PAID_PENDING_SHIPMENT` despues del pago web confirmado o simulado.
 - [ ] No pide datos de tarjeta dentro de nuestra app.
 - [ ] Muestra resumen final antes de pago.
 
@@ -151,4 +152,3 @@ Antes de mergear un PR:
 - [ ] `npm run build` OK si aplica.
 - [ ] QA/PO reviso rutas afectadas.
 - [ ] Documentacion actualizada si cambio decision, flujo o regla.
-

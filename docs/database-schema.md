@@ -20,8 +20,8 @@ Este documento describe entidades y campos esperados. El `schema.prisma` se debe
 ```txt
 UserRole = CUSTOMER | ADMIN | SALES | WAREHOUSE | SUPPORT
 InventoryStatus = IN_STOCK | LOW_STOCK | OUT_OF_STOCK | PREORDER
-OrderStatus = PENDING_PAYMENT | PAID_PENDING_SHIPMENT | SHIPPED | DELIVERED | CANCELLED | REFUNDED
-PaymentStatus = PENDING | AUTHORIZED | PAID | FAILED | CANCELLED | REFUNDED
+OrderStatus = PAID_PENDING_SHIPMENT | SHIPPED | DELIVERED | CANCELLED | REFUNDED
+PaymentStatus = PENDING | PAID | FAILED | CANCELLED | REFUNDED
 InvoiceStatus = PENDING | ISSUED | FAILED | VOIDED | MANUAL_REVIEW
 ChatStatus = OPEN | WAITING_CUSTOMER | WAITING_AGENT | CLOSED
 ShipmentStatus = PENDING | IN_TRANSIT | DELIVERED | FAILED | CANCELLED
@@ -505,4 +505,3 @@ Usos:
 - `Payment.externalPaymentId`.
 - `InvoiceDte.generationCode`.
 - `VehicleCompatibility(make, model, yearFrom, yearTo)`.
-

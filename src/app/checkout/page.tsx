@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, CreditCard, MapPin, PackageCheck } from "lucide-react";
+import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin, PackageCheck } from "lucide-react";
+import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
 import { getGuestCart } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
-import { createPendingOrder } from "./actions";
+import { createGuestOrder } from "./actions";
 
 export const metadata = {
   title: "Finalizar compra | Castillo Auto Parts",
@@ -38,14 +39,14 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               <p className="text-sm font-semibold text-success">Compra de invitado</p>
               <h1 className="mt-1 text-2xl font-bold text-primary">Datos de entrega y pago</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Completa tus datos para reservar la orden y continuar con el pago.
+                Completa tus datos para confirmar la compra. En este MVP simularemos el pago en línea para dejar la orden lista para entrega.
               </p>
             </div>
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
 
             {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
-              <CheckoutForm />
+              <CheckoutForm subtotalCents={cart.subtotalCents} />
             ) : (
               <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
             )}
@@ -70,11 +71,20 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             </div>
 
             <dl className="mt-5 space-y-3 border-t border-border pt-5 text-sm">
-              <SummaryRow label="Subtotal" value={formatCurrency(cart.subtotalCents)} />
-              <SummaryRow label="Retiro" value={formatCurrency(0)} />
-              <SummaryRow label="Santa Tecla" value={formatCurrency(200)} />
-              <SummaryRow label="San Salvador" value={formatCurrency(300)} />
+              <SummaryRow label="Productos" value={formatCurrency(cart.subtotalCents)} strong />
             </dl>
+
+            <div className="mt-4 rounded-md bg-background p-3 text-sm">
+              <p className="font-semibold text-primary">Envío</p>
+              <p className="mt-1 text-muted-foreground">
+                Retiro gratis, Santa Tecla {formatCurrency(200)} y San Salvador {formatCurrency(300)}.
+              </p>
+            </div>
+
+            <div className="mt-4 flex gap-2 rounded-md bg-primary/5 p-3 text-sm font-semibold text-primary">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              Los precios ya incluyen IVA.
+            </div>
           </aside>
         </section>
       </div>
@@ -82,9 +92,9 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   );
 }
 
-function CheckoutForm() {
+function CheckoutForm({ subtotalCents }: { subtotalCents: number }) {
   return (
-    <form action={createPendingOrder} className="space-y-4">
+    <form action={createGuestOrder} className="space-y-4">
       <section className="rounded-md border border-border bg-card p-5">
         <h2 className="text-lg font-bold text-primary">Cliente</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -96,46 +106,7 @@ function CheckoutForm() {
 
       <section className="rounded-md border border-border bg-card p-5">
         <h2 className="text-lg font-bold text-primary">Entrega</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <label className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold">
-            <input className="h-4 w-4 accent-primary" defaultChecked name="fulfillmentMethod" type="radio" value="PICKUP" />
-            Retiro en bodega
-          </label>
-          <label className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold">
-            <input className="h-4 w-4 accent-primary" name="fulfillmentMethod" type="radio" value="LOCAL_DELIVERY" />
-            Envío local
-          </label>
-        </div>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <CheckoutField label="Dirección" name="addressLine1" />
-          <CheckoutField label="Casa, local o referencia" name="addressLine2" />
-          <label className="block text-sm font-semibold">
-            Municipio
-            <select className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm" name="city">
-              <option value="">Selecciona municipio</option>
-              <option value="Santa Tecla">Santa Tecla</option>
-              <option value="San Salvador">San Salvador</option>
-            </select>
-          </label>
-          <label className="block text-sm font-semibold">
-            Departamento
-            <select className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm" name="department">
-              <option value="">Selecciona departamento</option>
-              <option value="La Libertad">La Libertad</option>
-              <option value="San Salvador">San Salvador</option>
-            </select>
-          </label>
-        </div>
-
-        <label className="mt-4 block text-sm font-semibold">
-          Notas de entrega
-          <textarea
-            className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-            name="deliveryNotes"
-            placeholder="Indicaciones, horario preferido o referencia del lugar"
-          />
-        </label>
+        <CheckoutDeliveryFields subtotalCents={subtotalCents} />
       </section>
 
       <section className="rounded-md border border-border bg-card p-5">
@@ -148,7 +119,7 @@ function CheckoutForm() {
 
       <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white">
         <PackageCheck className="h-4 w-4" />
-        Crear orden pendiente de pago
+        Pagar en línea y confirmar orden
       </button>
     </form>
   );
@@ -215,11 +186,11 @@ function CheckoutNotice({ message, status }: { message: string; status: string }
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({ label, strong, value }: { label: string; strong?: boolean; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-semibold">{value}</dd>
+      <dd className={strong ? "text-xl font-bold text-primary" : "font-semibold"}>{value}</dd>
     </div>
   );
 }
@@ -229,6 +200,7 @@ function getStatusMessage(status: string) {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura inicial.",
     db_unavailable: "No pudimos crear la orden. Revisa que PostgreSQL esté activo.",
     invalid: "Revisa los datos del formulario.",
+    payment_unavailable: "No pudimos confirmar el pago en línea. Intenta nuevamente.",
   };
 
   return messages[status] ?? "";

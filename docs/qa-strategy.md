@@ -153,7 +153,7 @@ Scenario: Producto se agota antes de pagar
 Feature: Webhook de pago
 
 Scenario: El proveedor envia dos veces la confirmacion de pago
-  Given existe una orden PENDING_PAYMENT con pago pendiente
+  Given existe una compra web con pago confirmado
   When el sistema recibe un webhook valido de pago confirmado
   And recibe el mismo webhook otra vez
   Then la orden queda PAID_PENDING_SHIPMENT

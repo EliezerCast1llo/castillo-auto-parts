@@ -126,13 +126,15 @@ Objetivo:
 
 Permitir construir una compra.
 
+Estado: primera versión implementada.
+
 Entregables:
 
 - carrito invitado;
 - carrito usuario registrado si auth ya esta activo;
 - agregar/eliminar/cambiar cantidad;
 - validacion de stock;
-- totales con IVA incluido.
+- totales con productos, envio y total, mas nota de IVA incluido.
 
 Criterio de salida:
 
@@ -144,7 +146,9 @@ Criterio de salida:
 
 Objetivo:
 
-Crear orden antes de pago.
+Crear orden despues del pago web confirmado o simulado.
+
+Estado: primera versión implementada con pago simulado.
 
 Entregables:
 
@@ -154,7 +158,7 @@ Entregables:
 - selector de retiro en bodega o envio local;
 - mapa con ubicacion actual y pin manual;
 - calculo de tarifa de envio;
-- creacion de orden `PENDING_PAYMENT`;
+- creacion de orden `PAID_PENDING_SHIPMENT`;
 - snapshot de precios;
 - vista de resumen.
 
@@ -170,6 +174,8 @@ Criterio de salida:
 Objetivo:
 
 Integrar proveedor local aprobado.
+
+Estado: en progreso como capa de proveedor reemplazable.
 
 Entregables:
 
@@ -187,6 +193,13 @@ Criterio de salida:
 - pago confirmado actualiza orden;
 - webhook duplicado no descuenta dos veces;
 - errores quedan auditados.
+
+Avance actual:
+
+- contrato `PaymentProvider`;
+- proveedor `mock` por defecto;
+- checkout conectado a `getPaymentProvider()`;
+- `Payment` y `PaymentEvent` se guardan desde el adaptador mock.
 
 ## Fase 7 - Admin basico
 

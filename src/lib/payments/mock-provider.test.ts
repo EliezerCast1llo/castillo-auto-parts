@@ -1,0 +1,49 @@
+import { describe, expect, it } from "vitest";
+import { getPaymentProvider, resolvePaymentProviderId } from ".";
+import { buildMockPaymentId, mockPaymentProvider } from "./mock-provider";
+
+describe("mock payment provider", () => {
+  it("creates an immediately paid mock checkout result", async () => {
+    const payment = await mockPaymentProvider.createPayment({
+      amountCents: 1790,
+      currency: "USD",
+      customerEmail: "cliente@example.com",
+      orderNumber: "CAP-20260519-ABC123",
+      redirectUrl: "/orders/CAP-20260519-ABC123",
+    });
+
+    expect(payment).toMatchObject({
+      checkoutUrl: "/orders/CAP-20260519-ABC123",
+      externalPaymentId: "MOCK-CAP-20260519-ABC123",
+      externalReference: "CAP-20260519-ABC123",
+      provider: "mock",
+      rawStatus: "SIMULATED_PAID",
+      status: "PAID",
+    });
+    expect(payment.paidAt).toBeInstanceOf(Date);
+  });
+
+  it("verifies valid mock webhook payloads", async () => {
+    const request = new Request("http://localhost/api/payments/mock/webhook", {
+      body: JSON.stringify({
+        externalEventId: "evt_mock_1",
+        externalPaymentId: buildMockPaymentId("CAP-20260519-ABC123"),
+        externalReference: "CAP-20260519-ABC123",
+        status: "PAID",
+      }),
+      method: "POST",
+    });
+
+    await expect(mockPaymentProvider.verifyWebhook(request)).resolves.toMatchObject({
+      externalPaymentId: "MOCK-CAP-20260519-ABC123",
+      isValid: true,
+      provider: "mock",
+      status: "PAID",
+    });
+  });
+
+  it("defaults provider resolution to mock", () => {
+    expect(resolvePaymentProviderId()).toBe("mock");
+    expect(getPaymentProvider("mock")).toBe(mockPaymentProvider);
+  });
+});

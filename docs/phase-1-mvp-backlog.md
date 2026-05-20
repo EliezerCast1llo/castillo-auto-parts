@@ -41,7 +41,7 @@
 | PAY-001 | Contactar Wompi y validar requisitos | Research | P0 | Product/Backend | Backlog |
 | PAY-002 | Contactar BAC Compra Click como fallback | Research | P1 | Product | Backlog |
 | PAY-003 | Validar Pagadito como alternativa | Research | P2 | Product/Backend | Backlog |
-| PAY-004 | Disenar interfaz `PaymentProvider` | Spike | P0 | Backend | Backlog |
+| PAY-004 | Disenar interfaz `PaymentProvider` | Spike | P0 | Backend | Done |
 | DTE-001 | Confirmar estrategia DTE con contador | Decision | P0 | Product/Backend | Backlog |
 | DTE-002 | Comparar proveedores DTE API | Research | P0 | Backend | Backlog |
 | DTE-003 | Definir datos fiscales obligatorios de checkout | Decision | P0 | Product/QA | Backlog |
@@ -58,15 +58,15 @@
 | CAT-005 | Implementar busqueda/filtros MVP | Feature | P0 | Frontend/Backend | Backlog |
 | CART-001 | Carrito guest con cookie/session segura | Feature | P0 | Backend/Frontend | Backlog |
 | CART-002 | Validar stock en carrito | Feature | P0 | Backend | Backlog |
-| CART-003 | Totales con IVA incluido | Feature | P0 | Backend/QA | Backlog |
+| CART-003 | Totales sin desglose separado de IVA | Feature | P0 | Backend/QA | Backlog |
 | MAP-001 | Evaluar Google Maps vs alternativas | Spike | P0 | Backend/Frontend | Backlog |
 | MAP-002 | Checkout captura ubicacion actual | Feature | P0 | Frontend | Backlog |
 | MAP-003 | Checkout permite mover pin manual | Feature | P0 | Frontend | Backlog |
 | SHIP-001 | Definir zonas y tarifas iniciales | Decision | P0 | Product/QA | Backlog |
 | SHIP-002 | Implementar retiro gratis en bodega | Feature | P0 | Backend/Frontend | Backlog |
 | SHIP-003 | Implementar envio San Salvador/Santa Tecla | Feature | P0 | Backend/Frontend | Backlog |
-| ORD-001 | Crear orden `PENDING_PAYMENT` | Feature | P0 | Backend | Backlog |
-| ORD-002 | Cambiar a `PAID_PENDING_SHIPMENT` tras pago | Feature | P0 | Backend | Backlog |
+| ORD-001 | Crear orden `PAID_PENDING_SHIPMENT` tras pago web | Feature | P0 | Backend | Backlog |
+| ORD-002 | Registrar pago simulado/proveedor local | Feature | P0 | Backend | Backlog |
 | ORD-003 | Idempotencia de webhook | Feature | P0 | Backend/QA | Backlog |
 | ADM-001 | Login admin | Feature | P0 | Backend/Frontend | Backlog |
 | ADM-002 | Admin ver ordenes | Feature | P0 | Frontend/Backend | Backlog |

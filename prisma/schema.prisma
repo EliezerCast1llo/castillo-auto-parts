@@ -25,7 +25,6 @@ enum InventoryStatus {
 }
 
 enum OrderStatus {
-  PENDING_PAYMENT
   PAID_PENDING_SHIPMENT
   SHIPPED
   DELIVERED
@@ -217,7 +216,7 @@ model Order {
   customerName   String
   customerEmail  String
   customerPhone  String
-  status         OrderStatus   @default(PENDING_PAYMENT)
+  status         OrderStatus   @default(PAID_PENDING_SHIPMENT)
   subtotalCents  Int
   taxCents       Int
   shippingCents  Int           @default(0)

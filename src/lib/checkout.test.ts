@@ -4,6 +4,7 @@ import {
   calculateIncludedTaxCents,
   calculateShippingCents,
   checkoutSchema,
+  parseCheckoutFormData,
 } from "./checkout";
 
 describe("checkout helpers", () => {
@@ -28,6 +29,31 @@ describe("checkout helpers", () => {
     });
 
     expect(parsed.success).toBe(false);
+  });
+
+  it("allows pickup without delivery address fields", () => {
+    const parsed = checkoutSchema.safeParse({
+      customerEmail: "cliente@example.com",
+      customerName: "Cliente Demo",
+      customerPhone: "7777-7777",
+      fulfillmentMethod: "PICKUP",
+      paymentMethod: "online_card",
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
+  it("parses absent pickup address fields as optional values", () => {
+    const formData = new FormData();
+    formData.set("customerEmail", "cliente@example.com");
+    formData.set("customerName", "Cliente Demo");
+    formData.set("customerPhone", "7777-7777");
+    formData.set("fulfillmentMethod", "PICKUP");
+    formData.set("paymentMethod", "online_card");
+
+    const parsed = parseCheckoutFormData(formData);
+
+    expect(parsed.success).toBe(true);
   });
 
   it("builds deterministic order numbers", () => {

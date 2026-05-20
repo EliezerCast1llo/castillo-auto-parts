@@ -8,7 +8,7 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-05-18.
+- Fecha de ultima actualizacion: 2026-05-19.
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
@@ -54,8 +54,8 @@ La experiencia debe sentirse mas cercana a retail moderno tipo Siman, pero adapt
 - Data inicial: mock data mientras se valida inventario real.
 - Compra guest: obligatoria desde MVP.
 - Moneda: USD.
-- IVA: 13%, precios visibles con IVA incluido.
-- Pago MVP: pago completo en linea.
+- IVA: 13%, precios visibles con IVA incluido; no mostrar un calculo separado de IVA en el desglose de compra.
+- Pago MVP: pago completo en linea, simulado por plataforma web hasta integrar proveedor local.
 - Pago objetivo: Wompi SV.
 - Pago fallback: BAC Compra Click.
 - Stripe: no es prioridad por limitaciones locales.
@@ -64,11 +64,13 @@ La experiencia debe sentirse mas cercana a retail moderno tipo Siman, pero adapt
 - Entrega inicial: equipo propio.
 - Entrega futura: tercerizada para departamentos.
 - Retiro en bodega: gratis, con horarios/dias pendientes.
+- En retiro en bodega no se solicitan campos de entrega a domicilio; se muestra direccion/mapa de bodega.
 - Envio Santa Tecla: referencia USD 2.
 - Envio San Salvador: referencia USD 3 a USD 5.
 - Direccion: mapa, ubicacion actual y pin manual.
 - Idioma: espanol principal, opcion/base para ingles.
 - Bodega: una bodega inicial, escalable a multiples bodegas.
+- Estado de orden para compra pagada: `PAID_PENDING_SHIPMENT`, mostrado al cliente como "pendiente de entrega".
 
 ## Marca
 
@@ -266,11 +268,14 @@ Implementado:
 - Seed Prisma desde mock data.
 - Capa de datos `src/data/products.ts` con lectura Prisma y fallback mock.
 - Capa de filtros `src/data/catalog-filters.ts` por query params.
+- Capa de pagos `src/lib/payments` con `PaymentProvider` y adaptador `mock`.
 
 Decisiones tecnicas:
 
 - Prisma 6 estable por simplicidad.
-- Wompi detras de `PaymentProvider`.
+- Wompi/Pagadito/BAC detras de `PaymentProvider`.
+- Proveedor de pagos activo por defecto: `mock`.
+- `PAYMENT_PROVIDER` debe quedarse en `mock` hasta que exista adaptador real y credenciales sandbox/produccion.
 - DTE detras de `InvoiceProvider`.
 - UI inicial con fallback mock mientras se valida PostgreSQL real.
 - Home, catalogo y detalle son dinamicos para evitar stock congelado por build.
@@ -290,6 +295,9 @@ Ya existe:
 - home inicial;
 - `/catalog`;
 - `/product/[slug]`;
+- `/cart`;
+- `/checkout`;
+- `/orders/[orderNumber]`;
 - componentes reutilizables:
   - `SiteHeader`;
   - `ProductCard`;
@@ -301,12 +309,20 @@ Ya existe:
 - capa de datos para catalogo desde Prisma/PostgreSQL;
 - fallback mock si PostgreSQL no responde o esta vacio;
 - filtros por busqueda, categoria, marca, disponibilidad y vehiculo;
+- carrito invitado con cookie;
+- checkout invitado con retiro en bodega/envio local;
+- pago simulado mediante `PaymentProvider`;
+- orden en estado `PAID_PENDING_SHIPMENT`;
+- registro `Payment` y evento inicial `PaymentEvent`;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
 
 - `docs/phase-3-catalog-product.md`
 - `docs/phase-3-data-persistence.md`
+- `docs/phase-4-cart.md`
+- `docs/phase-5-checkout-orders.md`
+- `docs/phase-6-payments.md`
 
 ## GitHub
 
@@ -355,11 +371,9 @@ Negocio:
 
 Tecnico:
 
-- ejecutar seed Prisma contra PostgreSQL real cuando Docker este disponible;
-- crear carrito guest;
-- crear checkout guest;
 - preparar mapa/pin;
 - preparar admin basico.
+- reemplazar pago mock por proveedor local real cuando haya onboarding/credenciales.
 
 QA:
 

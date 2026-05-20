@@ -107,17 +107,14 @@ docs/
 1. Cliente revisa carrito.
 2. Backend valida stock.
 3. Cliente elige retiro en bodega o envio local.
-4. Si elige envio, captura direccion legible, coordenadas, pin manual y notas.
-5. Backend valida cobertura y calcula tarifa de envio.
-6. Backend crea orden `PENDING_PAYMENT`.
-7. Backend crea intento de pago con proveedor local.
-8. Cliente paga en checkout hospedado, enlace o boton del proveedor.
-9. Proveedor notifica al backend por webhook/consulta.
-10. Backend valida evento.
-11. Orden cambia a `PAID_PENDING_SHIPMENT`.
-12. Inventario se descuenta en transaccion.
-13. Se crea registro de factura DTE en estado `PENDING` o `ISSUED`.
-14. Se envia confirmacion por email o se marca pendiente si email aun no esta configurado.
+4. Si elige retiro, se muestran datos/mapa de bodega y no se solicitan campos de entrega.
+5. Si elige envio, captura direccion legible, coordenadas, pin manual y notas.
+6. Backend valida cobertura y calcula tarifa de envio.
+7. Backend inicia pago web con proveedor local o simula pago web en MVP.
+8. Cuando el pago web se confirma, backend crea orden `PAID_PENDING_SHIPMENT`.
+9. Inventario se descuenta en transaccion.
+10. Se crea registro de factura DTE en estado `PENDING` o `ISSUED`.
+11. Se envia confirmacion por email o se marca pendiente si email aun no esta configurado.
 
 ## Pagos locales
 
@@ -146,6 +143,15 @@ export interface PaymentProvider {
   getPaymentStatus(externalPaymentId: string): Promise<PaymentStatus>;
 }
 ```
+
+Implementación actual:
+
+- `mock`: activo por defecto para MVP.
+- `wompi`: reservado para integración real.
+- `pagadito`: reservado como alternativa.
+- `bac_manual`: reservado para fallback operativo/manual.
+
+El dominio de órdenes no debe depender directamente de APIs externas. Debe consumir `getPaymentProvider()` y guardar `Payment`/`PaymentEvent` con datos normalizados y payload crudo.
 
 ## Envio y direccion
 

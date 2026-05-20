@@ -54,16 +54,16 @@ const deliveryFeesByCity = new Map([
 
 export function parseCheckoutFormData(formData: FormData) {
   return checkoutSchema.safeParse({
-    addressLine1: formData.get("addressLine1"),
-    addressLine2: formData.get("addressLine2"),
-    city: formData.get("city"),
-    customerEmail: formData.get("customerEmail"),
-    customerName: formData.get("customerName"),
-    customerPhone: formData.get("customerPhone"),
-    deliveryNotes: formData.get("deliveryNotes"),
-    department: formData.get("department"),
-    fulfillmentMethod: formData.get("fulfillmentMethod"),
-    paymentMethod: formData.get("paymentMethod"),
+    addressLine1: optionalFormString(formData, "addressLine1"),
+    addressLine2: optionalFormString(formData, "addressLine2"),
+    city: optionalFormString(formData, "city"),
+    customerEmail: formString(formData, "customerEmail"),
+    customerName: formString(formData, "customerName"),
+    customerPhone: formString(formData, "customerPhone"),
+    deliveryNotes: optionalFormString(formData, "deliveryNotes"),
+    department: optionalFormString(formData, "department"),
+    fulfillmentMethod: formString(formData, "fulfillmentMethod"),
+    paymentMethod: formString(formData, "paymentMethod"),
   });
 }
 
@@ -106,6 +106,16 @@ function normalizeCoverageValue(value: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function formString(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value : "";
+}
+
+function optionalFormString(formData: FormData, key: string) {
+  const value = formString(formData, key).trim();
+  return value || undefined;
 }
 
 function randomOrderSuffix() {
