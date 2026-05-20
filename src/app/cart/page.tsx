@@ -285,6 +285,7 @@ function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
     added: "Producto agregado al carrito.",
     empty_cart: "Agrega productos antes de continuar con la compra.",
+    invalid: "No pudimos procesar esa acción del carrito. Intenta de nuevo.",
     quantity_adjusted: "Ajustamos la cantidad al stock disponible.",
     removed: "Producto eliminado del carrito.",
     stock_issue: "Revisa disponibilidad y cantidades antes de continuar.",

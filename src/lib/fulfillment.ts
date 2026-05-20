@@ -131,6 +131,17 @@ export function getDeliveryFeeCents(city: string | undefined, zones = defaultDel
   return zone?.feeCents ?? null;
 }
 
+export function getDeliveryZoneBySlug(
+  slug: string | undefined,
+  zones = defaultDeliveryZones,
+) {
+  const normalizedSlug = normalizeCoverageValue(slug ?? "");
+
+  return zones.find(
+    (item) => item.isActive && normalizeCoverageValue(item.slug) === normalizedSlug,
+  );
+}
+
 export function normalizeCoverageValue(value: string) {
   return value
     .normalize("NFD")

@@ -10,6 +10,7 @@ import {
   parseTechnicalDetails,
   slugifyProductValue,
 } from "@/lib/admin-products";
+import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 
@@ -64,12 +65,25 @@ export async function createAdminProduct(formData: FormData) {
         },
         select: {
           id: true,
+          name: true,
           slug: true,
+          sku: true,
         },
       });
 
       await replaceCompatibilities(tx, savedProduct.id, input.compatibilities);
       await upsertInventoryStock(tx, savedProduct.id, input);
+      await writeAdminAuditLog(tx, {
+        action: "product.created",
+        entityId: savedProduct.id,
+        entityLabel: savedProduct.sku,
+        entityType: "Product",
+        metadata: buildProductAuditMetadata(input, {
+          name: savedProduct.name,
+          slug: savedProduct.slug,
+          sku: savedProduct.sku,
+        }),
+      });
 
       return savedProduct;
     });
@@ -96,7 +110,7 @@ export async function updateAdminProduct(formData: FormData) {
     const product = await db.$transaction(async (tx) => {
       const existingProduct = await tx.product.findUnique({
         where: { id: productId },
-        select: { slug: true },
+        select: { name: true, sku: true, slug: true },
       });
 
       if (!existingProduct) {
@@ -127,6 +141,18 @@ export async function updateAdminProduct(formData: FormData) {
 
       await replaceCompatibilities(tx, productId, input.compatibilities);
       await upsertInventoryStock(tx, productId, input);
+      await writeAdminAuditLog(tx, {
+        action: "product.updated",
+        entityId: productId,
+        entityLabel: input.sku,
+        entityType: "Product",
+        metadata: buildProductAuditMetadata(input, {
+          previousName: existingProduct.name,
+          previousSku: existingProduct.sku,
+          previousSlug: existingProduct.slug,
+          slug: savedProduct.slug,
+        }),
+      });
 
       revalidatePath(`/product/${existingProduct.slug}`);
       return savedProduct;
@@ -163,10 +189,30 @@ export async function updateAdminProductInventory(formData: FormData) {
   if (!product) redirect("/admin/products?estado=not_found");
 
   await db.$transaction(async (tx) => {
+    const previousStock = await tx.inventoryStock.findFirst({
+      where: { productId },
+      select: {
+        quantityOnHand: true,
+        quantityReserved: true,
+        reorderPoint: true,
+        status: true,
+      },
+    });
+
     await upsertInventoryStock(tx, productId, {
       quantityOnHand,
       reorderPoint,
       status,
+    });
+    await writeAdminAuditLog(tx, {
+      action: "inventory.updated",
+      entityId: productId,
+      entityLabel: product.slug,
+      entityType: "InventoryStock",
+      metadata: {
+        next: { quantityOnHand, reorderPoint, status },
+        previous: previousStock,
+      },
     });
   });
 
@@ -322,6 +368,26 @@ function revalidateProductPaths(slug: string) {
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${slug}/edit`);
   revalidatePath(`/product/${slug}`);
+}
+
+function buildProductAuditMetadata(
+  input: AdminProductInput,
+  context: Record<string, string | null>,
+): Prisma.InputJsonObject {
+  return {
+    ...context,
+    brand: input.brand,
+    categoryId: input.categoryId,
+    compatibilities: input.compatibilities.length,
+    isActive: input.isActive,
+    isFeatured: input.isFeatured,
+    priceCents: input.priceCents,
+    stock: {
+      quantityOnHand: input.quantityOnHand,
+      reorderPoint: input.reorderPoint,
+      status: input.status,
+    },
+  };
 }
 
 function handleAdminProductError(error: unknown, fallbackPath: string): never {

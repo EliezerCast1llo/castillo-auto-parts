@@ -337,3 +337,35 @@ model DeliveryZone {
 
   @@index([city, department])
 }
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  entityType  String
+  entityId    String?
+  entityLabel String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
+
+model EmailLog {
+  id           String    @id @default(cuid())
+  recipient    String
+  subject      String
+  template     String
+  status       String
+  provider     String
+  externalId   String?
+  errorMessage String?
+  payloadJson  Json?
+  sentAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([recipient])
+  @@index([status])
+  @@index([template])
+}

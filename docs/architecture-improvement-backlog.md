@@ -22,12 +22,24 @@ Problema: filtros de vehiculo dependen de strings como `Toyota Corolla 2009-2022
 
 Decision sugerida: introducir datos estructurados para marca, modelo, anio inicial, anio final, motor/version y notas. Mantener texto solo como presentacion.
 
+Implementado en `codex/vehicle-compatibility-structure`:
+
+- `CatalogProduct` ahora expone `vehicleCompatibilities` estructurado.
+- Los filtros de vehiculo usan marca, modelo y rango de anios desde datos estructurados.
+- Los textos `compatibleVehicles` quedan para busqueda/presentacion, no para logica critica.
+- Los productos universales no aparecen por filtro vehicular hasta que exista una regla explicita de compatibilidad.
+
 ## P1
 
 - Separar estado interno de inventario de label publico.
+- Agregar `aria-label` a links visuales de producto.
+
+Completado en `codex/vehicle-compatibility-structure`:
+
 - Validar acciones de carrito con helper dedicado.
 - Limpiar o ignorar SKUs invalidos al leer carrito.
-- Agregar `aria-label` a links visuales de producto.
+- Limitar cantidad maxima por linea de carrito.
+- Resolver zona de entrega por `deliveryZoneSlug` en servidor para no confiar en municipio/departamento enviados por el cliente.
 
 Completado en `codex/ui-brand-foundation`:
 
@@ -36,9 +48,26 @@ Completado en `codex/ui-brand-foundation`:
 
 ## P2
 
+- Agregar auditoria admin para cambios operativos.
 - Extraer componentes repetibles: `PageIntro`, `Notice`, `SummaryRow`, `TrustBadge`.
 - Mover filtros de catalogo a DB/paginacion cuando el volumen crezca.
 - Mover colores de `ProductVisual` a tokens del tema.
+
+Completado en `codex/vehicle-compatibility-structure`:
+
+- Modelo `AdminAuditLog` para eventos operativos.
+- Helper `writeAdminAuditLog` para acciones admin.
+- Registro de cambios en productos, inventario, ordenes, retiro en bodega y zonas de entrega.
+- Vista `/admin/audit` con los ultimos eventos.
+
+### Emails transaccionales
+
+Implementado en `codex/vehicle-compatibility-structure`:
+
+- Proveedor de email `console/mock` para MVP sin credenciales reales.
+- Plantilla de confirmacion de orden.
+- Registro `EmailLog` con estado `SENT` o `FAILED`.
+- Envio de confirmacion despues de crear una orden pagada simulada.
 
 ## PRs sugeridos
 

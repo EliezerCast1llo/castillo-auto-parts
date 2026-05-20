@@ -9,13 +9,18 @@ import {
   buildFormattedAddress,
   buildOrderNumber,
   calculateIncludedTaxCents,
-  calculateShippingCents,
   getFulfillmentLabel,
   parseCheckoutFormData,
   type CheckoutInput,
 } from "./checkout";
 import { db } from "./db";
-import { getActiveDeliveryZones } from "./fulfillment";
+import {
+  getActiveDeliveryZones,
+  getDeliveryZoneBySlug,
+  type DeliveryZoneOption,
+} from "./fulfillment";
+import { sendOrderConfirmationEmail } from "./email/transactional";
+import { buildAbsoluteAppUrl } from "./email/templates";
 import { buildOrderAccessHref, createOrderAccessToken, hashOrderAccessToken } from "./order-access-token";
 import { getPaymentProvider, type CreatePaymentResult, type PaymentStatus } from "./payments";
 
@@ -49,12 +54,12 @@ export async function createPaidGuestOrderFromCart(
 
   try {
     const deliveryZones = await getActiveDeliveryZones();
-    const shippingCents = calculateShippingCents(
-      parsed.data.fulfillmentMethod,
-      parsed.data.city,
-      deliveryZones,
-    );
-    if (shippingCents === null) return { status: "coverage_unavailable" };
+    const deliveryZone = resolveCheckoutDeliveryZone(parsed.data, deliveryZones);
+    if (parsed.data.fulfillmentMethod === "LOCAL_DELIVERY" && !deliveryZone) {
+      return { status: "coverage_unavailable" };
+    }
+
+    const shippingCents = getCheckoutShippingCents(parsed.data, deliveryZone);
 
     const order = await db.$transaction(async (tx) => {
       const dbProducts = await tx.product.findMany({
@@ -131,7 +136,7 @@ export async function createPaidGuestOrderFromCart(
       const orderLines = preparedLines.map((line) => line.orderItem);
       const subtotalCents = orderLines.reduce((total, line) => total + line.lineTotalCents, 0);
       const totalCents = subtotalCents + shippingCents;
-      const addressId = await createDeliveryAddress(tx, parsed.data);
+      const addressId = await createDeliveryAddress(tx, parsed.data, deliveryZone);
       const orderNumber = buildOrderNumber();
       const accessToken = createOrderAccessToken();
       const payment = await createPayment({
@@ -164,7 +169,7 @@ export async function createPaidGuestOrderFromCart(
             create: {
               deliveryZone:
                 parsed.data.fulfillmentMethod === "LOCAL_DELIVERY"
-                  ? parsed.data.city
+                  ? getDeliveryZoneName(deliveryZone)
                   : "Bodega principal",
               method: parsed.data.fulfillmentMethod,
               notes: parsed.data.deliveryNotes,
@@ -206,11 +211,22 @@ export async function createPaidGuestOrderFromCart(
 
       return {
         accessToken,
+        customerEmail: parsed.data.customerEmail,
+        customerName: parsed.data.customerName,
         orderNumber: savedOrder.orderNumber,
+        totalCents,
       };
     });
 
     await clearGuestCart();
+    await sendOrderConfirmationEmail({
+      customerEmail: order.customerEmail,
+      customerName: order.customerName,
+      orderNumber: order.orderNumber,
+      orderUrl: buildAbsoluteAppUrl(buildOrderAccessHref(order.orderNumber, order.accessToken)),
+      totalCents: order.totalCents,
+    });
+
     return { accessToken: order.accessToken, orderNumber: order.orderNumber, status: "created" };
   } catch (error) {
     if (error instanceof CheckoutDomainError) {
@@ -225,18 +241,24 @@ export async function createPaidGuestOrderFromCart(
 async function createDeliveryAddress(
   tx: Prisma.TransactionClient,
   input: CheckoutInput,
+  deliveryZone: DeliveryZoneOption | undefined,
 ) {
   if (input.fulfillmentMethod === "PICKUP") return undefined;
+  if (!deliveryZone) throw new CheckoutDomainError("coverage_unavailable");
 
   const address = await tx.address.create({
     data: {
       addressLine1: input.addressLine1 ?? "",
       addressLine2: input.addressLine2 || undefined,
-      city: input.city ?? "",
+      city: deliveryZone.city,
       country: "SV",
       deliveryNotes: input.deliveryNotes || undefined,
-      department: input.department ?? "",
-      formattedAddress: buildFormattedAddress(input),
+      department: deliveryZone.department,
+      formattedAddress: buildFormattedAddress({
+        ...input,
+        city: deliveryZone.city,
+        department: deliveryZone.department,
+      }),
     },
     select: {
       id: true,
@@ -244,6 +266,28 @@ async function createDeliveryAddress(
   });
 
   return address.id;
+}
+
+function resolveCheckoutDeliveryZone(input: CheckoutInput, zones: DeliveryZoneOption[]) {
+  if (input.fulfillmentMethod !== "LOCAL_DELIVERY") return undefined;
+
+  return getDeliveryZoneBySlug(input.deliveryZoneSlug, zones);
+}
+
+function getCheckoutShippingCents(
+  input: CheckoutInput,
+  deliveryZone: DeliveryZoneOption | undefined,
+) {
+  if (input.fulfillmentMethod !== "LOCAL_DELIVERY") return 0;
+  if (!deliveryZone) throw new CheckoutDomainError("coverage_unavailable");
+
+  return deliveryZone.feeCents;
+}
+
+function getDeliveryZoneName(deliveryZone: DeliveryZoneOption | undefined) {
+  if (!deliveryZone) throw new CheckoutDomainError("coverage_unavailable");
+
+  return deliveryZone.name;
 }
 
 function buildOrderNotes(input: CheckoutInput) {

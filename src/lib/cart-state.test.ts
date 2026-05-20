@@ -54,6 +54,17 @@ describe("cart state", () => {
     expect(serialized).toBe('[{"sku":"A-1","quantity":3}]');
   });
 
+  it("drops invalid SKUs and caps excessive quantities", () => {
+    const serialized = serializeStoredCart([
+      { sku: "A-1", quantity: 98 },
+      { sku: "A-1", quantity: 10 },
+      { sku: "bad sku", quantity: 2 },
+      { sku: "B-1", quantity: 150 },
+    ]);
+
+    expect(serialized).toBe('[{"sku":"A-1","quantity":99},{"sku":"B-1","quantity":99}]');
+  });
+
   it("signs and verifies stored cart items", () => {
     const secret = "cart-secret";
     const signedCart = serializeSignedStoredCart([{ sku: "A-1", quantity: 2 }], secret);
