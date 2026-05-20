@@ -1,7 +1,9 @@
 import type { OrderStatus } from "@prisma/client";
 import { ArrowRight, ClipboardList, PackageCheck } from "lucide-react";
 import Link from "next/link";
+import { AdminSessionControls } from "@/components/admin/admin-session-controls";
 import { SiteHeader } from "@/components/site-header";
+import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
 
@@ -20,6 +22,8 @@ const orderStatusOptions: OrderStatus[] = [
 ];
 
 export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
+  await requireAdminAccess("/admin/orders");
+
   const params = searchParams ? await searchParams : {};
   const status = parseOrderStatus(firstValue(params.estado));
   const orders = await db.order.findMany({
@@ -48,7 +52,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-md border border-border bg-card p-5">
-          <p className="text-sm font-semibold text-success">Admin temporal</p>
+          <p className="text-sm font-semibold text-success">Admin protegido</p>
           <div className="mt-1 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div>
               <h1 className="text-2xl font-bold text-primary">Órdenes</h1>
@@ -56,7 +60,10 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                 Revisa compras pagadas, preparación de entrega y estados operativos del MVP.
               </p>
             </div>
-            <StatusFilter selectedStatus={status} />
+            <div className="flex flex-col gap-3 sm:items-end">
+              <AdminSessionControls />
+              <StatusFilter selectedStatus={status} />
+            </div>
           </div>
         </section>
 

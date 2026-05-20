@@ -3,6 +3,7 @@
 import { OrderStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 
 const allowedOrderStatuses: OrderStatus[] = [
@@ -16,6 +17,8 @@ const allowedOrderStatuses: OrderStatus[] = [
 export async function updateAdminOrderStatus(formData: FormData) {
   const orderNumber = formString(formData, "orderNumber");
   const status = parseOrderStatus(formString(formData, "status"));
+
+  await requireAdminAccess(orderNumber ? `/admin/orders/${orderNumber}` : "/admin/orders");
 
   if (!orderNumber || !status) {
     redirect(`/admin/orders/${orderNumber || ""}?estado=invalid`);

@@ -317,6 +317,8 @@ Ya existe:
 - admin básico de órdenes en `/admin/orders`;
 - detalle admin en `/admin/orders/[orderNumber]`;
 - cambio operativo de estado de orden;
+- login temporal admin en `/admin/login`;
+- protección de rutas/admin actions mediante cookie firmada `httpOnly`;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
@@ -346,11 +348,11 @@ PRs previos:
 
 Rama actual de trabajo:
 
-- `codex/prisma-seed-catalog`.
+- `codex/admin-access-guard`.
 
 Notas actuales:
 
-- Docker no esta instalado en la Mac actual; queda pendiente ejecutar `db:push` y `db:seed` contra PostgreSQL real.
+- Docker Desktop fue instalado por el usuario para correr PostgreSQL local.
 
 ## Verificaciones Habituales
 
@@ -376,7 +378,7 @@ Negocio:
 Tecnico:
 
 - preparar mapa/pin;
-- proteger rutas admin con login/roles.
+- reemplazar login temporal admin por auth real con roles antes de producción.
 - reemplazar pago mock por proveedor local real cuando haya onboarding/credenciales.
 
 QA:
