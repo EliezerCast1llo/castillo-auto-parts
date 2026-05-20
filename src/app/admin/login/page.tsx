@@ -50,6 +50,10 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
             <AdminLoginNotice message="Faltan ADMIN_ACCESS_PASSWORD y ADMIN_ACCESS_SECRET en el entorno local." />
           ) : null}
 
+          {config.isConfigured && !config.isSafeForRuntime ? (
+            <AdminLoginNotice message="La configuración admin no es segura para este entorno. Usa una contraseña fuerte y un secreto largo antes de continuar." />
+          ) : null}
+
           <form action={loginAdmin} className="mt-5 space-y-4">
             <input name="next" type="hidden" value={nextPath} />
             <label className="block text-sm font-semibold">
@@ -57,7 +61,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
               <input
                 autoComplete="current-password"
                 className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-                disabled={!config.isConfigured}
+                disabled={!config.isConfigured || !config.isSafeForRuntime}
                 name="password"
                 required
                 type="password"
@@ -65,7 +69,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
             </label>
             <button
               className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={!config.isConfigured}
+              disabled={!config.isConfigured || !config.isSafeForRuntime}
             >
               Entrar
             </button>
@@ -89,6 +93,8 @@ function getStatusMessage(status: string) {
     invalid: "La contraseña no es correcta.",
     logged_out: "Sesión cerrada.",
     not_configured: "El acceso admin no está configurado.",
+    rate_limited: "Demasiados intentos fallidos. Espera unos minutos antes de intentar de nuevo.",
+    unsafe_config: "La configuración admin no es segura para este entorno.",
   };
 
   return messages[status] ?? "";

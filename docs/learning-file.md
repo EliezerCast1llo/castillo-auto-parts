@@ -179,6 +179,15 @@ Hallazgos 2026-05-20:
 - Agregar headers de seguridad en `next.config.ts`.
 - Firmar cookie de carrito guest o mover carrito guest a DB cuando suba el riesgo.
 
+Implementado en rama `codex/security-hardening-mvp`:
+
+- Rate limit por IP para login admin.
+- Rechazo de credenciales admin debiles en produccion.
+- Cookie admin con `SameSite=strict`.
+- Bloqueo del proveedor de pago mock en produccion.
+- Headers de seguridad base.
+- Limites de longitud en inputs de checkout.
+
 Documento clave:
 
 - `docs/security-hardening-plan.md`

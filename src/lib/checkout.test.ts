@@ -43,6 +43,19 @@ describe("checkout helpers", () => {
     expect(parsed.success).toBe(true);
   });
 
+  it("rejects unbounded checkout text fields", () => {
+    const parsed = checkoutSchema.safeParse({
+      customerEmail: "cliente@example.com",
+      customerName: "Cliente Demo",
+      customerPhone: "7777-7777",
+      deliveryNotes: "x".repeat(501),
+      fulfillmentMethod: "PICKUP",
+      paymentMethod: "online_card",
+    });
+
+    expect(parsed.success).toBe(false);
+  });
+
   it("parses absent pickup address fields as optional values", () => {
     const formData = new FormData();
     formData.set("customerEmail", "cliente@example.com");
