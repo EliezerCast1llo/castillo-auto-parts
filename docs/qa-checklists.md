@@ -119,8 +119,11 @@ Antes de aprobar una feature:
 
 ## Admin
 
-- [ ] Ruta admin requiere autenticacion antes de producción.
-- [ ] Usuario no admin no puede entrar antes de producción.
+- [ ] Ruta admin redirige a `/admin/login` sin sesión.
+- [ ] Login admin rechaza contraseña incorrecta.
+- [ ] Login admin permite entrar con credenciales de entorno.
+- [ ] Cookie admin es `httpOnly` y expira.
+- [ ] Cerrar sesión bloquea nuevamente `/admin/orders`.
 - [ ] Admin ve ordenes por estado.
 - [ ] Admin ve detalle de orden.
 - [ ] Admin ve estado de pago.

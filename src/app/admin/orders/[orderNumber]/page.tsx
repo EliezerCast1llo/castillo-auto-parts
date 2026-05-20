@@ -2,7 +2,9 @@ import type { OrderStatus } from "@prisma/client";
 import { ArrowLeft, CreditCard, MapPin, PackageCheck, Truck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminSessionControls } from "@/components/admin/admin-session-controls";
 import { SiteHeader } from "@/components/site-header";
+import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
 import { updateAdminOrderStatus } from "./actions";
@@ -37,6 +39,8 @@ export default async function AdminOrderDetailPage({
   searchParams,
 }: AdminOrderDetailPageProps) {
   const { orderNumber } = await params;
+  await requireAdminAccess(`/admin/orders/${orderNumber}`);
+
   const query = searchParams ? await searchParams : {};
   const statusMessage = getStatusMessage(firstValue(query.estado));
   const order = await db.order.findUnique({
@@ -85,7 +89,10 @@ export default async function AdminOrderDetailPage({
                     Creada el {formatDateTime(order.createdAt)}.
                   </p>
                 </div>
-                <StatusBadge status={order.status} />
+                <div className="flex flex-col gap-3 sm:items-end">
+                  <StatusBadge status={order.status} />
+                  <AdminSessionControls />
+                </div>
               </div>
             </div>
 
