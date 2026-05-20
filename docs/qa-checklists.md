@@ -135,6 +135,9 @@ Antes de aprobar una feature:
 - [ ] Admin puede crear/editar productos.
 - [ ] Admin puede actualizar stock manual desde el listado.
 - [ ] Cambios de stock se reflejan en catálogo y detalle.
+- [ ] Admin puede editar datos de retiro en bodega.
+- [ ] Admin puede crear/editar/desactivar zonas de envío.
+- [ ] Cambios de tarifa se reflejan en checkout.
 - [ ] Cambios sensibles quedan auditados.
 
 ## DTE Semiautomatico

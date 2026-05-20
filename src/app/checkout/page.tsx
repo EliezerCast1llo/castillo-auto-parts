@@ -3,6 +3,7 @@ import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin, PackageCheck } from "
 import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
 import { getGuestCart } from "@/lib/cart";
+import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
 import { createGuestOrder } from "./actions";
 
@@ -19,6 +20,7 @@ type CheckoutPageProps = {
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
   const cart = await getGuestCart();
+  const fulfillmentOptions = await getFulfillmentOptions();
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
@@ -46,7 +48,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
 
             {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
-              <CheckoutForm subtotalCents={cart.subtotalCents} />
+              <CheckoutForm
+                deliveryZones={fulfillmentOptions.deliveryZones}
+                pickupLocation={fulfillmentOptions.pickupLocation}
+                subtotalCents={cart.subtotalCents}
+              />
             ) : (
               <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
             )}
@@ -77,7 +83,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             <div className="mt-4 rounded-md bg-background p-3 text-sm">
               <p className="font-semibold text-primary">Envío</p>
               <p className="mt-1 text-muted-foreground">
-                Retiro gratis, Santa Tecla {formatCurrency(200)} y San Salvador {formatCurrency(300)}.
+                Retiro gratis en {fulfillmentOptions.pickupLocation.name}
+                {fulfillmentOptions.deliveryZones.length > 0
+                  ? `; ${formatDeliveryZoneSummary(fulfillmentOptions.deliveryZones)}.`
+                  : "; envío local pendiente de configurar."}
               </p>
             </div>
 
@@ -92,7 +101,15 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   );
 }
 
-function CheckoutForm({ subtotalCents }: { subtotalCents: number }) {
+function CheckoutForm({
+  deliveryZones,
+  pickupLocation,
+  subtotalCents,
+}: {
+  deliveryZones: DeliveryZoneOption[];
+  pickupLocation: PickupLocationOption;
+  subtotalCents: number;
+}) {
   return (
     <form action={createGuestOrder} className="space-y-4">
       <section className="rounded-md border border-border bg-card p-5">
@@ -106,7 +123,11 @@ function CheckoutForm({ subtotalCents }: { subtotalCents: number }) {
 
       <section className="rounded-md border border-border bg-card p-5">
         <h2 className="text-lg font-bold text-primary">Entrega</h2>
-        <CheckoutDeliveryFields subtotalCents={subtotalCents} />
+        <CheckoutDeliveryFields
+          deliveryZones={deliveryZones}
+          pickupLocation={pickupLocation}
+          subtotalCents={subtotalCents}
+        />
       </section>
 
       <section className="rounded-md border border-border bg-card p-5">
@@ -193,6 +214,10 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
       <dd className={strong ? "text-xl font-bold text-primary" : "font-semibold"}>{value}</dd>
     </div>
   );
+}
+
+function formatDeliveryZoneSummary(zones: DeliveryZoneOption[]) {
+  return zones.map((zone) => `${zone.name} ${formatCurrency(zone.feeCents)}`).join(", ");
 }
 
 function getStatusMessage(status: string) {

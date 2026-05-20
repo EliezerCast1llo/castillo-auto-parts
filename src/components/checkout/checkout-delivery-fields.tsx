@@ -4,30 +4,23 @@ import { Info, MapPin } from "lucide-react";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/money";
 import type { FulfillmentMethod } from "@/lib/checkout";
+import type { DeliveryZoneOption, PickupLocationOption } from "@/lib/fulfillment";
 
-type DeliveryCity = "" | "Santa Tecla" | "San Salvador";
-
-const WAREHOUSE_ADDRESS = "Bodega principal, San Salvador, El Salvador";
-const WAREHOUSE_MAP_URL = `https://www.google.com/maps?q=${encodeURIComponent(
-  WAREHOUSE_ADDRESS,
-)}&output=embed`;
-
-const deliveryFeesByCity: Record<Exclude<DeliveryCity, "">, number> = {
-  "San Salvador": 300,
-  "Santa Tecla": 200,
-};
-
-const departmentByCity: Record<Exclude<DeliveryCity, "">, string> = {
-  "San Salvador": "San Salvador",
-  "Santa Tecla": "La Libertad",
-};
-
-export function CheckoutDeliveryFields({ subtotalCents }: { subtotalCents: number }) {
+export function CheckoutDeliveryFields({
+  deliveryZones,
+  pickupLocation,
+  subtotalCents,
+}: {
+  deliveryZones: DeliveryZoneOption[];
+  pickupLocation: PickupLocationOption;
+  subtotalCents: number;
+}) {
   const [method, setMethod] = useState<FulfillmentMethod>("PICKUP");
-  const [city, setCity] = useState<DeliveryCity>("");
+  const [city, setCity] = useState("");
   const [department, setDepartment] = useState("");
   const isDelivery = method === "LOCAL_DELIVERY";
-  const shippingCents = isDelivery ? (city ? deliveryFeesByCity[city] : null) : 0;
+  const selectedZone = deliveryZones.find((zone) => zone.city === city);
+  const shippingCents = isDelivery ? (selectedZone ? selectedZone.feeCents : null) : 0;
   const totalCents = subtotalCents + (shippingCents ?? 0);
 
   function selectMethod(nextMethod: FulfillmentMethod) {
@@ -38,9 +31,10 @@ export function CheckoutDeliveryFields({ subtotalCents }: { subtotalCents: numbe
     }
   }
 
-  function selectCity(nextCity: DeliveryCity) {
+  function selectCity(nextCity: string) {
+    const nextZone = deliveryZones.find((zone) => zone.city === nextCity);
     setCity(nextCity);
-    setDepartment(nextCity ? departmentByCity[nextCity] : "");
+    setDepartment(nextZone?.department ?? "");
   }
 
   return (
@@ -80,28 +74,28 @@ export function CheckoutDeliveryFields({ subtotalCents }: { subtotalCents: numbe
               <select
                 className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
                 name="city"
-                onChange={(event) => selectCity(event.target.value as DeliveryCity)}
+                onChange={(event) => selectCity(event.target.value)}
                 required
                 value={city}
               >
                 <option value="">Selecciona municipio</option>
-                <option value="Santa Tecla">Santa Tecla</option>
-                <option value="San Salvador">San Salvador</option>
+                {deliveryZones.map((zone) => (
+                  <option key={zone.id} value={zone.city}>
+                    {zone.name} · {formatCurrency(zone.feeCents)}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="block text-sm font-semibold">
               Departamento
-              <select
+              <input
                 className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
                 name="department"
                 onChange={(event) => setDepartment(event.target.value)}
                 required
+                type="text"
                 value={department}
-              >
-                <option value="">Selecciona departamento</option>
-                <option value="La Libertad">La Libertad</option>
-                <option value="San Salvador">San Salvador</option>
-              </select>
+              />
             </label>
           </div>
 
@@ -123,7 +117,13 @@ export function CheckoutDeliveryFields({ subtotalCents }: { subtotalCents: numbe
                 <div>
                   <h3 className="font-bold text-primary">Retiro en bodega</h3>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    {WAREHOUSE_ADDRESS}.
+                    {pickupLocation.address}.
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {pickupLocation.pickupHours}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {pickupLocation.pickupInstructions}
                   </p>
                   <p className="mt-3 text-sm font-semibold text-success">Costo de retiro: {formatCurrency(0)}</p>
                 </div>
@@ -133,7 +133,7 @@ export function CheckoutDeliveryFields({ subtotalCents }: { subtotalCents: numbe
               className="h-56 w-full border-0 lg:h-full"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              src={WAREHOUSE_MAP_URL}
+              src={pickupLocation.mapUrl}
               title="Ubicación de bodega"
             />
           </div>
