@@ -44,7 +44,7 @@ describe("checkout helpers", () => {
     expect(parsed.success).toBe(false);
   });
 
-  it("accepts local delivery with address and delivery zone", () => {
+  it("requires map coordinates for local delivery", () => {
     const parsed = checkoutSchema.safeParse({
       addressLine1: "Calle principal",
       customerEmail: "cliente@example.com",
@@ -52,6 +52,22 @@ describe("checkout helpers", () => {
       customerPhone: "7777-7777",
       deliveryZoneSlug: "santa-tecla",
       fulfillmentMethod: "LOCAL_DELIVERY",
+      paymentMethod: "online_card",
+    });
+
+    expect(parsed.success).toBe(false);
+  });
+
+  it("accepts local delivery with address, delivery zone and map coordinates", () => {
+    const parsed = checkoutSchema.safeParse({
+      addressLine1: "Calle principal",
+      customerEmail: "cliente@example.com",
+      customerName: "Cliente Demo",
+      customerPhone: "7777-7777",
+      deliveryZoneSlug: "santa-tecla",
+      fulfillmentMethod: "LOCAL_DELIVERY",
+      latitude: "13.676900",
+      longitude: "-89.279700",
       paymentMethod: "online_card",
     });
 

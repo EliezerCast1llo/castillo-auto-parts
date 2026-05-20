@@ -259,6 +259,9 @@ async function createDeliveryAddress(
         city: deliveryZone.city,
         department: deliveryZone.department,
       }),
+      latitude: input.latitude,
+      longitude: input.longitude,
+      placeId: input.placeId,
     },
     select: {
       id: true,

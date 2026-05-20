@@ -41,6 +41,6 @@ Primera versión implementada en rama `codex/guest-checkout`.
 ## Pendiente
 
 - Reemplazar pago simulado por proveedor local real.
-- Agregar mapa/pin manual para entrega local.
+- Completado en `codex/mvp-fulfillment-stock-qa`: agregar mapa/pin manual para entrega local y guardar coordenadas.
 - Validar ubicación con coordenadas cuando exista pin manual.
 - Integrar proveedor de pago local en fase 6.

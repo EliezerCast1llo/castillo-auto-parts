@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { addGuestCartItem, removeGuestCartItem, updateGuestCartItem } from "@/lib/cart";
+import { createStockAlertRequest } from "@/lib/stock-alerts";
 
 export async function addCartItem(formData: FormData) {
   const sku = String(formData.get("sku") ?? "");
@@ -24,4 +25,10 @@ export async function removeCartItem(formData: FormData) {
   await removeGuestCartItem(sku);
 
   redirect("/cart?estado=removed");
+}
+
+export async function createStockAlert(formData: FormData) {
+  const result = await createStockAlertRequest(formData);
+
+  redirect(`/cart?estado=stock_alert_${result}`);
 }
