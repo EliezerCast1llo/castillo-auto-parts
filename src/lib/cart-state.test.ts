@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   parseStoredCart,
+  parseSignedStoredCart,
   removeStoredCartItem,
+  serializeSignedStoredCart,
   serializeStoredCart,
   setStoredCartItemQuantity,
   upsertStoredCartItem,
@@ -50,5 +52,23 @@ describe("cart state", () => {
     ]);
 
     expect(serialized).toBe('[{"sku":"A-1","quantity":3}]');
+  });
+
+  it("signs and verifies stored cart items", () => {
+    const secret = "cart-secret";
+    const signedCart = serializeSignedStoredCart([{ sku: "A-1", quantity: 2 }], secret);
+
+    expect(signedCart).toMatch(/^v1\./);
+    expect(parseSignedStoredCart(signedCart, secret)).toEqual([{ sku: "A-1", quantity: 2 }]);
+    expect(parseSignedStoredCart(`${signedCart}tampered`, secret)).toEqual([]);
+  });
+
+  it("only accepts unsigned legacy payloads when fallback is enabled", () => {
+    const legacyCart = '[{"sku":"A-1","quantity":2}]';
+
+    expect(parseSignedStoredCart(legacyCart, "cart-secret")).toEqual([]);
+    expect(parseSignedStoredCart(legacyCart, "cart-secret", { allowUnsignedFallback: true })).toEqual([
+      { sku: "A-1", quantity: 2 },
+    ]);
   });
 });

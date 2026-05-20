@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import { getCatalogProducts, type CatalogProduct } from "@/data/products";
 import {
-  parseStoredCart,
+  parseSignedStoredCart,
   removeStoredCartItem,
-  serializeStoredCart,
+  serializeSignedStoredCart,
+  serializeStoredCart as serializeStoredCartPayload,
   setStoredCartItemQuantity,
   upsertStoredCartItem,
   type StoredCartItem,
@@ -108,24 +109,44 @@ export async function clearGuestCart() {
 
 async function readGuestCartItems(): Promise<StoredCartItem[]> {
   const cookieStore = await cookies();
-  return parseStoredCart(cookieStore.get(GUEST_CART_COOKIE)?.value);
+  return parseSignedStoredCart(cookieStore.get(GUEST_CART_COOKIE)?.value, getGuestCartCookieSecret(), {
+    allowUnsignedFallback: process.env.NODE_ENV !== "production",
+  });
 }
 
 async function writeGuestCartItems(items: StoredCartItem[]) {
   const cookieStore = await cookies();
-  const serializedCart = serializeStoredCart(items);
+  const serializedCartPayload = serializeStoredCartPayload(items);
 
-  if (serializedCart === "[]") {
+  if (serializedCartPayload === "[]") {
     cookieStore.delete(GUEST_CART_COOKIE);
     return;
   }
+
+  const serializedCart = serializeGuestCartCookie(items);
 
   cookieStore.set(GUEST_CART_COOKIE, serializedCart, {
     httpOnly: true,
     maxAge: CART_MAX_AGE_SECONDS,
     path: "/",
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
   });
+}
+
+function serializeGuestCartCookie(items: StoredCartItem[]) {
+  return serializeSignedStoredCart(items, getGuestCartCookieSecret());
+}
+
+function getGuestCartCookieSecret() {
+  const secret = process.env.GUEST_CART_SECRET?.trim() || process.env.ADMIN_ACCESS_SECRET?.trim();
+  if (secret) return secret;
+
+  if (process.env.NODE_ENV !== "production") {
+    return "dev-only-guest-cart-secret";
+  }
+
+  throw new Error("Missing GUEST_CART_SECRET or ADMIN_ACCESS_SECRET.");
 }
 
 async function findProductBySku(sku: string) {

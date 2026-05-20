@@ -1,9 +1,16 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+
 export type StoredCartItem = {
   quantity: number;
   sku: string;
 };
 
 const MAX_GUEST_CART_ITEMS = 50;
+const SIGNED_CART_VERSION = "v1";
+
+export type SignedCartParseOptions = {
+  allowUnsignedFallback?: boolean;
+};
 
 export function parseStoredCart(value: string | undefined): StoredCartItem[] {
   if (!value) return [];
@@ -27,6 +34,28 @@ export function parseStoredCart(value: string | undefined): StoredCartItem[] {
 
 export function serializeStoredCart(items: StoredCartItem[]) {
   return JSON.stringify(normalizeCartItems(items));
+}
+
+export function parseSignedStoredCart(
+  value: string | undefined,
+  secret: string,
+  options: SignedCartParseOptions = {},
+) {
+  if (!value) return [];
+
+  const signedCart = parseSignedCartValue(value);
+  if (!signedCart) {
+    return options.allowUnsignedFallback ? parseStoredCart(value) : [];
+  }
+
+  if (!verifyCartSignature(signedCart.payload, signedCart.signature, secret)) return [];
+
+  return parseStoredCart(decodeCartPayload(signedCart.payload));
+}
+
+export function serializeSignedStoredCart(items: StoredCartItem[], secret: string) {
+  const payload = encodeCartPayload(serializeStoredCart(items));
+  return `${SIGNED_CART_VERSION}.${payload}.${signCartPayload(payload, secret)}`;
 }
 
 export function upsertStoredCartItem(
@@ -92,4 +121,42 @@ function normalizeCartItems(items: StoredCartItem[]) {
 function sanitizeQuantity(value: number) {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.trunc(value));
+}
+
+function parseSignedCartValue(value: string) {
+  const [version, payload, signature, ...rest] = value.split(".");
+
+  if (rest.length > 0 || version !== SIGNED_CART_VERSION || !payload || !signature) {
+    return null;
+  }
+
+  return { payload, signature };
+}
+
+function encodeCartPayload(value: string) {
+  return Buffer.from(value, "utf8").toString("base64url");
+}
+
+function decodeCartPayload(value: string) {
+  try {
+    return Buffer.from(value, "base64url").toString("utf8");
+  } catch {
+    return "";
+  }
+}
+
+function signCartPayload(payload: string, secret: string) {
+  return createHmac("sha256", secret).update(`${SIGNED_CART_VERSION}.${payload}`).digest("base64url");
+}
+
+function verifyCartSignature(payload: string, signature: string, secret: string) {
+  if (!secret) return false;
+
+  const expectedSignature = signCartPayload(payload, secret);
+  const signatureBuffer = Buffer.from(signature);
+  const expectedSignatureBuffer = Buffer.from(expectedSignature);
+
+  if (signatureBuffer.length !== expectedSignatureBuffer.length) return false;
+
+  return timingSafeEqual(signatureBuffer, expectedSignatureBuffer);
 }

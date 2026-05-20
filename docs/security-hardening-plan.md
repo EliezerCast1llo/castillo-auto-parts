@@ -24,7 +24,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 | --- | --- |
 | Headers de seguridad ausentes | Implementado en `codex/security-hardening-mvp`: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` y HSTS en produccion. |
 | Server actions invocables por POST | Validar origen y agregar rate limit en acciones costosas. |
-| Cookie guest no firmada | Firmar cookie o mover carrito guest a DB con token hasheado; usar `secure` en produccion. |
+| Cookie guest no firmada | Implementado en `codex/cart-cookie-hardening`: cookie guest firmada con HMAC y `secure` en produccion. |
 | Inputs sin limites claros | Implementado parcialmente en `codex/security-hardening-mvp`: limites `.max()` en checkout. Pendiente formularios admin. |
 | Fallback mock si DB falla | Fallar cerrado en produccion o mostrar mantenimiento. |
 | Cambios admin sin auditoria | Agregar `AdminAuditLog` para productos, stock, zonas y ordenes. |
@@ -34,7 +34,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 
 1. `codex/security-hardening-mvp`: bloquear pago mock en produccion, validar secretos admin, rate limit login y headers. En progreso/completado para revision.
 2. `codex/order-access-token`: proteger pagina publica de orden con token guest. En progreso/completado para revision.
-3. `codex/cart-cookie-hardening`: firmar cookie o migrar carrito guest a DB.
+3. `codex/cart-cookie-hardening`: firmar cookie o migrar carrito guest a DB. En progreso/completado para revision.
 4. `codex/admin-audit-log`: registrar cambios admin relevantes.
 
 ## Fuentes base
