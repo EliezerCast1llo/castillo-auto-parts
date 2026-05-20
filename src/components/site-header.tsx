@@ -11,7 +11,7 @@ export async function SiteHeader() {
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Marca provisional
+              Repuestos automotrices
             </p>
             <h1 className="text-2xl font-bold text-primary">Castillo Auto Parts</h1>
           </Link>
@@ -37,22 +37,27 @@ export async function SiteHeader() {
           </div>
         </div>
 
-        <section className="grid gap-3 rounded-md border border-border bg-background p-3 md:grid-cols-[1fr_160px]">
+        <form
+          action="/catalog"
+          className="grid gap-3 rounded-md border border-border bg-background p-3 md:grid-cols-[1fr_160px]"
+        >
           <label className="flex min-h-12 items-center gap-3 rounded-md bg-card px-3">
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
               className="w-full bg-transparent text-sm outline-none"
+              name="q"
               placeholder="Busca por repuesto, SKU, número de parte o vehículo"
+              type="search"
             />
           </label>
-          <Link
-            href="/catalog"
+          <button
+            type="submit"
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
           >
             <Search className="h-4 w-4" />
             Buscar
-          </Link>
-        </section>
+          </button>
+        </form>
       </div>
     </header>
   );

@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { addCartItem } from "@/app/cart/actions";
-import type { CatalogProduct } from "@/data/products";
+import { isPurchasableStockStatus, type CatalogProduct } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { ProductVisual } from "./product-visual";
 import { StockBadge } from "./stock-badge";
 
 export function ProductCard({ product }: { product: CatalogProduct }) {
-  const isAvailable = product.stockStatus !== "No disponible";
+  const isAvailable = isPurchasableStockStatus(product.stockStatus);
 
   return (
     <article className="flex h-full flex-col rounded-md border border-border bg-card p-4 shadow-[0_10px_26px_rgba(18,50,74,0.05)]">
       <Link
+        aria-label={`Ver detalle de ${product.name}`}
         href={`/product/${product.slug}`}
         className="relative flex h-36 items-center justify-center overflow-hidden rounded-md bg-muted"
       >
@@ -28,7 +29,11 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         <p className="mt-2 min-h-5 text-sm text-muted-foreground">
           {product.brand} · {product.partNumber}
         </p>
-        <p className="mt-2 min-h-10 text-sm leading-5 text-muted-foreground">{product.compatibility}</p>
+        <p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">SKU {product.sku}</p>
+        <p className="mt-2 min-h-10 text-sm leading-5 text-muted-foreground">
+          <span className="font-semibold text-foreground">Compatible con: </span>
+          {product.compatibility}
+        </p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <span className="text-xl font-bold text-primary">{formatCurrency(product.priceCents)}</span>
           <form action={addCartItem}>

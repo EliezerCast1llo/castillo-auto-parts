@@ -96,6 +96,10 @@ export async function getRelatedCatalogProducts(product: CatalogProduct) {
   }
 }
 
+export function isPurchasableStockStatus(status: CatalogProduct["stockStatus"]) {
+  return status !== "No disponible";
+}
+
 function mapDbProduct(product: DbProduct): CatalogProduct {
   const stock = product.inventoryStocks[0];
   const stockQuantity = stock ? Math.max(stock.quantityOnHand - stock.quantityReserved, 0) : 0;

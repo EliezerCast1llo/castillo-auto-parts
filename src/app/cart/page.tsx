@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, Info, PackageCheck, ShoppingCart, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  CreditCard,
+  Info,
+  PackageCheck,
+  ShoppingCart,
+  Trash2,
+  Truck,
+} from "lucide-react";
 import { ProductVisual } from "@/components/product/product-visual";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
@@ -74,6 +84,8 @@ export default async function CartPage({ searchParams }: CartPageProps) {
               Los precios ya incluyen IVA.
             </div>
 
+            <CheckoutReadiness hasBlockingIssues={cart.hasBlockingIssues} />
+
             {cart.hasBlockingIssues ? (
               <div className="mt-5 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
                 Ajusta los productos sin disponibilidad para continuar.
@@ -108,6 +120,7 @@ function CartLineItem({ line }: { line: CartLine }) {
   return (
     <article className="grid gap-4 rounded-md border border-border bg-card p-4 md:grid-cols-[140px_1fr]">
       <Link
+        aria-label={`Ver detalle de ${line.product.name}`}
         className="flex h-36 items-center justify-center rounded-md bg-muted"
         href={`/product/${line.product.slug}`}
       >
@@ -127,7 +140,10 @@ function CartLineItem({ line }: { line: CartLine }) {
           </div>
 
           <p className="mt-3 text-sm text-muted-foreground">
-            {line.product.brand} · {line.product.partNumber}
+            {line.product.brand} · Parte {line.product.partNumber}
+          </p>
+          <p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">
+            SKU {line.product.sku}
           </p>
           <p className="mt-2 text-sm leading-5 text-muted-foreground">{line.product.compatibility}</p>
 
@@ -172,6 +188,40 @@ function CartLineItem({ line }: { line: CartLine }) {
         </div>
       </div>
     </article>
+  );
+}
+
+function CheckoutReadiness({ hasBlockingIssues }: { hasBlockingIssues: boolean }) {
+  const items = [
+    {
+      icon: <PackageCheck className="h-4 w-4" />,
+      label: hasBlockingIssues ? "Disponibilidad pendiente de ajustar" : "Disponibilidad lista",
+    },
+    {
+      icon: <CreditCard className="h-4 w-4" />,
+      label: "Pago completo en línea",
+    },
+    {
+      icon: <Truck className="h-4 w-4" />,
+      label: "Retiro o envío se define en checkout",
+    },
+  ];
+
+  return (
+    <div className="mt-4 rounded-md border border-border bg-background p-3">
+      <div className="flex items-center gap-2 text-sm font-bold text-primary">
+        <CheckCircle2 className="h-4 w-4" />
+        Revisión antes de pagar
+      </div>
+      <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
+        {items.map((item) => (
+          <li key={item.label} className="flex items-center gap-2">
+            <span className={hasBlockingIssues ? "text-warning" : "text-success"}>{item.icon}</span>
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
