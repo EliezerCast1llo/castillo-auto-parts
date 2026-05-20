@@ -13,7 +13,7 @@ import {
   parseCatalogFilters,
   type CatalogSearchParams,
 } from "@/data/catalog-filters";
-import { getCatalogProducts } from "@/data/products";
+import { getCatalogProductsResult } from "@/data/products";
 
 export const metadata = {
   title: "Catálogo | Castillo Auto Parts",
@@ -28,7 +28,8 @@ type CatalogPageProps = {
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const filters = parseCatalogFilters(searchParams ? await searchParams : {});
-  const products = await getCatalogProducts();
+  const catalogResult = await getCatalogProductsResult();
+  const products = catalogResult.products;
   const filteredProducts = filterCatalogProducts(products, filters);
   const filterOptions = getCatalogFilterOptions(products);
   const activeFilterCount = countActiveCatalogFilters(filters);
@@ -53,13 +54,20 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <section className="space-y-5">
           <CatalogHero />
 
+          {catalogResult.status === "unavailable" ? (
+            <CatalogUnavailableState />
+          ) : null}
+
           <div className="flex flex-col justify-between gap-3 rounded-md border border-border bg-card p-5 md:flex-row md:items-end">
             <div>
-              <p className="text-sm font-semibold text-success">Inventario inicial</p>
+              <p className="text-sm font-semibold text-success">
+                {catalogResult.source === "mock" ? "Inventario de prueba" : "Inventario activo"}
+              </p>
               <h2 className="mt-1 text-2xl font-bold text-primary">Catálogo de repuestos</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Primer listado de productos para probar filtros, compatibilidad, stock y tarjetas de
-                producto mientras se valida el inventario real.
+                {catalogResult.source === "mock"
+                  ? "Datos de prueba para desarrollo local. En producción no se muestra inventario simulado."
+                  : "Productos activos disponibles para búsqueda, filtros, compatibilidad y compra."}
               </p>
             </div>
             <div className="rounded-md bg-background px-3 py-2 text-sm font-semibold text-muted-foreground">
@@ -69,7 +77,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
           <CatalogActiveFilters filters={filters} />
 
-          {filteredProducts.length > 0 ? (
+          {catalogResult.status === "unavailable" ? null : filteredProducts.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.sku} product={product} />
@@ -77,22 +85,42 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             </div>
           ) : (
             <div className="rounded-md border border-border bg-card p-6">
-              <h3 className="text-lg font-bold text-primary">No encontramos productos con esos filtros</h3>
+              <h3 className="text-lg font-bold text-primary">
+                {products.length === 0
+                  ? "Aún no hay productos activos"
+                  : "No encontramos productos con esos filtros"}
+              </h3>
               <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-                Prueba quitar un filtro activo, buscar por número de parte o revisar otra combinación
-                de vehículo.
+                {products.length === 0
+                  ? "El catálogo está disponible, pero todavía no hay inventario activo publicado."
+                  : "Prueba quitar un filtro activo, buscar por número de parte o revisar otra combinación de vehículo."}
               </p>
-              <Link
-                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
-                href="/catalog"
-              >
-                Limpiar filtros
-              </Link>
+              {products.length > 0 ? (
+                <Link
+                  className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
+                  href="/catalog"
+                >
+                  Limpiar filtros
+                </Link>
+              ) : null}
             </div>
           )}
         </section>
       </div>
     </main>
+  );
+}
+
+function CatalogUnavailableState() {
+  return (
+    <div className="rounded-md border border-danger/20 bg-card p-6">
+      <p className="text-sm font-semibold text-danger">Catálogo temporalmente no disponible</p>
+      <h2 className="mt-1 text-xl font-bold text-primary">No pudimos cargar inventario real</h2>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+        Intenta nuevamente en unos minutos. Para proteger la operación, no mostramos productos de
+        prueba cuando la base de datos no responde.
+      </p>
+    </div>
   );
 }
 

@@ -200,6 +200,12 @@ Implementado en rama `codex/cart-cookie-hardening`:
 - En produccion no se aceptan carritos unsigned/legacy.
 - La cookie guest usa `secure` en produccion.
 
+Implementado en rama `codex/catalog-production-fallback`:
+
+- El catálogo solo usa mock data fuera de producción.
+- Si PostgreSQL falla en producción, se muestra estado temporalmente no disponible.
+- Home no muestra inventario mock si la base de datos no responde.
+
 Documento clave:
 
 - `docs/security-hardening-plan.md`

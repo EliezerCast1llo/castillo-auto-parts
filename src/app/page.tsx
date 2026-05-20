@@ -4,12 +4,13 @@ import { HomeHero } from "@/components/home/home-hero";
 import { PopularSearches } from "@/components/product/popular-searches";
 import { ProductCard } from "@/components/product/product-card";
 import { SiteHeader } from "@/components/site-header";
-import { getFeaturedCatalogProducts } from "@/data/products";
+import { getFeaturedCatalogProductsResult } from "@/data/products";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const products = await getFeaturedCatalogProducts();
+  const catalogResult = await getFeaturedCatalogProductsResult();
+  const products = catalogResult.products;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -32,9 +33,22 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard key={product.sku} product={product} />
-            ))}
+            {products.length > 0 ? (
+              products.map((product) => <ProductCard key={product.sku} product={product} />)
+            ) : (
+              <div className="rounded-md border border-border bg-card p-6 md:col-span-2 xl:col-span-3">
+                <p className="text-sm font-semibold text-primary">
+                  {catalogResult.status === "unavailable"
+                    ? "Catálogo temporalmente no disponible"
+                    : "Sin productos destacados"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {catalogResult.status === "unavailable"
+                    ? "No pudimos cargar inventario real. No mostramos datos de prueba cuando la base de datos no responde."
+                    : "Aún no hay productos destacados activos para mostrar en Home."}
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </div>
