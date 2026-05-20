@@ -194,6 +194,12 @@ Implementado en rama `codex/order-access-token`:
 - La base de datos guarda solo `accessTokenHash`, no el token plano.
 - Checkout redirige a `/orders/{orderNumber}?token={token}` despues de crear la orden.
 
+Implementado en rama `codex/cart-cookie-hardening`:
+
+- La cookie guest `castillo_guest_cart` queda firmada con HMAC.
+- En produccion no se aceptan carritos unsigned/legacy.
+- La cookie guest usa `secure` en produccion.
+
 Documento clave:
 
 - `docs/security-hardening-plan.md`
