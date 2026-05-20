@@ -207,6 +207,8 @@ Objetivo:
 
 Operar ventas e inventario inicial.
 
+Estado: en progreso con admin básico de órdenes.
+
 Entregables:
 
 - login admin;
@@ -221,6 +223,22 @@ Criterio de salida:
 
 - admin puede procesar orden pagada;
 - cambios sensibles quedan auditados.
+
+Avance actual:
+
+- `/admin/orders`;
+- `/admin/orders/[orderNumber]`;
+- filtro por estado;
+- métricas por estado;
+- cambio de estado de orden;
+- detalle de pago y eventos.
+
+Pendiente de la fase:
+
+- login admin;
+- roles/permisos;
+- auditoría de cambios sensibles;
+- productos e inventario admin.
 
 ## Fase 8 - Facturacion DTE
 

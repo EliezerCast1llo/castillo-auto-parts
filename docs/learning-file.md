@@ -314,6 +314,9 @@ Ya existe:
 - pago simulado mediante `PaymentProvider`;
 - orden en estado `PAID_PENDING_SHIPMENT`;
 - registro `Payment` y evento inicial `PaymentEvent`;
+- admin básico de órdenes en `/admin/orders`;
+- detalle admin en `/admin/orders/[orderNumber]`;
+- cambio operativo de estado de orden;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
@@ -323,6 +326,7 @@ Documentos clave:
 - `docs/phase-4-cart.md`
 - `docs/phase-5-checkout-orders.md`
 - `docs/phase-6-payments.md`
+- `docs/phase-7-admin-orders.md`
 
 ## GitHub
 
@@ -372,7 +376,7 @@ Negocio:
 Tecnico:
 
 - preparar mapa/pin;
-- preparar admin basico.
+- proteger rutas admin con login/roles.
 - reemplazar pago mock por proveedor local real cuando haya onboarding/credenciales.
 
 QA:

@@ -119,13 +119,14 @@ Antes de aprobar una feature:
 
 ## Admin
 
-- [ ] Ruta admin requiere autenticacion.
-- [ ] Usuario no admin no puede entrar.
+- [ ] Ruta admin requiere autenticacion antes de producción.
+- [ ] Usuario no admin no puede entrar antes de producción.
 - [ ] Admin ve ordenes por estado.
 - [ ] Admin ve detalle de orden.
 - [ ] Admin ve estado de pago.
 - [ ] Admin ve estado DTE/manual.
 - [ ] Admin ve direccion y metodo de entrega.
+- [ ] Admin puede cambiar estado operativo de orden.
 - [ ] Admin puede crear/editar productos.
 - [ ] Admin puede actualizar stock manual.
 - [ ] Cambios sensibles quedan auditados.
