@@ -37,7 +37,7 @@ La identidad debe transmitir:
 
 ## Páginas actuales
 
-- Home: entrada funcional con filtros, búsquedas populares y productos destacados.
+- Home: entrada funcional sin filtros, con CTA al catálogo, búsquedas populares y productos destacados.
 - Catálogo: filtros visibles, chips activos, estado vacío con acción clara y grilla de productos.
 - Carrito: resumen de productos, edición de cantidad, disponibilidad y señales previas al pago.
 
