@@ -16,25 +16,17 @@ export function CheckoutDeliveryFields({
   subtotalCents: number;
 }) {
   const [method, setMethod] = useState<FulfillmentMethod>("PICKUP");
-  const [city, setCity] = useState("");
-  const [department, setDepartment] = useState("");
+  const [deliveryZoneSlug, setDeliveryZoneSlug] = useState("");
   const isDelivery = method === "LOCAL_DELIVERY";
-  const selectedZone = deliveryZones.find((zone) => zone.city === city);
+  const selectedZone = deliveryZones.find((zone) => zone.slug === deliveryZoneSlug);
   const shippingCents = isDelivery ? (selectedZone ? selectedZone.feeCents : null) : 0;
   const totalCents = subtotalCents + (shippingCents ?? 0);
 
   function selectMethod(nextMethod: FulfillmentMethod) {
     setMethod(nextMethod);
     if (nextMethod === "PICKUP") {
-      setCity("");
-      setDepartment("");
+      setDeliveryZoneSlug("");
     }
-  }
-
-  function selectCity(nextCity: string) {
-    const nextZone = deliveryZones.find((zone) => zone.city === nextCity);
-    setCity(nextCity);
-    setDepartment(nextZone?.department ?? "");
   }
 
   return (
@@ -73,14 +65,14 @@ export function CheckoutDeliveryFields({
               Municipio
               <select
                 className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-                name="city"
-                onChange={(event) => selectCity(event.target.value)}
+                name="deliveryZoneSlug"
+                onChange={(event) => setDeliveryZoneSlug(event.target.value)}
                 required
-                value={city}
+                value={deliveryZoneSlug}
               >
                 <option value="">Selecciona municipio</option>
                 {deliveryZones.map((zone) => (
-                  <option key={zone.id} value={zone.city}>
+                  <option key={zone.id} value={zone.slug}>
                     {zone.name} · {formatCurrency(zone.feeCents)}
                   </option>
                 ))}
@@ -90,11 +82,9 @@ export function CheckoutDeliveryFields({
               Departamento
               <input
                 className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-                name="department"
-                onChange={(event) => setDepartment(event.target.value)}
-                required
+                readOnly
                 type="text"
-                value={department}
+                value={selectedZone?.department ?? ""}
               />
             </label>
           </div>

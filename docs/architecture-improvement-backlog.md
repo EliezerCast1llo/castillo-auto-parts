@@ -32,9 +32,14 @@ Implementado en `codex/vehicle-compatibility-structure`:
 ## P1
 
 - Separar estado interno de inventario de label publico.
+- Agregar `aria-label` a links visuales de producto.
+
+Completado en `codex/vehicle-compatibility-structure`:
+
 - Validar acciones de carrito con helper dedicado.
 - Limpiar o ignorar SKUs invalidos al leer carrito.
-- Agregar `aria-label` a links visuales de producto.
+- Limitar cantidad maxima por linea de carrito.
+- Resolver zona de entrega por `deliveryZoneSlug` en servidor para no confiar en municipio/departamento enviados por el cliente.
 
 Completado en `codex/ui-brand-foundation`:
 

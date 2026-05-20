@@ -22,6 +22,7 @@ export const checkoutSchema = z
       .min(8, "Ingresa un teléfono válido.")
       .max(32, "El teléfono es demasiado largo."),
     deliveryNotes: optionalLimitedString(500),
+    deliveryZoneSlug: optionalLimitedString(80),
     department: optionalLimitedString(80),
     fulfillmentMethod: z.enum(fulfillmentMethods),
     paymentMethod: z.literal("online_card"),
@@ -37,19 +38,11 @@ export const checkoutSchema = z
       });
     }
 
-    if (!data.city) {
+    if (!data.deliveryZoneSlug) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Selecciona el municipio de entrega.",
-        path: ["city"],
-      });
-    }
-
-    if (!data.department) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Selecciona el departamento de entrega.",
-        path: ["department"],
+        message: "Selecciona la zona de entrega.",
+        path: ["deliveryZoneSlug"],
       });
     }
   });
@@ -65,6 +58,7 @@ export function parseCheckoutFormData(formData: FormData) {
     customerName: formString(formData, "customerName"),
     customerPhone: formString(formData, "customerPhone"),
     deliveryNotes: optionalFormString(formData, "deliveryNotes"),
+    deliveryZoneSlug: optionalFormString(formData, "deliveryZoneSlug"),
     department: optionalFormString(formData, "department"),
     fulfillmentMethod: formString(formData, "fulfillmentMethod"),
     paymentMethod: formString(formData, "paymentMethod"),

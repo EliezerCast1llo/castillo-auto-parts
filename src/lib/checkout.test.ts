@@ -31,6 +31,33 @@ describe("checkout helpers", () => {
     expect(parsed.success).toBe(false);
   });
 
+  it("requires a configured delivery zone for local delivery", () => {
+    const parsed = checkoutSchema.safeParse({
+      addressLine1: "Calle principal",
+      customerEmail: "cliente@example.com",
+      customerName: "Cliente Demo",
+      customerPhone: "7777-7777",
+      fulfillmentMethod: "LOCAL_DELIVERY",
+      paymentMethod: "online_card",
+    });
+
+    expect(parsed.success).toBe(false);
+  });
+
+  it("accepts local delivery with address and delivery zone", () => {
+    const parsed = checkoutSchema.safeParse({
+      addressLine1: "Calle principal",
+      customerEmail: "cliente@example.com",
+      customerName: "Cliente Demo",
+      customerPhone: "7777-7777",
+      deliveryZoneSlug: "santa-tecla",
+      fulfillmentMethod: "LOCAL_DELIVERY",
+      paymentMethod: "online_card",
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
   it("allows pickup without delivery address fields", () => {
     const parsed = checkoutSchema.safeParse({
       customerEmail: "cliente@example.com",

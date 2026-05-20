@@ -441,6 +441,8 @@ Tecnico:
 - reemplazar login temporal admin por auth real con roles antes de producción.
 - reemplazar pago mock por proveedor local real cuando haya onboarding/credenciales.
 - la compatibilidad vehicular debe vivir como datos estructurados; el texto solo debe ser presentacion o busqueda secundaria.
+- checkout no debe confiar en ciudad/departamento escritos por el cliente; debe resolver la zona de entrega desde un identificador controlado por servidor.
+- las cookies de carrito deben aceptar solo SKUs/cantidades normalizadas para evitar payloads basura o cantidades fuera de rango.
 
 QA:
 

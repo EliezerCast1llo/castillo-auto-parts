@@ -1,4 +1,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import {
+  CART_MAX_LINE_QUANTITY,
+  normalizeCartSku,
+  sanitizeCartQuantity,
+} from "./cart-validation";
 
 export type StoredCartItem = {
   quantity: number;
@@ -23,7 +28,7 @@ export function parseStoredCart(value: string | undefined): StoredCartItem[] {
       parsed
         .map((item) => ({
           quantity: Number(item?.quantity),
-          sku: String(item?.sku ?? "").trim(),
+          sku: normalizeCartSku(String(item?.sku ?? "")),
         }))
         .filter((item) => item.sku && Number.isInteger(item.quantity) && item.quantity > 0),
     );
@@ -64,9 +69,9 @@ export function upsertStoredCartItem(
   quantityToAdd: number,
   maxQuantity: number,
 ) {
-  const cleanSku = sku.trim();
-  const safeQuantityToAdd = sanitizeQuantity(quantityToAdd);
-  const safeMaxQuantity = sanitizeQuantity(maxQuantity);
+  const cleanSku = normalizeCartSku(sku);
+  const safeQuantityToAdd = sanitizeCartQuantity(quantityToAdd);
+  const safeMaxQuantity = sanitizeCartQuantity(maxQuantity);
   if (!cleanSku || safeQuantityToAdd <= 0 || safeMaxQuantity <= 0) return normalizeCartItems(items);
 
   const currentQuantity = items.find((item) => item.sku === cleanSku)?.quantity ?? 0;
@@ -79,11 +84,11 @@ export function setStoredCartItemQuantity(
   quantity: number,
   maxQuantity: number,
 ) {
-  const cleanSku = sku.trim();
+  const cleanSku = normalizeCartSku(sku);
   if (!cleanSku) return normalizeCartItems(items);
 
-  const safeMaxQuantity = sanitizeQuantity(maxQuantity);
-  const nextQuantity = Math.min(sanitizeQuantity(quantity), safeMaxQuantity);
+  const safeMaxQuantity = sanitizeCartQuantity(maxQuantity);
+  const nextQuantity = sanitizeCartQuantity(quantity, safeMaxQuantity);
   const otherItems = normalizeCartItems(items).filter((item) => item.sku !== cleanSku);
 
   if (nextQuantity <= 0) {
@@ -94,7 +99,7 @@ export function setStoredCartItemQuantity(
 }
 
 export function removeStoredCartItem(items: StoredCartItem[], sku: string) {
-  const cleanSku = sku.trim();
+  const cleanSku = normalizeCartSku(sku);
   return normalizeCartItems(items).filter((item) => item.sku !== cleanSku);
 }
 
@@ -106,21 +111,16 @@ function normalizeCartItems(items: StoredCartItem[]) {
   const merged = new Map<string, number>();
 
   for (const item of items) {
-    const sku = item.sku.trim();
-    const quantity = sanitizeQuantity(item.quantity);
+    const sku = normalizeCartSku(item.sku);
+    const quantity = sanitizeCartQuantity(item.quantity);
     if (!sku || quantity <= 0) continue;
 
-    merged.set(sku, (merged.get(sku) ?? 0) + quantity);
+    merged.set(sku, Math.min((merged.get(sku) ?? 0) + quantity, CART_MAX_LINE_QUANTITY));
   }
 
   return [...merged.entries()]
     .slice(0, MAX_GUEST_CART_ITEMS)
     .map(([sku, quantity]) => ({ sku, quantity }));
-}
-
-function sanitizeQuantity(value: number) {
-  if (!Number.isFinite(value)) return 0;
-  return Math.max(0, Math.trunc(value));
 }
 
 function parseSignedCartValue(value: string) {

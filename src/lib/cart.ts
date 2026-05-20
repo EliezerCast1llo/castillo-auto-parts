@@ -9,6 +9,7 @@ import {
   upsertStoredCartItem,
   type StoredCartItem,
 } from "./cart-state";
+import { hasValidCartActionInput, normalizeCartSku } from "./cart-validation";
 
 export const GUEST_CART_COOKIE = "castillo_guest_cart";
 
@@ -67,6 +68,10 @@ export async function getGuestCartItemCount() {
 }
 
 export async function addGuestCartItem(sku: string, quantity: number) {
+  if (!hasValidCartActionInput(sku, quantity)) {
+    return "invalid" as const;
+  }
+
   const product = await findProductBySku(sku);
   if (!product || product.stockStatus === "No disponible" || product.stockQuantity <= 0) {
     return "unavailable" as const;
@@ -83,6 +88,10 @@ export async function addGuestCartItem(sku: string, quantity: number) {
 }
 
 export async function updateGuestCartItem(sku: string, quantity: number) {
+  if (!normalizeCartSku(sku)) {
+    return "invalid" as const;
+  }
+
   const product = await findProductBySku(sku);
   if (!product || product.stockStatus === "No disponible" || product.stockQuantity <= 0) {
     await removeGuestCartItem(sku);
@@ -99,6 +108,8 @@ export async function updateGuestCartItem(sku: string, quantity: number) {
 }
 
 export async function removeGuestCartItem(sku: string) {
+  if (!normalizeCartSku(sku)) return;
+
   const items = await readGuestCartItems();
   await writeGuestCartItems(removeStoredCartItem(items, sku));
 }
@@ -150,8 +161,11 @@ function getGuestCartCookieSecret() {
 }
 
 async function findProductBySku(sku: string) {
+  const cleanSku = normalizeCartSku(sku);
+  if (!cleanSku) return undefined;
+
   const products = await getCatalogProducts();
-  return products.find((product) => product.sku === sku.trim());
+  return products.find((product) => product.sku === cleanSku);
 }
 
 function getLineIssue(quantity: number, availableQuantity: number): CartLineIssue | undefined {
