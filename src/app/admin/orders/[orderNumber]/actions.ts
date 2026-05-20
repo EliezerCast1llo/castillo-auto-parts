@@ -3,6 +3,7 @@
 import { OrderStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 
@@ -24,18 +25,47 @@ export async function updateAdminOrderStatus(formData: FormData) {
     redirect(`/admin/orders/${orderNumber || ""}?estado=invalid`);
   }
 
-  await db.order.update({
-    data: {
-      shipment: {
-        update: {
-          status: mapShipmentStatus(status),
+  await db.$transaction(async (tx) => {
+    const existingOrder = await tx.order.findUnique({
+      where: { orderNumber },
+      select: {
+        id: true,
+        shipment: {
+          select: { status: true },
         },
+        status: true,
       },
-      status,
-    },
-    where: {
-      orderNumber,
-    },
+    });
+
+    if (!existingOrder) {
+      redirect(`/admin/orders/${orderNumber}?estado=not_found`);
+    }
+
+    await tx.order.update({
+      data: {
+        shipment: {
+          update: {
+            status: mapShipmentStatus(status),
+          },
+        },
+        status,
+      },
+      where: {
+        orderNumber,
+      },
+    });
+
+    await writeAdminAuditLog(tx, {
+      action: "order.status_updated",
+      entityId: existingOrder.id,
+      entityLabel: orderNumber,
+      entityType: "Order",
+      metadata: {
+        nextStatus: status,
+        previousShipmentStatus: existingOrder.shipment?.status ?? null,
+        previousStatus: existingOrder.status,
+      },
+    });
   });
 
   revalidatePath("/admin/orders");

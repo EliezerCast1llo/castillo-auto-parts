@@ -48,9 +48,17 @@ Completado en `codex/ui-brand-foundation`:
 
 ## P2
 
+- Agregar auditoria admin para cambios operativos.
 - Extraer componentes repetibles: `PageIntro`, `Notice`, `SummaryRow`, `TrustBadge`.
 - Mover filtros de catalogo a DB/paginacion cuando el volumen crezca.
 - Mover colores de `ProductVisual` a tokens del tema.
+
+Completado en `codex/vehicle-compatibility-structure`:
+
+- Modelo `AdminAuditLog` para eventos operativos.
+- Helper `writeAdminAuditLog` para acciones admin.
+- Registro de cambios en productos, inventario, ordenes, retiro en bodega y zonas de entrega.
+- Vista `/admin/audit` con los ultimos eventos.
 
 ## PRs sugeridos
 

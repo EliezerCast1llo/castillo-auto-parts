@@ -3,6 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { parseAdminPriceCents, slugifyProductValue } from "@/lib/admin-products";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
@@ -23,29 +24,46 @@ export async function updatePickupSettings(formData: FormData) {
   }
 
   try {
-    await db.inventoryLocation.upsert({
-      where: { code: DEFAULT_LOCATION_CODE },
-      update: {
-        address,
-        isActive: true,
-        isDefault: true,
-        latitude,
-        longitude,
-        name,
-        pickupHours: pickupHours || null,
-        pickupInstructions: pickupInstructions || null,
-      },
-      create: {
-        address,
-        code: DEFAULT_LOCATION_CODE,
-        isActive: true,
-        isDefault: true,
-        latitude,
-        longitude,
-        name,
-        pickupHours: pickupHours || null,
-        pickupInstructions: pickupInstructions || null,
-      },
+    await db.$transaction(async (tx) => {
+      const location = await tx.inventoryLocation.upsert({
+        where: { code: DEFAULT_LOCATION_CODE },
+        update: {
+          address,
+          isActive: true,
+          isDefault: true,
+          latitude,
+          longitude,
+          name,
+          pickupHours: pickupHours || null,
+          pickupInstructions: pickupInstructions || null,
+        },
+        create: {
+          address,
+          code: DEFAULT_LOCATION_CODE,
+          isActive: true,
+          isDefault: true,
+          latitude,
+          longitude,
+          name,
+          pickupHours: pickupHours || null,
+          pickupInstructions: pickupInstructions || null,
+        },
+      });
+
+      await writeAdminAuditLog(tx, {
+        action: "settings.pickup.updated",
+        entityId: location.id,
+        entityLabel: location.code,
+        entityType: "InventoryLocation",
+        metadata: {
+          address,
+          latitude,
+          longitude,
+          name,
+          pickupHours: pickupHours || null,
+          pickupInstructions: pickupInstructions || null,
+        },
+      });
     });
   } catch (error) {
     handleSettingsError(error, "pickup");
@@ -62,8 +80,18 @@ export async function createDeliveryZone(formData: FormData) {
   if (!input) redirect("/admin/settings?estado=invalid_zone");
 
   try {
-    await db.deliveryZone.create({
-      data: input,
+    await db.$transaction(async (tx) => {
+      const zone = await tx.deliveryZone.create({
+        data: input,
+      });
+
+      await writeAdminAuditLog(tx, {
+        action: "delivery_zone.created",
+        entityId: zone.id,
+        entityLabel: zone.slug,
+        entityType: "DeliveryZone",
+        metadata: input,
+      });
     });
   } catch (error) {
     handleSettingsError(error, "zone");
@@ -81,9 +109,34 @@ export async function updateDeliveryZone(formData: FormData) {
   if (!zoneId || !input) redirect("/admin/settings?estado=invalid_zone");
 
   try {
-    await db.deliveryZone.update({
-      data: input,
-      where: { id: zoneId },
+    await db.$transaction(async (tx) => {
+      const previousZone = await tx.deliveryZone.findUnique({
+        where: { id: zoneId },
+        select: {
+          city: true,
+          department: true,
+          feeCents: true,
+          isActive: true,
+          name: true,
+          slug: true,
+          sortOrder: true,
+        },
+      });
+      const zone = await tx.deliveryZone.update({
+        data: input,
+        where: { id: zoneId },
+      });
+
+      await writeAdminAuditLog(tx, {
+        action: "delivery_zone.updated",
+        entityId: zone.id,
+        entityLabel: zone.slug,
+        entityType: "DeliveryZone",
+        metadata: {
+          next: input,
+          previous: previousZone,
+        },
+      });
     });
   } catch (error) {
     handleSettingsError(error, "zone");

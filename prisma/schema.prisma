@@ -337,3 +337,17 @@ model DeliveryZone {
 
   @@index([city, department])
 }
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  entityType  String
+  entityId    String?
+  entityLabel String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}

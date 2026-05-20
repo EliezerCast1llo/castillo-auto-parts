@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AdminSessionControls } from "./admin-session-controls";
 
 type AdminNavProps = {
-  active: "orders" | "products" | "settings";
+  active: "audit" | "orders" | "products" | "settings";
 };
 
 export function AdminNav({ active }: AdminNavProps) {
@@ -17,6 +17,9 @@ export function AdminNav({ active }: AdminNavProps) {
         </AdminNavLink>
         <AdminNavLink active={active === "settings"} href="/admin/settings">
           Ajustes
+        </AdminNavLink>
+        <AdminNavLink active={active === "audit"} href="/admin/audit">
+          Auditoría
         </AdminNavLink>
       </nav>
       <AdminSessionControls />
