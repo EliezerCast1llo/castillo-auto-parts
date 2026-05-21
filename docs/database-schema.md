@@ -4,7 +4,21 @@
 
 Definir un modelo de datos que soporte el MVP sin cerrar el camino a multi-bodega, facturacion DTE, chat, usuarios registrados, checkout invitado y pagos con proveedor local.
 
-Este documento describe entidades y campos esperados. El `schema.prisma` se debe crear en la fase de implementacion.
+El schema implementado vive en `prisma/schema.prisma` y es la fuente canonica tecnica. Este documento describe el modelo de negocio a alto nivel y puede incluir entidades futuras.
+
+## Estado implementado
+
+Implementado en Prisma:
+
+- catalogo: `ProductCategory`, `Product`, `ProductImage`, `VehicleCompatibility`;
+- inventario: `InventoryLocation`, `InventoryStock`;
+- carrito/guest: `GuestSession`, `Cart`, `CartItem`;
+- ordenes: `Order`, `OrderItem`, `Address`, `Shipment`;
+- pagos mock/adaptador: `Payment`, `PaymentEvent`;
+- fiscal manual futuro: `InvoiceDte`;
+- fulfillment: `DeliveryZone`;
+- operacion admin: `AdminAuditLog`;
+- comunicaciones: `EmailLog`, `StockAlertRequest`.
 
 ## Convenciones
 

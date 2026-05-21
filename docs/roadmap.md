@@ -1,5 +1,11 @@
 # Roadmap - Implementacion por fases
 
+## Estado actual
+
+La fuente rapida de estado actual del MVP es `docs/mvp-current-status.md`.
+
+Este roadmap conserva el plan por fases y puede incluir contexto historico. Si hay diferencia entre este archivo y `docs/mvp-current-status.md`, usar `docs/mvp-current-status.md` para decisiones operativas actuales.
+
 ## Principio
 
 El proyecto debe avanzar por fases pequenas. Cada fase debe dejar algo revisable por QA humano.
@@ -10,7 +16,7 @@ Horizonte objetivo: 3 meses para un MVP robusto, no una demo apresurada.
 
 ## Fase 0 - Documentacion y decisiones base
 
-Estado: en progreso.
+Estado: implementada como base documental; se mantiene viva con actualizaciones.
 
 Entregables:
 
@@ -55,7 +61,7 @@ Objetivo:
 
 Crear base del proyecto.
 
-Estado: en progreso.
+Estado: implementada como setup local base.
 
 Entregables:
 
@@ -90,7 +96,7 @@ Objetivo:
 
 Permitir descubrir repuestos.
 
-Estado: en progreso.
+Estado: primera version implementada y conectada a Prisma/PostgreSQL con fallback seguro.
 
 Entregables:
 

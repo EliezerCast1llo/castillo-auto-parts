@@ -18,6 +18,7 @@ Pulir el MVP antes de pagos reales con tres mejoras operativas:
 - El usuario puede usar geolocalizacion del navegador.
 - El usuario puede mover el pin manualmente sobre mapa basado en OpenStreetMap.
 - Se guardan `latitude`, `longitude`, `formattedAddress` y `placeId` cuando existan.
+- El servidor valida coordenadas contra rangos aproximados por zona para San Salvador y Santa Tecla.
 - Retiro en bodega mantiene solo direccion/mapa de bodega y no muestra campos de domicilio.
 
 Nota: esta version no usa Google Places todavia. El modelo ya queda preparado para `placeId`, direccion formateada y coordenadas para conectar Google Places o proveedor final despues.
@@ -26,7 +27,10 @@ Nota: esta version no usa Google Places todavia. El modelo ya queda preparado pa
 
 - Cuando un producto en carrito queda sin stock o con cantidad insuficiente, el usuario puede dejar email o telefono.
 - Se guarda `StockAlertRequest` con producto, SKU, cantidad solicitada, contacto y estado `OPEN`.
+- Se deduplican solicitudes abiertas para el mismo producto/contacto.
+- La creacion de avisos tiene rate limit basico para evitar spam.
 - Admin tiene vista `/admin/stock-alerts` para revisar solicitudes.
+- Admin puede filtrar y cambiar estado de los avisos.
 
 ### QA automatizado
 

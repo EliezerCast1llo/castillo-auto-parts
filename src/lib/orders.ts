@@ -17,6 +17,7 @@ import { db } from "./db";
 import {
   getActiveDeliveryZones,
   getDeliveryZoneBySlug,
+  isCoordinateInsideDeliveryZone,
   type DeliveryZoneOption,
 } from "./fulfillment";
 import { sendOrderConfirmationEmail } from "./email/transactional";
@@ -56,6 +57,16 @@ export async function createPaidGuestOrderFromCart(
     const deliveryZones = await getActiveDeliveryZones();
     const deliveryZone = resolveCheckoutDeliveryZone(parsed.data, deliveryZones);
     if (parsed.data.fulfillmentMethod === "LOCAL_DELIVERY" && !deliveryZone) {
+      return { status: "coverage_unavailable" };
+    }
+    if (
+      deliveryZone &&
+      !isCoordinateInsideDeliveryZone({
+        latitude: parsed.data.latitude,
+        longitude: parsed.data.longitude,
+        zone: deliveryZone,
+      })
+    ) {
       return { status: "coverage_unavailable" };
     }
 

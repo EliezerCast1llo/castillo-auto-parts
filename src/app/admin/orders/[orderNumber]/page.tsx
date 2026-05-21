@@ -261,6 +261,9 @@ function getStatusClassName(status: OrderStatus) {
 
 function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
+    db_unavailable: "No pudimos actualizar la orden. Revisa la conexión de base de datos.",
+    invalid_transition: "No se puede reabrir una orden cancelada o reembolsada desde este panel.",
+    not_found: "No encontramos esa orden.",
     updated: "Estado de orden actualizado.",
   };
 

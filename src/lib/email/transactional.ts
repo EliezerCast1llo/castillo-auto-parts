@@ -43,9 +43,13 @@ function emailPayloadJson(message: ReturnType<typeof buildOrderConfirmationEmail
   return {
     from: message.from,
     subject: message.subject,
-    text: message.text,
+    text: redactSensitiveEmailText(message.text),
     to: message.to,
   } satisfies Prisma.InputJsonValue;
+}
+
+export function redactSensitiveEmailText(value: string) {
+  return value.replace(/([?&]token=)[^\s&]+/g, "$1[redacted]");
 }
 
 async function logFailedEmail({

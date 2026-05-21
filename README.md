@@ -4,7 +4,9 @@ E-commerce de repuestos automotrices para El Salvador.
 
 ## Estado
 
-Proyecto en fase inicial. La documentacion vive en `docs/` y define el producto, arquitectura, QA, roadmap, investigacion de mercado, pagos, DTE, backlog y aprendizajes del proyecto.
+MVP funcional local en etapa guest-first. La fuente rapida de estado actual es
+`docs/mvp-current-status.md`; los documentos de fase en `docs/` conservan contexto,
+decisiones y backlog historico.
 
 ## Decisiones actuales
 
@@ -16,7 +18,9 @@ Proyecto en fase inicial. La documentacion vive en `docs/` y define el producto,
 - DTE inicial: proceso semiautomatico.
 - Data inicial: mock data mientras se valida inventario real.
 - Marca: `Castillo Auto Parts` queda como codename/propuesta provisional, pendiente de validacion legal/comercial por coincidencias encontradas.
-- Catalogo: lee desde PostgreSQL/Prisma cuando hay base de datos disponible y cae a mock data si la base aun no esta levantada.
+- Catalogo: lee desde PostgreSQL/Prisma cuando hay base de datos disponible. En desarrollo puede usar mock fallback; en produccion no muestra inventario simulado si la base falla.
+- Checkout: compra guest con retiro en bodega o envio local con mapa/pin.
+- Pagos: proveedor `mock` para QA local; pagos reales quedan para el gate de produccion.
 
 ## Setup local
 
@@ -47,14 +51,24 @@ npm run db:seed
 npm run dev
 ```
 
+6. Ejecutar pruebas:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run test:e2e
+```
+
 Notas:
 
-- La app sigue cargando con mock data si PostgreSQL no esta disponible.
-- En esta Mac no se pudo ejecutar el seed real porque `docker` no esta instalado.
+- Docker Desktop ya esta instalado en esta Mac y PostgreSQL corre via `docker compose`.
+- Playwright reutiliza `http://localhost:3000` si el servidor local ya esta activo.
 
 ## Documentos clave
 
 - `docs/project-context.md`
+- `docs/mvp-current-status.md`
 - `docs/learning-file.md`
 - `docs/product-requirements.md`
 - `docs/technical-architecture.md`

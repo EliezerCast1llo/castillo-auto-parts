@@ -26,8 +26,8 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 | Server actions invocables por POST | Validar origen y agregar rate limit en acciones costosas. |
 | Cookie guest no firmada | Implementado en `codex/cart-cookie-hardening`: cookie guest firmada con HMAC y `secure` en produccion. |
 | Inputs sin limites claros | Implementado parcialmente en `codex/security-hardening-mvp`: limites `.max()` en checkout. Pendiente formularios admin. |
-| Fallback mock si DB falla | Fallar cerrado en produccion o mostrar mantenimiento. |
-| Cambios admin sin auditoria | Agregar `AdminAuditLog` para productos, stock, zonas y ordenes. |
+| Fallback mock si DB falla | Implementado en `codex/catalog-production-fallback`: en produccion no se muestra inventario mock si DB falla. |
+| Cambios admin sin auditoria | Implementado en `codex/vehicle-compatibility-structure`: `AdminAuditLog` para productos, stock, zonas, ordenes y avisos de stock. |
 | Webhook futuro sin idempotencia | Agregar identificador unico de evento externo por proveedor. |
 
 ## Orden sugerido de PRs
@@ -35,7 +35,14 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 1. `codex/security-hardening-mvp`: bloquear pago mock en produccion, validar secretos admin, rate limit login y headers. En progreso/completado para revision.
 2. `codex/order-access-token`: proteger pagina publica de orden con token guest. En progreso/completado para revision.
 3. `codex/cart-cookie-hardening`: firmar cookie o migrar carrito guest a DB. En progreso/completado para revision.
-4. `codex/admin-audit-log`: registrar cambios admin relevantes.
+4. `codex/admin-audit-log`: completado como parte de `codex/vehicle-compatibility-structure`.
+
+## Gates pendientes
+
+- Reemplazar login admin temporal por auth con usuarios/roles antes de produccion.
+- Mantener `PAYMENT_PROVIDER=mock` bloqueado en produccion y no activar ventas reales sin proveedor verificado.
+- Implementar webhook real con firma e idempotencia antes de pagos reales.
+- Revisar logs para evitar datos sensibles cuando se integren proveedores externos.
 
 ## Fuentes base
 

@@ -3,6 +3,7 @@ import {
   buildGoogleMapsEmbedUrl,
   defaultDeliveryZones,
   getDeliveryFeeCents,
+  isCoordinateInsideDeliveryZone,
   normalizeCoverageValue,
 } from "./fulfillment";
 
@@ -37,5 +38,22 @@ describe("fulfillment helpers", () => {
         longitude: -89.2182,
       }),
     ).toContain("13.6929%2C-89.2182");
+  });
+
+  it("checks coordinates against known delivery zone bounds", () => {
+    expect(
+      isCoordinateInsideDeliveryZone({
+        latitude: 13.6769,
+        longitude: -89.2797,
+        zone: defaultDeliveryZones[0],
+      }),
+    ).toBe(true);
+    expect(
+      isCoordinateInsideDeliveryZone({
+        latitude: 13.6769,
+        longitude: -88.9,
+        zone: defaultDeliveryZones[0],
+      }),
+    ).toBe(false);
   });
 });

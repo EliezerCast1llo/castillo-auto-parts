@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseStockAlertFormData } from "./stock-alerts";
+import { parseStockAlertFormData, parseStockAlertStatus } from "./stock-alerts";
 
 describe("stock alerts", () => {
   it("accepts an email contact request", () => {
@@ -40,5 +40,11 @@ describe("stock alerts", () => {
     const parsed = parseStockAlertFormData(formData);
 
     expect(parsed.success).toBe(false);
+  });
+
+  it("parses known stock alert statuses", () => {
+    expect(parseStockAlertStatus("OPEN")).toBe("OPEN");
+    expect(parseStockAlertStatus("NOTIFIED")).toBe("NOTIFIED");
+    expect(parseStockAlertStatus("UNKNOWN")).toBeNull();
   });
 });
