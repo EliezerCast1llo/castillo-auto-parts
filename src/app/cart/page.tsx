@@ -318,6 +318,7 @@ function getStatusMessage(status: string) {
     stock_alert_db_unavailable: "No pudimos guardar el aviso. Revisa la conexión de base de datos.",
     stock_alert_invalid: "Ingresa un email o teléfono válido para avisarte.",
     stock_alert_not_found: "No encontramos ese producto para crear el aviso.",
+    stock_alert_rate_limited: "Demasiados intentos de aviso. Intenta nuevamente en unos minutos.",
     stock_issue: "Revisa disponibilidad y cantidades antes de continuar.",
     unavailable: "Este producto ya no está disponible.",
     updated: "Carrito actualizado.",

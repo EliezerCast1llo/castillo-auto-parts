@@ -87,6 +87,7 @@ function formatAuditAction(action: string) {
     "product.created": "Producto creado",
     "product.updated": "Producto actualizado",
     "settings.pickup.updated": "Retiro actualizado",
+    "stock_alert.status_updated": "Aviso de stock actualizado",
   };
 
   return labels[action] ?? action;

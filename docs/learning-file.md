@@ -448,6 +448,11 @@ Tecnico:
 - checkout local ya exige coordenadas; el pin actual usa OpenStreetMap sin API key y queda listo para conectar Google Places/proveedor final.
 - las solicitudes de aviso por stock quedan como `StockAlertRequest` y deben disparar notificaciones cuando inventario vuelva a disponibilidad.
 - Playwright queda como base E2E inicial; las pruebas de checkout completo deben usar una base aislada para no consumir stock real.
+- no persistir tokens de acceso de orden en logs de email; cualquier payload debe guardar tokens redacted.
+- stock alerts no deben crecer sin control: deduplicar por producto/contacto y aplicar rate limit.
+- si una orden pendiente se cancela/reembolsa antes de entrega, restaurar inventario de forma auditada; no permitir reabrir estados terminales sin flujo dedicado.
+- la validacion de mapa empieza con rangos por zona y debe evolucionar a poligonos/proveedor final.
+- agentes revisores detectaron P0 futuros: pagos reales con webhook/idempotencia, auth admin final, DTE manual MVP y politica de cancelaciones/reembolsos con inventario.
 
 QA:
 

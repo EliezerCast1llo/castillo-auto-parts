@@ -3,6 +3,9 @@ import { normalizeCartSku, sanitizeCartQuantity } from "./cart-validation";
 import { db } from "./db";
 
 export type CreateStockAlertResult = "created" | "db_unavailable" | "invalid" | "not_found";
+export const stockAlertStatuses = ["OPEN", "NOTIFIED", "CLOSED", "CANCELLED"] as const;
+
+export type StockAlertStatus = (typeof stockAlertStatuses)[number];
 
 const stockAlertSchema = z
   .object({
@@ -37,6 +40,10 @@ export function parseStockAlertFormData(formData: FormData) {
   });
 }
 
+export function parseStockAlertStatus(value: string) {
+  return stockAlertStatuses.find((status) => status === value) ?? null;
+}
+
 export async function createStockAlertRequest(formData: FormData): Promise<CreateStockAlertResult> {
   const parsed = parseStockAlertFormData(formData);
   if (!parsed.success) return "invalid";
@@ -52,6 +59,32 @@ export async function createStockAlertRequest(formData: FormData): Promise<Creat
     });
 
     if (!product) return "not_found";
+
+    const existingAlert = await db.stockAlertRequest.findFirst({
+      where: {
+        OR: buildContactFilters(parsed.data),
+        skuSnapshot: product.sku,
+        status: "OPEN",
+      },
+      select: {
+        id: true,
+        requestedQuantity: true,
+      },
+    });
+
+    if (existingAlert) {
+      await db.stockAlertRequest.update({
+        data: {
+          requestedQuantity: Math.max(
+            existingAlert.requestedQuantity,
+            sanitizeCartQuantity(parsed.data.requestedQuantity),
+          ),
+        },
+        where: { id: existingAlert.id },
+      });
+
+      return "created";
+    }
 
     await db.stockAlertRequest.create({
       data: {
@@ -71,6 +104,13 @@ export async function createStockAlertRequest(formData: FormData): Promise<Creat
     console.error(error);
     return "db_unavailable";
   }
+}
+
+function buildContactFilters(input: StockAlertInput) {
+  return [
+    input.customerEmail ? { email: input.customerEmail } : null,
+    input.customerPhone ? { phone: input.customerPhone } : null,
+  ].filter((item): item is { email: string } | { phone: string } => Boolean(item));
 }
 
 function formString(formData: FormData, key: string) {
