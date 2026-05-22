@@ -23,11 +23,12 @@ Triggers:
 Jobs:
 
 - `quality`: instala dependencias, genera Prisma Client, valida schema, prepara PostgreSQL, corre lint, typecheck, unit tests y build.
-- `e2e`: instala Playwright Chromium, prepara PostgreSQL con seed y corre `npm run test:e2e`.
+- `e2e`: instala Playwright Chromium y corre `npm run test:e2e`, que prepara un schema PostgreSQL temporal por corrida.
 
 Servicios:
 
 - PostgreSQL 16 Alpine como service container de GitHub Actions.
+- El job E2E usa un schema aislado mediante `E2E_DATABASE_SCHEMA`.
 
 Variables de entorno CI:
 
@@ -102,9 +103,37 @@ npm run build
 npm run test:e2e
 ```
 
+`npm run test:e2e` ejecuta `scripts/run-e2e.ts`.
+
+Flujo del runner E2E:
+
+1. Toma `DATABASE_URL` o `E2E_DATABASE_URL`.
+2. Genera un schema temporal o usa `E2E_DATABASE_SCHEMA`, siempre normalizado con prefijo `e2e_`.
+3. Ejecuta `prisma db push` contra ese schema.
+4. Ejecuta `npm run db:seed` contra ese schema.
+5. Ejecuta `npm run build`.
+6. Ejecuta Playwright contra `next start` con la app apuntando al mismo schema.
+7. Elimina el schema con `DROP SCHEMA ... CASCADE`.
+
+Por defecto el runner usa `http://localhost:3100` y `next start` para no reutilizar ni chocar con un servidor `next dev` local en `3000`. Se puede cambiar con `E2E_PORT` o `PLAYWRIGHT_PORT`.
+
+El runner fuerza proveedores seguros de prueba por defecto:
+
+- `PAYMENT_PROVIDER=mock`;
+- `EMAIL_PROVIDER=console`;
+- `NEXT_PUBLIC_SITE_URL` apuntando al puerto E2E.
+
+Para cambiar esos valores solo en E2E, usar `E2E_PAYMENT_PROVIDER`, `E2E_EMAIL_PROVIDER` o `E2E_SITE_URL`.
+
+Para depurar sin preparar schema aislado:
+
+```bash
+npm run test:e2e:raw
+```
+
 ## Riesgos Y Pendientes
 
-- E2E usa seed data y puede consumir stock si los tests mutan datos. A futuro conviene una base aislada por run o seed reset por test.
+- E2E queda aislado por schema PostgreSQL por corrida. A futuro se puede aislar tambien por test si los flujos crecen mucho.
 - El proveedor `mock` es correcto en CI del MVP, pero no debe usarse como pago real en produccion.
 - Cuando se active Vercel, el CD debe depender de que `quality` y `e2e` pasen.
 - Cuando existan pagos reales, agregar job separado para pruebas de webhook/idempotencia con fixtures del proveedor.

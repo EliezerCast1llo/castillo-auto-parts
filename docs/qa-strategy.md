@@ -65,6 +65,12 @@ Usar con Playwright cuando exista UI funcional:
 - admin ve orden;
 - producto sin stock no se compra.
 
+Implementado:
+
+- `npm run test:e2e` usa `scripts/run-e2e.ts` para crear un schema PostgreSQL temporal, correr seed/build/Playwright y limpiar al terminar.
+- El runner aislado usa `next start` en puerto `3100` por defecto para no reutilizar ni chocar con un servidor local en `3000`.
+- `npm run test:e2e:raw` queda disponible para depuracion manual contra el ambiente actual.
+
 ### Pruebas visuales/responsive
 
 Usar capturas en pantallas criticas cuando cambie UI:

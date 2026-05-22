@@ -427,6 +427,7 @@ Notas actuales:
 - Docker Desktop fue instalado por el usuario para correr PostgreSQL local.
 - CI en GitHub Actions fue agregado en `.github/workflows/ci.yml`.
 - Falta activar manualmente el branch ruleset de `main` en GitHub para exigir `quality` y `e2e`.
+- `npm run test:e2e` usa `scripts/run-e2e.ts` para crear un schema PostgreSQL temporal, ejecutar Prisma push/seed/build/Playwright con `next start` en puerto `3100` y limpiar el schema. Para depurar sin aislamiento se puede usar `npm run test:e2e:raw`.
 - En esta Mac algunos archivos bajo Documents pueden aparecer como `dataless` por macOS/iCloud. Si Prisma, Vite, TypeScript o Git se quedan colgados leyendo `.env`, `.env.example`, `next-env.d.ts` o `tsconfig.tsbuildinfo`, materializar el archivo o borrar caches generados antes de repetir comandos. No leer ni sobrescribir `.env` con secretos; si se necesita validar, renombrarlo temporalmente y restaurarlo con `trap`.
 
 ## Verificaciones Habituales

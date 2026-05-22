@@ -18,10 +18,11 @@ Aplicado:
 - PR template actualizado para exigir evidencia de pruebas.
 - CI agrega jobs `quality` y `e2e` para que las pruebas corran fuera de la Mac local.
 - Pruebas de integracion Prisma para reglas de orden/inventario: cancelacion restaura stock, terminal-to-terminal no restaura dos veces, reapertura terminal queda bloqueada.
+- E2E aislado por schema PostgreSQL temporal para no depender del estado del schema local/CI compartido.
 
 Pendiente:
 
-- Base E2E aislada por test/run para evitar consumo de inventario compartido.
+- Aislamiento E2E por test si los flujos empiezan a competir por los mismos SKUs dentro de una corrida.
 - Cobertura responsive automatizada en mobile/tablet.
 - Pruebas de componentes para `QuantityStepper` y `CheckoutLocationPicker`.
 
@@ -125,7 +126,6 @@ Pendiente:
 
 ## P1 Tecnico Siguiente
 
-- Aislar base E2E por run.
 - Agregar coverage report para `src/lib/**` y `src/data/**`.
 - Revisar formularios admin con limites de longitud y validaciones consistentes.
 - Preparar decision record para proveedor de auth.
