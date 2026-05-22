@@ -73,6 +73,7 @@ Entregables:
 - PostgreSQL;
 - i18n base espanol/ingles;
 - lint/typecheck;
+- CI con GitHub Actions;
 - estructura de carpetas;
 - layout base.
 
@@ -89,6 +90,7 @@ Avance actual:
 - Prisma schema inicial creado.
 - Verificaciones basicas pasan.
 - Servidor local disponible en `http://localhost:3000`.
+- Workflow `.github/workflows/ci.yml` agregado con checks `quality` y `e2e`.
 
 ## Fase 3 - Catalogo y producto
 

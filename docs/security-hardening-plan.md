@@ -1,6 +1,6 @@
 # Security hardening plan
 
-Fecha: 2026-05-20.
+Fecha: 2026-05-21.
 
 ## Contexto
 
@@ -29,6 +29,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 | Fallback mock si DB falla | Implementado en `codex/catalog-production-fallback`: en produccion no se muestra inventario mock si DB falla. |
 | Cambios admin sin auditoria | Implementado en `codex/vehicle-compatibility-structure`: `AdminAuditLog` para productos, stock, zonas, ordenes y avisos de stock. |
 | Webhook futuro sin idempotencia | Agregar identificador unico de evento externo por proveedor. |
+| Merge sin pruebas | Implementado en `codex/ci-docs-quality-gates`: GitHub Actions `quality` y `e2e`; pendiente activar branch ruleset en GitHub. |
 
 ## Orden sugerido de PRs
 
@@ -43,6 +44,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 - Mantener `PAYMENT_PROVIDER=mock` bloqueado en produccion y no activar ventas reales sin proveedor verificado.
 - Implementar webhook real con firma e idempotencia antes de pagos reales.
 - Revisar logs para evitar datos sensibles cuando se integren proveedores externos.
+- Activar branch ruleset de `main` para exigir checks `quality` y `e2e`.
 
 ## Fuentes base
 

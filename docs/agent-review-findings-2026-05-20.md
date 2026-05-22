@@ -2,6 +2,8 @@
 
 Revisiones paralelas solicitadas para documentacion, backend/logica, seguridad y QA.
 
+Nota 2026-05-21: ver tambien `docs/agent-review-findings-2026-05-21.md` para consolidado actualizado con CI y documentacion de archivos.
+
 ## Aplicado en esta rama
 
 - `docs/mvp-current-status.md` como fuente rapida de estado actual del MVP.

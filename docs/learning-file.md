@@ -8,7 +8,7 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-05-20.
+- Fecha de ultima actualizacion: 2026-05-21.
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
@@ -326,6 +326,7 @@ Implementado:
 Decisiones tecnicas:
 
 - Prisma 6 estable por simplicidad.
+- `package.json#prisma` sigue configurando seed. Prisma advierte que esto se depreca hacia Prisma 7; migrarlo a `prisma.config.*` queda pendiente porque debe validarse sin afectar `tsc` ni Prisma CLI.
 - Wompi/Pagadito/BAC detras de `PaymentProvider`.
 - Proveedor de pagos activo por defecto: `mock`.
 - `PAYMENT_PROVIDER` debe quedarse en `mock` hasta que exista adaptador real y credenciales sandbox/produccion.
@@ -377,10 +378,20 @@ Ya existe:
 - ajuste manual de inventario para la bodega principal `MAIN`;
 - ajustes admin de retiro/zona en `/admin/settings`;
 - checkout lee zonas de envío desde `DeliveryZone`;
+- avisos de stock en `/admin/stock-alerts`;
+- deduplicacion y rate limit de avisos de stock;
+- restauracion auditada de inventario al cancelar/reembolsar una orden pagada pendiente de entrega;
+- validacion inicial de coordenadas por zona de entrega;
+- GitHub Actions CI con jobs `quality` y `e2e`;
 - tests unitarios de dinero y helpers de producto.
 
 Documentos clave:
 
+- `docs/mvp-current-status.md`
+- `docs/mvp-change-log.md`
+- `docs/project-file-map.md`
+- `docs/ci-cd-quality-gates.md`
+- `docs/agent-review-findings-2026-05-21.md`
 - `docs/phase-3-catalog-product.md`
 - `docs/phase-3-data-persistence.md`
 - `docs/phase-4-cart.md`
@@ -408,21 +419,26 @@ PRs previos:
 
 Rama actual de trabajo:
 
-- `codex/admin-access-guard`.
+- `codex/ci-docs-quality-gates`.
 
 Notas actuales:
 
 - Docker Desktop fue instalado por el usuario para correr PostgreSQL local.
+- CI en GitHub Actions fue agregado en `.github/workflows/ci.yml`.
+- Falta activar manualmente el branch ruleset de `main` en GitHub para exigir `quality` y `e2e`.
+- En esta Mac algunos archivos bajo Documents pueden aparecer como `dataless` por macOS/iCloud. Si Prisma, Vite, TypeScript o Git se quedan colgados leyendo `.env`, `.env.example`, `next-env.d.ts` o `tsconfig.tsbuildinfo`, materializar el archivo o borrar caches generados antes de repetir comandos. No leer ni sobrescribir `.env` con secretos; si se necesita validar, renombrarlo temporalmente y restaurarlo con `trap`.
 
 ## Verificaciones Habituales
 
 Antes de cerrar cambios:
 
+- `npm run prisma:generate`
+- `npx prisma validate`
 - `npm run typecheck`
 - `npm run lint`
 - `npm test`
-- `npx prisma validate`
 - `npm run build` si toca app/render
+- `npm run test:e2e`
 - `npm audit`
 
 ## Pendientes Importantes
@@ -471,3 +487,5 @@ QA:
 - El admin debe ser operativo y sobrio.
 - Mobile es obligatorio desde el inicio.
 - Los checklists QA son parte central del workflow, no un extra.
+- Las pruebas locales no bastan; GitHub debe bloquear merges si `quality` o `e2e` fallan.
+- Los documentos de fase son historicos; `docs/mvp-current-status.md` y este archivo mandan para el estado vivo.

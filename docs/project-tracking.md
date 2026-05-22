@@ -61,8 +61,9 @@ Columnas:
 3. Backend/Frontend implementan.
 4. QA Agent crea checklist y pruebas.
 5. QA/PO humano revisa.
-6. Si hay cambios, vuelve a `QA Changes Requested`.
-7. Si se aprueba, pasa a `Done`.
+6. GitHub Actions ejecuta `quality` y `e2e` en el PR.
+7. Si hay cambios, vuelve a `QA Changes Requested`.
+8. Si QA humano aprueba y CI pasa, pasa a `Done`.
 
 ## Template de feature
 
@@ -119,3 +120,18 @@ Buena opcion para wiki, decisiones y docs, pero menos fuerte que GitHub Projects
 ## Decision recomendada
 
 Iniciar con GitHub Projects. Si despues de 2 a 3 semanas se siente limitado, migrar a Linear. Mantener la documentacion viva en `docs/` para que el repo sea la fuente de verdad.
+
+## Quality Gates
+
+Todo item que llegue a `Ready for QA` debe tener PR o evidencia equivalente.
+
+Para merge a `main`:
+
+- PR requerido;
+- checks `quality` y `e2e` requeridos;
+- rama actualizada contra `main`;
+- checklist QA completado o excepcion documentada.
+
+Documento operativo:
+
+- `docs/ci-cd-quality-gates.md`
