@@ -17,6 +17,7 @@ Aplicado:
 - Playwright E2E inicial para catalogo, carrito, checkout local y admin stock alerts.
 - PR template actualizado para exigir evidencia de pruebas.
 - CI agrega jobs `quality` y `e2e` para que las pruebas corran fuera de la Mac local.
+- Pruebas de integracion Prisma para reglas de orden/inventario: cancelacion restaura stock, terminal-to-terminal no restaura dos veces, reapertura terminal queda bloqueada.
 
 Pendiente:
 
@@ -51,6 +52,7 @@ Aplicado:
 - Checkout revalida stock y descuenta en transaccion durante pago mock confirmado.
 - Cancelacion/reembolso desde estado pagado restaura inventario.
 - Estados terminales no se reabren desde admin actual.
+- Logica admin de cambio de estado extraida desde server action hacia `src/lib/admin-orders.ts`.
 - Validacion server-side de zona por `deliveryZoneSlug`.
 - Validacion inicial de coordenadas por rango de zona.
 - Deduplicacion de avisos de stock abiertos.
@@ -123,7 +125,6 @@ Pendiente:
 
 ## P1 Tecnico Siguiente
 
-- Crear tests de integracion para transiciones de orden e inventario.
 - Aislar base E2E por run.
 - Agregar coverage report para `src/lib/**` y `src/data/**`.
 - Revisar formularios admin con limites de longitud y validaciones consistentes.

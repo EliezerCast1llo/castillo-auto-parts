@@ -381,6 +381,7 @@ Ya existe:
 - avisos de stock en `/admin/stock-alerts`;
 - deduplicacion y rate limit de avisos de stock;
 - restauracion auditada de inventario al cancelar/reembolsar una orden pagada pendiente de entrega;
+- reglas de cambio de estado admin en `src/lib/admin-orders.ts`, cubiertas con pruebas de integracion Prisma;
 - validacion inicial de coordenadas por zona de entrega;
 - GitHub Actions CI con jobs `quality` y `e2e`;
 - tests unitarios de dinero y helpers de producto.

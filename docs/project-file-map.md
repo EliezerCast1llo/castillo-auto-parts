@@ -136,6 +136,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/orders.ts` | Creacion de orden, stock, pagos mock y emails. |
 | `src/lib/fulfillment.ts` | Retiro, zonas, tarifas y validacion de coordenadas. |
 | `src/lib/admin-auth.ts` | Configuracion y validacion de acceso admin. |
+| `src/lib/admin-orders.ts` | Reglas transaccionales de cambios de estado admin, auditoria y restauracion de inventario. |
 | `src/lib/admin-session.ts` | Sesion admin firmada. |
 | `src/lib/admin-audit.ts` | Escritura de auditoria admin. |
 | `src/lib/admin-products.ts` | Validaciones/normalizaciones de productos admin. |

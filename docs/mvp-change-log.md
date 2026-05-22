@@ -58,6 +58,7 @@ El MVP esta orientado a una tienda guest-first de repuestos automotrices para El
 - Admin de ordenes.
 - Detalle de orden.
 - Cambio de estado operativo.
+- Reglas de cambio de estado extraidas a `src/lib/admin-orders.ts` para poder probarlas fuera de server actions.
 - Restauracion de inventario al cancelar/reembolsar una orden pagada pendiente de entrega.
 - Bloqueo de reapertura de estados terminales.
 - Admin de productos e inventario.
@@ -92,6 +93,7 @@ El MVP esta orientado a una tienda guest-first de repuestos automotrices para El
 
 - Vitest para reglas de negocio.
 - Playwright para flujos navegables.
+- Pruebas de integracion Prisma para cambio de estado admin, restauracion de stock y auditoria.
 - Workflow `.github/workflows/ci.yml`.
 - Jobs CI: `quality` y `e2e`.
 - Documentacion para branch protection en GitHub.
