@@ -126,14 +126,14 @@ function CatalogUnavailableState() {
 
 function CatalogHero() {
   return (
-    <section className="overflow-hidden rounded-md bg-graphite text-white">
+    <section className="overflow-hidden rounded-md border border-border bg-card">
       <div className="grid gap-5 p-5 md:grid-cols-[1fr_260px] md:p-6">
         <div>
-          <p className="text-xs font-bold uppercase text-white/70">Compra con compatibilidad clara</p>
-          <h1 className="mt-2 max-w-2xl text-3xl font-bold leading-tight">
+          <p className="text-xs font-bold uppercase text-success">Compra con compatibilidad clara</p>
+          <h1 className="mt-2 max-w-2xl text-3xl font-bold leading-tight text-primary">
             Encuentra el repuesto correcto antes de pagar
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/75">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
             Filtra por vehículo, categoría, marca o número de parte. Precio, stock y compatibilidad
             están visibles desde la lista para comparar rápido.
           </p>
@@ -144,7 +144,7 @@ function CatalogHero() {
           </div>
         </div>
 
-        <div className="grid gap-2 rounded-md bg-white/10 p-4">
+        <div className="grid gap-2 rounded-md border border-border bg-background p-4">
           <HeroMetric label="Catálogo MVP" value="50-80 SKUs" />
           <HeroMetric label="IVA" value="13% incluido" />
           <HeroMetric label="Retiro" value="Gratis" />
@@ -156,7 +156,7 @@ function CatalogHero() {
 
 function HeroChip({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="inline-flex h-9 items-center gap-2 rounded-md bg-white/12 px-3 text-sm font-semibold">
+    <div className="inline-flex h-9 items-center gap-2 rounded-md border border-primary/15 bg-primary/10 px-3 text-sm font-semibold text-primary">
       {icon}
       {label}
     </div>
@@ -165,9 +165,9 @@ function HeroChip({ icon, label }: { icon: React.ReactNode; label: string }) {
 
 function HeroMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-white p-3">
+    <div className="rounded-md border border-border bg-card p-3">
       <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-      <p className="mt-1 text-lg font-bold text-graphite">{value}</p>
+      <p className="mt-1 text-lg font-bold text-primary">{value}</p>
     </div>
   );
 }

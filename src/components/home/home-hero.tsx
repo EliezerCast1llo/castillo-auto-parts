@@ -50,14 +50,14 @@ export function HomeHero() {
           </div>
         </div>
 
-        <aside className="border-t border-border bg-graphite p-5 text-white lg:border-l lg:border-t-0 md:p-6">
+        <aside className="border-t border-border bg-card p-5 text-foreground lg:border-l lg:border-t-0 md:p-6">
           <div className="flex items-start gap-3">
-            <span className="rounded-md bg-white/10 p-2 text-accent">
+            <span className="rounded-md border border-primary/15 bg-primary/10 p-2 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-bold">Compra con menos dudas</p>
-              <p className="mt-1 text-sm leading-6 text-white/70">
+              <p className="text-sm font-bold text-primary">Compra con menos dudas</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 El catálogo está pensado para comparar compatibilidad, precio y disponibilidad sin
                 abrir demasiadas pantallas.
               </p>
@@ -66,11 +66,11 @@ export function HomeHero() {
 
           <div className="mt-5 grid gap-3">
             {signals.map((signal) => (
-              <div className="flex gap-3 rounded-md bg-white/8 p-3" key={signal.label}>
+              <div className="flex gap-3 rounded-md border border-border bg-background p-3" key={signal.label}>
                 <span className="text-success">{signal.icon}</span>
                 <div>
-                  <p className="text-sm font-bold">{signal.label}</p>
-                  <p className="mt-1 text-xs leading-5 text-white/65">{signal.detail}</p>
+                  <p className="text-sm font-bold text-foreground">{signal.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{signal.detail}</p>
                 </div>
               </div>
             ))}
