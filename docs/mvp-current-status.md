@@ -107,8 +107,8 @@ Automatizado:
 
 - Vitest para helpers de negocio.
 - Vitest con Prisma real para transiciones admin de orden e inventario.
-- Playwright para catalogo, carrito, checkout local basico y login/admin stock alerts.
-- Playwright responsive smoke para detectar overflow horizontal en pantallas cliente criticas.
+- Playwright para catalogo, carrito, checkout pickup/local completo, aviso de stock y login/admin stock alerts.
+- Playwright responsive smoke para detectar overflow horizontal en pantallas cliente criticas, checkout y admin operativo.
 - GitHub Actions corre Prisma validate, lint, typecheck, unit tests, build y E2E en PR/push a `main`.
 - `npm run test:e2e` prepara y limpia su propio schema para no modificar el schema local normal.
 
@@ -116,7 +116,7 @@ Manual pendiente:
 
 - revisar UX real del mapa/pin;
 - revisar stock alerts en admin;
-- probar checkout pickup y envio local en navegador;
+- revisar manualmente UX fina de checkout pickup/envio local en navegador;
 - revisar responsive mobile/tablet;
 - validar copy legal/comercial.
 

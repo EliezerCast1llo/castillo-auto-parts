@@ -13,7 +13,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 | Riesgo | Control recomendado |
 | --- | --- |
 | Fuerza bruta en login admin | Implementado en `codex/security-hardening-mvp`: rate limit por IP en server action de login. |
-| Pago mock en produccion | Implementado en `codex/security-hardening-mvp`: bloqueo de `PAYMENT_PROVIDER=mock` cuando `NODE_ENV=production`. |
+| Pago mock en produccion | Implementado en `codex/security-hardening-mvp`: bloqueo de `PAYMENT_PROVIDER=mock` cuando `NODE_ENV=production`, salvo runner E2E aislado con `ALLOW_MOCK_PAYMENT_IN_E2E=true`. |
 | Orden publica adivinable | Implementado en `codex/order-access-token`: token guest aleatorio, hash en DB y `?token=` requerido para ver la orden pública. |
 | Sesion admin con secretos debiles | Implementado parcialmente en `codex/security-hardening-mvp`: rechazo de credenciales debiles en produccion y cookie `SameSite=strict`. |
 | Stock descontado en momento incorrecto | Con proveedor real, descontar solo con webhook verificado o usar reserva idempotente. |

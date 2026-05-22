@@ -41,11 +41,14 @@ Nota: esta version no usa Google Places todavia. El modelo ya queda preparado pa
   - agregar producto al carrito guest;
   - login admin local;
   - checkout local con zona/mapa;
-  - responsive smoke en Home, Catalogo, Producto y Carrito para mobile/tablet.
+  - checkout completo con retiro en bodega;
+  - checkout completo con envio local, zona y coordenadas;
+  - solicitud de aviso cuando un producto del carrito queda sin stock;
+  - responsive smoke en Home, Catalogo, Producto, Carrito, Checkout y Admin para mobile/tablet.
 
 ## Pendiente
 
 - Google Places Autocomplete o proveedor final de mapas.
 - Notificacion automatica cuando inventario pase de sin stock a disponible.
 - Estados editables para solicitudes de stock.
-- Ampliar pruebas E2E a checkout completo pickup/local y admin operativo.
+- Ampliar pruebas E2E a cambios operativos admin y mapa/pin con interacciones mas realistas.

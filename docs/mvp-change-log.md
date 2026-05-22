@@ -93,7 +93,8 @@ El MVP esta orientado a una tienda guest-first de repuestos automotrices para El
 
 - Vitest para reglas de negocio.
 - Playwright para flujos navegables.
-- Playwright responsive smoke para paginas cliente criticas en mobile/tablet.
+- Playwright para checkout completo con retiro, envio local y aviso de stock.
+- Playwright responsive smoke para paginas cliente criticas, checkout y admin en mobile/tablet.
 - Pruebas de integracion Prisma para cambio de estado admin, restauracion de stock y auditoria.
 - E2E aislado por schema PostgreSQL temporal mediante `scripts/run-e2e.ts`.
 - Workflow `.github/workflows/ci.yml`.

@@ -21,6 +21,7 @@ Proveedor activo por defecto:
 Variable local:
 
 - `PAYMENT_PROVIDER=mock`
+- `ALLOW_MOCK_PAYMENT_IN_E2E=true` solo dentro del runner E2E aislado
 
 Proveedores reservados para implementación futura:
 
