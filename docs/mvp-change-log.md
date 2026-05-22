@@ -94,6 +94,7 @@ El MVP esta orientado a una tienda guest-first de repuestos automotrices para El
 - Vitest para reglas de negocio.
 - Playwright para flujos navegables.
 - Pruebas de integracion Prisma para cambio de estado admin, restauracion de stock y auditoria.
+- E2E aislado por schema PostgreSQL temporal mediante `scripts/run-e2e.ts`.
 - Workflow `.github/workflows/ci.yml`.
 - Jobs CI: `quality` y `e2e`.
 - Documentacion para branch protection en GitHub.

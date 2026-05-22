@@ -85,6 +85,8 @@ jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
+    env:
+      E2E_DATABASE_SCHEMA: e2e_${{ github.run_id }}_${{ github.run_attempt }}
 
     services:
       postgres:
@@ -119,11 +121,6 @@ jobs:
 
       - name: Generate Prisma client
         run: npm run prisma:generate
-
-      - name: Prepare database
-        run: |
-          npm run db:push
-          npm run db:seed
 
       - name: Run Playwright tests
         run: npm run test:e2e

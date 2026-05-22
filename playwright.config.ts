@@ -1,5 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const port = process.env.PLAYWRIGHT_PORT || "3000";
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${port}`;
+const webServerCommand = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || `npm run dev -- --port ${port}`;
+const reuseExistingServer = !process.env.CI && process.env.E2E_ISOLATED_DATABASE !== "true";
+
 export default defineConfig({
   expect: {
     timeout: 10000,
@@ -13,13 +18,13 @@ export default defineConfig({
   ],
   testDir: "./tests/e2e",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
   },
   webServer: {
-    command: "npm run dev -- --port 3000",
-    reuseExistingServer: !process.env.CI,
+    command: webServerCommand,
+    reuseExistingServer,
     timeout: 120000,
-    url: "http://localhost:3000",
+    url: baseURL,
   },
 });

@@ -21,6 +21,7 @@ Implementado:
 - Playwright E2E inicial.
 - GitHub Actions CI con jobs `quality` y `e2e`.
 - Pruebas de integracion para reglas admin de orden/inventario.
+- Runner E2E con schema PostgreSQL temporal por corrida.
 
 ## Scope Actual del MVP
 
@@ -107,6 +108,7 @@ Automatizado:
 - Vitest con Prisma real para transiciones admin de orden e inventario.
 - Playwright para catalogo, carrito, checkout local basico y login/admin stock alerts.
 - GitHub Actions corre Prisma validate, lint, typecheck, unit tests, build y E2E en PR/push a `main`.
+- `npm run test:e2e` prepara y limpia su propio schema para no modificar el schema local normal.
 
 Manual pendiente:
 

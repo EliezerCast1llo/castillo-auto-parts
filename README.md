@@ -66,7 +66,9 @@ npm run test:e2e
 Notas:
 
 - Docker Desktop ya esta instalado en esta Mac y PostgreSQL corre via `docker compose`.
-- Playwright reutiliza `http://localhost:3000` si el servidor local ya esta activo.
+- `npm run test:e2e` crea un schema PostgreSQL temporal, corre `db push`, seed, build, Playwright, y luego borra ese schema.
+- El runner E2E usa `http://localhost:3100` por defecto para no chocar con `npm run dev`; se puede cambiar con `E2E_PORT`.
+- Para depurar contra la base actual sin preparar schema aislado, usar `npm run test:e2e:raw`.
 - GitHub Actions corre `quality` y `e2e` en cada PR/push a `main`. Ver `docs/ci-cd-quality-gates.md`.
 
 ## Documentos clave

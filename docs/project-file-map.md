@@ -14,6 +14,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `playwright.config.ts` | Configuracion E2E y servidor local para Playwright. |
 | `vitest.config.ts` | Configuracion de pruebas unitarias. |
 | `docker-compose.yml` | PostgreSQL local para desarrollo. |
+| `scripts/run-e2e.ts` | Runner E2E: crea schema PostgreSQL temporal, prepara DB, corre Playwright y limpia el schema. |
 | `.env.example` | Variables de entorno esperadas sin secretos reales. |
 | `.github/workflows/ci.yml` | CI obligatorio sugerido para PRs y pushes a `main`. |
 | `.github/pull_request_template.md` | Checklist de PR y evidencia QA. |

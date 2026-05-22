@@ -44,6 +44,12 @@ Completado en `codex/order-inventory-test-hardening`:
 - Extraer reglas admin de cambio de estado a `src/lib/admin-orders.ts`.
 - Cubrir restauracion de inventario y transiciones terminales con pruebas de integracion Prisma.
 
+Completado en `codex/e2e-database-isolation`:
+
+- `npm run test:e2e` crea un schema PostgreSQL temporal por corrida.
+- Playwright, Prisma push y seed corren contra ese schema aislado.
+- El schema se elimina al final de la corrida para evitar contaminar la base local o CI.
+
 Completado en `codex/vehicle-compatibility-structure`:
 
 - Validar acciones de carrito con helper dedicado.
