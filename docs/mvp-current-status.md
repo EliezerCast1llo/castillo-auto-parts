@@ -20,6 +20,7 @@ Implementado:
 - Emails transaccionales con proveedor `console/mock`.
 - Playwright E2E inicial.
 - GitHub Actions CI con jobs `quality` y `e2e`.
+- Pruebas de integracion para reglas admin de orden/inventario.
 
 ## Scope Actual del MVP
 
@@ -103,6 +104,7 @@ Definir antes de ventas reales:
 Automatizado:
 
 - Vitest para helpers de negocio.
+- Vitest con Prisma real para transiciones admin de orden e inventario.
 - Playwright para catalogo, carrito, checkout local basico y login/admin stock alerts.
 - GitHub Actions corre Prisma validate, lint, typecheck, unit tests, build y E2E en PR/push a `main`.
 

@@ -39,6 +39,11 @@ Completado en `codex/ci-docs-quality-gates`:
 - Agregar CI con GitHub Actions para bloquear merges que rompan lint, TypeScript, Prisma, unit tests, build o E2E.
 - Documentar branch protection y checks requeridos.
 
+Completado en `codex/order-inventory-test-hardening`:
+
+- Extraer reglas admin de cambio de estado a `src/lib/admin-orders.ts`.
+- Cubrir restauracion de inventario y transiciones terminales con pruebas de integracion Prisma.
+
 Completado en `codex/vehicle-compatibility-structure`:
 
 - Validar acciones de carrito con helper dedicado.

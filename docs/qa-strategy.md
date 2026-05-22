@@ -51,6 +51,10 @@ Usar para:
 - emitir/marcar DTE;
 - carrito invitado.
 
+Implementado:
+
+- `src/lib/admin-orders.test.ts` valida transiciones admin con Prisma real, restauracion de inventario, bloqueo de reapertura y auditoria.
+
 ### Tests E2E
 
 Usar con Playwright cuando exista UI funcional:
