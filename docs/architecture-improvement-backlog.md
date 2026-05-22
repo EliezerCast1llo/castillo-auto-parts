@@ -34,6 +34,11 @@ Implementado en `codex/vehicle-compatibility-structure`:
 - Separar estado interno de inventario de label publico.
 - Agregar `aria-label` a links visuales de producto.
 
+Completado en `codex/ci-docs-quality-gates`:
+
+- Agregar CI con GitHub Actions para bloquear merges que rompan lint, TypeScript, Prisma, unit tests, build o E2E.
+- Documentar branch protection y checks requeridos.
+
 Completado en `codex/vehicle-compatibility-structure`:
 
 - Validar acciones de carrito con helper dedicado.

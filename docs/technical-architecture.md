@@ -256,9 +256,27 @@ Preparado para futuro:
 
 ## Ambientes
 
+- `ci`: GitHub Actions con PostgreSQL service container, proveedor de pago `mock`, email `console`, Prisma validate, lint, typecheck, unit tests, build y Playwright E2E.
 - `development`: datos seed, proveedor de pago sandbox/mock.
 - `preview`: deploy por PR, pago sandbox/mock.
 - `production`: pago real, DTE real o proceso fiscal aprobado.
+
+## CI/CD
+
+CI implementado en:
+
+- `.github/workflows/ci.yml`
+
+Gates:
+
+- `quality`;
+- `e2e`.
+
+CD/deploy automatico queda pendiente hasta cerrar pagos reales, DTE, dominio, secretos y ambiente productivo.
+
+Documento operativo:
+
+- `docs/ci-cd-quality-gates.md`
 
 ## Decisiones pendientes
 

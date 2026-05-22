@@ -183,9 +183,14 @@ Pantallas prioritarias:
 
 ## Checklist por release
 
+- GitHub Actions `quality` pasa en el PR.
+- GitHub Actions `e2e` pasa en el PR.
+- `npm run prisma:generate` pasa si se valida localmente.
+- `npx prisma validate` pasa.
 - `npm run lint` pasa.
 - `npm run typecheck` pasa si existe.
 - tests relevantes pasan.
+- `npm run build` pasa.
 - seed/demo funciona.
 - rutas criticas cargan.
 - no hay secretos en repo.
@@ -194,6 +199,21 @@ Pantallas prioritarias:
 - i18n validado si la release toca textos visibles.
 - cambios documentados.
 - QA humano reviso criterios de aceptacion.
+
+## CI Obligatorio
+
+GitHub Actions debe correr en cada PR hacia `main`.
+
+Checks obligatorios sugeridos:
+
+- `quality`: Prisma, lint, typecheck, unit tests y build.
+- `e2e`: Playwright contra app local.
+
+Despues de mergear `.github/workflows/ci.yml` a `main`, activar branch ruleset para impedir merges si `quality` o `e2e` fallan.
+
+Documento operativo:
+
+- `docs/ci-cd-quality-gates.md`
 
 ## Formato de bug
 

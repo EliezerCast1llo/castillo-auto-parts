@@ -54,9 +54,12 @@ npm run dev
 6. Ejecutar pruebas:
 
 ```bash
+npm run prisma:generate
+npx prisma validate
 npm run lint
 npm run typecheck
 npm test
+npm run build
 npm run test:e2e
 ```
 
@@ -64,12 +67,17 @@ Notas:
 
 - Docker Desktop ya esta instalado en esta Mac y PostgreSQL corre via `docker compose`.
 - Playwright reutiliza `http://localhost:3000` si el servidor local ya esta activo.
+- GitHub Actions corre `quality` y `e2e` en cada PR/push a `main`. Ver `docs/ci-cd-quality-gates.md`.
 
 ## Documentos clave
 
 - `docs/project-context.md`
 - `docs/mvp-current-status.md`
 - `docs/learning-file.md`
+- `docs/project-file-map.md`
+- `docs/mvp-change-log.md`
+- `docs/ci-cd-quality-gates.md`
+- `docs/agent-review-findings-2026-05-21.md`
 - `docs/product-requirements.md`
 - `docs/technical-architecture.md`
 - `docs/phase-3-data-persistence.md`

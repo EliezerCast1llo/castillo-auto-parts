@@ -1,6 +1,6 @@
 # MVP Current Status
 
-Fecha: 2026-05-20.
+Fecha: 2026-05-21.
 
 Este documento es la fuente rapida de estado actual del MVP. Los documentos de fase anteriores pueden conservar contexto historico o decisiones previas.
 
@@ -19,6 +19,7 @@ Implementado:
 - Admin de ordenes, productos, inventario, ajustes de entrega, auditoria y avisos de stock.
 - Emails transaccionales con proveedor `console/mock`.
 - Playwright E2E inicial.
+- GitHub Actions CI con jobs `quality` y `e2e`.
 
 ## Scope Actual del MVP
 
@@ -103,6 +104,7 @@ Automatizado:
 
 - Vitest para helpers de negocio.
 - Playwright para catalogo, carrito, checkout local basico y login/admin stock alerts.
+- GitHub Actions corre Prisma validate, lint, typecheck, unit tests, build y E2E en PR/push a `main`.
 
 Manual pendiente:
 
@@ -111,3 +113,17 @@ Manual pendiente:
 - probar checkout pickup y envio local en navegador;
 - revisar responsive mobile/tablet;
 - validar copy legal/comercial.
+
+## CI / Merge Gate
+
+Implementado:
+
+- Workflow `.github/workflows/ci.yml`.
+- Job `quality`: dependencias, Prisma, DB seed, lint, typecheck, unit tests y build.
+- Job `e2e`: Playwright Chromium contra app local y PostgreSQL de CI.
+- Documentacion de reglas de proteccion en `docs/ci-cd-quality-gates.md`.
+
+Pendiente manual en GitHub:
+
+- Activar ruleset de `main`.
+- Exigir status checks `quality` y `e2e` antes de merge.

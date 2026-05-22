@@ -1,0 +1,177 @@
+# Project File Map
+
+Fecha: 2026-05-21.
+
+Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. No reemplaza leer el codigo antes de editar; sirve como indice operativo.
+
+## Archivos Raiz
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `README.md` | Entrada rapida del proyecto, setup local y documentos clave. |
+| `package.json` | Scripts, dependencias y seed Prisma. |
+| `next.config.ts` | Configuracion Next.js y headers de seguridad base. |
+| `playwright.config.ts` | Configuracion E2E y servidor local para Playwright. |
+| `vitest.config.ts` | Configuracion de pruebas unitarias. |
+| `docker-compose.yml` | PostgreSQL local para desarrollo. |
+| `.env.example` | Variables de entorno esperadas sin secretos reales. |
+| `.github/workflows/ci.yml` | CI obligatorio sugerido para PRs y pushes a `main`. |
+| `.github/pull_request_template.md` | Checklist de PR y evidencia QA. |
+
+## Documentacion Maestra
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `docs/project-context.md` | Contexto general del negocio y producto. |
+| `docs/learning-file.md` | Memoria viva de decisiones, aprendizajes y estado. |
+| `docs/mvp-current-status.md` | Fuente rapida del estado operativo actual del MVP. |
+| `docs/roadmap.md` | Fases del proyecto y avance por fase. |
+| `docs/product-requirements.md` | Requerimientos funcionales y reglas base. |
+| `docs/technical-architecture.md` | Arquitectura tecnica, proveedores y separacion por dominios. |
+| `docs/database-schema.md` | Modelo de datos y decisiones de persistencia. |
+| `docs/qa-strategy.md` | Estrategia QA, niveles de prueba y flujos criticos. |
+| `docs/qa-checklists.md` | Checklists manuales por feature/pantalla. |
+| `docs/project-tracking.md` | Forma recomendada de manejar issues, PRs y tablero visual. |
+| `docs/ci-cd-quality-gates.md` | Como funciona CI y como bloquear merges sin pruebas. |
+| `docs/project-file-map.md` | Este mapa de archivos. |
+
+## Hallazgos Y Backlogs
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `docs/agent-review-findings-2026-05-20.md` | Hallazgos de agentes revisores y acciones ya aplicadas. |
+| `docs/agent-review-findings-2026-05-21.md` | Consolidado actualizado con CI, documentacion y proximos riesgos. |
+| `docs/security-hardening-plan.md` | Riesgos de seguridad, controles y gates antes de produccion. |
+| `docs/architecture-improvement-backlog.md` | Oportunidades de arquitectura y deuda tecnica. |
+| `docs/ui-ux-page-opportunities.md` | Oportunidades UI/UX por pagina. |
+
+## Fases
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `docs/phase-1-kickoff.md` | Kickoff de fase inicial. |
+| `docs/phase-1-market-research-report.md` | Investigacion de mercado inicial. |
+| `docs/phase-1-market-validation-protocol.md` | Protocolo para subir confianza de inventario. |
+| `docs/phase-1-name-clearance.md` | Riesgos de marca/nombre comercial. |
+| `docs/phase-1-payments-dte-analysis.md` | Evaluacion de pagos locales y DTE. |
+| `docs/phase-1-sourcing-plan.md` | Plan de proveedores y sourcing. |
+| `docs/phase-1-mvp-backlog.md` | Backlog historico de MVP. |
+| `docs/phase-2-technical-setup.md` | Setup tecnico inicial. |
+| `docs/phase-3-catalog-product.md` | Catalogo y detalle de producto. |
+| `docs/phase-3-data-persistence.md` | Persistencia con Prisma/PostgreSQL. |
+| `docs/phase-4-cart.md` | Carrito guest y reglas de stock. |
+| `docs/phase-5-checkout-orders.md` | Checkout, ordenes y fulfillment inicial. |
+| `docs/phase-6-payments.md` | Capa de pagos mock/reemplazable. |
+| `docs/phase-7-admin-orders.md` | Admin de ordenes. |
+| `docs/phase-7-admin-products-inventory.md` | Admin de productos e inventario. |
+| `docs/phase-7-admin-fulfillment-settings.md` | Admin de retiro, zonas y tarifas. |
+| `docs/phase-8-fulfillment-stock-qa.md` | Mapa, cobertura, avisos de stock y QA. |
+
+## App Router
+
+| Ruta de archivo | Responsabilidad |
+| --- | --- |
+| `src/app/layout.tsx` | Layout raiz, metadata y estilos globales. |
+| `src/app/page.tsx` | Home. No debe tener filtros avanzados; esos viven en catalogo. |
+| `src/app/catalog/page.tsx` | Catalogo, query params, filtros y estados vacios. |
+| `src/app/product/[slug]/page.tsx` | Detalle de producto, compatibilidad y agregar al carrito. |
+| `src/app/cart/page.tsx` | Carrito guest, cantidades, totales y avisos de stock. |
+| `src/app/cart/actions.ts` | Server actions de carrito y avisos de stock. |
+| `src/app/checkout/page.tsx` | Checkout guest con retiro/envio local y mapa. |
+| `src/app/checkout/actions.ts` | Server action de checkout. |
+| `src/app/orders/[orderNumber]/page.tsx` | Vista publica de orden guest protegida por token. |
+| `src/app/design/page.tsx` | Ruta interna para materializar direccion visual. |
+
+## Admin
+
+| Ruta de archivo | Responsabilidad |
+| --- | --- |
+| `src/app/admin/login/page.tsx` | Pantalla de login temporal admin. |
+| `src/app/admin/login/actions.ts` | Login temporal, cookie admin y rate limit. |
+| `src/app/admin/orders/page.tsx` | Listado y filtros de ordenes. |
+| `src/app/admin/orders/[orderNumber]/page.tsx` | Detalle admin de orden. |
+| `src/app/admin/orders/[orderNumber]/actions.ts` | Cambios de estado, auditoria y restauracion de stock. |
+| `src/app/admin/products/page.tsx` | Listado admin de productos. |
+| `src/app/admin/products/new/page.tsx` | Alta manual de producto. |
+| `src/app/admin/products/[slug]/edit/page.tsx` | Edicion manual de producto. |
+| `src/app/admin/products/actions.ts` | Server actions de producto e inventario. |
+| `src/app/admin/settings/page.tsx` | Ajustes de retiro, zonas y tarifas. |
+| `src/app/admin/settings/actions.ts` | Server actions de ajustes operativos. |
+| `src/app/admin/audit/page.tsx` | Vista de eventos auditados. |
+| `src/app/admin/stock-alerts/page.tsx` | Solicitudes de aviso por falta de stock. |
+| `src/app/admin/stock-alerts/actions.ts` | Cambios de estado de avisos de stock. |
+
+## Componentes
+
+| Ruta de archivo | Responsabilidad |
+| --- | --- |
+| `src/components/site-header.tsx` | Header y busqueda global hacia catalogo. |
+| `src/components/home/home-hero.tsx` | Hero operativo de home. |
+| `src/components/home/category-rail.tsx` | Accesos rapidos por categoria. |
+| `src/components/product/product-card.tsx` | Card de producto en catalogo/home. |
+| `src/components/product/product-filters.tsx` | Contenedor de filtros de catalogo. |
+| `src/components/product/catalog-filter-form.tsx` | Formulario auto-submit de filtros. |
+| `src/components/product/catalog-active-filters.tsx` | Chips de filtros activos. |
+| `src/components/product/vehicle-search-panel.tsx` | Busqueda por vehiculo. |
+| `src/components/product/popular-searches.tsx` | Busquedas populares para validacion comercial. |
+| `src/components/product/product-visual.tsx` | Visual placeholder consistente de producto. |
+| `src/components/product/quantity-stepper.tsx` | Selector editable con botones menos/mas. |
+| `src/components/product/stock-badge.tsx` | Label publico de disponibilidad en espanol. |
+| `src/components/checkout/checkout-delivery-fields.tsx` | Campos de entrega a domicilio. |
+| `src/components/checkout/checkout-location-picker.tsx` | Mapa/pin para ubicacion. |
+| `src/components/admin/admin-nav.tsx` | Navegacion admin. |
+| `src/components/admin/admin-product-form.tsx` | Formulario reusable de producto. |
+| `src/components/admin/admin-session-controls.tsx` | Controles de sesion admin. |
+
+## Dominio Y Librerias
+
+| Ruta de archivo | Responsabilidad |
+| --- | --- |
+| `src/lib/db.ts` | Prisma client singleton. |
+| `src/lib/money.ts` | Formateo/calculos de dinero. |
+| `src/lib/cart.ts` | Cookie guest firmada y lectura/escritura de carrito. |
+| `src/lib/cart-state.ts` | Construccion de estado de carrito desde productos. |
+| `src/lib/cart-validation.ts` | Validaciones de acciones de carrito. |
+| `src/lib/checkout.ts` | Validacion de payload de checkout. |
+| `src/lib/orders.ts` | Creacion de orden, stock, pagos mock y emails. |
+| `src/lib/fulfillment.ts` | Retiro, zonas, tarifas y validacion de coordenadas. |
+| `src/lib/admin-auth.ts` | Configuracion y validacion de acceso admin. |
+| `src/lib/admin-session.ts` | Sesion admin firmada. |
+| `src/lib/admin-audit.ts` | Escritura de auditoria admin. |
+| `src/lib/admin-products.ts` | Validaciones/normalizaciones de productos admin. |
+| `src/lib/order-access-token.ts` | Token guest para ver orden publica. |
+| `src/lib/rate-limit.ts` | Rate limiter en memoria para MVP. |
+| `src/lib/stock-alerts.ts` | Parseo/deduplicacion de avisos de stock. |
+| `src/lib/payments/*` | Contrato y proveedor mock de pagos. |
+| `src/lib/email/*` | Contrato, provider console, plantillas y logs. |
+| `src/lib/invoices/provider.ts` | Contrato futuro para DTE. |
+| `src/lib/i18n/config.ts` | Base de idiomas soportados. |
+
+## Datos
+
+| Ruta de archivo | Responsabilidad |
+| --- | --- |
+| `src/data/mock-products.ts` | Catalogo mock/seed inicial. |
+| `src/data/products.ts` | Lectura de catalogo desde Prisma con fallback seguro en dev. |
+| `src/data/catalog-source.ts` | Decision de fallback mock por ambiente. |
+| `src/data/catalog-filters.ts` | Query params y filtros de catalogo. |
+| `prisma/schema.prisma` | Modelo de datos. |
+| `prisma/seed.ts` | Seed de productos, categorias, zonas y settings. |
+
+## Pruebas
+
+| Ruta de archivo | Responsabilidad |
+| --- | --- |
+| `src/**/*.test.ts` | Pruebas unitarias Vitest de reglas de negocio. |
+| `tests/e2e/admin.spec.ts` | E2E de login/admin y avisos de stock. |
+| `tests/e2e/catalog-cart.spec.ts` | E2E de catalogo, carrito y checkout basico. |
+
+## Regla Para Agentes
+
+Antes de editar:
+
+1. Leer este mapa.
+2. Leer el documento de fase correspondiente.
+3. Leer el codigo real del archivo que se va a tocar.
+4. Revisar tests existentes del mismo dominio.
+5. Actualizar `docs/learning-file.md` si cambia una decision o regla del negocio.
