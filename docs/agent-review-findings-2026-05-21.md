@@ -19,11 +19,12 @@ Aplicado:
 - CI agrega jobs `quality` y `e2e` para que las pruebas corran fuera de la Mac local.
 - Pruebas de integracion Prisma para reglas de orden/inventario: cancelacion restaura stock, terminal-to-terminal no restaura dos veces, reapertura terminal queda bloqueada.
 - E2E aislado por schema PostgreSQL temporal para no depender del estado del schema local/CI compartido.
+- Responsive smoke con Playwright para Home, Catalogo, Producto y Carrito en mobile/tablet.
 
 Pendiente:
 
 - Aislamiento E2E por test si los flujos empiezan a competir por los mismos SKUs dentro de una corrida.
-- Cobertura responsive automatizada en mobile/tablet.
+- Ampliar cobertura responsive automatizada a Checkout, Admin y mapa/pin.
 - Pruebas de componentes para `QuantityStepper` y `CheckoutLocationPicker`.
 
 ### Security / Compliance Agent
@@ -74,10 +75,11 @@ Aplicado:
 - Cards de producto mas consistentes y labels de stock en espanol.
 - Selector de cantidad tipo stepper editable.
 - Direccion visual base `Taller Tecnico Moderno`.
+- Bloques oscuros/azules de Home, Catalogo, Header y `/design` ajustados a superficies claras para mantener consistencia con la pagina blanca.
 
 Pendiente:
 
-- Pruebas visuales/responsive sistematicas.
+- Pruebas visuales/responsive sistematicas en Checkout, Admin y mapa/pin.
 - Refinar sistema visual final cuando marca quede validada.
 - Componente visual final para imagenes reales de producto.
 

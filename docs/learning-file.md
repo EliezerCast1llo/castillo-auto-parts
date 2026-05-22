@@ -466,6 +466,7 @@ Tecnico:
 - checkout local ya exige coordenadas; el pin actual usa OpenStreetMap sin API key y queda listo para conectar Google Places/proveedor final.
 - las solicitudes de aviso por stock quedan como `StockAlertRequest` y deben disparar notificaciones cuando inventario vuelva a disponibilidad.
 - Playwright queda como base E2E inicial; las pruebas de checkout completo deben usar una base aislada para no consumir stock real.
+- Hay responsive smoke en mobile/tablet para Home, Catalogo, Producto y Carrito; ampliar a Checkout, Admin y mapa/pin cuando se toquen esas pantallas.
 - no persistir tokens de acceso de orden en logs de email; cualquier payload debe guardar tokens redacted.
 - stock alerts no deben crecer sin control: deduplicar por producto/contacto y aplicar rate limit.
 - si una orden pendiente se cancela/reembolsa antes de entrega, restaurar inventario de forma auditada; no permitir reabrir estados terminales sin flujo dedicado.
@@ -491,3 +492,4 @@ QA:
 - Los checklists QA son parte central del workflow, no un extra.
 - Las pruebas locales no bastan; GitHub debe bloquear merges si `quality` o `e2e` fallan.
 - Los documentos de fase son historicos; `docs/mvp-current-status.md` y este archivo mandan para el estado vivo.
+- Las superficies informativas principales deben mantenerse claras y consistentes con la base blanca; reservar bloques oscuros para casos realmente justificados por la identidad visual final.

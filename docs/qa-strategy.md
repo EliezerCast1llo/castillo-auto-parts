@@ -70,6 +70,7 @@ Implementado:
 - `npm run test:e2e` usa `scripts/run-e2e.ts` para crear un schema PostgreSQL temporal, correr seed/build/Playwright y limpiar al terminar.
 - El runner aislado usa `next start` en puerto `3100` por defecto para no reutilizar ni chocar con un servidor local en `3000`.
 - `npm run test:e2e:raw` queda disponible para depuracion manual contra el ambiente actual.
+- `tests/e2e/responsive.spec.ts` valida que Home, Catalogo, Producto y Carrito carguen en mobile/tablet sin overflow horizontal.
 
 ### Pruebas visuales/responsive
 

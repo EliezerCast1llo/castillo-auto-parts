@@ -10,7 +10,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="flex min-w-0 items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-graphite text-white">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-primary/15 bg-primary/10 text-primary">
               <Wrench className="h-5 w-5" />
             </span>
             <span className="min-w-0">

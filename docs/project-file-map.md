@@ -167,6 +167,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/**/*.test.ts` | Pruebas unitarias Vitest de reglas de negocio. |
 | `tests/e2e/admin.spec.ts` | E2E de login/admin y avisos de stock. |
 | `tests/e2e/catalog-cart.spec.ts` | E2E de catalogo, carrito y checkout basico. |
+| `tests/e2e/responsive.spec.ts` | E2E responsive smoke para paginas cliente criticas en mobile/tablet. |
 
 ## Regla Para Agentes
 

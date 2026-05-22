@@ -19,6 +19,7 @@ Implementado:
 - Admin de ordenes, productos, inventario, ajustes de entrega, auditoria y avisos de stock.
 - Emails transaccionales con proveedor `console/mock`.
 - Playwright E2E inicial.
+- Playwright responsive smoke para Home, Catalogo, Producto y Carrito en mobile/tablet.
 - GitHub Actions CI con jobs `quality` y `e2e`.
 - Pruebas de integracion para reglas admin de orden/inventario.
 - Runner E2E con schema PostgreSQL temporal por corrida.
@@ -107,6 +108,7 @@ Automatizado:
 - Vitest para helpers de negocio.
 - Vitest con Prisma real para transiciones admin de orden e inventario.
 - Playwright para catalogo, carrito, checkout local basico y login/admin stock alerts.
+- Playwright responsive smoke para detectar overflow horizontal en pantallas cliente criticas.
 - GitHub Actions corre Prisma validate, lint, typecheck, unit tests, build y E2E en PR/push a `main`.
 - `npm run test:e2e` prepara y limpia su propio schema para no modificar el schema local normal.
 
