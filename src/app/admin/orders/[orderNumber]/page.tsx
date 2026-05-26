@@ -7,6 +7,16 @@ import { SiteHeader } from "@/components/site-header";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
+import {
+  formatDateTime,
+  formatOrderStatus,
+  formatPaymentProvider,
+  formatPaymentStatus,
+  formatShipmentMethod,
+  formatShipmentStatus,
+  getOrderStatusClassName,
+} from "@/lib/order-formatters";
+import { firstValue } from "@/lib/url-utils";
 import { updateAdminOrderStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -224,7 +234,7 @@ function AdminNotice({ message }: { message: string }) {
 }
 
 function StatusBadge({ status }: { status: OrderStatus }) {
-  const className = getStatusClassName(status);
+  const className = getOrderStatusClassName(status);
 
   return (
     <span className={`w-fit rounded-md px-2 py-1 text-xs font-bold ${className}`}>
@@ -251,82 +261,13 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
   );
 }
 
-function getStatusClassName(status: OrderStatus) {
-  if (status === "PAID_PENDING_SHIPMENT") return "bg-warning/15 text-warning";
-  if (status === "SHIPPED") return "bg-primary/10 text-primary";
-  if (status === "DELIVERED") return "bg-success/10 text-success";
-  if (status === "CANCELLED" || status === "REFUNDED") return "bg-danger/10 text-danger";
-  return "bg-muted text-muted-foreground";
-}
-
 function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
     db_unavailable: "No pudimos actualizar la orden. Revisa la conexión de base de datos.",
-    invalid_transition: "No se puede reabrir una orden cancelada o reembolsada desde este panel.",
+    invalid_transition: "No se puede realizar esa transición de estado desde este panel.",
     not_found: "No encontramos esa orden.",
     updated: "Estado de orden actualizado.",
   };
 
   return messages[status] ?? "";
-}
-
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
-}
-
-function formatOrderStatus(status: OrderStatus) {
-  const labels: Record<OrderStatus, string> = {
-    CANCELLED: "Cancelada",
-    DELIVERED: "Entregada",
-    PAID_PENDING_SHIPMENT: "Pendiente de entrega",
-    REFUNDED: "Reembolsada",
-    SHIPPED: "Enviada",
-  };
-
-  return labels[status];
-}
-
-function formatShipmentMethod(method: string | undefined) {
-  if (method === "PICKUP") return "Retiro en bodega";
-  if (method === "LOCAL_DELIVERY") return "Envío local";
-  return "Pendiente";
-}
-
-function formatShipmentStatus(status: string | undefined) {
-  const labels: Record<string, string> = {
-    CANCELLED: "Cancelado",
-    DELIVERED: "Entregado",
-    IN_TRANSIT: "En tránsito",
-    PENDING: "Pendiente",
-  };
-
-  return status ? labels[status] ?? status : "Pendiente";
-}
-
-function formatPaymentProvider(provider: string | undefined) {
-  if (provider === "mock") return "Pago mock";
-  if (provider === "wompi") return "Wompi";
-  if (provider === "pagadito") return "Pagadito";
-  if (provider === "bac_manual") return "BAC manual";
-  return "Pendiente";
-}
-
-function formatPaymentStatus(status: string | undefined) {
-  const labels: Record<string, string> = {
-    CANCELLED: "Cancelado",
-    FAILED: "Fallido",
-    PAID: "Pagado",
-    PENDING: "Pendiente",
-    REFUNDED: "Reembolsado",
-  };
-
-  return status ? labels[status] ?? status : "Pendiente";
-}
-
-function formatDateTime(date: Date) {
-  return new Intl.DateTimeFormat("es-SV", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "America/El_Salvador",
-  }).format(date);
 }

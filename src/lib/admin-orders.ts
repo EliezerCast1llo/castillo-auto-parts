@@ -2,6 +2,48 @@ import { InventoryStatus, OrderStatus, type Prisma } from "@prisma/client";
 import { writeAdminAuditLog } from "./admin-audit";
 import { DEFAULT_LOCATION_CODE } from "./fulfillment";
 
+// ---------------------------------------------------------------------------
+// Máquina de estados de orden
+// ---------------------------------------------------------------------------
+
+/**
+ * Transiciones válidas por estado de origen.
+ *
+ * Define explícitamente qué estados puede alcanzar una orden desde su estado
+ * actual. Las ordenes cerradas no pueden volver a estados operativos, pero
+ * una cancelacion puede reconciliarse como reembolso sin restaurar inventario
+ * por segunda vez.
+ *
+ * Diagrama:
+ *   PAID_PENDING_SHIPMENT → SHIPPED | CANCELLED | REFUNDED
+ *   SHIPPED               → DELIVERED | CANCELLED | REFUNDED
+ *   DELIVERED             → (cerrada)
+ *   CANCELLED             → REFUNDED
+ *   REFUNDED              → (cerrada)
+ */
+export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, ReadonlyArray<OrderStatus>> = {
+  CANCELLED: [OrderStatus.REFUNDED],
+  DELIVERED: [],
+  PAID_PENDING_SHIPMENT: [OrderStatus.SHIPPED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
+  REFUNDED: [],
+  SHIPPED: [OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
+};
+
+const terminalOrderStatuses = new Set<OrderStatus>([
+  OrderStatus.CANCELLED,
+  OrderStatus.DELIVERED,
+  OrderStatus.REFUNDED,
+]);
+
+const stockRestoringOrderStatuses = new Set<OrderStatus>([
+  OrderStatus.CANCELLED,
+  OrderStatus.REFUNDED,
+]);
+
+/**
+ * Lista plana de todos los estados que el admin puede asignar (al menos una
+ * transición entrante). Útil para filtros y selectores de UI.
+ */
 export const allowedAdminOrderStatuses: OrderStatus[] = [
   OrderStatus.PAID_PENDING_SHIPMENT,
   OrderStatus.SHIPPED,
@@ -20,6 +62,21 @@ export class AdminOrderStatusError extends Error {
 
 export function parseAdminOrderStatus(status: string) {
   return allowedAdminOrderStatuses.find((option) => option === status);
+}
+
+/**
+ * Verifica si una transición de estado es válida según ORDER_STATUS_TRANSITIONS.
+ * Reemplaza la lógica implícita de isTerminalOrderStatus para transiciones.
+ */
+export function canTransitionOrderStatus(from: OrderStatus, to: OrderStatus): boolean {
+  return from === to || (ORDER_STATUS_TRANSITIONS[from] as OrderStatus[]).includes(to);
+}
+
+/**
+ * Retorna true si el estado esta cerrado para reapertura operativa.
+ */
+export function isTerminalOrderStatus(status: OrderStatus): boolean {
+  return terminalOrderStatuses.has(status);
 }
 
 export async function updateOrderStatusForAdmin(
@@ -53,12 +110,13 @@ export async function updateOrderStatusForAdmin(
     throw new AdminOrderStatusError("not_found");
   }
 
-  if (isTerminalOrderStatus(existingOrder.status) && !isTerminalOrderStatus(status)) {
+  if (!canTransitionOrderStatus(existingOrder.status, status)) {
     throw new AdminOrderStatusError("invalid_transition");
   }
 
   const shouldRestoreStock =
-    existingOrder.status === OrderStatus.PAID_PENDING_SHIPMENT && isTerminalOrderStatus(status);
+    existingOrder.status === OrderStatus.PAID_PENDING_SHIPMENT &&
+    stockRestoringOrderStatuses.has(status);
 
   if (shouldRestoreStock) {
     await restoreOrderStock(tx, existingOrder.items);
@@ -108,10 +166,6 @@ function mapShipmentStatus(status: OrderStatus) {
   };
 
   return statusMap[status];
-}
-
-function isTerminalOrderStatus(status: OrderStatus) {
-  return status === OrderStatus.CANCELLED || status === OrderStatus.REFUNDED;
 }
 
 async function restoreOrderStock(
