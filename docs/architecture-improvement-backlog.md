@@ -62,6 +62,17 @@ Completado en `codex/ui-brand-foundation`:
 - Convertir busqueda del header en formulario real hacia `/catalog`.
 - Agregar `aria-label` a links visuales de producto.
 
+## Aplicado 2026-05-26
+
+Completado en revision de seguridad y arquitectura (Bloques 1 y 2):
+
+- `middleware.ts` en Edge Runtime protege todas las rutas admin antes del Server Component.
+- `src/lib/form-utils.ts` y `src/lib/url-utils.ts` centralizan helpers duplicados en 9+ archivos.
+- `buildOrderNumber` usa `randomBytes(3)` en lugar de `Math.random()`.
+- `findDbProducts` usa `React.cache()` para deduplicar queries en el mismo render tree.
+- `/design` retorna `notFound()` en produccion.
+- `src/lib/rate-limit-redis.ts` agrega backend Redis (Upstash) con fallback en memoria.
+
 ## P2
 
 - Agregar auditoria admin para cambios operativos.

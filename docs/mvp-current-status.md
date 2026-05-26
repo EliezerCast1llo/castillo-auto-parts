@@ -10,6 +10,12 @@ El MVP esta en etapa funcional local, guest-first, con pago simulado y operacion
 
 Implementado:
 
+- Middleware Edge que protege `/admin/**` antes del Server Component (HMAC-SHA256, Edge Runtime).
+- Rate limiter admin con backend Redis opcional (Upstash) + fallback en memoria.
+- Helpers centralizados `form-utils.ts` y `url-utils.ts` (elimina duplicacion en 9+ archivos).
+- Numero de orden con sufijo `randomBytes` criptograficamente seguro.
+- `React.cache()` en query de catalogo para deduplicar DB requests.
+- Ruta `/design` bloqueada con `notFound()` en produccion.
 - Home, catalogo, detalle de producto, filtros y compatibilidad vehicular estructurada.
 - Carrito guest firmado por cookie.
 - Checkout guest con retiro en bodega y envio local.

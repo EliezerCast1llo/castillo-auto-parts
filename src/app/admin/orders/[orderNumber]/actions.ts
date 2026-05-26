@@ -8,6 +8,7 @@ import {
   updateOrderStatusForAdmin,
 } from "@/lib/admin-orders";
 import { requireAdminAccess } from "@/lib/admin-auth";
+import { formString } from "@/lib/form-utils";
 import { db } from "@/lib/db";
 
 export async function updateAdminOrderStatus(formData: FormData) {
@@ -38,7 +39,3 @@ export async function updateAdminOrderStatus(formData: FormData) {
   redirect(`/admin/orders/${orderNumber}?estado=updated`);
 }
 
-function formString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}

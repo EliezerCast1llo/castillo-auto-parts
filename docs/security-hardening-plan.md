@@ -12,7 +12,7 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 
 | Riesgo | Control recomendado |
 | --- | --- |
-| Fuerza bruta en login admin | Implementado en `codex/security-hardening-mvp`: rate limit por IP en server action de login. |
+| Fuerza bruta en login admin | Implementado en `codex/security-hardening-mvp`: rate limit por IP en server action de login. Mejorado 2026-05-26: rate limiter async con backend Redis (Upstash) para escalar en serverless multi-instancia; fallback en memoria si no hay credenciales. |
 | Pago mock en produccion | Implementado en `codex/security-hardening-mvp`: bloqueo de `PAYMENT_PROVIDER=mock` cuando `NODE_ENV=production`, salvo runner E2E aislado con `ALLOW_MOCK_PAYMENT_IN_E2E=true`. |
 | Orden publica adivinable | Implementado en `codex/order-access-token`: token guest aleatorio, hash en DB y `?token=` requerido para ver la orden pública. |
 | Sesion admin con secretos debiles | Implementado parcialmente en `codex/security-hardening-mvp`: rechazo de credenciales debiles en produccion y cookie `SameSite=strict`. |
@@ -37,6 +37,17 @@ Existe una contrasena admin local temporal en `.env`. No debe versionarse y debe
 2. `codex/order-access-token`: proteger pagina publica de orden con token guest. En progreso/completado para revision.
 3. `codex/cart-cookie-hardening`: firmar cookie o migrar carrito guest a DB. En progreso/completado para revision.
 4. `codex/admin-audit-log`: completado como parte de `codex/vehicle-compatibility-structure`.
+
+## Aplicado 2026-05-26
+
+| Mejora | Detalle |
+| --- | --- |
+| Middleware Edge admin | `middleware.ts` intercepta `/admin/**` en Edge Runtime con HMAC-SHA256 via Web Crypto API. Primera linea de defensa antes del Server Component. |
+| Helpers centralizados | `src/lib/form-utils.ts` y `src/lib/url-utils.ts` eliminan duplicacion y reducen superficie de error. |
+| Sufijo de orden seguro | `randomBytes(3)` reemplaza `Math.random()` en `buildOrderNumber`. |
+| React.cache() | Deduplica queries DB dentro del render tree, reduce carga en DB. |
+| /design bloqueada en produccion | `notFound()` si `NODE_ENV === "production"`. |
+| Rate limiter Redis | `src/lib/rate-limit-redis.ts` con seleccion automatica de backend segun env vars. |
 
 ## Gates pendientes
 

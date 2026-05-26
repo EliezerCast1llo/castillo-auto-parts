@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { db } from "@/lib/db";
 import {
   getProductBySlug,
@@ -27,13 +28,19 @@ const productInclude = {
   inventoryStocks: true,
 } as const;
 
-async function findDbProducts() {
+/**
+ * React.cache() deduplicates esta query dentro del mismo render tree.
+ * Si múltiples Server Components en la misma request llaman getCatalogProducts(),
+ * solo se ejecuta una query a DB. Cada nueva request/render obtiene datos frescos.
+ * Documentación: https://react.dev/reference/react/cache
+ */
+const findDbProducts = cache(async () => {
   return db.product.findMany({
     where: { isActive: true },
     include: productInclude,
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
   });
-}
+});
 
 export async function getCatalogProducts(): Promise<CatalogProduct[]> {
   const result = await getCatalogProductsResult();

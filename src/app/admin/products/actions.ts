@@ -12,6 +12,7 @@ import {
 } from "@/lib/admin-products";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { requireAdminAccess } from "@/lib/admin-auth";
+import { formString, optionalFormStringOrNull } from "@/lib/form-utils";
 import { db } from "@/lib/db";
 
 const DEFAULT_LOCATION_CODE = "MAIN";
@@ -249,16 +250,16 @@ function parseAdminProductFormData(formData: FormData): AdminProductInput | null
     brand,
     categoryId: formString(formData, "categoryId"),
     compatibilities: parsedCompatibilities.items,
-    description: optionalFormString(formData, "description"),
+    description: optionalFormStringOrNull(formData, "description"),
     isActive: formData.get("isActive") === "true",
     isFeatured: formData.get("isFeatured") === "true",
     name,
     newCategoryName: formString(formData, "newCategoryName"),
-    partNumber: optionalFormString(formData, "partNumber"),
+    partNumber: optionalFormStringOrNull(formData, "partNumber"),
     priceCents,
     quantityOnHand,
     reorderPoint,
-    shortDescription: optionalFormString(formData, "shortDescription"),
+    shortDescription: optionalFormStringOrNull(formData, "shortDescription"),
     sku,
     slug,
     status: normalizeAdminInventoryStatus({ quantityOnHand, requestedStatus }),
@@ -414,15 +415,6 @@ function parseInventoryStatus(value: string) {
 function parseInteger(value: string) {
   if (!/^\d+$/.test(value)) return null;
   return Number(value);
-}
-
-function formString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function optionalFormString(formData: FormData, key: string) {
-  return formString(formData, key) || null;
 }
 
 class AdminProductDomainError extends Error {

@@ -9,13 +9,10 @@ import {
   setAdminSessionCookie,
 } from "@/lib/admin-auth";
 import { verifyAdminPassword } from "@/lib/admin-session";
-import { createRateLimiter } from "@/lib/rate-limit";
+import { formString } from "@/lib/form-utils";
+import { createAdminLoginRateLimiter } from "@/lib/rate-limit-redis";
 
-const adminLoginRateLimiter = createRateLimiter({
-  lockoutMs: 15 * 60 * 1000,
-  maxAttempts: 5,
-  windowMs: 15 * 60 * 1000,
-});
+const adminLoginRateLimiter = createAdminLoginRateLimiter();
 
 export async function loginAdmin(formData: FormData) {
   const config = getAdminAccessConfig();
@@ -30,18 +27,18 @@ export async function loginAdmin(formData: FormData) {
     redirect(`/admin/login?estado=unsafe_config&next=${encodeURIComponent(nextPath)}`);
   }
 
-  const rateLimit = adminLoginRateLimiter.check(rateLimitKey);
+  const rateLimit = await adminLoginRateLimiter.check(rateLimitKey);
   if (!rateLimit.allowed) {
     redirect(`/admin/login?estado=rate_limited&next=${encodeURIComponent(nextPath)}`);
   }
 
   if (!verifyAdminPassword(formString(formData, "password"), config.password)) {
-    const failedAttempt = adminLoginRateLimiter.registerFailure(rateLimitKey);
+    const failedAttempt = await adminLoginRateLimiter.registerFailure(rateLimitKey);
     const status = failedAttempt.allowed ? "invalid" : "rate_limited";
     redirect(`/admin/login?estado=${status}&next=${encodeURIComponent(nextPath)}`);
   }
 
-  adminLoginRateLimiter.reset(rateLimitKey);
+  await adminLoginRateLimiter.reset(rateLimitKey);
   await setAdminSessionCookie();
   redirect(nextPath);
 }
@@ -49,11 +46,6 @@ export async function loginAdmin(formData: FormData) {
 export async function logoutAdmin() {
   await clearAdminSessionCookie();
   redirect("/admin/login?estado=logged_out");
-}
-
-function formString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
 }
 
 async function getAdminLoginRateLimitKey() {

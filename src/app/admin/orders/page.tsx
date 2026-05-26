@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
+import { firstValue } from "@/lib/url-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -216,10 +217,6 @@ function getStatusCount(
 
 function parseOrderStatus(status: string) {
   return orderStatusOptions.find((option) => option === status);
-}
-
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
 function formatOrderStatus(status: OrderStatus) {

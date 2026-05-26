@@ -9,6 +9,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | Archivo | Responsabilidad |
 | --- | --- |
 | `README.md` | Entrada rapida del proyecto, setup local y documentos clave. |
+| `middleware.ts` | Edge Middleware que protege `/admin/**`. Verifica HMAC-SHA256 con Web Crypto API. |
 | `package.json` | Scripts, dependencias y seed Prisma. |
 | `next.config.ts` | Configuracion Next.js y headers de seguridad base. |
 | `playwright.config.ts` | Configuracion E2E y servidor local para Playwright. |
@@ -42,6 +43,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | --- | --- |
 | `docs/agent-review-findings-2026-05-20.md` | Hallazgos de agentes revisores y acciones ya aplicadas. |
 | `docs/agent-review-findings-2026-05-21.md` | Consolidado actualizado con CI, documentacion y proximos riesgos. |
+| `docs/agent-review-findings-2026-05-26.md` | Bloque 1 (middleware, helpers, randomBytes, cache, /design, autocomplete) y Bloque 2 (rate limiter Redis). |
 | `docs/security-hardening-plan.md` | Riesgos de seguridad, controles y gates antes de produccion. |
 | `docs/architecture-improvement-backlog.md` | Oportunidades de arquitectura y deuda tecnica. |
 | `docs/ui-ux-page-opportunities.md` | Oportunidades UI/UX por pagina. |
@@ -142,7 +144,10 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/admin-audit.ts` | Escritura de auditoria admin. |
 | `src/lib/admin-products.ts` | Validaciones/normalizaciones de productos admin. |
 | `src/lib/order-access-token.ts` | Token guest para ver orden publica. |
-| `src/lib/rate-limit.ts` | Rate limiter en memoria para MVP. |
+| `src/lib/rate-limit.ts` | Rate limiter sincrono en memoria (logica pura, probada con Vitest). |
+| `src/lib/rate-limit-redis.ts` | Rate limiter async. Usa Redis (Upstash) si hay credenciales; in-memory si no. |
+| `src/lib/form-utils.ts` | Helpers centralizados para leer FormData: `formString`, `optionalFormString`, `optionalFormStringOrNull`. |
+| `src/lib/url-utils.ts` | Helpers centralizados para query params: `firstValue`, `allValues`. |
 | `src/lib/stock-alerts.ts` | Parseo/deduplicacion de avisos de stock. |
 | `src/lib/payments/*` | Contrato y proveedor mock de pagos. |
 | `src/lib/email/*` | Contrato, provider console, plantillas y logs. |
