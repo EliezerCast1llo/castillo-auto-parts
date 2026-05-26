@@ -16,6 +16,7 @@ const e2ePort = process.env.E2E_PORT || process.env.PLAYWRIGHT_PORT || "3100";
 const e2eBaseUrl = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${e2ePort}`;
 const e2eEnv = {
   ...process.env,
+  ALLOW_MOCK_PAYMENT_IN_E2E: "true",
   ADMIN_ACCESS_PASSWORD: process.env.E2E_ADMIN_ACCESS_PASSWORD || "e2e-admin-password-for-local-runs",
   ADMIN_ACCESS_SECRET:
     process.env.E2E_ADMIN_ACCESS_SECRET ||

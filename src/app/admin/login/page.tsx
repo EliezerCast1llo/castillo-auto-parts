@@ -2,6 +2,7 @@ import { LockKeyhole } from "lucide-react";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { getAdminAccessConfig, getSafeAdminNextPath, isAdminAuthenticated } from "@/lib/admin-auth";
+import { firstValue } from "@/lib/url-utils";
 import { loginAdmin } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -100,6 +101,3 @@ function getStatusMessage(status: string) {
   return messages[status] ?? "";
 }
 
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
-}

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { parseAdminPriceCents, slugifyProductValue } from "@/lib/admin-products";
 import { requireAdminAccess } from "@/lib/admin-auth";
+import { formString } from "@/lib/form-utils";
 import { DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
 import { db } from "@/lib/db";
 
@@ -198,7 +199,3 @@ function parseInteger(value: string) {
   return Number(value);
 }
 
-function formString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}

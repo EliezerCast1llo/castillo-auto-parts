@@ -10,6 +10,12 @@ El MVP esta en etapa funcional local, guest-first, con pago simulado y operacion
 
 Implementado:
 
+- Middleware Edge que protege `/admin/**` antes del Server Component (HMAC-SHA256, Edge Runtime).
+- Rate limiter admin con backend Redis opcional (Upstash) + fallback en memoria.
+- Helpers centralizados `form-utils.ts` y `url-utils.ts` (elimina duplicacion en 9+ archivos).
+- Numero de orden con sufijo `randomBytes` criptograficamente seguro.
+- `React.cache()` en query de catalogo para deduplicar DB requests.
+- Ruta `/design` bloqueada con `notFound()` en produccion.
 - Home, catalogo, detalle de producto, filtros y compatibilidad vehicular estructurada.
 - Carrito guest firmado por cookie.
 - Checkout guest con retiro en bodega y envio local.
@@ -107,8 +113,8 @@ Automatizado:
 
 - Vitest para helpers de negocio.
 - Vitest con Prisma real para transiciones admin de orden e inventario.
-- Playwright para catalogo, carrito, checkout local basico y login/admin stock alerts.
-- Playwright responsive smoke para detectar overflow horizontal en pantallas cliente criticas.
+- Playwright para catalogo, carrito, checkout pickup/local completo, aviso de stock y login/admin stock alerts.
+- Playwright responsive smoke para detectar overflow horizontal en pantallas cliente criticas, checkout y admin operativo.
 - GitHub Actions corre Prisma validate, lint, typecheck, unit tests, build y E2E en PR/push a `main`.
 - `npm run test:e2e` prepara y limpia su propio schema para no modificar el schema local normal.
 
@@ -116,7 +122,7 @@ Manual pendiente:
 
 - revisar UX real del mapa/pin;
 - revisar stock alerts en admin;
-- probar checkout pickup y envio local en navegador;
+- revisar manualmente UX fina de checkout pickup/envio local en navegador;
 - revisar responsive mobile/tablet;
 - validar copy legal/comercial.
 

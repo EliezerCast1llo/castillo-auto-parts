@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -48,6 +49,12 @@ export const metadata = {
 };
 
 export default function DesignPreviewPage() {
+  // Esta página es solo para revisión visual en desarrollo.
+  // En producción retorna 404 para no exponer internos del sistema de diseño.
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PreviewHeader />

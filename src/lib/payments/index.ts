@@ -33,7 +33,14 @@ export function resolvePaymentProviderId(providerId?: string): PaymentProviderId
 }
 
 export function assertPaymentProviderAllowed(providerId: PaymentProviderId, environment = process.env.NODE_ENV) {
-  if (environment === "production" && providerId === "mock") {
+  if (environment === "production" && providerId === "mock" && !isE2EMockPaymentAllowed()) {
     throw new Error("The mock payment provider cannot be used in production.");
   }
+}
+
+function isE2EMockPaymentAllowed() {
+  return (
+    process.env.E2E_ISOLATED_DATABASE === "true" &&
+    process.env.ALLOW_MOCK_PAYMENT_IN_E2E === "true"
+  );
 }

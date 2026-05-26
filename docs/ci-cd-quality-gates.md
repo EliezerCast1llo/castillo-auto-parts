@@ -120,6 +120,7 @@ Por defecto el runner usa `http://localhost:3100` y `next start` para no reutili
 El runner fuerza proveedores seguros de prueba por defecto:
 
 - `PAYMENT_PROVIDER=mock`;
+- `ALLOW_MOCK_PAYMENT_IN_E2E=true`;
 - `EMAIL_PROVIDER=console`;
 - `NEXT_PUBLIC_SITE_URL` apuntando al puerto E2E.
 

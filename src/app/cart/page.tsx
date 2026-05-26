@@ -16,6 +16,7 @@ import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
 import { getGuestCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
+import { firstValue } from "@/lib/url-utils";
 import { createStockAlert, removeCartItem, updateCartItem } from "./actions";
 
 export const metadata = {
@@ -325,10 +326,6 @@ function getStatusMessage(status: string) {
   };
 
   return messages[status] ?? "";
-}
-
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
 function formatUnits(quantity: number) {

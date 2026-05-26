@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
 import { verifyOrderAccessToken } from "@/lib/order-access-token";
+import { firstValue } from "@/lib/url-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -160,6 +161,3 @@ function formatShipmentMethod(method: string | undefined) {
   return "Pendiente";
 }
 
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
-}

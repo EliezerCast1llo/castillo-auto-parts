@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { getGuestCart } from "@/lib/cart";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
+import { firstValue } from "@/lib/url-utils";
 import { createGuestOrder } from "./actions";
 
 export const metadata = {
@@ -115,9 +116,9 @@ function CheckoutForm({
       <section className="rounded-md border border-border bg-card p-5">
         <h2 className="text-lg font-bold text-primary">Cliente</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <CheckoutField label="Nombre completo" name="customerName" required />
-          <CheckoutField label="Email" name="customerEmail" required type="email" />
-          <CheckoutField label="Teléfono" name="customerPhone" required />
+          <CheckoutField autoComplete="name" label="Nombre completo" name="customerName" required />
+          <CheckoutField autoComplete="email" label="Email" name="customerEmail" required type="email" />
+          <CheckoutField autoComplete="tel" label="Teléfono" name="customerPhone" required />
         </div>
       </section>
 
@@ -147,11 +148,13 @@ function CheckoutForm({
 }
 
 function CheckoutField({
+  autoComplete,
   label,
   name,
   required,
   type = "text",
 }: {
+  autoComplete?: string;
   label: string;
   name: string;
   required?: boolean;
@@ -161,6 +164,7 @@ function CheckoutField({
     <label className="block text-sm font-semibold">
       {label}
       <input
+        autoComplete={autoComplete}
         className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
         name={name}
         required={required}
@@ -231,6 +235,3 @@ function getStatusMessage(status: string) {
   return messages[status] ?? "";
 }
 
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
-}

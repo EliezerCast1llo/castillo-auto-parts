@@ -52,4 +52,28 @@ describe("mock payment provider", () => {
       "The mock payment provider cannot be used in production.",
     );
   });
+
+  it("allows the mock provider only for isolated E2E runs", () => {
+    const originalE2EFlag = process.env.E2E_ISOLATED_DATABASE;
+    const originalAllowFlag = process.env.ALLOW_MOCK_PAYMENT_IN_E2E;
+
+    process.env.E2E_ISOLATED_DATABASE = "true";
+    process.env.ALLOW_MOCK_PAYMENT_IN_E2E = "true";
+
+    try {
+      expect(getPaymentProvider("mock", "production")).toBe(mockPaymentProvider);
+    } finally {
+      restoreEnv("E2E_ISOLATED_DATABASE", originalE2EFlag);
+      restoreEnv("ALLOW_MOCK_PAYMENT_IN_E2E", originalAllowFlag);
+    }
+  });
 });
+
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
+}

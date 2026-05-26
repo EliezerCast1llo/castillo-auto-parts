@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { getDeliveryFeeCents, type DeliveryZoneOption } from "./fulfillment";
 
@@ -146,5 +147,7 @@ function optionalCoordinate(min: number, max: number, label: string) {
 }
 
 function randomOrderSuffix() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
+  // 3 bytes → 6 chars hex → 16 millones de combinaciones, criptográficamente seguro.
+  // Math.random() era predecible y podía generar colisiones bajo carga.
+  return randomBytes(3).toString("hex").toUpperCase();
 }
