@@ -6,6 +6,13 @@ import { SiteHeader } from "@/components/site-header";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
+import {
+  formatDateTime,
+  formatOrderStatus,
+  formatPaymentProvider,
+  formatShipmentMethod,
+  getOrderStatusClassName,
+} from "@/lib/order-formatters";
 import { firstValue } from "@/lib/url-utils";
 
 export const dynamic = "force-dynamic";
@@ -109,7 +116,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                   </div>
 
                   <InfoBlock label="Entrega" value={formatShipmentMethod(order.shipment?.method)} />
-                  <InfoBlock label="Pago" value={formatPayment(order.payment?.provider)} />
+                  <InfoBlock label="Pago" value={formatPaymentProvider(order.payment?.provider)} />
                   <div className="flex items-center justify-between gap-3 lg:block lg:text-right">
                     <div>
                       <p className="text-sm text-muted-foreground">Total</p>
@@ -191,21 +198,13 @@ function EmptyOrders() {
 }
 
 function StatusBadge({ status }: { status: OrderStatus }) {
-  const className = getStatusClassName(status);
+  const className = getOrderStatusClassName(status);
 
   return (
     <span className={`rounded-md px-2 py-1 text-xs font-bold ${className}`}>
       {formatOrderStatus(status)}
     </span>
   );
-}
-
-function getStatusClassName(status: OrderStatus) {
-  if (status === "PAID_PENDING_SHIPMENT") return "bg-warning/15 text-warning";
-  if (status === "SHIPPED") return "bg-primary/10 text-primary";
-  if (status === "DELIVERED") return "bg-success/10 text-success";
-  if (status === "CANCELLED" || status === "REFUNDED") return "bg-danger/10 text-danger";
-  return "bg-muted text-muted-foreground";
 }
 
 function getStatusCount(
@@ -219,36 +218,3 @@ function parseOrderStatus(status: string) {
   return orderStatusOptions.find((option) => option === status);
 }
 
-function formatOrderStatus(status: OrderStatus) {
-  const labels: Record<OrderStatus, string> = {
-    CANCELLED: "Cancelada",
-    DELIVERED: "Entregada",
-    PAID_PENDING_SHIPMENT: "Pendiente de entrega",
-    REFUNDED: "Reembolsada",
-    SHIPPED: "Enviada",
-  };
-
-  return labels[status];
-}
-
-function formatShipmentMethod(method: string | undefined) {
-  if (method === "PICKUP") return "Retiro en bodega";
-  if (method === "LOCAL_DELIVERY") return "Envío local";
-  return "Pendiente";
-}
-
-function formatPayment(provider: string | undefined) {
-  if (provider === "mock") return "Pago mock";
-  if (provider === "wompi") return "Wompi";
-  if (provider === "pagadito") return "Pagadito";
-  if (provider === "bac_manual") return "BAC manual";
-  return "Pendiente";
-}
-
-function formatDateTime(date: Date) {
-  return new Intl.DateTimeFormat("es-SV", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "America/El_Salvador",
-  }).format(date);
-}

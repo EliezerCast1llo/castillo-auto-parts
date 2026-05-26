@@ -4,6 +4,7 @@ import { CheckCircle2, CreditCard, Info, PackageCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
+import { formatShipmentMethod } from "@/lib/order-formatters";
 import { verifyOrderAccessToken } from "@/lib/order-access-token";
 import { firstValue } from "@/lib/url-utils";
 
@@ -155,9 +156,4 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
   );
 }
 
-function formatShipmentMethod(method: string | undefined) {
-  if (method === "PICKUP") return "Retiro en bodega";
-  if (method === "LOCAL_DELIVERY") return "Envío local";
-  return "Pendiente";
-}
 

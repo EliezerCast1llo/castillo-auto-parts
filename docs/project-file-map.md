@@ -148,6 +148,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/rate-limit-redis.ts` | Rate limiter async. Usa Redis (Upstash) si hay credenciales; in-memory si no. |
 | `src/lib/form-utils.ts` | Helpers centralizados para leer FormData: `formString`, `optionalFormString`, `optionalFormStringOrNull`. |
 | `src/lib/url-utils.ts` | Helpers centralizados para query params: `firstValue`, `allValues`. |
+| `src/lib/order-formatters.ts` | Formatters de dominio para ordenes, envios y pagos (labels en es-SV, colores de badge). |
 | `src/lib/stock-alerts.ts` | Parseo/deduplicacion de avisos de stock. |
 | `src/lib/payments/*` | Contrato y proveedor mock de pagos. |
 | `src/lib/email/*` | Contrato, provider console, plantillas y logs. |

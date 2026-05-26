@@ -163,6 +163,26 @@ El MVP esta orientado a una tienda guest-first de repuestos automotrices para El
 - `src/app/admin/login/actions.ts` usa el nuevo limiter async.
 - `.env.example` documenta las variables de Upstash.
 
+## Cambios 2026-05-26 — Bloque 3
+
+### Formatters Centralizados
+
+- `src/lib/order-formatters.ts` reemplaza funciones duplicadas en 3 archivos.
+- Cubre: estado de orden, método de envio, estado de envio, proveedor de pago, estado de pago, fecha/hora, clase CSS de badge.
+- `src/lib/order-formatters.test.ts` con tests unitarios de todos los formatters.
+
+### Máquina de Estados Explícita
+
+- `ORDER_STATUS_TRANSITIONS` en `admin-orders.ts` declara qué transiciones son válidas.
+- `canTransitionOrderStatus(from, to)` reemplaza lógica implícita.
+- `isTerminalOrderStatus(status)` identifica estados cerrados para evitar reaperturas.
+- Se conserva `CANCELLED -> REFUNDED` sin segunda restauración de inventario.
+- Tests de state machine en `admin-orders.test.ts`.
+
+### Correcciones
+
+- `firstValue` local en `admin/orders/[orderNumber]/page.tsx` reemplazada por import de `url-utils` (omisión del Bloque 1.2).
+
 ## Proxima Linea De Trabajo Recomendada
 
 1. Activar CI en GitHub y proteger `main`.

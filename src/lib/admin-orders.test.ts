@@ -3,6 +3,9 @@ import { InventoryStatus, OrderStatus } from "@prisma/client";
 import { afterAll, afterEach, describe, expect, it } from "vitest";
 import {
   AdminOrderStatusError,
+  ORDER_STATUS_TRANSITIONS,
+  canTransitionOrderStatus,
+  isTerminalOrderStatus,
   parseAdminOrderStatus,
   updateOrderStatusForAdmin,
 } from "./admin-orders";
@@ -18,6 +21,56 @@ describe("admin order status helpers", () => {
   it("parses only supported order statuses", () => {
     expect(parseAdminOrderStatus("SHIPPED")).toBe(OrderStatus.SHIPPED);
     expect(parseAdminOrderStatus("PENDING_PAYMENT")).toBeUndefined();
+  });
+});
+
+describe("ORDER_STATUS_TRANSITIONS (state machine)", () => {
+  it("permite transiciones válidas desde PAID_PENDING_SHIPMENT", () => {
+    expect(canTransitionOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT, OrderStatus.SHIPPED)).toBe(true);
+    expect(canTransitionOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT, OrderStatus.CANCELLED)).toBe(true);
+    expect(canTransitionOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT, OrderStatus.REFUNDED)).toBe(true);
+  });
+
+  it("permite transiciones válidas desde SHIPPED", () => {
+    expect(canTransitionOrderStatus(OrderStatus.SHIPPED, OrderStatus.DELIVERED)).toBe(true);
+    expect(canTransitionOrderStatus(OrderStatus.SHIPPED, OrderStatus.CANCELLED)).toBe(true);
+    expect(canTransitionOrderStatus(OrderStatus.SHIPPED, OrderStatus.REFUNDED)).toBe(true);
+  });
+
+  it("bloquea transiciones inválidas desde PAID_PENDING_SHIPMENT", () => {
+    expect(canTransitionOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT, OrderStatus.DELIVERED)).toBe(false);
+  });
+
+  it("permite guardar sin cambio de estado", () => {
+    for (const status of Object.values(OrderStatus)) {
+      expect(canTransitionOrderStatus(status, status)).toBe(true);
+    }
+  });
+
+  it("permite reconciliar una orden cancelada como reembolsada", () => {
+    expect(canTransitionOrderStatus(OrderStatus.CANCELLED, OrderStatus.REFUNDED)).toBe(true);
+  });
+
+  it("bloquea reaperturas desde estados terminales", () => {
+    expect(canTransitionOrderStatus(OrderStatus.CANCELLED, OrderStatus.PAID_PENDING_SHIPMENT)).toBe(false);
+    expect(canTransitionOrderStatus(OrderStatus.CANCELLED, OrderStatus.SHIPPED)).toBe(false);
+    expect(canTransitionOrderStatus(OrderStatus.REFUNDED, OrderStatus.CANCELLED)).toBe(false);
+    expect(canTransitionOrderStatus(OrderStatus.REFUNDED, OrderStatus.SHIPPED)).toBe(false);
+    expect(canTransitionOrderStatus(OrderStatus.DELIVERED, OrderStatus.SHIPPED)).toBe(false);
+  });
+
+  it("identifica estados terminales correctamente", () => {
+    expect(isTerminalOrderStatus(OrderStatus.CANCELLED)).toBe(true);
+    expect(isTerminalOrderStatus(OrderStatus.REFUNDED)).toBe(true);
+    expect(isTerminalOrderStatus(OrderStatus.DELIVERED)).toBe(true);
+    expect(isTerminalOrderStatus(OrderStatus.SHIPPED)).toBe(false);
+    expect(isTerminalOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT)).toBe(false);
+  });
+
+  it("todos los estados del enum están cubiertos en ORDER_STATUS_TRANSITIONS", () => {
+    for (const status of Object.values(OrderStatus)) {
+      expect(ORDER_STATUS_TRANSITIONS).toHaveProperty(status);
+    }
   });
 });
 
