@@ -10,40 +10,46 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
   const isAvailable = isPurchasableStockStatus(product.stockStatus);
 
   return (
-    <article className="flex h-full flex-col rounded-md border border-border bg-card p-4 shadow-[0_10px_26px_rgba(18,50,74,0.05)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ca-border bg-white shadow-[var(--ca-shadow-soft)] transition hover:-translate-y-0.5 hover:border-[#c3cfdd] hover:shadow-[var(--ca-shadow-premium)]">
       <Link
         aria-label={`Ver detalle de ${product.name}`}
         href={`/product/${product.slug}`}
-        className="relative flex h-36 items-center justify-center overflow-hidden rounded-md bg-muted"
+        className="relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-white via-ca-background to-[#dde7f1]"
       >
-        <ProductVisual seed={product.sku} />
+        <div className="absolute inset-x-5 bottom-5 h-8 rounded-full bg-ca-navy-950/10 blur-xl" />
+        <ProductVisual kind={product.category} seed={product.sku} />
         <span className="absolute left-3 top-3">
           <StockBadge status={product.stockStatus} />
         </span>
       </Link>
-      <div className="mt-4 flex flex-1 flex-col">
-        <p className="text-xs font-bold uppercase text-success">{product.category}</p>
-        <Link href={`/product/${product.slug}`} className="mt-2 min-h-10 text-base font-bold leading-5">
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-ca-blue-700">{product.brand}</p>
+          <p className="text-[11px] font-black uppercase text-ca-text-secondary">{product.category}</p>
+        </div>
+        <Link
+          href={`/product/${product.slug}`}
+          className="mt-2 line-clamp-2 min-h-12 text-base font-black leading-6 text-ca-navy-950 transition group-hover:text-ca-blue-700"
+        >
           {product.name}
         </Link>
-        <p className="mt-2 min-h-5 text-sm text-muted-foreground">
-          {product.brand} · {product.partNumber}
+        <p className="mt-1 line-clamp-1 text-xs font-bold uppercase text-ca-text-secondary">
+          SKU: {product.sku} · {product.partNumber}
         </p>
-        <p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">SKU {product.sku}</p>
-        <p className="mt-2 min-h-10 text-sm leading-5 text-muted-foreground">
-          <span className="font-semibold text-foreground">Compatible con: </span>
+        <p className="mt-3 line-clamp-3 min-h-[60px] text-sm leading-5 text-ca-text-secondary">
+          <span className="font-black text-ca-navy-950">Compatible con: </span>
           {product.compatibility}
         </p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-          <span className="text-xl font-bold text-primary">{formatCurrency(product.priceCents)}</span>
+          <span className="text-2xl font-black text-ca-navy-950">{formatCurrency(product.priceCents)}</span>
           <form action={addCartItem}>
             <input name="sku" type="hidden" value={product.sku} />
             <input name="quantity" type="hidden" value="1" />
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white disabled:bg-muted disabled:text-muted-foreground"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] bg-ca-navy-950 px-4 text-sm font-black text-white shadow-[0_10px_18px_rgba(6,25,51,0.14)] transition hover:bg-ca-navy-800 disabled:bg-[#EEF2F6] disabled:text-[#7B8798] disabled:shadow-none"
               disabled={!isAvailable}
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4" strokeWidth={1.9} />
               {isAvailable ? "Agregar" : "No disponible"}
             </button>
           </form>
