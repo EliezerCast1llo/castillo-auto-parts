@@ -8,7 +8,7 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-05-21.
+- Fecha de ultima actualizacion: 2026-05-27.
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
@@ -16,6 +16,44 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 - Producto: e-commerce de repuestos automotrices para El Salvador.
 - Mercado inicial: San Salvador y Santa Tecla.
 - Horizonte objetivo: MVP robusto en aproximadamente 3 meses.
+
+## Bloques de mejora aplicados (2026-05-26 a 2026-05-27)
+
+Todos mergeados a `main` salvo Bloque 5 (en rama `claude/block-5-db-pagination`):
+
+**Bloque 1 — Seguridad y helpers centralizados:**
+- `middleware.ts` en Edge Runtime protege `/admin/**` antes del Server Component (HMAC-SHA256, Web Crypto API).
+- `src/lib/form-utils.ts`: `formString`, `optionalFormString`, `optionalFormStringOrNull`.
+- `src/lib/url-utils.ts`: `firstValue`, `allValues`.
+- `buildOrderNumber` usa `randomBytes(3)` criptograficamente seguro.
+- `React.cache()` en `findDbProducts` para deduplicar queries en el mismo render tree.
+- `/design` retorna `notFound()` en produccion.
+
+**Bloque 2 — Rate limiter Redis:**
+- `src/lib/rate-limit-redis.ts`: `AsyncRateLimiter` con backend Upstash Redis REST API y fallback en memoria.
+- `createAdminLoginRateLimiter()`: 5 intentos / 15 min ventana / 15 min bloqueo.
+- Login admin usa `await limiter.check/registerFailure/reset`.
+- Configurar con `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en `.env.local`.
+
+**Bloque 3 — Formateadores centralizados y maquina de estados:**
+- `src/lib/order-formatters.ts`: formateadores de orden, envio, pago y fecha (es-SV / America/El_Salvador).
+- `src/lib/admin-orders.ts`: `ORDER_STATUS_TRANSITIONS` declarativo como fuente de verdad.
+  - `CANCELLED → [REFUNDED]` permitido para reconciliacion sin doble restauracion de inventario.
+  - `terminalOrderStatuses` y `stockRestoringOrderStatuses` son Sets independientes del mapa de transiciones.
+- `canTransitionOrderStatus(from, to)` y `isTerminalOrderStatus(status)` exportados.
+
+**Bloque 4 — Busqueda en tiempo real:**
+- `src/app/api/search/route.ts`: `GET /api/search?q=<query>`, max 6 resultados, Cache-Control 30s.
+- `src/components/search/search-autocomplete.tsx`: Client Component con debounce 300ms, AbortController, ARIA combobox/listbox.
+- `SiteHeader` usa `<SearchAutocomplete />` en lugar del formulario estatico.
+- Regla: no hacer `setState` directamente en el cuerpo principal de un `useEffect`; usar handlers o callbacks.
+
+**Bloque 5 — Filtros DB y paginacion (en PR):**
+- `src/data/catalog-filters.ts`: `buildPrismaWhere(filters)` convierte CatalogFilters en where Prisma; `stockStatusToPrismaStatuses`.
+- `src/data/products.ts`: `getFilteredCatalogProducts(filters, page)` con skip/take; `PAGE_SIZE = 12`; `buildMockPaginatedResult` para fallback.
+- `src/app/catalog/page.tsx`: usa `getFilteredCatalogProducts` + `<CatalogPagination>`.
+- `src/components/catalog-pagination.tsx`: Server Component URL-first, preserva filtros en hrefs, accesible con `aria-current`.
+- `getCatalogProducts()` se mantiene sin cambios para autocomplete y opciones de filtro.
 
 ## Rol Del Humano
 

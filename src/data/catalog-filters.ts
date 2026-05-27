@@ -1,3 +1,4 @@
+import type { InventoryStatus, Prisma } from "@prisma/client";
 import type { CatalogProduct } from "./products";
 
 export type CatalogSearchParams = Record<string, string | string[] | undefined>;
@@ -93,6 +94,103 @@ export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilt
       vehicles.flatMap((vehicle) => range(vehicle.yearFrom, vehicle.yearTo).map(String)),
     ).sort((a, b) => Number(b) - Number(a)),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Prisma where clause builder
+// ---------------------------------------------------------------------------
+
+/**
+ * Convierte CatalogFilters en un objeto `where` de Prisma para filtrar
+ * directamente en la base de datos.
+ *
+ * Cobertura:
+ * - query: busca por name, sku, partNumber y brand con modo insensible a case.
+ *   La búsqueda full-text (descripción, compatibilidad) sigue haciéndose en
+ *   memoria vía filterCatalogProducts cuando se necesita (mock/autocomplete).
+ * - categories: filtra por nombre de categoría (OR entre múltiples).
+ * - brands: filtra por marca (OR entre múltiples).
+ * - stockStatuses: traduce los labels de UI a InventoryStatus de Prisma.
+ * - vehicle: filtra por VehicleCompatibility con make, model y año.
+ *
+ * Nota: los filtros de stockStatus requieren JOIN con inventoryStocks.
+ * Prisma genera la subquery automáticamente mediante `inventoryStocks: { some: ... }`.
+ */
+export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
+  const where: Prisma.ProductWhereInput = { isActive: true };
+  const conditions: Prisma.ProductWhereInput[] = [];
+
+  // Búsqueda por texto: nombre, SKU, número de parte y marca
+  if (filters.query.trim()) {
+    const q = filters.query.trim();
+    conditions.push({
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { sku: { contains: q, mode: "insensitive" } },
+        { partNumber: { contains: q, mode: "insensitive" } },
+        { brand: { contains: q, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  // Categorías (OR entre seleccionadas)
+  if (filters.categories.length > 0) {
+    conditions.push({
+      category: { name: { in: filters.categories } },
+    });
+  }
+
+  // Marcas (OR entre seleccionadas)
+  if (filters.brands.length > 0) {
+    conditions.push({
+      brand: { in: filters.brands },
+    });
+  }
+
+  // Estado de stock: traduce labels de UI a InventoryStatus de Prisma
+  if (filters.stockStatuses.length > 0) {
+    const prismaStatuses: InventoryStatus[] = filters.stockStatuses.flatMap(stockStatusToPrismaStatuses);
+    if (prismaStatuses.length > 0) {
+      conditions.push({
+        inventoryStocks: { some: { status: { in: prismaStatuses } } },
+      });
+    }
+  }
+
+  // Compatibilidad vehicular
+  const vehicleConditions: Prisma.VehicleCompatibilityWhereInput = {};
+  if (filters.vehicleMake) vehicleConditions.make = { equals: filters.vehicleMake, mode: "insensitive" };
+  if (filters.vehicleModel) vehicleConditions.model = { equals: filters.vehicleModel, mode: "insensitive" };
+  if (filters.vehicleYear) {
+    const year = Number(filters.vehicleYear);
+    if (Number.isInteger(year) && year > 0) {
+      vehicleConditions.yearFrom = { lte: year };
+      vehicleConditions.yearTo = { gte: year };
+    }
+  }
+  if (Object.keys(vehicleConditions).length > 0) {
+    conditions.push({ compatibilities: { some: vehicleConditions } });
+  }
+
+  if (conditions.length > 0) {
+    where.AND = conditions;
+  }
+
+  return where;
+}
+
+/**
+ * Traduce un stockStatus de UI a los InventoryStatus equivalentes de Prisma.
+ *
+ * "Disponible"       → IN_STOCK
+ * "Últimas unidades" → LOW_STOCK
+ * "No disponible"    → OUT_OF_STOCK, PREORDER
+ */
+export function stockStatusToPrismaStatuses(status: CatalogProduct["stockStatus"]): InventoryStatus[] {
+  if (status === "Disponible") return ["IN_STOCK"];
+  if (status === "Últimas unidades") return ["LOW_STOCK"];
+  if (status === "No disponible") return ["OUT_OF_STOCK", "PREORDER"];
+  return [];
 }
 
 export function countActiveCatalogFilters(filters: CatalogFilters) {

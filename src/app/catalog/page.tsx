@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CatalogActiveFilters } from "@/components/product/catalog-active-filters";
 import { CatalogFilterForm } from "@/components/product/catalog-filter-form";
+import { CatalogPagination } from "@/components/catalog-pagination";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductFilters } from "@/components/product/product-filters";
 import { VehicleSearchPanel } from "@/components/product/vehicle-search-panel";
@@ -8,12 +9,11 @@ import { SiteHeader } from "@/components/site-header";
 import { MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import {
   countActiveCatalogFilters,
-  filterCatalogProducts,
   getCatalogFilterOptions,
   parseCatalogFilters,
   type CatalogSearchParams,
 } from "@/data/catalog-filters";
-import { getCatalogProductsResult } from "@/data/products";
+import { getCatalogProducts, getFilteredCatalogProducts } from "@/data/products";
 
 export const metadata = {
   title: "Catálogo | Castillo Auto Parts",
@@ -27,11 +27,21 @@ type CatalogPageProps = {
 };
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
-  const filters = parseCatalogFilters(searchParams ? await searchParams : {});
-  const catalogResult = await getCatalogProductsResult();
-  const products = catalogResult.products;
-  const filteredProducts = filterCatalogProducts(products, filters);
-  const filterOptions = getCatalogFilterOptions(products);
+  const resolvedParams = searchParams ? await searchParams : {};
+  const filters = parseCatalogFilters(resolvedParams);
+  const page = Math.max(1, Number(resolvedParams.page ?? 1) || 1);
+
+  // Resultado paginado con filtros en DB
+  const catalogResult = await getFilteredCatalogProducts(filters, page);
+
+  // Para las opciones de filtro (categorías, marcas, vehículos) necesitamos el
+  // universo completo de productos, no solo la página actual.
+  // Usamos getCatalogProducts() que ya tiene React.cache() y no genera una
+  // segunda query si se llamó antes en el mismo render tree.
+  const allProducts = await getCatalogProducts();
+  const filterOptions = getCatalogFilterOptions(allProducts);
+
+  const { products: filteredProducts, totalCount, totalPages, currentPage, source, status } = catalogResult;
   const activeFilterCount = countActiveCatalogFilters(filters);
   const filterKey = JSON.stringify(filters);
 
@@ -54,48 +64,62 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <section className="space-y-5">
           <CatalogHero />
 
-          {catalogResult.status === "unavailable" ? (
+          {status === "unavailable" ? (
             <CatalogUnavailableState />
           ) : null}
 
           <div className="flex flex-col justify-between gap-3 rounded-md border border-border bg-card p-5 md:flex-row md:items-end">
             <div>
               <p className="text-sm font-semibold text-success">
-                {catalogResult.source === "mock" ? "Inventario de prueba" : "Inventario activo"}
+                {source === "mock" ? "Inventario de prueba" : "Inventario activo"}
               </p>
               <h2 className="mt-1 text-2xl font-bold text-primary">Catálogo de repuestos</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                {catalogResult.source === "mock"
+                {source === "mock"
                   ? "Datos de prueba para desarrollo local. En producción no se muestra inventario simulado."
                   : "Productos activos disponibles para búsqueda, filtros, compatibilidad y compra."}
               </p>
             </div>
-            <div className="rounded-md bg-background px-3 py-2 text-sm font-semibold text-muted-foreground">
-              {filteredProducts.length} de {products.length} productos
+            <div className="flex flex-col items-end gap-1">
+              <span className="rounded-md bg-background px-3 py-2 text-sm font-semibold text-muted-foreground">
+                {totalCount} {totalCount === 1 ? "producto" : "productos"}
+              </span>
+              {totalPages > 1 ? (
+                <span className="text-xs text-muted-foreground">
+                  Página {currentPage} de {totalPages}
+                </span>
+              ) : null}
             </div>
           </div>
 
           <CatalogActiveFilters filters={filters} />
 
-          {catalogResult.status === "unavailable" ? null : filteredProducts.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.sku} product={product} />
-              ))}
-            </div>
+          {status === "unavailable" ? null : filteredProducts.length > 0 ? (
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.sku} product={product} />
+                ))}
+              </div>
+              <CatalogPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                searchParams={resolvedParams}
+              />
+            </>
           ) : (
             <div className="rounded-md border border-border bg-card p-6">
               <h3 className="text-lg font-bold text-primary">
-                {products.length === 0
+                {totalCount === 0
                   ? "Aún no hay productos activos"
                   : "No encontramos productos con esos filtros"}
               </h3>
               <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-                {products.length === 0
+                {totalCount === 0
                   ? "El catálogo está disponible, pero todavía no hay inventario activo publicado."
                   : "Prueba quitar un filtro activo, buscar por número de parte o revisar otra combinación de vehículo."}
               </p>
-              {products.length > 0 ? (
+              {activeFilterCount > 0 ? (
                 <Link
                   className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
                   href="/catalog"

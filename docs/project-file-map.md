@@ -1,6 +1,6 @@
 # Project File Map
 
-Fecha: 2026-05-21.
+Fecha: 2026-05-27.
 
 Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. No reemplaza leer el codigo antes de editar; sirve como indice operativo.
 
@@ -44,6 +44,9 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `docs/agent-review-findings-2026-05-20.md` | Hallazgos de agentes revisores y acciones ya aplicadas. |
 | `docs/agent-review-findings-2026-05-21.md` | Consolidado actualizado con CI, documentacion y proximos riesgos. |
 | `docs/agent-review-findings-2026-05-26.md` | Bloque 1 (middleware, helpers, randomBytes, cache, /design, autocomplete) y Bloque 2 (rate limiter Redis). |
+| `docs/agent-review-findings-2026-05-26-block3.md` | Bloque 3: formateadores centralizados y maquina de estados de orden. |
+| `docs/agent-review-findings-2026-05-26-block4.md` | Bloque 4: busqueda en tiempo real con autocomplete y Route Handler. |
+| `docs/agent-review-findings-2026-05-27-block5.md` | Bloque 5: filtros a nivel DB y paginacion offset en el catalogo. |
 | `docs/security-hardening-plan.md` | Riesgos de seguridad, controles y gates antes de produccion. |
 | `docs/architecture-improvement-backlog.md` | Oportunidades de arquitectura y deuda tecnica. |
 | `docs/ui-ux-page-opportunities.md` | Oportunidades UI/UX por pagina. |
@@ -125,6 +128,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/components/admin/admin-nav.tsx` | Navegacion admin. |
 | `src/components/admin/admin-product-form.tsx` | Formulario reusable de producto. |
 | `src/components/admin/admin-session-controls.tsx` | Controles de sesion admin. |
+| `src/components/catalog-pagination.tsx` | Paginacion URL-first para el catalogo. Server Component sin JS. |
 
 ## Dominio Y Librerias
 
@@ -162,9 +166,9 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | Ruta de archivo | Responsabilidad |
 | --- | --- |
 | `src/data/mock-products.ts` | Catalogo mock/seed inicial. |
-| `src/data/products.ts` | Lectura de catalogo desde Prisma con fallback seguro en dev. |
+| `src/data/products.ts` | Lectura de catalogo desde Prisma. `getCatalogProducts` (completo) y `getFilteredCatalogProducts` (paginado + filtrado en DB). `PAGE_SIZE = 12`. |
 | `src/data/catalog-source.ts` | Decision de fallback mock por ambiente. |
-| `src/data/catalog-filters.ts` | Query params y filtros de catalogo. |
+| `src/data/catalog-filters.ts` | Query params, filtros en memoria y `buildPrismaWhere` para filtros en DB. |
 | `prisma/schema.prisma` | Modelo de datos. |
 | `prisma/seed.ts` | Seed de productos, categorias, zonas y settings. |
 
