@@ -75,7 +75,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </div>
                 ))}
               </div>
-              <div className="flex min-h-[360px] items-center justify-center rounded-md bg-background p-8">
+              <div className="flex min-h-[360px] items-center justify-center rounded-md bg-background p-4 sm:p-8">
                 <ProductVisual seed={product.sku} size="large" />
               </div>
             </div>
