@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Languages, Search, ShoppingCart, Wrench } from "lucide-react";
+import { Languages, ShoppingCart, Wrench } from "lucide-react";
 import { getGuestCartItemCount } from "@/lib/cart";
+import { SearchAutocomplete } from "@/components/search/search-autocomplete";
 
 export async function SiteHeader() {
   const cartItemCount = await getGuestCartItemCount();
@@ -48,27 +49,7 @@ export async function SiteHeader() {
           </div>
         </div>
 
-        <form
-          action="/catalog"
-          className="grid gap-3 rounded-md border border-border bg-background p-3 md:grid-cols-[1fr_160px]"
-        >
-          <label className="flex min-h-12 items-center gap-3 rounded-md bg-card px-3">
-            <Search className="h-5 w-5 text-muted-foreground" />
-            <input
-              className="w-full bg-transparent text-sm outline-none"
-              name="q"
-              placeholder="Busca por repuesto, SKU, número de parte o vehículo"
-              type="search"
-            />
-          </label>
-          <button
-            type="submit"
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
-          >
-            <Search className="h-4 w-4" />
-            Buscar
-          </button>
-        </form>
+        <SearchAutocomplete />
       </div>
     </header>
   );

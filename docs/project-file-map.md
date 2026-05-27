@@ -149,6 +149,8 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/form-utils.ts` | Helpers centralizados para leer FormData: `formString`, `optionalFormString`, `optionalFormStringOrNull`. |
 | `src/lib/url-utils.ts` | Helpers centralizados para query params: `firstValue`, `allValues`. |
 | `src/lib/order-formatters.ts` | Formatters de dominio para ordenes, envios y pagos (labels en es-SV, colores de badge). |
+| `src/app/api/search/route.ts` | Route Handler GET /api/search?q= para autocomplete en tiempo real. |
+| `src/components/search/search-autocomplete.tsx` | Client Component de busqueda con debounce, dropdown y navegacion por teclado. |
 | `src/lib/stock-alerts.ts` | Parseo/deduplicacion de avisos de stock. |
 | `src/lib/payments/*` | Contrato y proveedor mock de pagos. |
 | `src/lib/email/*` | Contrato, provider console, plantillas y logs. |
