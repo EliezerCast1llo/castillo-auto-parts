@@ -1,0 +1,111 @@
+:root {
+  --ca-navy-950: #061933;
+  --ca-navy-900: #082447;
+  --ca-navy-800: #0b3268;
+  --ca-blue-700: #0f5fb8;
+  --ca-blue-600: #1267c5;
+  --ca-gold-500: #d9a21b;
+  --ca-gold-400: #f2b72a;
+  --ca-bg: #f5f7fa;
+  --ca-surface: #ffffff;
+  --ca-border: #d8e0ea;
+  --ca-text: #0f172a;
+  --ca-muted: #5b6678;
+  --ca-success: #16803a;
+
+  --ca-radius-sm: 10px;
+  --ca-radius-md: 14px;
+  --ca-radius-lg: 20px;
+  --ca-radius-xl: 28px;
+
+  --ca-shadow-sm: 0 4px 14px rgba(8, 36, 71, 0.08);
+  --ca-shadow-md: 0 12px 32px rgba(8, 36, 71, 0.14);
+  --ca-shadow-hero: 0 24px 60px rgba(6, 25, 51, 0.22);
+}
+
+.dark {
+  --ca-bg: #06111f;
+  --ca-surface: #0b1728;
+  --ca-border: #1f3148;
+  --ca-text: #f8fafc;
+  --ca-muted: #a8b3c4;
+}
+
+.ca-page {
+  background:
+    radial-gradient(circle at top right, rgba(15, 95, 184, 0.08), transparent 32rem),
+    var(--ca-bg);
+  color: var(--ca-text);
+}
+
+.ca-container {
+  width: min(100% - 2rem, 1440px);
+  margin-inline: auto;
+}
+
+.ca-card {
+  background: var(--ca-surface);
+  border: 1px solid var(--ca-border);
+  border-radius: var(--ca-radius-lg);
+  box-shadow: var(--ca-shadow-sm);
+}
+
+.ca-button-primary {
+  background: var(--ca-navy-900);
+  color: white;
+  border-radius: var(--ca-radius-sm);
+  font-weight: 700;
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.ca-button-primary:hover {
+  background: var(--ca-navy-800);
+  box-shadow: 0 8px 20px rgba(8, 36, 71, 0.22);
+  transform: translateY(-1px);
+}
+
+.ca-button-gold {
+  background: linear-gradient(135deg, var(--ca-gold-400), var(--ca-gold-500));
+  color: #08162b;
+  border-radius: var(--ca-radius-sm);
+  font-weight: 800;
+  transition: transform 160ms ease, filter 160ms ease;
+}
+
+.ca-button-gold:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.ca-input {
+  background: white;
+  border: 1px solid var(--ca-border);
+  border-radius: var(--ca-radius-sm);
+  color: var(--ca-text);
+}
+
+.ca-input:focus {
+  outline: 3px solid rgba(15, 95, 184, 0.18);
+  border-color: var(--ca-blue-700);
+}
+
+.ca-hero {
+  background:
+    linear-gradient(105deg, rgba(6, 25, 51, 0.98) 0%, rgba(8, 36, 71, 0.96) 42%, rgba(8, 36, 71, 0.52) 100%),
+    radial-gradient(circle at right center, rgba(18, 103, 197, 0.28), transparent 34rem);
+  border-radius: var(--ca-radius-xl);
+  color: white;
+  box-shadow: var(--ca-shadow-hero);
+  overflow: hidden;
+}
+
+.ca-gold-text {
+  color: var(--ca-gold-400);
+}
+
+.ca-success-badge {
+  background: rgba(22, 128, 58, 0.12);
+  color: var(--ca-success);
+  border-radius: 999px;
+  font-weight: 700;
+}
