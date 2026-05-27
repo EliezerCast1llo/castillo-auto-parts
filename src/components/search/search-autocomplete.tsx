@@ -37,21 +37,15 @@ export function SearchAutocomplete() {
 
   // Búsqueda con debounce
   useEffect(() => {
+    if (query.length < MIN_QUERY_LENGTH) return;
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    if (query.length < MIN_QUERY_LENGTH) {
-      setResults([]);
-      setIsOpen(false);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
 
     debounceRef.current = setTimeout(async () => {
       // Cancelar request anterior si sigue en vuelo
       abortRef.current?.abort();
       abortRef.current = new AbortController();
+      setIsLoading(true);
 
       try {
         const response = await fetch(
@@ -97,9 +91,25 @@ export function SearchAutocomplete() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleQueryChange = useCallback((value: string) => {
+    setQuery(value);
+
+    if (value.length >= MIN_QUERY_LENGTH) return;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    abortRef.current?.abort();
+    setResults([]);
+    setIsOpen(false);
+    setIsLoading(false);
+    setActiveIndex(-1);
+  }, []);
+
   const handleSelect = useCallback(
     (result: SearchResult) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      abortRef.current?.abort();
       setIsOpen(false);
+      setIsLoading(false);
       setQuery(result.name);
       router.push(`/product/${result.slug}`);
     },
@@ -173,7 +183,7 @@ export function SearchAutocomplete() {
             role="combobox"
             type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => handleQueryChange(e.target.value)}
             onFocus={() => {
               if (results.length > 0) setIsOpen(true);
             }}
