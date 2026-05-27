@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPrismaWhere,
   countActiveCatalogFilters,
   filterCatalogProducts,
   getCatalogFilterOptions,
+  getEmptyCatalogFilters,
   parseCatalogFilters,
+  stockStatusToPrismaStatuses,
 } from "./catalog-filters";
 import { mockProducts } from "./mock-products";
 
@@ -88,5 +91,145 @@ describe("catalog filters", () => {
     });
 
     expect(countActiveCatalogFilters(filters)).toBe(4);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildPrismaWhere
+// ---------------------------------------------------------------------------
+
+describe("buildPrismaWhere", () => {
+  it("returns only isActive:true when filters are empty", () => {
+    const where = buildPrismaWhere(getEmptyCatalogFilters());
+
+    expect(where).toEqual({ isActive: true });
+    expect(where.AND).toBeUndefined();
+  });
+
+  it("agrega condición OR de texto cuando query no está vacío", () => {
+    const where = buildPrismaWhere({ ...getEmptyCatalogFilters(), query: "toyota" });
+
+    expect(where.AND).toBeDefined();
+    const conditions = where.AND as unknown[];
+    const textCondition = conditions.find(
+      (c): c is { OR: unknown[] } => typeof c === "object" && c !== null && "OR" in c,
+    );
+    expect(textCondition).toBeDefined();
+    expect(textCondition!.OR).toHaveLength(4); // name, sku, partNumber, brand
+  });
+
+  it("filtra por categoría con { in: [...] }", () => {
+    const where = buildPrismaWhere({
+      ...getEmptyCatalogFilters(),
+      categories: ["Filtros", "Frenos"],
+    });
+
+    const conditions = where.AND as Array<{ category?: { name?: { in?: string[] } } }>;
+    const catCondition = conditions.find((c) => c.category !== undefined);
+    expect(catCondition?.category?.name?.in).toEqual(["Filtros", "Frenos"]);
+  });
+
+  it("filtra por marca con { in: [...] }", () => {
+    const where = buildPrismaWhere({
+      ...getEmptyCatalogFilters(),
+      brands: ["WIX", "NGK"],
+    });
+
+    const conditions = where.AND as Array<{ brand?: { in?: string[] } }>;
+    const brandCondition = conditions.find((c) => c.brand !== undefined);
+    expect(brandCondition?.brand?.in).toEqual(["WIX", "NGK"]);
+  });
+
+  it("filtra por stockStatus Disponible → IN_STOCK", () => {
+    const where = buildPrismaWhere({
+      ...getEmptyCatalogFilters(),
+      stockStatuses: ["Disponible"],
+    });
+
+    const conditions = where.AND as Array<{ inventoryStocks?: unknown }>;
+    const stockCondition = conditions.find((c) => c.inventoryStocks !== undefined);
+    expect(stockCondition).toBeDefined();
+    expect(stockCondition!.inventoryStocks).toMatchObject({
+      some: { status: { in: ["IN_STOCK"] } },
+    });
+  });
+
+  it("filtra por stockStatus No disponible → OUT_OF_STOCK y PREORDER", () => {
+    const where = buildPrismaWhere({
+      ...getEmptyCatalogFilters(),
+      stockStatuses: ["No disponible"],
+    });
+
+    const conditions = where.AND as Array<{ inventoryStocks?: unknown }>;
+    const stockCondition = conditions.find((c) => c.inventoryStocks !== undefined);
+    expect(stockCondition!.inventoryStocks).toMatchObject({
+      some: { status: { in: expect.arrayContaining(["OUT_OF_STOCK", "PREORDER"]) } },
+    });
+  });
+
+  it("filtra por vehículo con make, model y rango de años", () => {
+    const where = buildPrismaWhere({
+      ...getEmptyCatalogFilters(),
+      vehicleMake: "Toyota",
+      vehicleModel: "Corolla",
+      vehicleYear: "2015",
+    });
+
+    const conditions = where.AND as Array<{ compatibilities?: unknown }>;
+    const vehicleCondition = conditions.find((c) => c.compatibilities !== undefined);
+    expect(vehicleCondition!.compatibilities).toMatchObject({
+      some: {
+        make: { equals: "Toyota", mode: "insensitive" },
+        model: { equals: "Corolla", mode: "insensitive" },
+        yearFrom: { lte: 2015 },
+        yearTo: { gte: 2015 },
+      },
+    });
+  });
+
+  it("ignora vehicleYear no numérico", () => {
+    const where = buildPrismaWhere({
+      ...getEmptyCatalogFilters(),
+      vehicleMake: "Toyota",
+      vehicleYear: "abc",
+    });
+
+    const conditions = where.AND as Array<{ compatibilities?: unknown }>;
+    const vehicleCondition = conditions.find((c) => c.compatibilities !== undefined);
+    // El vehículo se agrega (por make), pero sin yearFrom/yearTo
+    expect(vehicleCondition!.compatibilities).toMatchObject({
+      some: { make: { equals: "Toyota", mode: "insensitive" } },
+    });
+    expect((vehicleCondition!.compatibilities as { some: Record<string, unknown> }).some.yearFrom).toBeUndefined();
+  });
+
+  it("combina múltiples filtros con AND", () => {
+    const where = buildPrismaWhere({
+      ...getEmptyCatalogFilters(),
+      query: "filtro",
+      categories: ["Filtros"],
+      brands: ["WIX"],
+    });
+
+    const conditions = where.AND as unknown[];
+    expect(conditions).toHaveLength(3); // query + category + brand
+  });
+});
+
+// ---------------------------------------------------------------------------
+// stockStatusToPrismaStatuses
+// ---------------------------------------------------------------------------
+
+describe("stockStatusToPrismaStatuses", () => {
+  it("convierte Disponible → IN_STOCK", () => {
+    expect(stockStatusToPrismaStatuses("Disponible")).toEqual(["IN_STOCK"]);
+  });
+
+  it("convierte Últimas unidades → LOW_STOCK", () => {
+    expect(stockStatusToPrismaStatuses("Últimas unidades")).toEqual(["LOW_STOCK"]);
+  });
+
+  it("convierte No disponible → OUT_OF_STOCK y PREORDER", () => {
+    expect(stockStatusToPrismaStatuses("No disponible")).toEqual(["OUT_OF_STOCK", "PREORDER"]);
   });
 });

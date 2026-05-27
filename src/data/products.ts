@@ -7,8 +7,15 @@ import {
   type MockProduct,
 } from "./mock-products";
 import { shouldUseMockCatalogFallback } from "./catalog-source";
+import { buildPrismaWhere, filterCatalogProducts, type CatalogFilters } from "./catalog-filters";
 
 export { shouldUseMockCatalogFallback } from "./catalog-source";
+
+/**
+ * Número de productos por página en el catálogo paginado.
+ * Se puede ajustar sin cambiar la lógica de paginación.
+ */
+export const PAGE_SIZE = 12;
 
 export type CatalogProduct = MockProduct;
 export type CatalogProductSource = "database" | "mock";
@@ -179,6 +186,102 @@ export async function getCatalogProductSlugs() {
       ? mockProducts.map((product) => ({ slug: product.slug }))
       : [];
   }
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo paginado con filtros en base de datos
+// ---------------------------------------------------------------------------
+
+export type PaginatedCatalogResult = {
+  products: CatalogProduct[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  source: CatalogProductSource | null;
+  status: CatalogProductStatus;
+};
+
+/**
+ * Obtiene productos del catálogo aplicando filtros directamente en DB y
+ * paginando con offset.
+ *
+ * Estrategia:
+ * - Si hay DB disponible: aplica `buildPrismaWhere` para filtrar en Prisma y
+ *   usa skip/take para la paginación. El count total usa la misma cláusula where.
+ * - Si no hay DB (mock fallback): filtra en memoria con `filterCatalogProducts`
+ *   y pagina en JS. La paginación del mock es solo para desarrollo local.
+ *
+ * La función `getCatalogProducts()` original se mantiene sin cambios para
+ * retrocompatibilidad con el autocomplete (/api/search) y páginas de detalle.
+ */
+export async function getFilteredCatalogProducts(
+  filters: CatalogFilters,
+  page: number,
+): Promise<PaginatedCatalogResult> {
+  const safePage = Math.max(1, Math.floor(page));
+
+  try {
+    const where = buildPrismaWhere(filters);
+    const [totalCount, products] = await Promise.all([
+      db.product.count({ where }),
+      db.product.findMany({
+        where,
+        include: productInclude,
+        orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
+        skip: (safePage - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      }),
+    ]);
+
+    if (totalCount > 0 || !shouldUseMockCatalogFallback()) {
+      return {
+        products: products.map(mapDbProduct),
+        totalCount,
+        totalPages: Math.max(1, Math.ceil(totalCount / PAGE_SIZE)),
+        currentPage: safePage,
+        source: "database",
+        status: totalCount === 0 ? "empty" : "ready",
+      };
+    }
+
+    // DB respondió vacía y estamos en modo fallback → usar mock
+    return buildMockPaginatedResult(filters, safePage);
+  } catch (error) {
+    logCatalogDataError(error);
+
+    if (shouldUseMockCatalogFallback()) {
+      return buildMockPaginatedResult(filters, safePage);
+    }
+
+    return {
+      products: [],
+      totalCount: 0,
+      totalPages: 1,
+      currentPage: safePage,
+      source: null,
+      status: "unavailable",
+    };
+  }
+}
+
+/**
+ * Paginación en memoria sobre el mock, usada solo cuando la DB no responde
+ * y el fallback está habilitado (siempre fuera de producción).
+ */
+function buildMockPaginatedResult(filters: CatalogFilters, page: number): PaginatedCatalogResult {
+  const filtered = filterCatalogProducts(mockProducts, filters);
+  const totalCount = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  return {
+    products: filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    totalCount,
+    totalPages,
+    currentPage: safePage,
+    source: "mock",
+    status: "ready",
+  };
 }
 
 export async function getRelatedCatalogProducts(product: CatalogProduct) {
