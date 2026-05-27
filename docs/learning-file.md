@@ -210,6 +210,20 @@ Documento clave:
 
 - `docs/security-hardening-plan.md`
 
+## Reglas Compartidas Para Agentes
+
+Documento clave:
+
+- `docs/ai-agent-operating-rules.md`
+
+Aprendizajes operativos agregados:
+
+- Antes de cambiar de rama, cualquier agente debe revisar `git status --short --branch`.
+- Si un checkout falla por cambios locales, no continuar como si hubiera funcionado.
+- Vitest debe tener configurado el alias `@` cuando los tests importan modulos desde `@/`.
+- No hacer `setState` sincronico dentro del cuerpo principal de un `useEffect`; mover limpiezas inmediatas a handlers o derivar estado.
+- No mezclar polish visual, feature work, seguridad y refactors en el mismo PR salvo aprobacion explicita.
+
 ## Agentes Del Proyecto
 
 - Product Agent.

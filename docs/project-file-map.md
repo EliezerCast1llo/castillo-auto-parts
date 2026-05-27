@@ -35,6 +35,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `docs/qa-checklists.md` | Checklists manuales por feature/pantalla. |
 | `docs/project-tracking.md` | Forma recomendada de manejar issues, PRs y tablero visual. |
 | `docs/ci-cd-quality-gates.md` | Como funciona CI y como bloquear merges sin pruebas. |
+| `docs/ai-agent-operating-rules.md` | Reglas compartidas para que Codex, Claude y otros agentes trabajen igual. |
 | `docs/project-file-map.md` | Este mapa de archivos. |
 
 ## Hallazgos Y Backlogs
@@ -182,7 +183,8 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 Antes de editar:
 
 1. Leer este mapa.
-2. Leer el documento de fase correspondiente.
-3. Leer el codigo real del archivo que se va a tocar.
-4. Revisar tests existentes del mismo dominio.
-5. Actualizar `docs/learning-file.md` si cambia una decision o regla del negocio.
+2. Leer `docs/ai-agent-operating-rules.md`.
+3. Leer el documento de fase correspondiente.
+4. Leer el codigo real del archivo que se va a tocar.
+5. Revisar tests existentes del mismo dominio.
+6. Actualizar `docs/learning-file.md` si cambia una decision o regla del negocio.

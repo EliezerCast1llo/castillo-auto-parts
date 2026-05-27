@@ -115,6 +115,7 @@ El MVP debe permitir:
 - `docs/roadmap.md`
 - `docs/project-tracking.md`
 - `docs/learning-file.md`
+- `docs/ai-agent-operating-rules.md`
 - `docs/phase-1-kickoff.md`
 - `docs/phase-1-market-research-report.md`
 - `docs/phase-1-payments-dte-analysis.md`
