@@ -1,23 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f7f9;
-  --foreground: #111827;
+  --ca-navy-950: #061933;
+  --ca-navy-900: #082447;
+  --ca-navy-800: #0b3268;
+  --ca-blue-700: #0f5fb8;
+  --ca-blue-600: #1267c5;
+  --ca-gold-500: #d9a21b;
+  --ca-gold-400: #f2b72a;
+  --ca-surface: #ffffff;
+  --ca-background: #f5f7fa;
+  --ca-border: #d8e0ea;
+  --ca-text-primary: #0f172a;
+  --ca-text-secondary: #5b6678;
+  --ca-success: #16803a;
+  --ca-radius-sm: 10px;
+  --ca-radius-md: 14px;
+  --ca-radius-lg: 20px;
+  --ca-radius-xl: 28px;
+  --ca-shadow-soft: 0 10px 30px rgba(6, 25, 51, 0.08);
+  --ca-shadow-premium: 0 18px 46px rgba(6, 25, 51, 0.14);
+  --ca-shadow-hero: 0 28px 72px rgba(6, 25, 51, 0.25);
+  --background: var(--ca-background);
+  --foreground: var(--ca-text-primary);
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: var(--ca-text-primary);
   --graphite: #1f2933;
-  --steel: #56616f;
-  --primary: #0b5cad;
+  --steel: var(--ca-text-secondary);
+  --primary: var(--ca-navy-900);
   --primary-foreground: #ffffff;
-  --accent: #f59e0b;
+  --accent: var(--ca-gold-500);
   --accent-foreground: #1a1200;
-  --success: #16803c;
+  --success: var(--ca-success);
   --warning: #b7791f;
   --danger: #b42318;
   --info: #0f766e;
-  --muted: #eef2f6;
-  --muted-foreground: #56616f;
-  --border: #d8dee6;
+  --muted: #eef3f8;
+  --muted-foreground: var(--ca-text-secondary);
+  --border: var(--ca-border);
 }
 
 @theme inline {
@@ -38,6 +58,18 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
+  --color-ca-navy-950: var(--ca-navy-950);
+  --color-ca-navy-900: var(--ca-navy-900);
+  --color-ca-navy-800: var(--ca-navy-800);
+  --color-ca-blue-700: var(--ca-blue-700);
+  --color-ca-blue-600: var(--ca-blue-600);
+  --color-ca-gold-500: var(--ca-gold-500);
+  --color-ca-gold-400: var(--ca-gold-400);
+  --color-ca-background: var(--ca-background);
+  --color-ca-surface: var(--ca-surface);
+  --color-ca-border: var(--ca-border);
+  --color-ca-text-primary: var(--ca-text-primary);
+  --color-ca-text-secondary: var(--ca-text-secondary);
   --font-sans: var(--font-inter);
 }
 
@@ -69,4 +101,15 @@ select {
 :where(a, button, input, select):focus-visible {
   outline: 3px solid color-mix(in srgb, var(--primary) 75%, white);
   outline-offset: 2px;
+}
+
+.ca-premium-shell {
+  background:
+    radial-gradient(circle at top right, rgba(15, 95, 184, 0.08), transparent 30rem),
+    linear-gradient(180deg, #ffffff 0%, var(--background) 34rem);
+}
+
+.ca-container {
+  width: min(100% - 2rem, 1440px);
+  margin-inline: auto;
 }
