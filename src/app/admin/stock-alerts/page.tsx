@@ -2,7 +2,7 @@ import { BellRing } from "lucide-react";
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { stockAlertStatuses, parseStockAlertStatus } from "@/lib/stock-alerts";
 import { updateStockAlertStatus } from "./actions";
@@ -18,7 +18,7 @@ type AdminStockAlertsPageProps = {
 };
 
 export default async function AdminStockAlertsPage({ searchParams }: AdminStockAlertsPageProps) {
-  await requireAdminAccess("/admin/stock-alerts");
+  const adminUser = await requireAdminRole("ADMIN", "SUPPORT", "WAREHOUSE");
 
   const params = searchParams ? await searchParams : {};
   const selectedStatus = parseStockAlertStatus(firstValue(params.estado_alerta));
@@ -55,7 +55,7 @@ export default async function AdminStockAlertsPage({ searchParams }: AdminStockA
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
-              <AdminNav active="stock-alerts" />
+              <AdminNav active="stock-alerts" user={adminUser} />
               <StatusFilter selectedStatus={selectedStatus} />
             </div>
           </div>

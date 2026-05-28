@@ -3,7 +3,7 @@ import { ArrowRight, ClipboardList, PackageCheck } from "lucide-react";
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
 import {
@@ -30,7 +30,7 @@ const orderStatusOptions: OrderStatus[] = [
 ];
 
 export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
-  await requireAdminAccess("/admin/orders");
+  const adminUser = await requireAdminRole("ADMIN", "SALES", "WAREHOUSE", "SUPPORT", "ACCOUNTING");
 
   const params = searchParams ? await searchParams : {};
   const status = parseOrderStatus(firstValue(params.estado));
@@ -69,7 +69,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
-              <AdminNav active="orders" />
+              <AdminNav active="orders" user={adminUser} />
               <StatusFilter selectedStatus={status} />
             </div>
           </div>

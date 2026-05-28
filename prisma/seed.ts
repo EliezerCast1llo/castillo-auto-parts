@@ -1,5 +1,6 @@
 import { InventoryStatus, PrismaClient } from "@prisma/client";
 import { mockProducts } from "../src/data/mock-products";
+import { hashPassword } from "../src/lib/admin-credentials";
 
 const prisma = new PrismaClient();
 
@@ -20,7 +21,34 @@ function toInventoryStatus(status: string) {
   return InventoryStatus.OUT_OF_STOCK;
 }
 
+async function seedAdminUser() {
+  const email = process.env.ADMIN_SEED_EMAIL?.trim();
+  const password = process.env.ADMIN_SEED_PASSWORD?.trim();
+
+  if (!email || !password) {
+    console.log("ℹ  ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD no definidos — omitiendo seed de usuario admin.");
+    return;
+  }
+
+  const passwordHash = await hashPassword(password);
+  await prisma.user.upsert({
+    where: { email },
+    update: { passwordHash, isActive: true, role: "ADMIN" },
+    create: {
+      email,
+      name: "Administrador",
+      role: "ADMIN",
+      passwordHash,
+      isActive: true,
+    },
+  });
+
+  console.log(`✔  Usuario admin seedeado: ${email}`);
+}
+
 async function main() {
+  await seedAdminUser();
+
   const location = await prisma.inventoryLocation.upsert({
     where: { code: DEFAULT_LOCATION_CODE },
     update: {

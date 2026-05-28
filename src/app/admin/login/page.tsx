@@ -1,7 +1,7 @@
 import { LockKeyhole } from "lucide-react";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { getAdminAccessConfig, getSafeAdminNextPath, isAdminAuthenticated } from "@/lib/admin-auth";
+import { getAdminSecretConfig, getSafeAdminNextPath, isAdminAuthenticated } from "@/lib/admin-auth";
 import { firstValue } from "@/lib/url-utils";
 import { loginAdmin } from "./actions";
 
@@ -19,7 +19,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
   const params = searchParams ? await searchParams : {};
   const nextPath = getSafeAdminNextPath(firstValue(params.next));
   const statusMessage = getStatusMessage(firstValue(params.estado));
-  const config = getAdminAccessConfig();
+  const config = getAdminSecretConfig();
 
   if (await isAdminAuthenticated()) {
     redirect(nextPath);
@@ -41,22 +41,31 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
             </div>
           </div>
 
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Ingresa la contraseña configurada para operar el panel administrativo del MVP.
-          </p>
-
           {statusMessage ? <AdminLoginNotice message={statusMessage} /> : null}
 
           {!config.isConfigured ? (
-            <AdminLoginNotice message="Faltan ADMIN_ACCESS_PASSWORD y ADMIN_ACCESS_SECRET en el entorno local." />
+            <AdminLoginNotice message="Falta ADMIN_ACCESS_SECRET en el entorno. Configura la variable antes de continuar." />
           ) : null}
 
           {config.isConfigured && !config.isSafeForRuntime ? (
-            <AdminLoginNotice message="La configuración admin no es segura para este entorno. Usa una contraseña fuerte y un secreto largo antes de continuar." />
+            <AdminLoginNotice message="La configuración admin no es segura para este entorno. Usa un secreto de al menos 32 caracteres." />
           ) : null}
 
           <form action={loginAdmin} className="mt-5 space-y-4">
             <input name="next" type="hidden" value={nextPath} />
+
+            <label className="block text-sm font-semibold">
+              Correo electrónico
+              <input
+                autoComplete="email"
+                className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                disabled={!config.isConfigured || !config.isSafeForRuntime}
+                name="email"
+                required
+                type="email"
+              />
+            </label>
+
             <label className="block text-sm font-semibold">
               Contraseña
               <input
@@ -68,6 +77,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
                 type="password"
               />
             </label>
+
             <button
               className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
               disabled={!config.isConfigured || !config.isSafeForRuntime}
@@ -91,7 +101,7 @@ function AdminLoginNotice({ message }: { message: string }) {
 
 function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
-    invalid: "La contraseña no es correcta.",
+    invalid: "Email o contraseña incorrectos.",
     logged_out: "Sesión cerrada.",
     not_configured: "El acceso admin no está configurado.",
     rate_limited: "Demasiados intentos fallidos. Espera unos minutos antes de intentar de nuevo.",
@@ -100,4 +110,3 @@ function getStatusMessage(status: string) {
 
   return messages[status] ?? "";
 }
-

@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { AdminProductForm } from "@/components/admin/admin-product-form";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { createAdminProduct } from "../actions";
 
@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 export default async function NewAdminProductPage({ searchParams }: NewAdminProductPageProps) {
-  await requireAdminAccess("/admin/products/new");
+  const adminUser = await requireAdminRole("ADMIN");
 
   const params = searchParams ? await searchParams : {};
   const statusMessage = getStatusMessage(firstValue(params.estado));
@@ -39,7 +39,7 @@ export default async function NewAdminProductPage({ searchParams }: NewAdminProd
             </Link>
             <h1 className="mt-5 text-2xl font-bold text-primary">Nuevo producto</h1>
           </div>
-          <AdminNav active="products" />
+          <AdminNav active="products" user={adminUser} />
         </div>
 
         {statusMessage ? <AdminProductNotice message={statusMessage} /> : null}

@@ -4,18 +4,18 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import {
   clearAdminSessionCookie,
-  getAdminAccessConfig,
+  getAdminSecretConfig,
   getSafeAdminNextPath,
   setAdminSessionCookie,
 } from "@/lib/admin-auth";
-import { verifyAdminPassword } from "@/lib/admin-session";
+import { verifyAdminLogin } from "@/lib/admin-user";
 import { formString } from "@/lib/form-utils";
 import { createAdminLoginRateLimiter } from "@/lib/rate-limit-redis";
 
 const adminLoginRateLimiter = createAdminLoginRateLimiter();
 
 export async function loginAdmin(formData: FormData) {
-  const config = getAdminAccessConfig();
+  const config = getAdminSecretConfig();
   const nextPath = getSafeAdminNextPath(formString(formData, "next"));
   const rateLimitKey = await getAdminLoginRateLimitKey();
 
@@ -32,14 +32,23 @@ export async function loginAdmin(formData: FormData) {
     redirect(`/admin/login?estado=rate_limited&next=${encodeURIComponent(nextPath)}`);
   }
 
-  if (!verifyAdminPassword(formString(formData, "password"), config.password)) {
+  const email = formString(formData, "email");
+  const password = formString(formData, "password");
+
+  const user = await verifyAdminLogin(email, password);
+
+  if (!user) {
     const failedAttempt = await adminLoginRateLimiter.registerFailure(rateLimitKey);
     const status = failedAttempt.allowed ? "invalid" : "rate_limited";
     redirect(`/admin/login?estado=${status}&next=${encodeURIComponent(nextPath)}`);
   }
 
   await adminLoginRateLimiter.reset(rateLimitKey);
-  await setAdminSessionCookie();
+
+  // El displayName en el token es el nombre preferido o el email como fallback
+  const displayName = user.name?.trim() || user.email;
+  await setAdminSessionCookie(user.id, user.role, displayName);
+
   redirect(nextPath);
 }
 
