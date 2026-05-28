@@ -1,9 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, MessageCircle, ShoppingCart, Truck } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
-import { ProductVisual } from "@/components/product/product-visual";
+import { ProductGallery } from "@/components/product/product-gallery";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
@@ -65,38 +64,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <section className="mt-5 grid gap-6 lg:grid-cols-[1fr_420px]">
           <div className="space-y-5">
-            <div className="grid gap-3 rounded-md border border-border bg-card p-4 sm:grid-cols-[96px_1fr]">
-              {/* Thumbnails: se ocultan si no hay imagen real para no mostrar columna vacía */}
-              {product.primaryImageUrl ? (
-                <div className="grid grid-cols-4 gap-2 sm:grid-cols-1">
-                  <div className="relative aspect-square overflow-hidden rounded-md border border-primary bg-background">
-                    <Image
-                      src={product.primaryImageUrl}
-                      alt={product.name}
-                      fill
-                      sizes="96px"
-                      className="object-contain p-1"
-                    />
-                  </div>
-                </div>
-              ) : null}
-              {/* Imagen principal */}
-              <div className="flex min-h-[360px] items-center justify-center rounded-md bg-background p-4 sm:p-8">
-                {product.primaryImageUrl ? (
-                  <div className="relative h-[300px] w-full sm:h-[360px]">
-                    <Image
-                      src={product.primaryImageUrl}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 640px"
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                ) : (
-                  <ProductVisual seed={product.sku} size="large" />
-                )}
-              </div>
+            <div className="rounded-md border border-border bg-card p-4">
+              <ProductGallery
+                images={product.images}
+                productName={product.name}
+                productSku={product.sku}
+              />
             </div>
 
             <div className="rounded-md border border-border bg-card p-5">

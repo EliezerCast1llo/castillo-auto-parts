@@ -24,6 +24,8 @@ export type MockProduct = {
   stockStatus: "Disponible" | "Últimas unidades" | "No disponible";
   /** URL de la imagen principal. Null para productos sin imagen (mock). */
   primaryImageUrl: string | null;
+  /** Todas las imágenes del producto ordenadas por sortOrder. */
+  images: { id: string; url: string; alt: string }[];
 };
 
 export const vehicleMakes = ["Toyota", "Nissan", "Hyundai", "Kia", "Honda", "Mitsubishi"];
@@ -61,6 +63,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 8,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "filtro-aceite-honda-civic-15t",
@@ -81,6 +84,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 6,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "filtro-aire-toyota-hilux-28d",
@@ -101,6 +105,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 4,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "filtro-combustible-nissan-frontier",
@@ -121,6 +126,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 5,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "filtro-cabina-hyundai-elantra",
@@ -141,6 +147,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 9,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "filtro-aceite-mitsubishi-mirage",
@@ -161,6 +168,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 12,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "filtro-aceite-nissan-versa-16",
@@ -181,6 +189,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 10,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
 
   // -----------------------------------------------------------------------
@@ -205,6 +214,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 2,
     stockStatus: "Últimas unidades",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "pastillas-traseras-nissan-sentra",
@@ -225,6 +235,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 3,
     stockStatus: "Últimas unidades",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "disco-freno-delantero-toyota-corolla",
@@ -245,6 +256,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 4,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "pastillas-delanteras-honda-civic",
@@ -265,6 +277,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 6,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "pastillas-delanteras-hyundai-elantra",
@@ -285,6 +298,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 5,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "pastillas-delanteras-kia-forte",
@@ -305,6 +319,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 2,
     stockStatus: "Últimas unidades",
     primaryImageUrl: null,
+    images: [],
   },
 
   // -----------------------------------------------------------------------
@@ -337,6 +352,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 12,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "bujia-iridio-honda-civic-15t",
@@ -357,6 +373,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 16,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "bujia-platino-toyota-corolla-18",
@@ -378,6 +395,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 20,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "bujia-iridio-nissan-versa-16",
@@ -398,6 +416,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 14,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "bujia-doble-platino-toyota-tacoma",
@@ -418,6 +437,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 8,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
 
   // -----------------------------------------------------------------------
@@ -440,6 +460,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 18,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "escobilla-universal-18-pulgadas",
@@ -458,6 +479,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 22,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "escobilla-universal-26-pulgadas",
@@ -476,6 +498,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 15,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "kit-escobillas-hyundai-accent",
@@ -496,6 +519,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 7,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "kit-escobillas-toyota-hilux",
@@ -516,6 +540,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 6,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
 
   // -----------------------------------------------------------------------
@@ -538,6 +563,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 30,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "foco-h7-55w-halogeno",
@@ -556,6 +582,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 25,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "foco-led-interior-festoon-31mm",
@@ -574,6 +601,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 40,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "foco-stop-1157-ambar",
@@ -592,6 +620,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 35,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "foco-h11-55w-halogeno",
@@ -610,6 +639,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 0,
     stockStatus: "No disponible",
     primaryImageUrl: null,
+    images: [],
   },
 
   // -----------------------------------------------------------------------
@@ -634,6 +664,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 0,
     stockStatus: "No disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "aceite-5w30-sintetico-1qt",
@@ -652,6 +683,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 25,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "aceite-10w40-semi-sintetico-1qt",
@@ -670,6 +702,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 20,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "liquido-frenos-dot4-500ml",
@@ -688,6 +721,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 18,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "aceite-atf-caja-automatica-1qt",
@@ -706,6 +740,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 12,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "liquido-refrigerante-concentrado-1lt",
@@ -724,6 +759,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 8,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
   {
     slug: "refrigerante-premix-1-galon",
@@ -742,6 +778,7 @@ export const mockProducts: MockProduct[] = [
     stockQuantity: 10,
     stockStatus: "Disponible",
     primaryImageUrl: null,
+    images: [],
   },
 ];
 

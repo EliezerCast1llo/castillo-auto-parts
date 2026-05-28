@@ -1,22 +1,5 @@
 import type { NextConfig } from "next";
 
-/**
- * Extrae el hostname de R2_PUBLIC_URL para incluirlo en remotePatterns.
- * Necesario para que next/image pueda optimizar imágenes servidas desde R2.
- * Si la variable no está definida (p.ej. en CI), se omite el patrón R2.
- */
-function getR2Hostname(): string | null {
-  const raw = process.env.R2_PUBLIC_URL;
-  if (!raw) return null;
-  try {
-    return new URL(raw).hostname;
-  } catch {
-    return null;
-  }
-}
-
-const r2Hostname = getR2Hostname();
-
 const securityHeaders = [
   {
     key: "X-Content-Type-Options",
@@ -59,15 +42,11 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         protocol: "https",
       },
-      // R2 public bucket — hostname se lee de R2_PUBLIC_URL para evitar hardcodear
-      ...(r2Hostname
-        ? [
-            {
-              hostname: r2Hostname,
-              protocol: "https" as const,
-            },
-          ]
-        : []),
+      // Cloudflare R2 public bucket para imágenes de producto
+      {
+        hostname: "pub-e2197a49efc44305afe6a371555f60d7.r2.dev",
+        protocol: "https",
+      },
     ],
   },
 };
