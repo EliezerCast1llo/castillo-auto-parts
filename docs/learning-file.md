@@ -8,8 +8,9 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-05-27.
+- Fecha de ultima actualizacion: 2026-05-27 (Bloque 6).
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
+- Rama actual de trabajo: `claude/block-6-r2-images`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
 - Marca final: pendiente.
@@ -47,6 +48,17 @@ Todos mergeados a `main` salvo Bloque 5 (en rama `claude/block-5-db-pagination`)
 - `src/components/search/search-autocomplete.tsx`: Client Component con debounce 300ms, AbortController, ARIA combobox/listbox.
 - `SiteHeader` usa `<SearchAutocomplete />` en lugar del formulario estatico.
 - Regla: no hacer `setState` directamente en el cuerpo principal de un `useEffect`; usar handlers o callbacks.
+
+**Bloque 6 — Imágenes de producto con Cloudflare R2:**
+- `src/lib/r2.ts`: cliente S3 con lazy singleton apuntando a R2, funciones `uploadToR2`, `deleteFromR2`, `buildR2Key`, `extractR2Key`, `getR2PublicUrl`, guard `isAllowedImageMimeType`.
+- `POST /api/admin/upload-image`: valida MIME + tamaño, sube a R2, crea `ProductImage` en DB; rollback de R2 si DB falla.
+- `DELETE /api/admin/delete-image`: transacción DB (borra imagen, promueve nueva primaria si hace falta), luego borra de R2.
+- `src/components/admin/product-image-manager.tsx`: Client Component con upload optimista, delete confirmado, badge de imagen primaria y estado de error.
+- `src/data/products.ts`: `productInclude` incluye `images`; `mapDbProduct` expone `primaryImageUrl`. Eliminado `as const` externo (Prisma requiere arrays mutables en `orderBy`).
+- `src/components/product/product-card.tsx` y `product/[slug]/page.tsx`: muestran `<Image>` real con `<ProductVisual>` como fallback.
+- `src/app/admin/products/[slug]/edit/page.tsx`: query incluye `images`, renderiza `<ProductImageManager>` fuera del formulario.
+- `next.config.ts`: hostname R2 leído dinámicamente de `R2_PUBLIC_URL` para `remotePatterns`.
+- Variables de entorno: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`. Nunca committear `.env`.
 
 **Bloque 5 — Filtros DB y paginacion (en PR):**
 - `src/data/catalog-filters.ts`: `buildPrismaWhere(filters)` convierte CatalogFilters en where Prisma; `stockStatusToPrismaStatuses`.

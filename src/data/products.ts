@@ -29,11 +29,16 @@ export type CatalogProductsResult = {
 
 type DbProduct = Awaited<ReturnType<typeof findDbProducts>>[number];
 
+// Sin `as const` en el objeto completo: Prisma necesita arrays mutables para orderBy.
+// Los literales "desc"/"asc" se preservan con las aserciones inline.
 const productInclude = {
   category: true,
   compatibilities: true,
   inventoryStocks: true,
-} as const;
+  images: {
+    orderBy: [{ isPrimary: "desc" as const }, { sortOrder: "asc" as const }],
+  },
+};
 
 /**
  * React.cache() deduplicates esta query dentro del mismo render tree.
@@ -314,6 +319,9 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
   const stock = product.inventoryStocks[0];
   const stockQuantity = stock ? Math.max(stock.quantityOnHand - stock.quantityReserved, 0) : 0;
 
+  const primaryImage =
+    product.images.find((img) => img.isPrimary) ?? product.images[0] ?? null;
+
   return {
     slug: product.slug,
     name: product.name,
@@ -334,6 +342,7 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
     priceCents: product.priceCents,
     stockQuantity,
     stockStatus: toStockStatus(stock?.status, stockQuantity),
+    primaryImageUrl: primaryImage?.url ?? null,
   };
 }
 
