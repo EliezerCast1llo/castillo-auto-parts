@@ -42,6 +42,7 @@ Prisma espera arrays mutables en `orderBy`. El `as const` externo hacía los arr
 
 ### Hostname R2 dinámico en `next.config.ts`
 Se lee `R2_PUBLIC_URL` en tiempo de build y se extrae el hostname con `new URL()`. Si la variable no está definida (ej. CI sin R2), el patrón se omite silenciosamente.
+No hardcodear hosts `pub-*.r2.dev`; para producción usar preferiblemente un dominio propio en `CLOUDFLARE_R2_PUBLIC_URL`.
 
 ### `isAdminAuthenticated()` en Route Handlers
 `requireAdminAccess()` lanza un `redirect()` de Next.js, apropiado para Server Components/Actions pero no para Route Handlers (donde se necesita devolver `NextResponse`). Los Route Handlers usan `isAdminAuthenticated()` que retorna `boolean`.

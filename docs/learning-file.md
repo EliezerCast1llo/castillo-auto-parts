@@ -57,7 +57,7 @@ Todos mergeados a `main` salvo Bloque 5 (en rama `claude/block-5-db-pagination`)
 - `src/data/products.ts`: `productInclude` incluye `images`; `mapDbProduct` expone `primaryImageUrl`. Eliminado `as const` externo (Prisma requiere arrays mutables en `orderBy`).
 - `src/components/product/product-card.tsx` y `product/[slug]/page.tsx`: muestran `<Image>` real con `<ProductVisual>` como fallback.
 - `src/app/admin/products/[slug]/edit/page.tsx`: query incluye `images`, renderiza `<ProductImageManager>` fuera del formulario.
-- `next.config.ts`: hostname R2 leído dinámicamente de `R2_PUBLIC_URL` para `remotePatterns`.
+- `next.config.ts`: hostname R2 leído dinámicamente de `CLOUDFLARE_R2_PUBLIC_URL` para `remotePatterns`; no hardcodear `pub-*.r2.dev`.
 - Variables de entorno: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`. Nunca committear `.env`.
 
 **Bloque 5 — Filtros DB y paginacion (en PR):**

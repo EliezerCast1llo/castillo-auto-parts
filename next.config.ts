@@ -1,5 +1,31 @@
 import type { NextConfig } from "next";
 
+function getHostnameFromUrl(value: string | undefined) {
+  if (!value) return null;
+
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return null;
+  }
+}
+
+const r2PublicHostname = getHostnameFromUrl(process.env.CLOUDFLARE_R2_PUBLIC_URL);
+const imageRemotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
+  {
+    hostname: "images.unsplash.com",
+    protocol: "https",
+  },
+  ...(r2PublicHostname
+    ? [
+        {
+          hostname: r2PublicHostname,
+          protocol: "https" as const,
+        },
+      ]
+    : []),
+];
+
 const securityHeaders = [
   {
     key: "X-Content-Type-Options",
@@ -37,17 +63,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    remotePatterns: [
-      {
-        hostname: "images.unsplash.com",
-        protocol: "https",
-      },
-      // Cloudflare R2 public bucket para imágenes de producto
-      {
-        hostname: "pub-e2197a49efc44305afe6a371555f60d7.r2.dev",
-        protocol: "https",
-      },
-    ],
+    remotePatterns: imageRemotePatterns,
   },
 };
 
