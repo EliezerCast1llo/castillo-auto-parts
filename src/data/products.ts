@@ -343,6 +343,11 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
     stockQuantity,
     stockStatus: toStockStatus(stock?.status, stockQuantity),
     primaryImageUrl: primaryImage?.url ?? null,
+    images: product.images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      alt: img.alt,
+    })),
   };
 }
 
