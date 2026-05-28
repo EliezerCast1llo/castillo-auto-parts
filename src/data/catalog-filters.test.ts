@@ -38,8 +38,17 @@ describe("catalog filters", () => {
       vehicleYear: "2015",
     });
     const products = filterCatalogProducts(mockProducts, filters);
+    const slugs = products.map((product) => product.slug);
 
-    expect(products.map((product) => product.slug)).toEqual(["filtro-aceite-toyota-18l"]);
+    // Todos los productos con vehicleCompatibilities que cubren Toyota Corolla 2015
+    // deben aparecer. Al expandir el catálogo mock se agregaron más productos
+    // compatibles: disco-freno (2014-2022) y bujia-platino (2009-2022).
+    expect(slugs).toContain("filtro-aceite-toyota-18l");
+    expect(slugs).toContain("disco-freno-delantero-toyota-corolla");
+    expect(slugs).toContain("bujia-platino-toyota-corolla-18");
+    // Productos universales (sin vehicleCompatibilities) no deben aparecer
+    expect(slugs).not.toContain("escobilla-universal-22-pulgadas");
+    expect(slugs).not.toContain("refrigerante-premix-1-galon");
   });
 
   it("uses structured compatibility instead of parsing vehicle text", () => {
