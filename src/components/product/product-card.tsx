@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { addCartItem } from "@/app/cart/actions";
@@ -17,7 +18,17 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         className="relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-white via-ca-background to-[#dde7f1]"
       >
         <div className="absolute inset-x-5 bottom-5 h-8 rounded-full bg-ca-navy-950/10 blur-xl" />
-        <ProductVisual kind={product.category} seed={product.sku} />
+        {product.primaryImageUrl ? (
+          <Image
+            src={product.primaryImageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className="object-contain p-2"
+          />
+        ) : (
+          <ProductVisual kind={product.category} seed={product.sku} />
+        )}
         <span className="absolute left-3 top-3">
           <StockBadge status={product.stockStatus} />
         </span>

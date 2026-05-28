@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { AdminProductForm } from "@/components/admin/admin-product-form";
+import {
+  ProductImageManager,
+  type ProductImageData,
+} from "@/components/admin/product-image-manager";
 import { SiteHeader } from "@/components/site-header";
 import { requireAdminAccess } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
@@ -44,6 +48,9 @@ export default async function EditAdminProductPage({
           include: { location: true },
           orderBy: { updatedAt: "desc" },
         },
+        images: {
+          orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
+        },
       },
       where: { slug },
     }),
@@ -74,12 +81,25 @@ export default async function EditAdminProductPage({
 
         {statusMessage ? <AdminProductNotice message={statusMessage} /> : null}
 
-        <section className="mt-5">
+        <section className="mt-5 space-y-4">
           <AdminProductForm
             action={updateAdminProduct}
             categories={categories}
             product={product}
             submitLabel="Guardar producto"
+          />
+          {/* Gestión de imágenes — solo disponible en edición, requiere product.id existente */}
+          <ProductImageManager
+            productId={product.id}
+            initialImages={product.images.map(
+              (img): ProductImageData => ({
+                id: img.id,
+                url: img.url,
+                alt: img.alt ?? product.name,
+                isPrimary: img.isPrimary,
+                sortOrder: img.sortOrder,
+              }),
+            )}
           />
         </section>
       </div>

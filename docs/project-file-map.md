@@ -1,6 +1,6 @@
 # Project File Map
 
-Fecha: 2026-05-27.
+Fecha: 2026-05-27 (actualizado Bloque 6).
 
 Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. No reemplaza leer el codigo antes de editar; sirve como indice operativo.
 
@@ -47,6 +47,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `docs/agent-review-findings-2026-05-26-block3.md` | Bloque 3: formateadores centralizados y maquina de estados de orden. |
 | `docs/agent-review-findings-2026-05-26-block4.md` | Bloque 4: busqueda en tiempo real con autocomplete y Route Handler. |
 | `docs/agent-review-findings-2026-05-27-block5.md` | Bloque 5: filtros a nivel DB y paginacion offset en el catalogo. |
+| `docs/agent-review-findings-2026-05-27-block6.md` | Bloque 6: imágenes de producto con Cloudflare R2. |
 | `docs/security-hardening-plan.md` | Riesgos de seguridad, controles y gates antes de produccion. |
 | `docs/architecture-improvement-backlog.md` | Oportunidades de arquitectura y deuda tecnica. |
 | `docs/ui-ux-page-opportunities.md` | Oportunidades UI/UX por pagina. |
@@ -128,6 +129,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/components/admin/admin-nav.tsx` | Navegacion admin. |
 | `src/components/admin/admin-product-form.tsx` | Formulario reusable de producto. |
 | `src/components/admin/admin-session-controls.tsx` | Controles de sesion admin. |
+| `src/components/admin/product-image-manager.tsx` | Client Component para subir/eliminar imágenes de producto en el admin. |
 | `src/components/catalog-pagination.tsx` | Paginacion URL-first para el catalogo. Server Component sin JS. |
 
 ## Dominio Y Librerias
@@ -148,12 +150,15 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/admin-audit.ts` | Escritura de auditoria admin. |
 | `src/lib/admin-products.ts` | Validaciones/normalizaciones de productos admin. |
 | `src/lib/order-access-token.ts` | Token guest para ver orden publica. |
+| `src/lib/r2.ts` | Cliente Cloudflare R2 (S3-compatible). Upload/delete/key helpers, MIME guard, max 5 MB. |
 | `src/lib/rate-limit.ts` | Rate limiter sincrono en memoria (logica pura, probada con Vitest). |
 | `src/lib/rate-limit-redis.ts` | Rate limiter async. Usa Redis (Upstash) si hay credenciales; in-memory si no. |
 | `src/lib/form-utils.ts` | Helpers centralizados para leer FormData: `formString`, `optionalFormString`, `optionalFormStringOrNull`. |
 | `src/lib/url-utils.ts` | Helpers centralizados para query params: `firstValue`, `allValues`. |
 | `src/lib/order-formatters.ts` | Formatters de dominio para ordenes, envios y pagos (labels en es-SV, colores de badge). |
 | `src/app/api/search/route.ts` | Route Handler GET /api/search?q= para autocomplete en tiempo real. |
+| `src/app/api/admin/upload-image/route.ts` | POST handler admin: valida, sube imagen a R2 y crea ProductImage en DB. |
+| `src/app/api/admin/delete-image/route.ts` | DELETE handler admin: borra ProductImage de DB y objeto de R2. |
 | `src/components/search/search-autocomplete.tsx` | Client Component de busqueda con debounce, dropdown y navegacion por teclado. |
 | `src/lib/stock-alerts.ts` | Parseo/deduplicacion de avisos de stock. |
 | `src/lib/payments/*` | Contrato y proveedor mock de pagos. |
