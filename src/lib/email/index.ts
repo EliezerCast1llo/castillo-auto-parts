@@ -1,11 +1,12 @@
 import { consoleEmailProvider } from "./console-provider";
+import { resendEmailProvider } from "./resend-provider";
 import type { EmailProvider } from "./provider";
 
 export function getEmailProvider(): EmailProvider {
   const provider = process.env.EMAIL_PROVIDER?.trim().toLowerCase() || "console";
 
-  if (provider === "console" || provider === "mock") {
-    return consoleEmailProvider;
+  if (provider === "resend") {
+    return resendEmailProvider;
   }
 
   return consoleEmailProvider;

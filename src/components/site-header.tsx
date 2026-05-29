@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { Languages, ShoppingCart, Wrench } from "lucide-react";
+import { ShoppingCart, User, Wrench } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";
 
 export async function SiteHeader() {
-  const cartItemCount = await getGuestCartItemCount();
+  const [cartItemCount, session] = await Promise.all([
+    getGuestCartItemCount(),
+    auth(),
+  ]);
 
   return (
     <header className="border-b border-border bg-card">
@@ -21,6 +25,7 @@ export async function SiteHeader() {
               <span className="block truncate text-2xl font-bold text-primary">Castillo Auto Parts</span>
             </span>
           </Link>
+
           <div className="flex items-center gap-2">
             <Link
               className="hidden h-10 items-center rounded-md border border-border bg-card px-3 text-sm font-semibold text-primary sm:inline-flex"
@@ -28,12 +33,30 @@ export async function SiteHeader() {
             >
               Catálogo
             </Link>
-            <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card text-primary"
-              aria-label="Cambiar idioma"
-            >
-              <Languages className="h-5 w-5" />
-            </button>
+
+            {/* Botón de cuenta/sesión */}
+            {session?.user ? (
+              <Link
+                href="/account"
+                aria-label="Mi cuenta"
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm font-semibold text-primary"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {session.user.name?.split(" ")[0] ?? "Mi cuenta"}
+                </span>
+              </Link>
+            ) : (
+              <Link
+                href="/auth/login"
+                aria-label="Iniciar sesión"
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm font-semibold text-primary"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Ingresar</span>
+              </Link>
+            )}
+
             <Link
               className="relative inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white"
               aria-label={`Ver carrito, ${formatCartCount(cartItemCount)}`}
