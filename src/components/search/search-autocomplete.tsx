@@ -22,7 +22,12 @@ import type { SearchResponse, SearchResult } from "@/app/api/search/route";
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
 
-export function SearchAutocomplete() {
+type SearchAutocompleteProps = {
+  /** "default" → estilo estándar del header. "hero" → estilo premium de la home. */
+  variant?: "default" | "hero";
+};
+
+export function SearchAutocomplete({ variant = "default" }: SearchAutocompleteProps = {}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -161,15 +166,31 @@ export function SearchAutocomplete() {
     [activeIndex, results, handleSelect],
   );
 
+  const isHero = variant === "hero";
+
   return (
     <form
       action="/catalog"
-      className="grid gap-3 rounded-md border border-border bg-background p-3 md:grid-cols-[1fr_160px]"
+      className={
+        isHero
+          ? "relative z-20 grid translate-y-0 gap-3 rounded-[18px] border border-white/15 bg-white p-3 shadow-[var(--ca-shadow-premium)] md:grid-cols-[1fr_172px]"
+          : "grid gap-3 rounded-md border border-border bg-background p-3 md:grid-cols-[1fr_160px]"
+      }
       onSubmit={handleSubmit}
     >
       <div className="relative">
-        <label className="flex min-h-12 items-center gap-3 rounded-md bg-card px-3">
-          <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <label
+          className={
+            isHero
+              ? "flex min-h-14 items-center gap-3 rounded-[14px] border border-ca-border bg-white px-4 text-ca-text-primary"
+              : "flex min-h-12 items-center gap-3 rounded-md bg-card px-3"
+          }
+        >
+          <Search
+            className={isHero ? "h-5 w-5 shrink-0 text-ca-navy-900" : "h-5 w-5 shrink-0 text-muted-foreground"}
+            strokeWidth={1.8}
+          />
+          <span className="sr-only">Buscar repuesto</span>
           <input
             ref={inputRef}
             aria-autocomplete="list"
@@ -177,7 +198,11 @@ export function SearchAutocomplete() {
             aria-expanded={isOpen}
             aria-label="Buscar repuestos"
             autoComplete="off"
-            className="w-full bg-transparent text-sm outline-none"
+            className={
+              isHero
+                ? "w-full bg-transparent text-base font-medium outline-none placeholder:text-ca-text-secondary/72"
+                : "w-full bg-transparent text-sm outline-none"
+            }
             name="q"
             placeholder="Busca por repuesto, SKU, número de parte o vehículo"
             role="combobox"
@@ -211,7 +236,6 @@ export function SearchAutocomplete() {
                   index === activeIndex ? "bg-background" : ""
                 }`}
                 onMouseDown={(e) => {
-                  // mousedown en lugar de onClick para ejecutar antes del blur
                   e.preventDefault();
                   handleSelect(result);
                 }}
@@ -244,9 +268,13 @@ export function SearchAutocomplete() {
 
       <button
         type="submit"
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
+        className={
+          isHero
+            ? "inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
+            : "inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
+        }
       >
-        <Search className="h-4 w-4" />
+        <Search className="h-4 w-4" strokeWidth={1.9} />
         Buscar
       </button>
     </form>

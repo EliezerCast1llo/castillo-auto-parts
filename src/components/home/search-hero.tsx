@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Car, CheckCircle2, MapPin, PackageSearch, Search, ShieldCheck, Truck } from "lucide-react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
+import { SearchAutocomplete } from "@/components/search/search-autocomplete";
 import { ProductVisual } from "@/components/product/product-visual";
 
 const heroSignals = [
@@ -29,7 +30,7 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
   return (
     <section className="relative bg-ca-navy-950 pb-8 text-white lg:pb-[5.5rem]">
       <div className="ca-container">
-        <GlobalSearchBar />
+        <SearchAutocomplete variant="hero" />
 
         <div className="relative mt-0 overflow-hidden rounded-b-[28px] bg-ca-navy-900 shadow-[var(--ca-shadow-hero)]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_42%,rgba(18,103,197,0.26),transparent_27rem)]" />
@@ -84,32 +85,6 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
   );
 }
 
-function GlobalSearchBar() {
-  return (
-    <form
-      action="/catalog"
-      className="relative z-20 grid translate-y-0 gap-3 rounded-[18px] border border-white/15 bg-white p-3 shadow-[var(--ca-shadow-premium)] md:grid-cols-[1fr_172px]"
-    >
-      <label className="flex min-h-14 items-center gap-3 rounded-[14px] border border-ca-border bg-white px-4 text-ca-text-primary">
-        <Search className="h-5 w-5 shrink-0 text-ca-navy-900" strokeWidth={1.8} />
-        <span className="sr-only">Buscar repuesto</span>
-        <input
-          className="w-full bg-transparent text-base font-medium outline-none placeholder:text-ca-text-secondary/72"
-          name="q"
-          placeholder="Busca por repuesto, SKU, número de parte o vehículo"
-          type="search"
-        />
-      </label>
-      <button
-        className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
-        type="submit"
-      >
-        <Search className="h-4 w-4" strokeWidth={1.9} />
-        Buscar
-      </button>
-    </form>
-  );
-}
 
 export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilterOptions }) {
   const makes = filterOptions.vehicleMakes;

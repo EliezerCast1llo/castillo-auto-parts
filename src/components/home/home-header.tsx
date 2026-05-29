@@ -8,6 +8,7 @@ import {
   UserRound,
   Wrench,
 } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
 
 const navItems = [
@@ -18,12 +19,20 @@ const navItems = [
 ];
 
 export async function HomeHeader() {
-  const cartItemCount = await getGuestCartItemCount();
+  const [cartItemCount, session] = await Promise.all([
+    getGuestCartItemCount(),
+    auth(),
+  ]);
+
+  const accountHref = session?.user ? "/account" : "/auth/login";
+  const accountLabel = session?.user
+    ? (session.user.name?.split(" ")[0] ?? "Mi cuenta")
+    : "Ingresar";
 
   return (
     <header className="bg-ca-navy-950 text-white">
       <UtilityBar />
-      <MainNavbar cartItemCount={cartItemCount} />
+      <MainNavbar cartItemCount={cartItemCount} accountHref={accountHref} accountLabel={accountLabel} />
     </header>
   );
 }
@@ -58,7 +67,7 @@ export function UtilityBar() {
   );
 }
 
-export function MainNavbar({ cartItemCount }: { cartItemCount: number }) {
+export function MainNavbar({ cartItemCount, accountHref, accountLabel }: { cartItemCount: number; accountHref: string; accountLabel: string }) {
   return (
     <div className="ca-container flex min-h-16 items-center justify-between gap-5 py-3">
       <Link href="/" className="flex min-w-0 items-center gap-3">
@@ -89,10 +98,10 @@ export function MainNavbar({ cartItemCount }: { cartItemCount: number }) {
       <div className="flex items-center gap-2 sm:gap-3">
         <Link
           className="hidden h-10 items-center gap-2 rounded-full px-3 text-sm font-bold text-white/88 transition hover:bg-white/10 md:inline-flex"
-          href="/admin/login"
+          href={accountHref}
         >
           <UserRound className="h-5 w-5" strokeWidth={1.8} />
-          Mi cuenta
+          {accountLabel}
         </Link>
         <Link
           className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/[0.16]"
