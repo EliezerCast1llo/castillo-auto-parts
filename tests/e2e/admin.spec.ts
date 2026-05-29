@@ -1,9 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-test("admin can sign in with configured local password", async ({ page }) => {
+const ADMIN_EMAIL = process.env.ADMIN_SEED_EMAIL || "admin@castilloautoparts.com";
+const ADMIN_PASSWORD = process.env.ADMIN_SEED_PASSWORD || "admin123";
+
+test("admin can sign in with email and password", async ({ page }) => {
   await page.goto("/admin/login");
 
-  await page.getByLabel("Contraseña").fill(process.env.ADMIN_ACCESS_PASSWORD || "admin123");
+  await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
+  await page.getByLabel("Contraseña").fill(ADMIN_PASSWORD);
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page).toHaveURL(/\/admin\/orders/);
@@ -13,7 +17,8 @@ test("admin can sign in with configured local password", async ({ page }) => {
 test("admin can open stock alert operations", async ({ page }) => {
   await page.goto("/admin/login?next=%2Fadmin%2Fstock-alerts");
 
-  await page.getByLabel("Contraseña").fill(process.env.ADMIN_ACCESS_PASSWORD || "admin123");
+  await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
+  await page.getByLabel("Contraseña").fill(ADMIN_PASSWORD);
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page).toHaveURL(/\/admin\/stock-alerts/);
