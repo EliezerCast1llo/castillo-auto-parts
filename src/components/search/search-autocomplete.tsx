@@ -173,7 +173,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
       action="/catalog"
       className={
         isHero
-          ? "relative z-20 grid translate-y-0 gap-3 rounded-[18px] border border-white/15 bg-white p-3 shadow-[var(--ca-shadow-premium)] md:grid-cols-[1fr_172px]"
+          ? "relative z-40 grid translate-y-0 gap-3 rounded-[18px] border border-white/15 bg-white p-3 shadow-[var(--ca-shadow-premium)] md:grid-cols-[1fr_172px]"
           : "grid gap-3 rounded-md border border-border bg-background p-3 md:grid-cols-[1fr_160px]"
       }
       onSubmit={handleSubmit}
