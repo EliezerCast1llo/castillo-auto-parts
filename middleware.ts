@@ -2,25 +2,59 @@
  * Next.js Edge Middleware — protección de rutas /admin/**
  *
  * Corre en Edge Runtime (sin Node.js APIs). Usa Web Crypto API para
- * verificar el HMAC-SHA256 del token de sesión admin, replicando la
- * misma lógica que `verifyAdminSessionToken` en src/lib/admin-session.ts.
+ * verificar el HMAC-SHA256 del token de sesión admin v2.
  *
- * La verificación aquí es la primera línea de defensa (UX rápida).
- * La verificación criptográfica completa en Node.js ocurre en cada
- * page/action a través de `requireAdminAccess()` (defensa en profundidad).
+ * Token v2: `v2.{issuedAt}.{userId}.{role}.{displayNameB64}.{signature}`
+ *
+ * Dos niveles de protección:
+ *   1. ¿Está autenticado? → si no, redirige al login.
+ *   2. ¿Tiene el rol correcto para esta ruta? → si no, redirige a su home.
+ *
+ * La verificación Node.js completa ocurre en cada page/action via
+ * `requireAdminRole()` (defensa en profundidad).
  */
 
 import { type NextRequest, NextResponse } from "next/server";
 
 const ADMIN_SESSION_COOKIE = "castillo_admin_session";
-const ADMIN_SESSION_VERSION = "v1";
-const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 8; // 8 horas
+const ADMIN_SESSION_VERSION = "v2";
+const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 const CLOCK_SKEW_SECONDS = 60;
+
+// ---------------------------------------------------------------------------
+// Permisos por ruta (prefijo más específico tiene prioridad)
+// ---------------------------------------------------------------------------
+
+const ROUTE_ROLES: Array<{ prefix: string; roles: string[] }> = [
+  { prefix: "/admin/users", roles: ["ADMIN"] },
+  { prefix: "/admin/settings", roles: ["ADMIN"] },
+  { prefix: "/admin/audit", roles: ["ADMIN"] },
+  { prefix: "/admin/products", roles: ["ADMIN", "MARKETING"] },
+  { prefix: "/admin/stock-alerts", roles: ["ADMIN", "SUPPORT", "WAREHOUSE"] },
+  { prefix: "/admin/orders", roles: ["ADMIN", "SALES", "WAREHOUSE", "SUPPORT", "ACCOUNTING"] },
+  // Fallback: cualquier ruta /admin/* requiere un rol no-CUSTOMER
+  {
+    prefix: "/admin",
+    roles: ["ADMIN", "SALES", "WAREHOUSE", "SUPPORT", "ACCOUNTING", "MARKETING"],
+  },
+];
+
+const ROLE_HOME: Record<string, string> = {
+  ADMIN: "/admin/orders",
+  SALES: "/admin/orders",
+  WAREHOUSE: "/admin/orders",
+  SUPPORT: "/admin/orders",
+  ACCOUNTING: "/admin/orders",
+  MARKETING: "/admin/products",
+};
+
+// ---------------------------------------------------------------------------
+// Middleware principal
+// ---------------------------------------------------------------------------
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Permitir acceso libre a la página de login y sus sub-rutas
   if (pathname.startsWith("/admin/login")) {
     return NextResponse.next();
   }
@@ -28,61 +62,78 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
   const secret = process.env.ADMIN_ACCESS_SECRET?.trim() ?? "";
 
-  // Si no hay secreto configurado, redirigir siempre al login
-  const authenticated = secret
-    ? await verifyAdminSessionTokenEdge(token, secret)
-    : false;
+  const payload = secret ? await verifyAdminSessionTokenEdge(token, secret) : null;
 
-  if (!authenticated) {
+  if (!payload) {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("next", getSafeNextPath(pathname));
     return NextResponse.redirect(loginUrl);
   }
 
+  // Verificar permisos de rol para la ruta actual
+  const allowed = isRoleAllowedForPath(payload.role, pathname);
+  if (!allowed) {
+    const homeUrl = new URL(ROLE_HOME[payload.role] ?? "/admin/orders", request.url);
+    return NextResponse.redirect(homeUrl);
+  }
+
   return NextResponse.next();
 }
 
-/**
- * Verifica el token de sesión admin usando Web Crypto API.
- * Replica la lógica de verifyAdminSessionToken en admin-session.ts.
- */
+function isRoleAllowedForPath(role: string, pathname: string): boolean {
+  // Iterar en orden (prefijos más específicos primero)
+  for (const entry of ROUTE_ROLES) {
+    if (pathname.startsWith(entry.prefix)) {
+      return entry.roles.includes(role);
+    }
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Verificación del token v2 con Web Crypto API (Edge Runtime)
+// ---------------------------------------------------------------------------
+
+type EdgePayload = { userId: string; role: string };
+
 async function verifyAdminSessionTokenEdge(
   token: string | undefined,
   secret: string,
   nowMs = Date.now(),
-): Promise<boolean> {
-  if (!token || !secret) return false;
+): Promise<EdgePayload | null> {
+  if (!token || !secret) return null;
 
   const parts = token.split(".");
-  if (parts.length !== 3) return false;
+  if (parts.length !== 6) return null;
 
-  const [version, issuedAt, signature] = parts;
+  const [version, issuedAtStr, userId, role, displayNameB64, signature] = parts;
 
   if (
     version !== ADMIN_SESSION_VERSION ||
-    !issuedAt ||
+    !issuedAtStr ||
+    !userId ||
+    !role ||
+    !displayNameB64 ||
     !signature ||
-    !/^\d+$/.test(issuedAt)
+    !/^\d+$/.test(issuedAtStr)
   ) {
-    return false;
+    return null;
   }
 
-  const issuedAtSeconds = Number(issuedAt);
+  const issuedAt = Number(issuedAtStr);
+  if (!Number.isSafeInteger(issuedAt)) return null;
+
   const nowSeconds = Math.floor(nowMs / 1000);
+  if (issuedAt > nowSeconds + CLOCK_SKEW_SECONDS) return null;
+  if (nowSeconds - issuedAt > ADMIN_SESSION_MAX_AGE_SECONDS) return null;
 
-  if (!Number.isSafeInteger(issuedAtSeconds)) return false;
-  if (issuedAtSeconds > nowSeconds + CLOCK_SKEW_SECONDS) return false;
-  if (nowSeconds - issuedAtSeconds > ADMIN_SESSION_MAX_AGE_SECONDS) return false;
+  const message = `${ADMIN_SESSION_VERSION}.${issuedAtStr}.${userId}.${role}.${displayNameB64}`;
+  const valid = await verifyHmacSha256Base64Url(message, secret, signature);
+  if (!valid) return null;
 
-  // Verificación HMAC completa con Web Crypto API
-  const message = `${ADMIN_SESSION_VERSION}.${issuedAt}`;
-  return verifyHmacSha256Base64Url(message, secret, signature);
+  return { userId, role };
 }
 
-/**
- * Verifica una firma HMAC-SHA256 en base64url usando Web Crypto API.
- * Usa comparación de tiempo constante para prevenir timing attacks.
- */
 async function verifyHmacSha256Base64Url(
   message: string,
   key: string,
@@ -90,7 +141,6 @@ async function verifyHmacSha256Base64Url(
 ): Promise<boolean> {
   try {
     const encoder = new TextEncoder();
-
     const cryptoKey = await crypto.subtle.importKey(
       "raw",
       encoder.encode(key),
@@ -106,7 +156,6 @@ async function verifyHmacSha256Base64Url(
     );
 
     const actualSignature = uint8ArrayToBase64Url(new Uint8Array(signatureBuffer));
-
     return safeStringEqual(actualSignature, expectedSignature);
   } catch {
     return false;
@@ -124,11 +173,6 @@ function uint8ArrayToBase64Url(bytes: Uint8Array): string {
     .replace(/=/g, "");
 }
 
-/**
- * Comparación de tiempo constante para strings (previene timing attacks).
- * No es perfectamente constante en JS pero es suficiente para este contexto
- * ya que la verificación Node.js con timingSafeEqual es la capa de seguridad real.
- */
 function safeStringEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let result = 0;
@@ -138,10 +182,6 @@ function safeStringEqual(a: string, b: string): boolean {
   return result === 0;
 }
 
-/**
- * Solo permite paths dentro de /admin/** como destino post-login.
- * Previene open redirects.
- */
 function getSafeNextPath(pathname: string): string {
   if (pathname.startsWith("/admin/") && !pathname.startsWith("/admin/login")) {
     return pathname;

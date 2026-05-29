@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowRight, Package, Plus, Search, SlidersHorizontal } f
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { formatCurrency } from "@/lib/money";
 import { db } from "@/lib/db";
 import { updateAdminProductInventory } from "./actions";
@@ -26,7 +26,7 @@ export const metadata = {
 };
 
 export default async function AdminProductsPage({ searchParams }: AdminProductsPageProps) {
-  await requireAdminAccess("/admin/products");
+  const adminUser = await requireAdminRole("ADMIN", "MARKETING");
 
   const params = searchParams ? await searchParams : {};
   const query = firstValue(params.q);
@@ -77,7 +77,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
-              <AdminNav active="products" />
+              <AdminNav active="products" user={adminUser} />
               <Link
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
                 href="/admin/products/new"

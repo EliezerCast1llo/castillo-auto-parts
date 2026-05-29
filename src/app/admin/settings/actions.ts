@@ -5,13 +5,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { parseAdminPriceCents, slugifyProductValue } from "@/lib/admin-products";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { formString } from "@/lib/form-utils";
 import { DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
 import { db } from "@/lib/db";
 
 export async function updatePickupSettings(formData: FormData) {
-  await requireAdminAccess("/admin/settings");
+  await requireAdminRole("ADMIN");
 
   const name = formString(formData, "name");
   const address = formString(formData, "address");
@@ -75,7 +75,7 @@ export async function updatePickupSettings(formData: FormData) {
 }
 
 export async function createDeliveryZone(formData: FormData) {
-  await requireAdminAccess("/admin/settings");
+  await requireAdminRole("ADMIN");
 
   const input = parseDeliveryZoneFormData(formData);
   if (!input) redirect("/admin/settings?estado=invalid_zone");
@@ -103,7 +103,7 @@ export async function createDeliveryZone(formData: FormData) {
 }
 
 export async function updateDeliveryZone(formData: FormData) {
-  await requireAdminAccess("/admin/settings");
+  await requireAdminRole("ADMIN");
 
   const zoneId = formString(formData, "zoneId");
   const input = parseDeliveryZoneFormData(formData);

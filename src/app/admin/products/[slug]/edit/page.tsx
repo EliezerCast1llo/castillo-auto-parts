@@ -8,7 +8,7 @@ import {
   type ProductImageData,
 } from "@/components/admin/product-image-manager";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { updateAdminProduct } from "../../actions";
 
@@ -34,7 +34,7 @@ export default async function EditAdminProductPage({
   searchParams,
 }: EditAdminProductPageProps) {
   const { slug } = await params;
-  await requireAdminAccess(`/admin/products/${slug}/edit`);
+  const adminUser = await requireAdminRole("ADMIN");
 
   const query = searchParams ? await searchParams : {};
   const statusMessage = getStatusMessage(firstValue(query.estado));
@@ -76,7 +76,7 @@ export default async function EditAdminProductPage({
             </Link>
             <h1 className="mt-5 text-2xl font-bold text-primary">{product.name}</h1>
           </div>
-          <AdminNav active="products" />
+          <AdminNav active="products" user={adminUser} />
         </div>
 
         {statusMessage ? <AdminProductNotice message={statusMessage} /> : null}

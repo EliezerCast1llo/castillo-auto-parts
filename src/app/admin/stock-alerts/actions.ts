@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { parseStockAlertStatus } from "@/lib/stock-alerts";
 
@@ -14,7 +14,7 @@ class StockAlertAdminError extends Error {
 }
 
 export async function updateStockAlertStatus(formData: FormData) {
-  await requireAdminAccess("/admin/stock-alerts");
+  await requireAdminRole("ADMIN", "SUPPORT", "WAREHOUSE");
 
   const alertId = formString(formData, "alertId");
   const status = parseStockAlertStatus(formString(formData, "status"));

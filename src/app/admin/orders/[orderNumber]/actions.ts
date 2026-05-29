@@ -7,7 +7,7 @@ import {
   parseAdminOrderStatus,
   updateOrderStatusForAdmin,
 } from "@/lib/admin-orders";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { formString } from "@/lib/form-utils";
 import { db } from "@/lib/db";
 
@@ -15,7 +15,7 @@ export async function updateAdminOrderStatus(formData: FormData) {
   const orderNumber = formString(formData, "orderNumber");
   const status = parseAdminOrderStatus(formString(formData, "status"));
 
-  await requireAdminAccess(orderNumber ? `/admin/orders/${orderNumber}` : "/admin/orders");
+  await requireAdminRole("ADMIN", "SALES", "WAREHOUSE", "SUPPORT", "ACCOUNTING");
 
   if (!orderNumber || !status) {
     redirect(`/admin/orders/${orderNumber || ""}?estado=invalid`);

@@ -6,6 +6,8 @@ export type AdminAuditInput = {
   entityLabel?: string;
   entityType: string;
   metadata?: Prisma.InputJsonValue;
+  adminUserId?: string;
+  adminUserEmail?: string;
 };
 
 export async function writeAdminAuditLog(
@@ -19,6 +21,8 @@ export async function writeAdminAuditLog(
       entityLabel: input.entityLabel,
       entityType: input.entityType,
       metadata: input.metadata,
+      adminUserId: input.adminUserId,
+      adminUserEmail: input.adminUserEmail,
     },
   });
 }

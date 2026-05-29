@@ -1,7 +1,7 @@
 import { MapPin, Plus, Truck } from "lucide-react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { defaultDeliveryZones, defaultPickupLocation, DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
 import { db } from "@/lib/db";
 import { createDeliveryZone, updateDeliveryZone, updatePickupSettings } from "./actions";
@@ -17,7 +17,7 @@ export const metadata = {
 };
 
 export default async function AdminSettingsPage({ searchParams }: AdminSettingsPageProps) {
-  await requireAdminAccess("/admin/settings");
+  const adminUser = await requireAdminRole("ADMIN");
   await ensureFulfillmentDefaults();
 
   const params = searchParams ? await searchParams : {};
@@ -42,7 +42,7 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
                 Configura retiro en bodega, horarios y zonas de envío local para el checkout.
               </p>
             </div>
-            <AdminNav active="settings" />
+            <AdminNav active="settings" user={adminUser} />
           </div>
         </section>
 

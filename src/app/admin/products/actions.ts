@@ -11,7 +11,7 @@ import {
   slugifyProductValue,
 } from "@/lib/admin-products";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { formString, optionalFormStringOrNull } from "@/lib/form-utils";
 import { db } from "@/lib/db";
 
@@ -38,7 +38,7 @@ type AdminProductInput = {
 };
 
 export async function createAdminProduct(formData: FormData) {
-  await requireAdminAccess("/admin/products/new");
+  await requireAdminRole("ADMIN");
 
   const input = parseAdminProductFormData(formData);
   if (!input) redirect("/admin/products/new?estado=invalid");
@@ -100,7 +100,7 @@ export async function createAdminProduct(formData: FormData) {
 
 export async function updateAdminProduct(formData: FormData) {
   const productId = formString(formData, "productId");
-  await requireAdminAccess(productId ? "/admin/products" : "/admin/products/new");
+  await requireAdminRole("ADMIN");
 
   const input = parseAdminProductFormData(formData);
   if (!productId || !input) redirect(`/admin/products?estado=invalid`);
@@ -170,7 +170,7 @@ export async function updateAdminProduct(formData: FormData) {
 
 export async function updateAdminProductInventory(formData: FormData) {
   const productId = formString(formData, "productId");
-  await requireAdminAccess("/admin/products");
+  await requireAdminRole("ADMIN");
 
   const quantityOnHand = parseInteger(formString(formData, "quantityOnHand"));
   const reorderPoint = parseInteger(formString(formData, "reorderPoint"));

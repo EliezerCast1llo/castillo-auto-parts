@@ -50,16 +50,19 @@ enum InvoiceStatus {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String?
-  email     String    @unique
-  phone     String?
-  role      UserRole  @default(CUSTOMER)
-  orders    Order[]
-  carts     Cart[]
-  addresses Address[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  name         String?
+  email        String    @unique
+  phone        String?
+  role         UserRole  @default(CUSTOMER)
+  passwordHash String?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  orders       Order[]
+  carts        Cart[]
+  addresses    Address[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model GuestSession {
@@ -340,17 +343,20 @@ model DeliveryZone {
 }
 
 model AdminAuditLog {
-  id          String   @id @default(cuid())
-  action      String
-  entityType  String
-  entityId    String?
-  entityLabel String?
-  metadata    Json?
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  action         String
+  entityType     String
+  entityId       String?
+  entityLabel    String?
+  metadata       Json?
+  adminUserId    String?
+  adminUserEmail String?
+  createdAt      DateTime @default(now())
 
   @@index([action])
   @@index([createdAt])
   @@index([entityType, entityId])
+  @@index([adminUserId])
 }
 
 model EmailLog {

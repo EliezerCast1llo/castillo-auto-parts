@@ -1,7 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 export default async function AdminAuditPage() {
-  await requireAdminAccess("/admin/audit");
+  const adminUser = await requireAdminRole("ADMIN");
 
   const logs = await db.adminAuditLog.findMany({
     orderBy: { createdAt: "desc" },
@@ -32,7 +32,7 @@ export default async function AdminAuditPage() {
                 Últimos cambios operativos realizados en productos, inventario, órdenes y ajustes.
               </p>
             </div>
-            <AdminNav active="audit" />
+            <AdminNav active="audit" user={adminUser} />
           </div>
         </section>
 

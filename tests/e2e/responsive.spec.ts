@@ -93,7 +93,10 @@ async function addProductToCart(page: Page, slug: string) {
 
 async function signInAdmin(page: Page, nextPath: string) {
   await page.goto(`/admin/login?next=${encodeURIComponent(nextPath)}`);
-  await page.getByLabel("Contraseña").fill(process.env.ADMIN_ACCESS_PASSWORD || "admin123");
+  await page.getByLabel("Correo electrónico").fill(
+    process.env.ADMIN_SEED_EMAIL || "admin@castilloautoparts.com",
+  );
+  await page.getByLabel("Contraseña").fill(process.env.ADMIN_SEED_PASSWORD || "admin123");
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page).toHaveURL(new RegExp(nextPath.replace(/\//g, "\\/")));
 }

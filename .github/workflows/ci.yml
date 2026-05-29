@@ -22,8 +22,9 @@ env:
   PAYMENT_PROVIDER: mock
   EMAIL_PROVIDER: console
   EMAIL_FROM: Castillo Auto Parts <no-reply@castilloautoparts.local>
-  ADMIN_ACCESS_PASSWORD: ci-admin-password-for-github-actions
   ADMIN_ACCESS_SECRET: ci-admin-secret-at-least-32-characters-long
+  ADMIN_SEED_EMAIL: admin@ci.castilloautoparts.com
+  ADMIN_SEED_PASSWORD: ci-admin-password-for-github-actions
   GUEST_CART_SECRET: ci-guest-cart-secret-at-least-32-characters-long
 
 jobs:

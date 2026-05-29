@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
-import { requireAdminAccess } from "@/lib/admin-auth";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
 import {
@@ -49,7 +49,7 @@ export default async function AdminOrderDetailPage({
   searchParams,
 }: AdminOrderDetailPageProps) {
   const { orderNumber } = await params;
-  await requireAdminAccess(`/admin/orders/${orderNumber}`);
+  const adminUser = await requireAdminRole("ADMIN", "SALES", "WAREHOUSE", "SUPPORT", "ACCOUNTING");
 
   const query = searchParams ? await searchParams : {};
   const statusMessage = getStatusMessage(firstValue(query.estado));
@@ -101,7 +101,7 @@ export default async function AdminOrderDetailPage({
                 </div>
                 <div className="flex flex-col gap-3 sm:items-end">
                   <StatusBadge status={order.status} />
-                  <AdminNav active="orders" />
+                  <AdminNav active="orders" user={adminUser} />
                 </div>
               </div>
             </div>
