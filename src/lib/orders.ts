@@ -45,6 +45,7 @@ class CheckoutDomainError extends Error {
 
 export async function createPaidGuestOrderFromCart(
   formData: FormData,
+  userId?: string,
 ): Promise<CreateGuestOrderResult> {
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
@@ -168,6 +169,7 @@ export async function createPaidGuestOrderFromCart(
           accessTokenHash: hashOrderAccessToken(accessToken),
           addressId,
           currency: "USD",
+          userId: userId ?? null,
           customerEmail: parsed.data.customerEmail,
           customerName: parsed.data.customerName,
           customerPhone: parsed.data.customerPhone,

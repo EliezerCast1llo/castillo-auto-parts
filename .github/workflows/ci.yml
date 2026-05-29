@@ -26,6 +26,8 @@ env:
   ADMIN_SEED_EMAIL: admin@ci.castilloautoparts.com
   ADMIN_SEED_PASSWORD: ci-admin-password-for-github-actions
   GUEST_CART_SECRET: ci-guest-cart-secret-at-least-32-characters-long
+  NEXTAUTH_SECRET: ci-nextauth-secret-at-least-32-characters-long
+  NEXTAUTH_URL: http://localhost:3000
 
 jobs:
   quality:
