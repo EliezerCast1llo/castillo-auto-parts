@@ -53,7 +53,7 @@ test("guest can complete pickup checkout with simulated online payment", async (
   await expect(page.getByRole("heading", { name: "Retiro en bodega" })).toBeVisible();
   await expect(page.locator('iframe[title="Ubicación de bodega"]')).toBeVisible();
 
-  await page.getByRole("button", { name: "Pagar en línea y confirmar orden" }).click();
+  await page.getByRole("button", { name: "Confirmar y pagar" }).click();
 
   await expect(page).toHaveURL(/\/orders\/CAP-\d{8}-[A-Z0-9]{6}\?token=/);
   await expect(page.getByText("Orden creada")).toBeVisible();
@@ -81,7 +81,7 @@ test("guest can complete local delivery checkout with zone and exact location", 
   await expect(page.getByRole("heading", { name: "Ubicación exacta" })).toBeVisible();
   await expect(page.getByText("Total estimado")).toBeVisible();
 
-  await page.getByRole("button", { name: "Pagar en línea y confirmar orden" }).click();
+  await page.getByRole("button", { name: "Confirmar y pagar" }).click();
 
   await expect(page).toHaveURL(/\/orders\/CAP-\d{8}-[A-Z0-9]{6}\?token=/);
   await expect(page.getByText("Orden creada")).toBeVisible();
@@ -105,7 +105,7 @@ test("guest can request a stock alert when cart item becomes unavailable", async
 
   await expect(page).toHaveURL(/\/cart\?estado=stock_alert_created/);
   await expect(
-    page.getByText("Listo. Guardamos tus datos para avisarte cuando tengamos disponibilidad."),
+    page.getByText("Listo. Te avisamos cuando haya disponibilidad."),
   ).toBeVisible();
   await expect
     .poll(() =>
