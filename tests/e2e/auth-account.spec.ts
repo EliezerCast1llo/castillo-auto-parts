@@ -130,8 +130,9 @@ test("register shows error with duplicate email", async ({ page }) => {
   const email = uniqueEmail("dup");
   await registerUser(page, email);
 
-  // Log out
+  // Log out y esperar que el redirect a "/" complete antes de continuar
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
+  await expect(page).toHaveURL("/");
 
   // Try to register again with same email
   await page.goto("/auth/register");
