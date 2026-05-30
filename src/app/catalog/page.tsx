@@ -1,12 +1,13 @@
 import Link from "next/link";
+import { MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { CatalogActiveFilters } from "@/components/product/catalog-active-filters";
 import { CatalogFilterForm } from "@/components/product/catalog-filter-form";
 import { CatalogPagination } from "@/components/catalog-pagination";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductFilters } from "@/components/product/product-filters";
 import { VehicleSearchPanel } from "@/components/product/vehicle-search-panel";
+import { FilterDrawer } from "@/components/catalog/filter-drawer";
 import { SiteHeader } from "@/components/site-header";
-import { MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import {
   countActiveCatalogFilters,
   getCatalogFilterOptions,
@@ -17,7 +18,7 @@ import { getCatalogProducts, getFilteredCatalogProducts } from "@/data/products"
 
 export const metadata = {
   title: "Catálogo | Castillo Auto Parts",
-  description: "Catálogo inicial de repuestos automotrices.",
+  description: "Catálogo de repuestos automotrices para El Salvador.",
 };
 
 export const dynamic = "force-dynamic";
@@ -31,13 +32,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const filters = parseCatalogFilters(resolvedParams);
   const page = Math.max(1, Number(resolvedParams.page ?? 1) || 1);
 
-  // Resultado paginado con filtros en DB
   const catalogResult = await getFilteredCatalogProducts(filters, page);
-
-  // Para las opciones de filtro (categorías, marcas, vehículos) necesitamos el
-  // universo completo de productos, no solo la página actual.
-  // Usamos getCatalogProducts() que ya tiene React.cache() y no genera una
-  // segunda query si se llamó antes en el mismo render tree.
   const allProducts = await getCatalogProducts();
   const filterOptions = getCatalogFilterOptions(allProducts);
 
@@ -45,91 +40,97 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const activeFilterCount = countActiveCatalogFilters(filters);
   const filterKey = JSON.stringify(filters);
 
+  const filterContent = (
+    <CatalogFilterForm key={filterKey}>
+      <VehicleSearchPanel filters={filters} options={filterOptions} />
+      <ProductFilters
+        activeFilterCount={activeFilterCount}
+        filters={filters}
+        options={filterOptions}
+      />
+    </CatalogFilterForm>
+  );
+
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <SiteHeader />
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
-        <aside className="lg:sticky lg:top-6 lg:self-start">
-          <CatalogFilterForm key={filterKey}>
-            <VehicleSearchPanel filters={filters} options={filterOptions} />
-            <ProductFilters
-              activeFilterCount={activeFilterCount}
-              filters={filters}
-              options={filterOptions}
-            />
-          </CatalogFilterForm>
-        </aside>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Botón de filtros mobile + drawer */}
+        <FilterDrawer activeFilterCount={activeFilterCount}>
+          {filterContent}
+        </FilterDrawer>
 
-        <section className="space-y-5">
-          <CatalogHero />
+        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+          {/* Sidebar de filtros — solo visible en desktop */}
+          <aside className="hidden lg:block lg:sticky lg:top-6 lg:self-start">
+            {filterContent}
+          </aside>
 
-          {status === "unavailable" ? (
-            <CatalogUnavailableState />
-          ) : null}
+          <section className="min-w-0 space-y-5">
+            <CatalogHero />
 
-          <div className="flex flex-col justify-between gap-3 rounded-md border border-border bg-card p-5 md:flex-row md:items-end">
-            <div>
-              <p className="text-sm font-semibold text-success">
-                {source === "mock" ? "Inventario de prueba" : "Inventario activo"}
-              </p>
-              <h2 className="mt-1 text-2xl font-bold text-primary">Catálogo de repuestos</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                {source === "mock"
-                  ? "Datos de prueba para desarrollo local. En producción no se muestra inventario simulado."
-                  : "Productos activos disponibles para búsqueda, filtros, compatibilidad y compra."}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <span className="rounded-md bg-background px-3 py-2 text-sm font-semibold text-muted-foreground">
-                {totalCount} {totalCount === 1 ? "producto" : "productos"}
-              </span>
-              {totalPages > 1 ? (
-                <span className="text-xs text-muted-foreground">
-                  Página {currentPage} de {totalPages}
-                </span>
-              ) : null}
-            </div>
-          </div>
+            {status === "unavailable" ? <CatalogUnavailableState /> : null}
 
-          <CatalogActiveFilters filters={filters} />
-
-          {status === "unavailable" ? null : filteredProducts.length > 0 ? (
-            <>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.sku} product={product} />
-                ))}
+            {/* Barra de resultados */}
+            <div className="flex flex-col justify-between gap-3 rounded-2xl border border-ca-border bg-white px-5 py-4 shadow-[var(--ca-shadow-soft)] md:flex-row md:items-center">
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+                  {source === "mock" ? "Inventario de prueba" : "Inventario activo"}
+                </p>
+                <h2 className="mt-1 text-xl font-black text-ca-navy-950">Catálogo de repuestos</h2>
               </div>
-              <CatalogPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                searchParams={resolvedParams}
-              />
-            </>
-          ) : (
-            <div className="rounded-md border border-border bg-card p-6">
-              <h3 className="text-lg font-bold text-primary">
-                {totalCount === 0
-                  ? "Aún no hay productos activos"
-                  : "No encontramos productos con esos filtros"}
-              </h3>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-                {totalCount === 0
-                  ? "El catálogo está disponible, pero todavía no hay inventario activo publicado."
-                  : "Prueba quitar un filtro activo, buscar por número de parte o revisar otra combinación de vehículo."}
-              </p>
-              {activeFilterCount > 0 ? (
-                <Link
-                  className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
-                  href="/catalog"
-                >
-                  Limpiar filtros
-                </Link>
-              ) : null}
+              <div className="flex items-center gap-3">
+                <span className="rounded-xl bg-ca-background px-3 py-2 text-sm font-bold text-ca-text-secondary">
+                  {totalCount} {totalCount === 1 ? "producto" : "productos"}
+                </span>
+                {totalPages > 1 ? (
+                  <span className="text-sm text-ca-text-secondary">
+                    Pág. {currentPage}/{totalPages}
+                  </span>
+                ) : null}
+              </div>
             </div>
-          )}
-        </section>
+
+            <CatalogActiveFilters filters={filters} />
+
+            {status === "unavailable" ? null : filteredProducts.length > 0 ? (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.sku} product={product} />
+                  ))}
+                </div>
+                <CatalogPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  searchParams={resolvedParams}
+                />
+              </>
+            ) : (
+              <div className="rounded-2xl border border-ca-border bg-white p-6 shadow-[var(--ca-shadow-soft)]">
+                <h3 className="text-lg font-black text-ca-navy-950">
+                  {totalCount === 0
+                    ? "Aún no hay productos activos"
+                    : "Sin resultados para esos filtros"}
+                </h3>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-ca-text-secondary">
+                  {totalCount === 0
+                    ? "El catálogo está disponible pero todavía no hay inventario publicado."
+                    : "Prueba quitar un filtro, buscar por número de parte o revisar otra combinación."}
+                </p>
+                {activeFilterCount > 0 ? (
+                  <Link
+                    className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
+                    href="/catalog"
+                  >
+                    Limpiar filtros
+                  </Link>
+                ) : null}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </main>
   );
@@ -137,12 +138,11 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
 function CatalogUnavailableState() {
   return (
-    <div className="rounded-md border border-danger/20 bg-card p-6">
-      <p className="text-sm font-semibold text-danger">Catálogo temporalmente no disponible</p>
-      <h2 className="mt-1 text-xl font-bold text-primary">No pudimos cargar inventario real</h2>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-        Intenta nuevamente en unos minutos. Para proteger la operación, no mostramos productos de
-        prueba cuando la base de datos no responde.
+    <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-[var(--ca-shadow-soft)]">
+      <p className="text-sm font-black uppercase tracking-widest text-red-500">No disponible</p>
+      <h2 className="mt-1 text-xl font-black text-ca-navy-950">Catálogo temporalmente no disponible</h2>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">
+        Intenta nuevamente en unos minutos. No mostramos productos de prueba cuando la base de datos no responde.
       </p>
     </div>
   );
@@ -150,26 +150,27 @@ function CatalogUnavailableState() {
 
 function CatalogHero() {
   return (
-    <section className="overflow-hidden rounded-md border border-border bg-card">
-      <div className="grid gap-5 p-5 md:grid-cols-[1fr_260px] md:p-6">
+    <section className="overflow-hidden rounded-2xl border border-ca-border bg-white shadow-[var(--ca-shadow-soft)]">
+      <div className="grid gap-5 p-5 md:grid-cols-[1fr_240px] md:p-6">
         <div>
-          <p className="text-xs font-bold uppercase text-success">Compra con compatibilidad clara</p>
-          <h1 className="mt-2 max-w-2xl text-3xl font-bold leading-tight text-primary">
+          <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+            Compatibilidad clara
+          </p>
+          <h1 className="mt-2 max-w-2xl text-2xl font-black leading-tight text-ca-navy-950 sm:text-3xl">
             Encuentra el repuesto correcto antes de pagar
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Filtra por vehículo, categoría, marca o número de parte. Precio, stock y compatibilidad
-            están visibles desde la lista para comparar rápido.
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-ca-text-secondary">
+            Filtra por vehículo, categoría, marca o número de parte. Precio, stock y compatibilidad visibles desde la lista.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <HeroChip icon={<ShieldCheck className="h-4 w-4" />} label="Pago en línea seguro" />
-            <HeroChip icon={<MapPin className="h-4 w-4" />} label="San Salvador y Santa Tecla" />
-            <HeroChip icon={<SlidersHorizontal className="h-4 w-4" />} label="Filtros visibles" />
+            <HeroChip icon={<ShieldCheck className="h-3.5 w-3.5" />} label="Pago seguro" />
+            <HeroChip icon={<MapPin className="h-3.5 w-3.5" />} label="San Salvador y Santa Tecla" />
+            <HeroChip icon={<SlidersHorizontal className="h-3.5 w-3.5" />} label="Filtros en tiempo real" />
           </div>
         </div>
 
-        <div className="grid gap-2 rounded-md border border-border bg-background p-4">
-          <HeroMetric label="Catálogo MVP" value="50-80 SKUs" />
+        <div className="grid gap-2 rounded-xl border border-ca-border bg-ca-background p-4">
+          <HeroMetric label="Catálogo MVP" value="50–80 SKUs" />
           <HeroMetric label="IVA" value="13% incluido" />
           <HeroMetric label="Retiro" value="Gratis" />
         </div>
@@ -180,7 +181,7 @@ function CatalogHero() {
 
 function HeroChip({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="inline-flex h-9 items-center gap-2 rounded-md border border-primary/15 bg-primary/10 px-3 text-sm font-semibold text-primary">
+    <div className="inline-flex h-8 items-center gap-1.5 rounded-full border border-ca-navy-950/15 bg-ca-navy-950/5 px-3 text-xs font-bold text-ca-navy-950">
       {icon}
       {label}
     </div>
@@ -189,9 +190,9 @@ function HeroChip({ icon, label }: { icon: React.ReactNode; label: string }) {
 
 function HeroMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-border bg-card p-3">
-      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-      <p className="mt-1 text-lg font-bold text-primary">{value}</p>
+    <div className="rounded-xl border border-ca-border bg-white p-3">
+      <p className="text-xs font-semibold text-ca-text-secondary">{label}</p>
+      <p className="mt-0.5 text-base font-black text-ca-navy-950">{value}</p>
     </div>
   );
 }

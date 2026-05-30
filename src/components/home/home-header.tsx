@@ -8,7 +8,9 @@ import {
   UserRound,
   Wrench,
 } from "lucide-react";
+import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
+import { MobileMenu } from "@/components/mobile-menu";
 
 const navItems = [
   { label: "Catálogo", href: "/catalog", hasMenu: true },
@@ -18,12 +20,24 @@ const navItems = [
 ];
 
 export async function HomeHeader() {
-  const cartItemCount = await getGuestCartItemCount();
+  const [cartItemCount, session] = await Promise.all([
+    getGuestCartItemCount(),
+    auth(),
+  ]);
+
+  const accountHref = session?.user ? "/account" : "/auth/login";
+  const accountLabel = session?.user
+    ? (session.user.name?.split(" ")[0] ?? "Mi cuenta")
+    : "Ingresar";
 
   return (
     <header className="bg-ca-navy-950 text-white">
       <UtilityBar />
-      <MainNavbar cartItemCount={cartItemCount} />
+      <MainNavbar
+        cartItemCount={cartItemCount}
+        accountHref={accountHref}
+        accountLabel={accountLabel}
+      />
     </header>
   );
 }
@@ -35,7 +49,7 @@ export function UtilityBar() {
         <p className="hidden tracking-[0.01em] text-white/76 md:block">
           Repuestos originales <span className="mx-2 text-ca-gold-400">•</span> Entrega rápida
         </p>
-        <p className="tracking-[0.01em] text-white/76 md:hidden">Compra segura</p>
+        <p className="tracking-[0.01em] text-white/76 md:hidden">Castillo Auto Parts</p>
 
         <div className="flex items-center justify-end gap-3 sm:gap-4">
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
@@ -58,9 +72,16 @@ export function UtilityBar() {
   );
 }
 
-export function MainNavbar({ cartItemCount }: { cartItemCount: number }) {
+type MainNavbarProps = {
+  cartItemCount: number;
+  accountHref: string;
+  accountLabel: string;
+};
+
+export function MainNavbar({ cartItemCount, accountHref, accountLabel }: MainNavbarProps) {
   return (
     <div className="ca-container flex min-h-16 items-center justify-between gap-5 py-3">
+      {/* Logo */}
       <Link href="/" className="flex min-w-0 items-center gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-ca-gold-400 text-ca-navy-950 shadow-[0_10px_24px_rgba(217,162,27,0.25)]">
           <Wrench className="h-6 w-6" strokeWidth={2} />
@@ -73,6 +94,7 @@ export function MainNavbar({ cartItemCount }: { cartItemCount: number }) {
         </span>
       </Link>
 
+      {/* Nav desktop */}
       <nav className="hidden items-center gap-8 lg:flex" aria-label="Navegación principal">
         {navItems.map((item) => (
           <Link
@@ -86,17 +108,21 @@ export function MainNavbar({ cartItemCount }: { cartItemCount: number }) {
         ))}
       </nav>
 
+      {/* Acciones */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Cuenta — visible en desktop */}
         <Link
           className="hidden h-10 items-center gap-2 rounded-full px-3 text-sm font-bold text-white/88 transition hover:bg-white/10 md:inline-flex"
-          href="/admin/login"
+          href={accountHref}
         >
           <UserRound className="h-5 w-5" strokeWidth={1.8} />
-          Mi cuenta
+          {accountLabel}
         </Link>
+
+        {/* Carrito */}
         <Link
           className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/[0.16]"
-          aria-label={`Ver carrito, ${formatCartCount(cartItemCount)}`}
+          aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
           href="/cart"
         >
           <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />
@@ -106,11 +132,17 @@ export function MainNavbar({ cartItemCount }: { cartItemCount: number }) {
             </span>
           ) : null}
         </Link>
+
+        {/* Hamburguesa mobile */}
+        <div className="lg:hidden">
+          <MobileMenu
+            cartItemCount={cartItemCount}
+            accountHref={accountHref}
+            accountLabel={accountLabel}
+            variant="dark"
+          />
+        </div>
       </div>
     </div>
   );
-}
-
-function formatCartCount(count: number) {
-  return count === 1 ? "1 producto" : `${count} productos`;
 }
