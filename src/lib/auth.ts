@@ -19,6 +19,18 @@ import type { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/admin-credentials";
 
+// Validación de secreto en producción
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET?.trim() ?? "";
+if (
+  process.env.NODE_ENV === "production" &&
+  (NEXTAUTH_SECRET.length < 32 || NEXTAUTH_SECRET.includes("replace-with"))
+) {
+  throw new Error(
+    "NEXTAUTH_SECRET no está configurado correctamente para producción. " +
+    "Usa `openssl rand -base64 32` para generar un secreto seguro.",
+  );
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },

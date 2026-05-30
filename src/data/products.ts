@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { logError } from "@/lib/logger";
 import {
   getProductBySlug,
   getRelatedProducts,
@@ -393,5 +394,5 @@ function getFallbackRelatedProducts(product: CatalogProduct) {
 }
 
 function logCatalogDataError(error: unknown) {
-  console.error("Catalog data source unavailable.", error);
+  logError({ context: "catalog-data-source" }, error);
 }

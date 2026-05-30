@@ -8,7 +8,11 @@ import { changePasswordAction, logoutCustomer, updateProfileAction } from "./act
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Mi cuenta | Castillo Auto Parts" };
+export const metadata = {
+  title: "Mi cuenta | Castillo Auto Parts",
+  description: "Gestiona tu perfil, revisa tus órdenes y tus direcciones guardadas.",
+  robots: { index: false, follow: false },
+};
 
 type AccountPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

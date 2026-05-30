@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { normalizeCartSku, sanitizeCartQuantity } from "./cart-validation";
 import { db } from "./db";
+import { logError } from "./logger";
 
 export type CreateStockAlertResult = "created" | "db_unavailable" | "invalid" | "not_found";
 export const stockAlertStatuses = ["OPEN", "NOTIFIED", "CLOSED", "CANCELLED"] as const;
@@ -101,7 +102,7 @@ export async function createStockAlertRequest(formData: FormData): Promise<Creat
 
     return "created";
   } catch (error) {
-    console.error(error);
+    logError({ context: "createStockAlertRequest" }, error);
     return "db_unavailable";
   }
 }

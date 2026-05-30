@@ -8,7 +8,11 @@ import { formatDateTime, formatOrderStatus, getOrderStatusClassName } from "@/li
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Mis órdenes | Castillo Auto Parts" };
+export const metadata = {
+  title: "Mis órdenes | Castillo Auto Parts",
+  description: "Historial de compras en Castillo Auto Parts.",
+  robots: { index: false, follow: false },
+};
 
 export default async function AccountOrdersPage() {
   const session = await auth();

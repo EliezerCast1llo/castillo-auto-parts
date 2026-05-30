@@ -27,7 +27,10 @@ env:
   ADMIN_SEED_PASSWORD: ci-admin-password-for-github-actions
   GUEST_CART_SECRET: ci-guest-cart-secret-at-least-32-characters-long
   NEXTAUTH_SECRET: ci-nextauth-secret-at-least-32-characters-long
-  NEXTAUTH_URL: http://localhost:3000
+  # El E2E corre en :3100 (scripts/run-e2e.ts). AUTH_TRUST_HOST permite que
+  # Auth.js v5 acepte la sesión independientemente del host/puerto en CI.
+  NEXTAUTH_URL: http://localhost:3100
+  AUTH_TRUST_HOST: "1"
 
 jobs:
   quality:

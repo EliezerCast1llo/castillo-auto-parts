@@ -19,8 +19,9 @@ import { firstValue } from "@/lib/url-utils";
 import { createStockAlert, removeCartItem, updateCartItem } from "./actions";
 
 export const metadata = {
-  title: "Carrito | Castillo Auto Parts",
-  description: "Carrito de compras para repuestos automotrices.",
+  title: "Tu carrito | Castillo Auto Parts",
+  description: "Revisa tu selección de repuestos y continúa con la compra.",
+  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
