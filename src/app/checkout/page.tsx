@@ -10,7 +10,8 @@ import { createGuestOrder } from "./actions";
 
 export const metadata = {
   title: "Finalizar compra | Castillo Auto Parts",
-  description: "Finalizar compra en Castillo Auto Parts.",
+  description: "Completa tus datos de entrega y pago para confirmar tu pedido.",
+  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";

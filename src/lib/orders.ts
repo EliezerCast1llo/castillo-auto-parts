@@ -5,6 +5,7 @@ import {
   type Prisma,
 } from "@prisma/client";
 import { clearGuestCart, getGuestCart } from "./cart";
+import { logError } from "./logger";
 import {
   buildFormattedAddress,
   buildOrderNumber,
@@ -246,7 +247,7 @@ export async function createPaidGuestOrderFromCart(
       return { status: error.code };
     }
 
-    console.error(error);
+    logError({ context: "createPaidGuestOrderFromCart" }, error);
     return { status: "db_unavailable" };
   }
 }
@@ -348,7 +349,7 @@ async function createPayment({
       redirectUrl,
     });
   } catch (error) {
-    console.error(error);
+    logError({ context: "createPaidGuestOrderFromCart" }, error);
     throw new CheckoutDomainError("payment_unavailable");
   }
 }

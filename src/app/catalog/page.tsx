@@ -16,12 +16,32 @@ import {
 } from "@/data/catalog-filters";
 import { getCatalogProducts, getFilteredCatalogProducts } from "@/data/products";
 
-export const metadata = {
-  title: "Catálogo | Castillo Auto Parts",
-  description: "Catálogo de repuestos automotrices para El Salvador.",
-};
-
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams?: Promise<CatalogSearchParams>;
+}): Promise<{ title: string; description: string }> {
+  const params = searchParams ? await searchParams : {};
+  const filters = parseCatalogFilters(params);
+
+  const parts: string[] = [];
+  if (filters.categories.length) parts.push(filters.categories[0]);
+  if (filters.brands.length) parts.push(filters.brands[0]);
+  if (filters.vehicleMake) parts.push(filters.vehicleMake);
+  if (filters.query) parts.push(`"${filters.query}"`);
+
+  const title = parts.length
+    ? `${parts.join(" · ")} | Catálogo | Castillo Auto Parts`
+    : "Catálogo de repuestos | Castillo Auto Parts";
+
+  const description = parts.length
+    ? `Repuestos automotrices ${parts.join(", ")} disponibles en El Salvador. Stock visible, compatibilidad clara.`
+    : "Catálogo completo de repuestos automotrices para El Salvador. Filtra por vehículo, marca o categoría.";
+
+  return { title, description };
+}
 
 type CatalogPageProps = {
   searchParams?: Promise<CatalogSearchParams>;

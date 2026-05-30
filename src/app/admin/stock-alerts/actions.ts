@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
+import { logError } from "@/lib/logger";
 import { parseStockAlertStatus } from "@/lib/stock-alerts";
 
 class StockAlertAdminError extends Error {
@@ -59,7 +60,7 @@ export async function updateStockAlertStatus(formData: FormData) {
       redirect(`/admin/stock-alerts?estado=${error.code}`);
     }
 
-    console.error(error);
+    logError({ context: "admin-action" }, error);
     redirect("/admin/stock-alerts?estado=db_unavailable");
   }
 

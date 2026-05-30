@@ -7,6 +7,7 @@ import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { parseAdminPriceCents, slugifyProductValue } from "@/lib/admin-products";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { formString } from "@/lib/form-utils";
+import { logError } from "@/lib/logger";
 import { DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
 import { db } from "@/lib/db";
 
@@ -180,7 +181,7 @@ function handleSettingsError(error: unknown, scope: "pickup" | "zone"): never {
     redirect("/admin/settings?estado=duplicate");
   }
 
-  console.error(error);
+  logError({ context: "admin-settings-action" }, error);
   redirect(`/admin/settings?estado=${scope === "pickup" ? "pickup_error" : "zone_error"}`);
 }
 

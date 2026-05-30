@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getEmailProvider, getTransactionalEmailFrom } from "@/lib/email";
+import { logError } from "@/lib/logger";
 import { formString } from "@/lib/form-utils";
 import { createPasswordResetToken } from "@/lib/auth-user";
 
@@ -31,9 +32,8 @@ export async function requestPasswordReset(formData: FormData) {
           <p>Si no solicitaste esto, ignora este mensaje.</p>
         `,
       });
-    } catch {
-      // Loguear pero no exponer al usuario
-      console.error("Error enviando email de reset de contraseña");
+    } catch (error) {
+      logError({ context: "sendPasswordResetEmail" }, error);
     }
   }
 

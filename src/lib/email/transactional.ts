@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "../db";
 import { getEmailProvider } from ".";
+import { logError as log } from "../logger";
 import {
   buildOrderConfirmationEmail,
   type OrderConfirmationEmailInput,
@@ -28,7 +29,7 @@ export async function sendOrderConfirmationEmail(input: OrderConfirmationEmailIn
       },
     });
   } catch (error) {
-    console.error(error);
+    log({ context: "sendOrderConfirmationEmail" }, error);
 
     await logFailedEmail({
       error,
@@ -75,7 +76,7 @@ async function logFailedEmail({
         template,
       },
     });
-  } catch (logError) {
-    console.error(logError);
+  } catch (err) {
+    log({ context: "logFailedEmail" }, err);
   }
 }

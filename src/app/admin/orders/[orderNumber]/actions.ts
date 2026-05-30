@@ -9,6 +9,7 @@ import {
 } from "@/lib/admin-orders";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { formString } from "@/lib/form-utils";
+import { logError } from "@/lib/logger";
 import { db } from "@/lib/db";
 
 export async function updateAdminOrderStatus(formData: FormData) {
@@ -30,7 +31,7 @@ export async function updateAdminOrderStatus(formData: FormData) {
       redirect(`/admin/orders/${orderNumber}?estado=${error.code}`);
     }
 
-    console.error(error);
+    logError({ context: "admin-action" }, error);
     redirect(`/admin/orders/${orderNumber}?estado=db_unavailable`);
   }
 
