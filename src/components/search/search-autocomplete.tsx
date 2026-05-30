@@ -22,7 +22,12 @@ import type { SearchResponse, SearchResult } from "@/app/api/search/route";
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
 
-export function SearchAutocomplete() {
+type SearchAutocompleteProps = {
+  /** "default" → estilo estándar del header. "hero" → estilo premium de la home. */
+  variant?: "default" | "hero";
+};
+
+export function SearchAutocomplete({ variant = "default" }: SearchAutocompleteProps = {}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -161,15 +166,31 @@ export function SearchAutocomplete() {
     [activeIndex, results, handleSelect],
   );
 
+  const isHero = variant === "hero";
+
   return (
     <form
       action="/catalog"
-      className="grid gap-3 rounded-md border border-border bg-background p-3 md:grid-cols-[1fr_160px]"
+      className={
+        isHero
+          ? "relative z-40 grid gap-3 rounded-[18px] border border-white/15 bg-white p-3 shadow-[var(--ca-shadow-premium)] md:grid-cols-[1fr_172px]"
+          : "grid gap-3 rounded-xl border border-ca-border bg-white p-2 md:grid-cols-[1fr_120px]"
+      }
       onSubmit={handleSubmit}
     >
       <div className="relative">
-        <label className="flex min-h-12 items-center gap-3 rounded-md bg-card px-3">
-          <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <label
+          className={
+            isHero
+              ? "flex min-h-14 items-center gap-3 rounded-[14px] border border-ca-border bg-white px-4"
+              : "flex min-h-10 items-center gap-2 rounded-lg bg-ca-background px-3"
+          }
+        >
+          <Search
+            className={isHero ? "h-5 w-5 shrink-0 text-ca-navy-900" : "h-4 w-4 shrink-0 text-ca-text-secondary"}
+            strokeWidth={1.8}
+          />
+          <span className="sr-only">Buscar repuesto</span>
           <input
             ref={inputRef}
             aria-autocomplete="list"
@@ -177,20 +198,22 @@ export function SearchAutocomplete() {
             aria-expanded={isOpen}
             aria-label="Buscar repuestos"
             autoComplete="off"
-            className="w-full bg-transparent text-sm outline-none"
+            className={
+              isHero
+                ? "w-full bg-transparent text-base font-medium outline-none placeholder:text-ca-text-secondary/72"
+                : "w-full bg-transparent text-sm outline-none placeholder:text-ca-text-secondary/60"
+            }
             name="q"
-            placeholder="Busca por repuesto, SKU, número de parte o vehículo"
+            placeholder="Busca por repuesto, SKU o vehículo"
             role="combobox"
             type="search"
             value={query}
             onChange={(e) => handleQueryChange(e.target.value)}
-            onFocus={() => {
-              if (results.length > 0) setIsOpen(true);
-            }}
+            onFocus={() => { if (results.length > 0) setIsOpen(true); }}
             onKeyDown={handleKeyDown}
           />
           {isLoading ? (
-            <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-ca-navy-950 border-t-transparent" />
           ) : null}
         </label>
 
@@ -199,7 +222,7 @@ export function SearchAutocomplete() {
             ref={dropdownRef}
             id="search-dropdown"
             role="listbox"
-            className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border border-border bg-card shadow-lg"
+            className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-ca-border bg-white shadow-[var(--ca-shadow-premium)]"
           >
             {results.map((result, index) => (
               <button
@@ -207,33 +230,32 @@ export function SearchAutocomplete() {
                 type="button"
                 role="option"
                 aria-selected={index === activeIndex}
-                className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-background ${
-                  index === activeIndex ? "bg-background" : ""
+                className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-ca-background ${
+                  index === activeIndex ? "bg-ca-background" : ""
                 }`}
                 onMouseDown={(e) => {
-                  // mousedown en lugar de onClick para ejecutar antes del blur
                   e.preventDefault();
                   handleSelect(result);
                 }}
                 onMouseEnter={() => setActiveIndex(index)}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-foreground">{result.name}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                  <p className="truncate font-bold text-ca-navy-950">{result.name}</p>
+                  <p className="mt-0.5 text-xs text-ca-text-secondary">
                     {result.category} · SKU {result.sku}
                   </p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <p className="font-bold text-primary">{result.formattedPrice}</p>
+                  <p className="font-black text-ca-navy-950">{result.formattedPrice}</p>
                   <StockDot status={result.stockStatus} />
                 </div>
               </button>
             ))}
 
-            <div className="border-t border-border px-4 py-2">
+            <div className="border-t border-ca-border px-4 py-2">
               <button
                 type="submit"
-                className="w-full text-left text-xs font-semibold text-primary hover:underline"
+                className="w-full text-left text-xs font-bold text-ca-blue-700 hover:underline"
               >
                 Ver todos los resultados para &ldquo;{query}&rdquo; →
               </button>
@@ -244,7 +266,11 @@ export function SearchAutocomplete() {
 
       <button
         type="submit"
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
+        className={
+          isHero
+            ? "inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
+            : "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-ca-navy-950 px-3 text-sm font-black text-white transition hover:bg-ca-navy-800"
+        }
       >
         <Search className="h-4 w-4" />
         Buscar
@@ -255,10 +281,10 @@ export function SearchAutocomplete() {
 
 function StockDot({ status }: { status: string }) {
   if (status === "Disponible") {
-    return <span className="mt-0.5 block text-xs font-semibold text-success">{status}</span>;
+    return <span className="mt-0.5 block text-xs font-bold text-ca-success">{status}</span>;
   }
   if (status === "Últimas unidades") {
-    return <span className="mt-0.5 block text-xs font-semibold text-warning">{status}</span>;
+    return <span className="mt-0.5 block text-xs font-bold text-amber-600">{status}</span>;
   }
-  return <span className="mt-0.5 block text-xs font-semibold text-danger">{status}</span>;
+  return <span className="mt-0.5 block text-xs font-bold text-red-500">{status}</span>;
 }

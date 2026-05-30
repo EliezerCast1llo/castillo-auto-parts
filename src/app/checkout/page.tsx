@@ -10,7 +10,7 @@ import { createGuestOrder } from "./actions";
 
 export const metadata = {
   title: "Finalizar compra | Castillo Auto Parts",
-  description: "Finalizar compra como invitado en Castillo Auto Parts.",
+  description: "Finalizar compra en Castillo Auto Parts.",
 };
 
 export const dynamic = "force-dynamic";
@@ -27,23 +27,26 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const statusMessage = getStatusMessage(status);
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <SiteHeader />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <Link href="/cart" className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
+      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        <Link
+          href="/cart"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
+        >
           <ArrowLeft className="h-4 w-4" />
           Volver al carrito
         </Link>
 
-        <section className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          {/* Formulario */}
           <div className="space-y-4">
-            <div className="rounded-md border border-border bg-card p-5">
-              <p className="text-sm font-semibold text-success">Compra de invitado</p>
-              <h1 className="mt-1 text-2xl font-bold text-primary">Datos de entrega y pago</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Completa tus datos para confirmar la compra. En este MVP simularemos el pago en línea para dejar la orden lista para entrega.
+            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+                Finalizar compra
               </p>
+              <h1 className="mt-1 text-2xl font-black text-ca-navy-950">Datos de entrega y pago</h1>
             </div>
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
@@ -59,44 +62,54 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             )}
           </div>
 
-          <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+          {/* Resumen — sticky en desktop, visible debajo en mobile */}
+          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-premium)] lg:sticky lg:top-6">
             <div className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold text-primary">Resumen</h2>
+              <CreditCard className="h-5 w-5 text-ca-navy-950" strokeWidth={1.8} />
+              <h2 className="text-lg font-black text-ca-navy-950">Tu pedido</h2>
             </div>
 
-            <div className="mt-5 space-y-3">
+            <div className="mt-4 space-y-3">
               {cart.lines.map((line) => (
-                <div className="flex justify-between gap-3 text-sm" key={line.product.sku}>
-                  <div>
-                    <p className="font-semibold">{line.product.name}</p>
-                    <p className="text-muted-foreground">{line.quantity} x {formatCurrency(line.product.priceCents)}</p>
+                <div className="flex items-start justify-between gap-3 text-sm" key={line.product.sku}>
+                  <div className="min-w-0">
+                    <p className="font-bold text-ca-navy-950 truncate">{line.product.name}</p>
+                    <p className="text-ca-text-secondary">
+                      {line.quantity} × {formatCurrency(line.product.priceCents)}
+                    </p>
                   </div>
-                  <p className="font-bold text-primary">{formatCurrency(line.lineTotalCents)}</p>
+                  <p className="shrink-0 font-black text-ca-navy-950">
+                    {formatCurrency(line.lineTotalCents)}
+                  </p>
                 </div>
               ))}
             </div>
 
-            <dl className="mt-5 space-y-3 border-t border-border pt-5 text-sm">
-              <SummaryRow label="Productos" value={formatCurrency(cart.subtotalCents)} strong />
-            </dl>
+            <div className="mt-4 border-t border-ca-border pt-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-ca-text-secondary">Subtotal</span>
+                <span className="text-xl font-black text-ca-navy-950">
+                  {formatCurrency(cart.subtotalCents)}
+                </span>
+              </div>
+            </div>
 
-            <div className="mt-4 rounded-md bg-background p-3 text-sm">
-              <p className="font-semibold text-primary">Envío</p>
-              <p className="mt-1 text-muted-foreground">
+            <div className="mt-3 rounded-xl bg-ca-background p-3 text-sm">
+              <p className="font-bold text-ca-navy-950">Envío</p>
+              <p className="mt-0.5 text-ca-text-secondary">
                 Retiro gratis en {fulfillmentOptions.pickupLocation.name}
                 {fulfillmentOptions.deliveryZones.length > 0
-                  ? `; ${formatDeliveryZoneSummary(fulfillmentOptions.deliveryZones)}.`
-                  : "; envío local pendiente de configurar."}
+                  ? `; o envío ${formatDeliveryZoneSummary(fulfillmentOptions.deliveryZones)}.`
+                  : "."}
               </p>
             </div>
 
-            <div className="mt-4 flex gap-2 rounded-md bg-primary/5 p-3 text-sm font-semibold text-primary">
+            <div className="mt-3 flex gap-2 rounded-xl bg-ca-navy-950/5 p-3 text-sm font-semibold text-ca-navy-950">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              Los precios ya incluyen IVA.
+              Precios con IVA incluido (13%).
             </div>
           </aside>
-        </section>
+        </div>
       </div>
     </main>
   );
@@ -113,17 +126,17 @@ function CheckoutForm({
 }) {
   return (
     <form action={createGuestOrder} className="space-y-4">
-      <section className="rounded-md border border-border bg-card p-5">
-        <h2 className="text-lg font-bold text-primary">Cliente</h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+        <h2 className="text-base font-black text-ca-navy-950">Tus datos</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <CheckoutField autoComplete="name" label="Nombre completo" name="customerName" required />
           <CheckoutField autoComplete="email" label="Email" name="customerEmail" required type="email" />
           <CheckoutField autoComplete="tel" label="Teléfono" name="customerPhone" required />
         </div>
       </section>
 
-      <section className="rounded-md border border-border bg-card p-5">
-        <h2 className="text-lg font-bold text-primary">Entrega</h2>
+      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+        <h2 className="text-base font-black text-ca-navy-950">Método de entrega</h2>
         <CheckoutDeliveryFields
           deliveryZones={deliveryZones}
           pickupLocation={pickupLocation}
@@ -131,17 +144,23 @@ function CheckoutForm({
         />
       </section>
 
-      <section className="rounded-md border border-border bg-card p-5">
-        <h2 className="text-lg font-bold text-primary">Pago</h2>
-        <label className="mt-4 flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold">
-          <input className="h-4 w-4 accent-primary" defaultChecked name="paymentMethod" type="radio" value="online_card" />
-          Tarjeta en línea
+      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+        <h2 className="text-base font-black text-ca-navy-950">Pago</h2>
+        <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-ca-border bg-ca-background px-4 text-sm font-bold text-ca-navy-950">
+          <input
+            className="h-4 w-4 accent-ca-navy-950"
+            defaultChecked
+            name="paymentMethod"
+            type="radio"
+            value="online_card"
+          />
+          Tarjeta en línea (pago seguro)
         </label>
       </section>
 
-      <button className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white">
-        <PackageCheck className="h-4 w-4" />
-        Pagar en línea y confirmar orden
+      <button className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800">
+        <PackageCheck className="h-4 w-4" strokeWidth={2} />
+        Confirmar y pagar
       </button>
     </form>
   );
@@ -160,34 +179,40 @@ function CheckoutField({
   required?: boolean;
   type?: string;
 }) {
+  const id = `field-${name}`;
   return (
-    <label className="block text-sm font-semibold">
-      {label}
+    <div>
+      <label htmlFor={id} className="block text-sm font-bold text-ca-navy-950">
+        {label}
+      </label>
       <input
+        id={id}
         autoComplete={autoComplete}
-        className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
+        className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm text-ca-navy-950 outline-none focus:border-ca-navy-950"
         name={name}
         required={required}
         type={type}
       />
-    </label>
+    </div>
   );
 }
 
 function EmptyCheckout({ hasIssues }: { hasIssues: boolean }) {
   return (
-    <div className="rounded-md border border-border bg-card p-8 text-center">
-      <MapPin className="mx-auto h-10 w-10 text-primary" />
-      <h2 className="mt-4 text-xl font-bold text-primary">
-        {hasIssues ? "Ajusta tu carrito" : "Tu carrito está vacío"}
+    <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-[var(--ca-shadow-soft)]">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-ca-navy-950/5">
+        <MapPin className="h-8 w-8 text-ca-navy-950" strokeWidth={1.5} />
+      </div>
+      <h2 className="mt-4 text-xl font-black text-ca-navy-950">
+        {hasIssues ? "Ajusta tu carrito primero" : "Tu carrito está vacío"}
       </h2>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ca-text-secondary">
         {hasIssues
-          ? "Hay productos sin disponibilidad o cantidades superiores al stock."
-          : "Agrega repuestos antes de completar la compra."}
+          ? "Hay productos sin disponibilidad. Revisa tu carrito antes de continuar."
+          : "Agrega repuestos desde el catálogo para completar tu compra."}
       </p>
       <Link
-        className="mt-5 inline-flex h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
+        className="mt-5 inline-flex h-12 items-center justify-center rounded-[14px] bg-ca-navy-950 px-6 text-sm font-black text-white transition hover:bg-ca-navy-800"
         href={hasIssues ? "/cart" : "/catalog"}
       >
         {hasIssues ? "Volver al carrito" : "Ver catálogo"}
@@ -198,24 +223,14 @@ function EmptyCheckout({ hasIssues }: { hasIssues: boolean }) {
 
 function CheckoutNotice({ message, status }: { message: string; status: string }) {
   const isError = status !== "created";
-
   return (
     <div
-      className={`flex gap-2 rounded-md p-3 text-sm font-semibold ${
-        isError ? "bg-danger/10 text-danger" : "bg-success/10 text-success"
+      className={`flex gap-2 rounded-xl p-3 text-sm font-semibold ${
+        isError ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"
       }`}
     >
       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
       {message}
-    </div>
-  );
-}
-
-function SummaryRow({ label, strong, value }: { label: string; strong?: boolean; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className={strong ? "text-xl font-bold text-primary" : "font-semibold"}>{value}</dd>
     </div>
   );
 }
@@ -226,12 +241,10 @@ function formatDeliveryZoneSummary(zones: DeliveryZoneOption[]) {
 
 function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
-    coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura inicial.",
-    db_unavailable: "No pudimos crear la orden. Revisa que PostgreSQL esté activo.",
+    coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
+    db_unavailable: "No pudimos crear la orden. Intenta de nuevo.",
     invalid: "Revisa los datos del formulario.",
-    payment_unavailable: "No pudimos confirmar el pago en línea. Intenta nuevamente.",
+    payment_unavailable: "No pudimos confirmar el pago. Intenta nuevamente.",
   };
-
   return messages[status] ?? "";
 }
-

@@ -8,7 +8,6 @@ import { firstValue } from "@/lib/url-utils";
 import { loginWithCredentials, loginWithGoogle } from "./actions";
 
 export const dynamic = "force-dynamic";
-
 export const metadata = { title: "Iniciar sesión | Castillo Auto Parts" };
 
 type LoginPageProps = {
@@ -24,92 +23,104 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   if (session?.user) redirect(nextPath);
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <SiteHeader />
 
       <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md">
+          {/* Header */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-primary text-white">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)]">
               <LogIn className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-success">Tu cuenta</p>
-              <h1 className="text-2xl font-bold text-primary">Iniciar sesión</h1>
+              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">Tu cuenta</p>
+              <h1 className="text-2xl font-black text-ca-navy-950">Iniciar sesión</h1>
             </div>
           </div>
 
-          {errorMessage ? (
-            <div className="mt-4 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
-              {errorMessage}
-            </div>
-          ) : null}
+          <div className="mt-6 rounded-2xl border border-ca-border bg-white p-6 shadow-[var(--ca-shadow-premium)]">
+            {errorMessage ? (
+              <div className="mb-5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">
+                {errorMessage}
+              </div>
+            ) : null}
 
-          {/* Google */}
-          <form action={loginWithGoogle} className="mt-6">
-            <input type="hidden" name="next" value={nextPath} />
-            <button
-              type="submit"
-              className="inline-flex h-11 w-full items-center justify-center gap-3 rounded-md border border-border bg-card px-4 text-sm font-semibold text-primary transition hover:bg-background"
-            >
-              <GoogleIcon />
-              Continuar con Google
-            </button>
-          </form>
-
-          <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs font-semibold text-muted-foreground">o con tu correo</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          {/* Credentials */}
-          <form action={loginWithCredentials} className="space-y-4">
-            <input type="hidden" name="next" value={nextPath} />
-
-            <label className="block text-sm font-semibold">
-              Correo electrónico
-              <input
-                name="email"
-                required
-                type="email"
-                autoComplete="email"
-                className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-              />
-            </label>
-
-            <label className="block text-sm font-semibold">
-              Contraseña
-              <input
-                name="password"
-                required
-                type="password"
-                autoComplete="current-password"
-                className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-              />
-            </label>
-
-            <div className="flex justify-end">
-              <Link
-                href="/auth/forgot-password"
-                className="text-xs font-semibold text-primary hover:underline"
+            {/* Google */}
+            <form action={loginWithGoogle}>
+              <input type="hidden" name="next" value={nextPath} />
+              <button
+                type="submit"
+                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
               >
-                ¿Olvidaste tu contraseña?
-              </Link>
+                <GoogleIcon />
+                Continuar con Google
+              </button>
+            </form>
+
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-ca-border" />
+              <span className="text-xs font-bold text-ca-text-secondary">o con tu correo</span>
+              <div className="h-px flex-1 bg-ca-border" />
             </div>
 
-            <button
-              type="submit"
-              className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
-            >
-              Entrar
-            </button>
-          </form>
+            {/* Credentials */}
+            <form action={loginWithCredentials} className="space-y-4">
+              <input type="hidden" name="next" value={nextPath} />
 
-          <p className="mt-5 text-center text-sm text-muted-foreground">
+              <div>
+                <label htmlFor="email" className="block text-sm font-bold text-ca-navy-950">
+                  Correo electrónico
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  required
+                  type="email"
+                  autoComplete="email"
+                  className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm outline-none focus:border-ca-navy-950"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-bold text-ca-navy-950">
+                  Contraseña
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  required
+                  type="password"
+                  autoComplete="current-password"
+                  className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm outline-none focus:border-ca-navy-950"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs font-bold text-ca-blue-700 hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+
+              <button
+                type="submit"
+                className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800"
+              >
+                Entrar
+              </button>
+            </form>
+          </div>
+
+          <p className="mt-5 text-center text-sm text-ca-text-secondary">
             ¿No tienes cuenta?{" "}
-            <Link href={`/auth/register?next=${encodeURIComponent(nextPath)}`} className="font-semibold text-primary hover:underline">
-              Crear cuenta
+            <Link
+              href={`/auth/register?next=${encodeURIComponent(nextPath)}`}
+              className="font-bold text-ca-blue-700 hover:underline"
+            >
+              Crear cuenta gratis
             </Link>
           </p>
         </div>
@@ -121,7 +132,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 function getErrorMessage(estado: string | undefined) {
   const messages: Record<string, string> = {
     invalid: "Email o contraseña incorrectos.",
-    oauth_error: "Ocurrió un error al conectar con Google. Intenta de nuevo.",
+    oauth_error: "Error al conectar con Google. Intenta de nuevo.",
+    password_reset: "Contraseña restablecida. Inicia sesión con tu nueva contraseña.",
   };
   return messages[estado ?? ""] ?? "";
 }

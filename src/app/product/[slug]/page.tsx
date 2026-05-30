@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, MessageCircle, ShoppingCart, Truck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, MessageCircle, ShoppingCart, Truck } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
@@ -17,9 +17,7 @@ import { formatCurrency } from "@/lib/money";
 export const dynamic = "force-dynamic";
 
 type ProductPageProps = {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
@@ -30,11 +28,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getCatalogProductBySlug(slug);
 
-  if (!product) {
-    return {
-      title: "Producto no encontrado | Castillo Auto Parts",
-    };
-  }
+  if (!product) return { title: "Producto no encontrado | Castillo Auto Parts" };
 
   return {
     title: `${product.name} | Castillo Auto Parts`,
@@ -46,25 +40,31 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getCatalogProductBySlug(slug);
 
-  if (!product) {
-    notFound();
-  }
+  if (!product) notFound();
 
   const relatedProducts = await getRelatedCatalogProducts(product);
   const isAvailable = product.stockStatus !== "No disponible";
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <SiteHeader />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <Link href="/catalog" className="text-sm font-semibold text-primary">
+      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <Link
+          href="/catalog"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
+        >
+          <ArrowLeft className="h-4 w-4" />
           Volver al catálogo
         </Link>
 
-        <section className="mt-5 grid gap-6 lg:grid-cols-[1fr_420px]">
-          <div className="space-y-5">
-            <div className="rounded-md border border-border bg-card p-4">
+        {/* Cuerpo principal — aside va abajo en mobile, lateral en lg */}
+        <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px]">
+
+          {/* Panel izquierdo: galería + descripción + compatibilidad */}
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
               <ProductGallery
                 images={product.images}
                 productName={product.name}
@@ -72,105 +72,118 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             </div>
 
-            <div className="rounded-md border border-border bg-card p-5">
-              <h2 className="text-lg font-semibold text-primary">Descripción</h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">{product.description}</p>
+            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+              <h2 className="text-base font-black text-ca-navy-950">Descripción</h2>
+              <p className="mt-3 text-sm leading-6 text-ca-text-secondary">{product.description}</p>
             </div>
 
-            <div className="rounded-md border border-border bg-card p-5">
-              <h2 className="text-lg font-semibold text-primary">Compatibilidad</h2>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {product.compatibleVehicles.map((vehicle) => (
-                  <div
-                    key={vehicle}
-                    className="flex min-h-11 items-center gap-2 rounded-md bg-background px-3 text-sm"
-                  >
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                    {vehicle}
-                  </div>
-                ))}
+            {product.compatibleVehicles.length > 0 ? (
+              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+                <h2 className="text-base font-black text-ca-navy-950">Compatibilidad verificada</h2>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {product.compatibleVehicles.map((vehicle) => (
+                    <div
+                      key={vehicle}
+                      className="flex min-h-11 items-center gap-2 rounded-xl bg-ca-background px-3 text-sm font-medium text-ca-text-primary"
+                    >
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-ca-success" />
+                      {vehicle}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
+
+            {product.technicalDetails.length > 0 ? (
+              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+                <h2 className="text-base font-black text-ca-navy-950">Detalles técnicos</h2>
+                <ul className="mt-3 space-y-2">
+                  {product.technicalDetails.map((detail) => (
+                    <li key={detail} className="flex items-start gap-2 text-sm text-ca-text-secondary">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
+                      {detail}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
 
-          <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+          {/* Panel derecho: precio + compra (en mobile va después de la galería) */}
+          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-premium)]">
+            {/* Categoría + título + badge */}
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold text-success">{product.category}</p>
-                <h1 className="mt-1 text-2xl font-bold text-primary">{product.name}</h1>
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+                  {product.category}
+                </p>
+                <h1 className="mt-1 text-2xl font-black leading-tight text-ca-navy-950">
+                  {product.name}
+                </h1>
               </div>
               <StockBadge status={product.stockStatus} />
             </div>
 
-            <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
+            {/* Datos del producto */}
+            <dl className="mt-4 grid grid-cols-2 gap-2.5 text-sm">
               <InfoItem label="Marca" value={product.brand} />
-              <InfoItem label="Parte" value={product.partNumber} />
+              <InfoItem label="N.º parte" value={product.partNumber} />
               <InfoItem label="SKU" value={product.sku} />
-              <InfoItem label="Stock" value={`${product.stockQuantity} unidades`} />
+              <InfoItem label="Stock" value={`${product.stockQuantity} ud.`} />
             </dl>
 
-            <div className="mt-5 border-t border-border pt-5">
-              <p className="text-sm font-semibold text-muted-foreground">Precio con IVA incluido</p>
-              <p className="mt-1 text-3xl font-bold text-primary">
+            {/* Precio */}
+            <div className="mt-5 rounded-xl bg-ca-background px-4 py-3">
+              <p className="text-xs font-bold text-ca-text-secondary">Precio con IVA incluido</p>
+              <p className="mt-1 text-3xl font-black text-ca-navy-950">
                 {formatCurrency(product.priceCents)}
               </p>
             </div>
 
-            <form action={addCartItem} className="mt-5 grid gap-3">
+            {/* Acción principal */}
+            <form action={addCartItem} className="mt-4 space-y-3">
               <input name="sku" type="hidden" value={product.sku} />
-              <label className="text-sm font-semibold">
+              <label className="block text-sm font-bold text-ca-navy-950">
                 Cantidad
                 <div className="mt-2">
                   <QuantityStepper disabled={!isAvailable} max={product.stockQuantity} />
                 </div>
               </label>
               <button
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white disabled:bg-muted disabled:text-muted-foreground"
+                className="inline-flex h-13 h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800 disabled:cursor-not-allowed disabled:bg-ca-text-secondary/30 disabled:shadow-none"
                 disabled={!isAvailable}
               >
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCart className="h-4 w-4" strokeWidth={2} />
                 {isAvailable ? "Agregar al carrito" : "No disponible"}
               </button>
             </form>
 
-            <div className="mt-3 grid gap-3">
-              <button
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-semibold text-primary"
-                type="button"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Validar con asesor
-              </button>
-            </div>
+            <button
+              className="mt-2.5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
+              type="button"
+            >
+              <MessageCircle className="h-4 w-4 text-ca-text-secondary" />
+              Validar con asesor
+            </button>
 
-            <div className="mt-5 rounded-md bg-background p-4 text-sm text-muted-foreground">
-              <div className="flex gap-2 font-semibold text-foreground">
-                <Truck className="h-4 w-4 text-success" />
-                Retiro en bodega o envío local
+            {/* Envío */}
+            <div className="mt-4 flex items-start gap-3 rounded-xl bg-ca-background p-4 text-sm">
+              <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
+              <div>
+                <p className="font-bold text-ca-navy-950">Retiro en bodega o envío local</p>
+                <p className="mt-1 text-ca-text-secondary">
+                  Entrega en San Salvador y Santa Tecla. Tarifa confirmada al pagar.
+                </p>
               </div>
-              <p className="mt-2">
-                Entrega inicial en San Salvador y Santa Tecla. La tarifa final se validará al pagar.
-              </p>
-            </div>
-
-            <div className="mt-5">
-              <h2 className="text-base font-semibold text-primary">Detalles técnicos</h2>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                {product.technicalDetails.map((detail) => (
-                  <li key={detail} className="flex gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                    {detail}
-                  </li>
-                ))}
-              </ul>
             </div>
           </aside>
-        </section>
+        </div>
 
+        {/* Productos relacionados */}
         {relatedProducts.length > 0 ? (
-          <section className="mt-8">
-            <h2 className="text-xl font-bold text-primary">Productos relacionados</h2>
-            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <section className="mt-10">
+            <h2 className="text-xl font-black text-ca-navy-950">Productos relacionados</h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {relatedProducts.map((item) => (
                 <ProductCard key={item.sku} product={item} />
               ))}
@@ -184,9 +197,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-background p-3">
-      <dt className="text-xs font-semibold uppercase text-muted-foreground">{label}</dt>
-      <dd className="mt-1 font-semibold">{value}</dd>
+    <div className="rounded-xl bg-ca-background p-3">
+      <dt className="text-[11px] font-bold uppercase tracking-wider text-ca-text-secondary">{label}</dt>
+      <dd className="mt-0.5 text-sm font-bold text-ca-navy-950">{value}</dd>
     </div>
   );
 }
