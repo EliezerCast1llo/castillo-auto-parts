@@ -97,7 +97,7 @@ export default async function AccountAddressesPage({ searchParams }: Props) {
                       </p>
                       {address.deliveryNotes ? (
                         <p className="mt-1 text-xs italic text-ca-text-secondary">
-                          "{address.deliveryNotes}"
+                          &ldquo;{address.deliveryNotes}&rdquo;
                         </p>
                       ) : null}
                     </div>

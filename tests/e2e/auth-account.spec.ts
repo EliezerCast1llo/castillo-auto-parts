@@ -15,7 +15,7 @@ function uniqueEmail(prefix = "qa") {
   return `${prefix}-${Date.now()}@e2e.castilloautoparts.com`;
 }
 
-async function registerUser(page: Page, email: string, password = "testpassword123") {
+async function registerUser(page: Page, email: string, password = "TestPassword123!") {
   await page.goto("/auth/register");
   await page.getByLabel("Nombre completo").fill("Cliente Test E2E");
   await page.getByLabel("Correo electrónico").fill(email);
@@ -30,7 +30,7 @@ async function registerUser(page: Page, email: string, password = "testpassword1
   await expect(page).toHaveURL(/\/account/);
 }
 
-async function loginUser(page: Page, email: string, password = "testpassword123") {
+async function loginUser(page: Page, email: string, password = "TestPassword123!") {
   await page.goto("/auth/login");
   await page.getByLabel("Correo electrónico").fill(email);
   await page.getByLabel("Contraseña").fill(password);
@@ -48,8 +48,8 @@ test("customer can register with email and password", async ({ page }) => {
   await page.goto("/auth/register");
   await page.getByLabel("Nombre completo").fill("Cliente Registro");
   await page.getByLabel("Correo electrónico").fill(email);
-  await page.getByLabel("Contraseña").first().fill("testpassword123");
-  await page.getByLabel("Confirmar contraseña").fill("testpassword123");
+  await page.getByLabel("Contraseña").first().fill("TestPassword123!");
+  await page.getByLabel("Confirmar contraseña").fill("TestPassword123!");
   await page.getByRole("button", { name: "Crear cuenta" }).click();
 
   await expect(page).toHaveURL(/\/account/);
@@ -138,8 +138,8 @@ test("register shows error with duplicate email", async ({ page }) => {
   await page.goto("/auth/register");
   await page.getByLabel("Nombre completo").fill("Otro nombre");
   await page.getByLabel("Correo electrónico").fill(email);
-  await page.getByLabel("Contraseña").first().fill("testpassword123");
-  await page.getByLabel("Confirmar contraseña").fill("testpassword123");
+  await page.getByLabel("Contraseña").first().fill("TestPassword123!");
+  await page.getByLabel("Confirmar contraseña").fill("TestPassword123!");
   await page.getByRole("button", { name: "Crear cuenta" }).click();
 
   await expect(page.getByText("Ya existe una cuenta con ese correo")).toBeVisible();

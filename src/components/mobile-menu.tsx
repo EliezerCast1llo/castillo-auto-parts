@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Menu, ShoppingCart, User, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 type MobileMenuProps = {
@@ -25,10 +25,13 @@ export function MobileMenu({
   variant = "dark",
 }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  // Esperar a que el DOM esté disponible antes de usar createPortal
-  useEffect(() => { setMounted(true); }, []);
+  // useSyncExternalStore devuelve false en SSR, true en cliente — sin setState en effect
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
