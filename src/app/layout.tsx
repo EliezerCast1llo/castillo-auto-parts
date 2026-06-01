@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Barlow_Condensed, Outfit } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "600", "700", "800", "900"],
+  variable: "--font-display",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-sans",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://castilloautoparts.com";
@@ -46,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${barlowCondensed.variable} ${outfit.variable} font-sans antialiased`}>{children}</body>
     </html>
   );
 }

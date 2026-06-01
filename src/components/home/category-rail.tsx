@@ -6,56 +6,79 @@ const categories = [
     icon: Gauge,
     label: "Amortiguadores",
     href: "/catalog?q=amortiguadores",
+    color: "text-ca-blue-700 bg-ca-blue-700/[0.08]",
+    hoverColor: "group-hover:bg-ca-navy-900 group-hover:text-white",
   },
   {
     icon: Disc3,
     label: "Frenos",
     href: "/catalog?category=Frenos",
+    color: "text-danger bg-danger/[0.08]",
+    hoverColor: "group-hover:bg-danger group-hover:text-white",
   },
   {
     icon: Filter,
     label: "Filtros",
     href: "/catalog?category=Filtros",
+    color: "text-ca-gold-500 bg-ca-gold-400/[0.1]",
+    hoverColor: "group-hover:bg-ca-gold-500 group-hover:text-ca-navy-950",
   },
   {
     icon: BatteryCharging,
     label: "Baterías",
     href: "/catalog?q=batería",
+    color: "text-success bg-success/[0.08]",
+    hoverColor: "group-hover:bg-success group-hover:text-white",
   },
   {
     icon: PlugZap,
     label: "Eléctrico",
     href: "/catalog?q=eléctrico",
+    color: "text-ca-blue-600 bg-ca-blue-600/[0.08]",
+    hoverColor: "group-hover:bg-ca-blue-700 group-hover:text-white",
   },
   {
     icon: Settings,
     label: "Mantenimiento",
     href: "/catalog?q=mantenimiento",
+    color: "text-ca-navy-800 bg-ca-navy-950/[0.07]",
+    hoverColor: "group-hover:bg-ca-navy-900 group-hover:text-white",
   },
 ];
 
 export function CategoryQuickLinks() {
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+    <section className="animate-fade-up delay-150 rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-xl font-black text-ca-navy-950">Entradas rápidas al catálogo</h2>
-        <Link className="inline-flex shrink-0 items-center gap-2 text-sm font-black text-ca-blue-700" href="/catalog">
-          Ver todo el catálogo
-          <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
+        <div className="flex items-center gap-3">
+          <span className="h-5 w-1 rounded-full bg-ca-navy-950" />
+          <h2
+            className="text-xl text-ca-navy-950"
+            style={{ fontFamily: "var(--font-display), ui-sans-serif", fontWeight: 800, letterSpacing: "0.02em" }}
+          >
+            Explorar catálogo
+          </h2>
+        </div>
+        <Link
+          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
+          href="/catalog"
+        >
+          Ver todo
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
         </Link>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {categories.map((category) => (
           <Link
-            className="group flex min-h-24 flex-col items-center justify-center gap-3 rounded-[14px] border border-ca-border bg-ca-background p-3 text-center text-ca-navy-900 transition hover:-translate-y-0.5 hover:border-[#c3cfdd] hover:bg-white"
+            className="group flex min-h-[90px] flex-col items-center justify-center gap-2.5 rounded-[14px] border border-ca-border bg-ca-background p-3 text-center transition hover:-translate-y-0.5 hover:border-[#c3cfdd] hover:bg-white hover:shadow-[var(--ca-shadow-soft)]"
             href={category.href}
             key={category.label}
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-white text-ca-blue-700 shadow-[0_6px_18px_rgba(6,25,51,0.05)] transition group-hover:bg-ca-navy-900 group-hover:text-white">
-              <category.icon className="h-7 w-7" strokeWidth={1.8} />
+            <span className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${category.color} ${category.hoverColor}`}>
+              <category.icon className="h-6 w-6" strokeWidth={1.8} />
             </span>
-            <span className="line-clamp-2 max-w-full text-xs font-black leading-4 sm:text-[13px]">
+            <span className="text-xs font-black leading-4 text-ca-navy-950 sm:text-[13px]">
               {category.label}
             </span>
           </Link>
