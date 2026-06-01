@@ -6,17 +6,17 @@ import {
   Info,
   PackageCheck,
   ShoppingCart,
-  Trash2,
   Truck,
 } from "lucide-react";
 import { ProductVisual } from "@/components/product/product-visual";
-import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
+import { CartQuantityControl } from "@/components/cart/cart-quantity-control";
+import { CartNotice } from "@/components/cart/cart-notice";
 import { SiteHeader } from "@/components/site-header";
 import { getGuestCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
-import { createStockAlert, removeCartItem, updateCartItem } from "./actions";
+import { createStockAlert } from "./actions";
 
 export const metadata = {
   title: "Tu carrito | Castillo Auto Parts",
@@ -33,8 +33,7 @@ type CartPageProps = {
 export default async function CartPage({ searchParams }: CartPageProps) {
   const cart = await getGuestCart();
   const params = searchParams ? await searchParams : {};
-  const status = firstValue(params.estado);
-  const statusMessage = getStatusMessage(status);
+  const status = firstValue(params.estado) ?? "";
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
@@ -68,7 +67,7 @@ export default async function CartPage({ searchParams }: CartPageProps) {
               ) : null}
             </div>
 
-            {statusMessage ? <CartNotice status={status} message={statusMessage} /> : null}
+            {status ? <CartNotice status={status} /> : null}
 
             {cart.lines.length > 0 ? (
               <div className="space-y-3">
@@ -173,31 +172,13 @@ function CartLineItem({ line }: { line: CartLine }) {
       </div>
 
       {/* Precio + stepper + acciones */}
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-ca-border pt-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <form action={updateCartItem} className="flex items-center gap-2">
-            <input name="sku" type="hidden" value={line.product.sku} />
-            <QuantityStepper
-              defaultValue={line.quantity}
-              disabled={isUnavailable}
-              max={line.availableQuantity}
-            />
-            <button
-              className="h-10 rounded-xl bg-ca-navy-950 px-4 text-sm font-black text-white transition hover:bg-ca-navy-800 disabled:bg-ca-text-secondary/30"
-              disabled={isUnavailable}
-            >
-              Actualizar
-            </button>
-          </form>
-
-          <form action={removeCartItem}>
-            <input name="sku" type="hidden" value={line.product.sku} />
-            <button className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border px-3 text-sm font-bold text-red-500 transition hover:bg-red-50">
-              <Trash2 className="h-3.5 w-3.5" />
-              Eliminar
-            </button>
-          </form>
-        </div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-ca-border pt-4">
+        <CartQuantityControl
+          sku={line.product.sku}
+          initialQuantity={line.quantity}
+          max={line.availableQuantity}
+          disabled={isUnavailable}
+        />
 
         <div className="text-right">
           <p className="text-xs font-semibold text-ca-text-secondary">
@@ -296,25 +277,6 @@ function EmptyCart() {
   );
 }
 
-function CartNotice({ message, status }: { message: string; status: string }) {
-  const isError = [
-    "stock_alert_db_unavailable",
-    "stock_alert_invalid",
-    "stock_alert_not_found",
-    "unavailable",
-  ].includes(status);
-
-  return (
-    <div
-      className={`flex gap-2 rounded-xl p-3 text-sm font-semibold ${
-        isError ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"
-      }`}
-    >
-      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-      {message}
-    </div>
-  );
-}
 
 function SummaryRow({ label, strong, value }: { label: string; strong?: boolean; value: string }) {
   return (
@@ -327,25 +289,6 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
   );
 }
 
-function getStatusMessage(status: string) {
-  const messages: Record<string, string> = {
-    added: "Producto agregado al carrito.",
-    empty_cart: "Agrega productos antes de continuar.",
-    invalid: "No pudimos procesar esa acción. Intenta de nuevo.",
-    quantity_adjusted: "Ajustamos la cantidad al stock disponible.",
-    removed: "Producto eliminado.",
-    stock_alert_created: "Listo. Te avisamos cuando haya disponibilidad.",
-    stock_alert_db_unavailable: "No pudimos guardar el aviso. Inténtalo más tarde.",
-    stock_alert_invalid: "Ingresa un email o teléfono válido.",
-    stock_alert_not_found: "No encontramos ese producto.",
-    stock_alert_rate_limited: "Demasiados intentos. Intenta en unos minutos.",
-    stock_issue: "Revisa disponibilidad antes de continuar.",
-    unavailable: "Este producto ya no está disponible.",
-    updated: "Carrito actualizado.",
-  };
-
-  return messages[status] ?? "";
-}
 
 function formatUnits(quantity: number) {
   return quantity === 1 ? "1 unidad" : `${quantity} unidades`;

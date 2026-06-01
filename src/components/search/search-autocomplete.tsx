@@ -168,114 +168,173 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
 
   const isHero = variant === "hero";
 
+  if (isHero) {
+    return (
+      <form
+        action="/catalog"
+        className="relative z-40 flex items-center gap-2 rounded-[18px] border border-white/15 bg-white p-2 shadow-[var(--ca-shadow-premium)]"
+        onSubmit={handleSubmit}
+      >
+        <div className="relative flex-1">
+          <label className="flex min-h-12 items-center gap-3 rounded-[12px] bg-ca-background px-4">
+            <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" strokeWidth={1.8} />
+            <span className="sr-only">Buscar repuesto</span>
+            <input
+              ref={inputRef}
+              aria-autocomplete="list"
+              aria-controls={isOpen ? "search-dropdown" : undefined}
+              aria-expanded={isOpen}
+              aria-label="Buscar repuestos"
+              autoComplete="off"
+              className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-ca-text-secondary/60"
+              name="q"
+              placeholder="Busca por repuesto, SKU o vehículo…"
+              role="combobox"
+              type="search"
+              value={query}
+              onChange={(e) => handleQueryChange(e.target.value)}
+              onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+              onKeyDown={handleKeyDown}
+            />
+            {isLoading ? (
+              <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-ca-navy-950 border-t-transparent" />
+            ) : null}
+          </label>
+
+          {isOpen && results.length > 0 ? (
+            <div
+              ref={dropdownRef}
+              id="search-dropdown"
+              role="listbox"
+              className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-[var(--ca-shadow-premium)]"
+            >
+              <SearchDropdownItems
+                results={results}
+                activeIndex={activeIndex}
+                query={query}
+                onSelect={handleSelect}
+                onHover={setActiveIndex}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        <button
+          type="submit"
+          className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[12px] bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
+        >
+          <Search className="h-4 w-4" strokeWidth={2} />
+          <span>Buscar</span>
+        </button>
+      </form>
+    );
+  }
+
+  /* ── Variante default (header) ─────────────────────────────── */
   return (
     <form
       action="/catalog"
-      className={
-        isHero
-          ? "relative z-40 grid gap-3 rounded-[18px] border border-white/15 bg-white p-3 shadow-[var(--ca-shadow-premium)] md:grid-cols-[1fr_172px]"
-          : "grid gap-3 rounded-xl border border-ca-border bg-white p-2 md:grid-cols-[1fr_120px]"
-      }
+      className="relative flex h-10 items-center rounded-full border border-ca-border bg-ca-background pl-4 pr-1 transition focus-within:border-ca-navy-800 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(8,36,71,0.08)]"
       onSubmit={handleSubmit}
     >
-      <div className="relative">
-        <label
-          className={
-            isHero
-              ? "flex min-h-14 items-center gap-3 rounded-[14px] border border-ca-border bg-white px-4"
-              : "flex min-h-10 items-center gap-2 rounded-lg bg-ca-background px-3"
-          }
-        >
-          <Search
-            className={isHero ? "h-5 w-5 shrink-0 text-ca-navy-900" : "h-4 w-4 shrink-0 text-ca-text-secondary"}
-            strokeWidth={1.8}
-          />
-          <span className="sr-only">Buscar repuesto</span>
-          <input
-            ref={inputRef}
-            aria-autocomplete="list"
-            aria-controls={isOpen ? "search-dropdown" : undefined}
-            aria-expanded={isOpen}
-            aria-label="Buscar repuestos"
-            autoComplete="off"
-            className={
-              isHero
-                ? "w-full bg-transparent text-base font-medium outline-none placeholder:text-ca-text-secondary/72"
-                : "w-full bg-transparent text-sm outline-none placeholder:text-ca-text-secondary/60"
-            }
-            name="q"
-            placeholder="Busca por repuesto, SKU o vehículo"
-            role="combobox"
-            type="search"
-            value={query}
-            onChange={(e) => handleQueryChange(e.target.value)}
-            onFocus={() => { if (results.length > 0) setIsOpen(true); }}
-            onKeyDown={handleKeyDown}
-          />
-          {isLoading ? (
-            <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-ca-navy-950 border-t-transparent" />
-          ) : null}
-        </label>
-
-        {isOpen && results.length > 0 ? (
-          <div
-            ref={dropdownRef}
-            id="search-dropdown"
-            role="listbox"
-            className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-ca-border bg-white shadow-[var(--ca-shadow-premium)]"
-          >
-            {results.map((result, index) => (
-              <button
-                key={result.slug}
-                type="button"
-                role="option"
-                aria-selected={index === activeIndex}
-                className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-ca-background ${
-                  index === activeIndex ? "bg-ca-background" : ""
-                }`}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleSelect(result);
-                }}
-                onMouseEnter={() => setActiveIndex(index)}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-ca-navy-950">{result.name}</p>
-                  <p className="mt-0.5 text-xs text-ca-text-secondary">
-                    {result.category} · SKU {result.sku}
-                  </p>
-                </div>
-                <div className="shrink-0 text-right">
-                  <p className="font-black text-ca-navy-950">{result.formattedPrice}</p>
-                  <StockDot status={result.stockStatus} />
-                </div>
-              </button>
-            ))}
-
-            <div className="border-t border-ca-border px-4 py-2">
-              <button
-                type="submit"
-                className="w-full text-left text-xs font-bold text-ca-blue-700 hover:underline"
-              >
-                Ver todos los resultados para &ldquo;{query}&rdquo; →
-              </button>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
+      <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" strokeWidth={1.8} />
+      <span className="sr-only">Buscar repuesto</span>
+      <input
+        ref={inputRef}
+        aria-autocomplete="list"
+        aria-controls={isOpen ? "search-dropdown" : undefined}
+        aria-expanded={isOpen}
+        aria-label="Buscar repuestos"
+        autoComplete="off"
+        className="min-w-0 flex-1 bg-transparent px-2.5 text-sm outline-none placeholder:text-ca-text-secondary/55"
+        name="q"
+        placeholder="Busca por repuesto, SKU…"
+        role="combobox"
+        type="search"
+        value={query}
+        onChange={(e) => handleQueryChange(e.target.value)}
+        onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+        onKeyDown={handleKeyDown}
+      />
+      {isLoading ? (
+        <span className="mr-2 h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-ca-navy-950 border-t-transparent" />
+      ) : null}
       <button
         type="submit"
-        className={
-          isHero
-            ? "inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
-            : "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-ca-navy-950 px-3 text-sm font-black text-white transition hover:bg-ca-navy-800"
-        }
+        aria-label="Buscar"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ca-navy-950 text-white transition hover:bg-ca-navy-800"
       >
-        <Search className="h-4 w-4" />
-        Buscar
+        <Search className="h-3.5 w-3.5" strokeWidth={2.2} />
       </button>
+
+      {isOpen && results.length > 0 ? (
+        <div
+          ref={dropdownRef}
+          id="search-dropdown"
+          role="listbox"
+          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-[var(--ca-shadow-premium)]"
+        >
+          <SearchDropdownItems
+            results={results}
+            activeIndex={activeIndex}
+            query={query}
+            onSelect={handleSelect}
+            onHover={setActiveIndex}
+          />
+        </div>
+      ) : null}
     </form>
+  );
+}
+
+function SearchDropdownItems({
+  results,
+  activeIndex,
+  query,
+  onSelect,
+  onHover,
+}: {
+  results: SearchResult[];
+  activeIndex: number;
+  query: string;
+  onSelect: (r: SearchResult) => void;
+  onHover: (i: number) => void;
+}) {
+  return (
+    <>
+      {results.map((result, index) => (
+        <button
+          key={result.slug}
+          type="button"
+          role="option"
+          aria-selected={index === activeIndex}
+          className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-ca-background ${
+            index === activeIndex ? "bg-ca-background" : ""
+          }`}
+          onMouseDown={(e) => { e.preventDefault(); onSelect(result); }}
+          onMouseEnter={() => onHover(index)}
+        >
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-bold text-ca-navy-950">{result.name}</p>
+            <p className="mt-0.5 text-xs text-ca-text-secondary">
+              {result.category} · SKU {result.sku}
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="font-black text-ca-navy-950">{result.formattedPrice}</p>
+            <StockDot status={result.stockStatus} />
+          </div>
+        </button>
+      ))}
+      <div className="border-t border-ca-border px-4 py-2.5">
+        <button
+          type="submit"
+          className="w-full text-left text-xs font-bold text-ca-blue-700 hover:underline"
+        >
+          Ver todos los resultados para &ldquo;{query}&rdquo; →
+        </button>
+      </div>
+    </>
   );
 }
 

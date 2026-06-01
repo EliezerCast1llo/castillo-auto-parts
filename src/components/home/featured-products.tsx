@@ -10,21 +10,38 @@ type FeaturedProductsProps = {
 
 export function FeaturedProducts({ catalogStatus, products }: FeaturedProductsProps) {
   return (
-    <section className="space-y-4">
+    <section className="animate-fade-up delay-200 space-y-5">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-black text-ca-navy-950">Productos destacados</h2>
+        <div className="flex items-center gap-3">
+          <span className="h-6 w-1 rounded-full bg-ca-gold-400" />
+          <div>
+            <h2
+              className="text-2xl text-ca-navy-950"
+              style={{ fontFamily: "var(--font-display), ui-sans-serif", fontWeight: 900, letterSpacing: "0.01em" }}
+            >
+              Productos destacados
+            </h2>
+          </div>
         </div>
-        <Link className="inline-flex items-center gap-2 text-sm font-black text-ca-blue-700" href="/catalog">
-          Ver todos los productos
-          <ArrowRight className="h-4 w-4" />
+        <Link
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
+          href="/catalog"
+        >
+          Ver todos
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
         </Link>
       </div>
 
       {products.length > 0 ? (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {products.slice(0, 4).map((product) => (
-            <ProductCard key={product.sku} product={product} />
+          {products.slice(0, 4).map((product, i) => (
+            <div
+              key={product.sku}
+              className="animate-scale-in"
+              style={{ animationDelay: `${0.25 + i * 0.08}s` }}
+            >
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
       ) : (

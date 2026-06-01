@@ -46,24 +46,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </div>
             ) : null}
 
-            {/* Google */}
-            <form action={loginWithGoogle}>
-              <input type="hidden" name="next" value={nextPath} />
-              <button
-                type="submit"
-                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
-              >
-                <GoogleIcon />
-                Continuar con Google
-              </button>
-            </form>
-
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-ca-border" />
-              <span className="text-xs font-bold text-ca-text-secondary">o con tu correo</span>
-              <div className="h-px flex-1 bg-ca-border" />
-            </div>
-
             {/* Credentials */}
             <form action={loginWithCredentials} className="space-y-4">
               <input type="hidden" name="next" value={nextPath} />
@@ -110,6 +92,24 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800"
               >
                 Entrar
+              </button>
+            </form>
+
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-ca-border" />
+              <span className="text-xs font-bold text-ca-text-secondary">o continúa con</span>
+              <div className="h-px flex-1 bg-ca-border" />
+            </div>
+
+            {/* Google */}
+            <form action={loginWithGoogle}>
+              <input type="hidden" name="next" value={nextPath} />
+              <button
+                type="submit"
+                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
+              >
+                <GoogleIcon />
+                Continuar con Google
               </button>
             </form>
           </div>
