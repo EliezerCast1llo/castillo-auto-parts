@@ -17,13 +17,24 @@ type Tile = {
   url: string;
 };
 
-export function CheckoutLocationPicker() {
+export type LocationInfo = {
+  road: string;
+  suburb: string;
+  city: string;
+  state: string;
+};
+
+type Props = {
+  onLocationFound?: (info: LocationInfo) => void;
+};
+
+export function CheckoutLocationPicker({ onLocationFound }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [zoom, setZoom] = useState(14);
   const [mapSize, setMapSize] = useState<MapSize>({ height: 280, width: 640 });
-  const [geoStatus, setGeoStatus] = useState("");
+  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const selectedLocation = getSelectedLocation(latitude, longitude);
   const center = selectedLocation ?? DEFAULT_CENTER;
   const tiles = useMemo(() => buildTiles(center, zoom, mapSize), [center, mapSize, zoom]);
@@ -43,19 +54,44 @@ export function CheckoutLocationPicker() {
     return () => resizeObserver.disconnect();
   }, []);
 
-  function useCurrentLocation() {
+  async function reverseGeocode(lat: number, lng: number) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=es`,
+        { headers: { "Accept-Language": "es" } },
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const addr = data.address ?? {};
+
+      const road = [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(", ");
+      const city =
+        addr.municipality ?? addr.city ?? addr.town ?? addr.village ?? addr.county ?? "";
+      const rawState: string = addr.state ?? addr.region ?? "";
+      const state = rawState.replace(/^Departamento de\s+/i, "");
+
+      onLocationFound?.({ road, suburb: addr.suburb ?? "", city, state });
+      setGeoStatus("ok");
+    } catch {
+      setGeoStatus("error");
+    }
+  }
+
+  function handleUseCurrentLocation() {
     if (!navigator.geolocation) {
-      setGeoStatus("Tu navegador no permite geolocalización.");
+      setGeoStatus("error");
       return;
     }
 
-    setGeoStatus("Solicitando ubicación...");
+    setGeoStatus("loading");
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        updateLocation(position.coords.latitude, position.coords.longitude);
-        setGeoStatus("Ubicación capturada.");
+        const { latitude: lat, longitude: lng } = position.coords;
+        updateLocation(lat, lng);
+        if (onLocationFound) reverseGeocode(lat, lng);
+        else setGeoStatus("ok");
       },
-      () => setGeoStatus("No pudimos tomar tu ubicación. Puedes mover el pin en el mapa."),
+      () => setGeoStatus("error"),
       { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 },
     );
   }
@@ -70,6 +106,7 @@ export function CheckoutLocationPicker() {
     const nextLocation = pointToLatLng(clickedPoint.x, clickedPoint.y, zoom);
 
     updateLocation(nextLocation.latitude, nextLocation.longitude);
+    if (onLocationFound) reverseGeocode(nextLocation.latitude, nextLocation.longitude);
   }
 
   function updateLocation(nextLatitude: number, nextLongitude: number) {
@@ -77,18 +114,23 @@ export function CheckoutLocationPicker() {
     setLongitude(formatCoordinate(nextLongitude));
   }
 
+  const statusText =
+    geoStatus === "loading"
+      ? "Obteniendo tu ubicación..."
+      : geoStatus === "ok"
+        ? "Ubicación capturada. Revisa los campos y ajusta si es necesario."
+        : geoStatus === "error"
+          ? "No pudimos obtener la ubicación. Puedes mover el pin manualmente."
+          : "Haz clic en el mapa o usa el botón para marcar el punto de entrega.";
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 className="font-bold text-primary">Ubicación exacta</h3>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Usa tu ubicación actual o marca el punto de entrega en el mapa.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">{statusText}</p>
         <button
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white"
-          onClick={useCurrentLocation}
+          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white disabled:opacity-60"
+          disabled={geoStatus === "loading"}
+          onClick={handleUseCurrentLocation}
           type="button"
         >
           <LocateFixed className="h-4 w-4" />
@@ -118,9 +160,9 @@ export function CheckoutLocationPicker() {
           <button
             aria-label="Acercar mapa"
             className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-primary shadow"
-            onClick={(event) => {
-              event.stopPropagation();
-              setZoom((currentZoom) => Math.min(currentZoom + 1, 18));
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoom((z) => Math.min(z + 1, 18));
             }}
             type="button"
           >
@@ -129,9 +171,9 @@ export function CheckoutLocationPicker() {
           <button
             aria-label="Alejar mapa"
             className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-primary shadow"
-            onClick={(event) => {
-              event.stopPropagation();
-              setZoom((currentZoom) => Math.max(currentZoom - 1, 11));
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoom((z) => Math.max(z - 1, 11));
             }}
             type="button"
           >
@@ -143,41 +185,16 @@ export function CheckoutLocationPicker() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="block text-sm font-semibold">
-          Latitud
-          <input
-            className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-            inputMode="decimal"
-            name="latitude"
-            onChange={(event) => setLatitude(event.target.value)}
-            placeholder="13.692900"
-            required
-            type="text"
-            value={latitude}
-          />
-        </label>
-        <label className="block text-sm font-semibold">
-          Longitud
-          <input
-            className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-            inputMode="decimal"
-            name="longitude"
-            onChange={(event) => setLongitude(event.target.value)}
-            placeholder="-89.218200"
-            required
-            type="text"
-            value={longitude}
-          />
-        </label>
-      </div>
-
+      {/* Coordenadas guardadas como hidden — el backend las usa para validar zona */}
+      <input name="latitude" type="hidden" value={latitude} />
+      <input name="longitude" type="hidden" value={longitude} />
       <input name="formattedAddress" type="hidden" value="" />
       <input name="placeId" type="hidden" value="" />
-      {geoStatus ? <p className="text-sm font-semibold text-muted-foreground">{geoStatus}</p> : null}
     </div>
   );
 }
+
+// ─── helpers de proyección de mapa ───────────────────────────────────────────
 
 function buildTiles(center: { latitude: number; longitude: number }, zoom: number, size: MapSize) {
   const centerPoint = latLngToPoint(center.latitude, center.longitude, zoom);
@@ -191,7 +208,6 @@ function buildTiles(center: { latitude: number; longitude: number }, zoom: numbe
   for (let tileX = startTileX; tileX <= endTileX; tileX += 1) {
     for (let tileY = startTileY; tileY <= endTileY; tileY += 1) {
       if (tileY < 0 || tileY >= maxTile) continue;
-
       const wrappedTileX = ((tileX % maxTile) + maxTile) % maxTile;
       tiles.push({
         left: tileX * TILE_SIZE - centerPoint.x + size.width / 2,
@@ -207,7 +223,6 @@ function buildTiles(center: { latitude: number; longitude: number }, zoom: numbe
 function latLngToPoint(latitude: number, longitude: number, zoom: number) {
   const scale = TILE_SIZE * 2 ** zoom;
   const sinLatitude = Math.sin((latitude * Math.PI) / 180);
-
   return {
     x: ((longitude + 180) / 360) * scale,
     y: (0.5 - Math.log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * Math.PI)) * scale,
@@ -219,16 +234,13 @@ function pointToLatLng(x: number, y: number, zoom: number) {
   const longitude = (x / scale) * 360 - 180;
   const mercator = Math.PI - (2 * Math.PI * y) / scale;
   const latitude = (180 / Math.PI) * Math.atan(Math.sinh(mercator));
-
   return { latitude, longitude };
 }
 
 function getSelectedLocation(latitude: string, longitude: string) {
   const parsedLatitude = Number(latitude);
   const parsedLongitude = Number(longitude);
-
   if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) return null;
-
   return { latitude: parsedLatitude, longitude: parsedLongitude };
 }
 

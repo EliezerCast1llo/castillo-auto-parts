@@ -1,11 +1,11 @@
 "use client";
 
-import { Info, MapPin } from "lucide-react";
+import { Info, MapPin, X } from "lucide-react";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/money";
 import type { FulfillmentMethod } from "@/lib/checkout";
 import type { DeliveryZoneOption, PickupLocationOption } from "@/lib/fulfillment";
-import { CheckoutLocationPicker } from "./checkout-location-picker";
+import { CheckoutLocationPicker, type LocationInfo } from "./checkout-location-picker";
 
 type SavedAddress = {
   id: string;
@@ -17,6 +17,13 @@ type SavedAddress = {
   deliveryNotes: string | null;
   latitude: string | null;
   longitude: string | null;
+};
+
+type DeliveryFields = {
+  addressLine1: string;
+  addressLine2: string;
+  deliveryZoneSlug: string;
+  deliveryNotes: string;
 };
 
 export function CheckoutDeliveryFields({
@@ -33,22 +40,54 @@ export function CheckoutDeliveryFields({
   subtotalCents: number;
 }) {
   const [method, setMethod] = useState<FulfillmentMethod>("PICKUP");
-  const [deliveryZoneSlug, setDeliveryZoneSlug] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState(
     savedAddresses.length > 0 ? savedAddresses[0].id : "",
   );
+  const [guestFields, setGuestFields] = useState<DeliveryFields>({
+    addressLine1: "",
+    addressLine2: "",
+    deliveryZoneSlug: "",
+    deliveryNotes: "",
+  });
+  const [showAddressModal, setShowAddressModal] = useState(false);
+
   const isDelivery = method === "LOCAL_DELIVERY";
-  const selectedZone = deliveryZones.find((zone) => zone.slug === deliveryZoneSlug);
-  const shippingCents = isDelivery ? (selectedZone ? selectedZone.feeCents : null) : 0;
-  const totalCents = subtotalCents + (shippingCents ?? 0);
   const hasSavedAddresses = !isGuest && savedAddresses.length > 0;
+
+  const selectedZone = deliveryZones.find((z) => z.slug === guestFields.deliveryZoneSlug);
   const selectedSavedAddress = savedAddresses.find((a) => a.id === selectedAddressId);
+  const savedZone = hasSavedAddresses
+    ? deliveryZones.find(
+        (z) => z.city.toLowerCase() === (selectedSavedAddress?.city ?? "").toLowerCase(),
+      )
+    : undefined;
+
+  const activeZone = hasSavedAddresses ? savedZone : selectedZone;
+  const shippingCents = isDelivery ? (activeZone ? activeZone.feeCents : null) : 0;
+  const totalCents = subtotalCents + (shippingCents ?? 0);
 
   function selectMethod(nextMethod: FulfillmentMethod) {
     setMethod(nextMethod);
-    if (nextMethod === "PICKUP") {
-      setDeliveryZoneSlug("");
-    }
+  }
+
+  function setGuestField(key: keyof DeliveryFields) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setGuestFields((prev) => ({ ...prev, [key]: e.target.value }));
+  }
+
+  function handleLocationFound(info: LocationInfo) {
+    setGuestFields((prev) => {
+      const matchedZone = deliveryZones.find(
+        (z) =>
+          z.city.toLowerCase() === info.city.toLowerCase() ||
+          z.name.toLowerCase() === info.city.toLowerCase(),
+      );
+      return {
+        ...prev,
+        addressLine1: info.road || prev.addressLine1,
+        deliveryZoneSlug: matchedZone?.slug ?? prev.deliveryZoneSlug,
+      };
+    });
   }
 
   return (
@@ -92,23 +131,41 @@ export function CheckoutDeliveryFields({
               deliveryZones={deliveryZones}
               selectedAddressId={selectedAddressId}
               selectedSavedAddress={selectedSavedAddress}
-              selectedZone={selectedZone}
-              setDeliveryZoneSlug={setDeliveryZoneSlug}
+              savedZone={savedZone}
               setSelectedAddressId={setSelectedAddressId}
             />
           ) : (
             <>
               <div className="grid gap-4 md:grid-cols-2">
-                <DeliveryField label="Dirección" name="addressLine1" required />
-                <DeliveryField label="Casa, local o referencia" name="addressLine2" />
+                <label className="block text-sm font-semibold md:col-span-2">
+                  Dirección
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
+                    name="addressLine1"
+                    onChange={setGuestField("addressLine1")}
+                    required
+                    type="text"
+                    value={guestFields.addressLine1}
+                  />
+                </label>
+                <label className="block text-sm font-semibold">
+                  Casa, local o referencia
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
+                    name="addressLine2"
+                    onChange={setGuestField("addressLine2")}
+                    type="text"
+                    value={guestFields.addressLine2}
+                  />
+                </label>
                 <label className="block text-sm font-semibold">
                   Municipio
                   <select
                     className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
                     name="deliveryZoneSlug"
-                    onChange={(event) => setDeliveryZoneSlug(event.target.value)}
+                    onChange={setGuestField("deliveryZoneSlug")}
                     required
-                    value={deliveryZoneSlug}
+                    value={guestFields.deliveryZoneSlug}
                   >
                     <option value="">Selecciona municipio</option>
                     {deliveryZones.map((zone) => (
@@ -134,11 +191,25 @@ export function CheckoutDeliveryFields({
                 <textarea
                   className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   name="deliveryNotes"
+                  onChange={setGuestField("deliveryNotes")}
                   placeholder="Indicaciones, horario preferido o referencia del lugar"
+                  value={guestFields.deliveryNotes}
                 />
               </label>
 
-              {isGuest ? <CheckoutLocationPicker /> : null}
+              {isGuest ? <CheckoutLocationPicker onLocationFound={handleLocationFound} /> : null}
+
+              {/* Botón que abre el modal de confirmación antes de continuar al pago */}
+              {isGuest && guestFields.addressLine1 && selectedZone ? (
+                <button
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-ca-border bg-ca-background text-sm font-bold text-ca-navy-950 transition hover:bg-white"
+                  onClick={() => setShowAddressModal(true)}
+                  type="button"
+                >
+                  <MapPin className="h-4 w-4" />
+                  Ver resumen de dirección
+                </button>
+              ) : null}
             </>
           )}
         </div>
@@ -159,7 +230,9 @@ export function CheckoutDeliveryFields({
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {pickupLocation.pickupInstructions}
                   </p>
-                  <p className="mt-3 text-sm font-semibold text-success">Costo de retiro: {formatCurrency(0)}</p>
+                  <p className="mt-3 text-sm font-semibold text-success">
+                    Costo de retiro: {formatCurrency(0)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -188,6 +261,17 @@ export function CheckoutDeliveryFields({
           <DeliveryTotal label="Total estimado" value={formatCurrency(totalCents)} strong />
         </div>
       </div>
+
+      {showAddressModal ? (
+        <DeliveryAddressModal
+          addressLine1={guestFields.addressLine1}
+          addressLine2={guestFields.addressLine2}
+          city={selectedZone?.city ?? ""}
+          department={selectedZone?.department ?? ""}
+          deliveryNotes={guestFields.deliveryNotes}
+          onClose={() => setShowAddressModal(false)}
+        />
+      ) : null}
     </>
   );
 }
@@ -197,28 +281,16 @@ function SavedAddressSelector({
   deliveryZones,
   selectedAddressId,
   selectedSavedAddress,
-  selectedZone,
-  setDeliveryZoneSlug,
+  savedZone,
   setSelectedAddressId,
 }: {
   addresses: SavedAddress[];
   deliveryZones: DeliveryZoneOption[];
   selectedAddressId: string;
   selectedSavedAddress: SavedAddress | undefined;
-  selectedZone: DeliveryZoneOption | undefined;
-  setDeliveryZoneSlug: (slug: string) => void;
+  savedZone: DeliveryZoneOption | undefined;
   setSelectedAddressId: (id: string) => void;
 }) {
-  function handleAddressChange(id: string) {
-    setSelectedAddressId(id);
-    const address = addresses.find((a) => a.id === id);
-    if (!address) return;
-    const matchedZone = deliveryZones.find(
-      (z) => z.city.toLowerCase() === address.city.toLowerCase(),
-    );
-    setDeliveryZoneSlug(matchedZone?.slug ?? "");
-  }
-
   return (
     <div className="space-y-4">
       <div>
@@ -237,7 +309,7 @@ function SavedAddressSelector({
                 checked={selectedAddressId === address.id}
                 className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
                 name="_savedAddressId"
-                onChange={() => handleAddressChange(address.id)}
+                onChange={() => setSelectedAddressId(address.id)}
                 type="radio"
                 value={address.id}
               />
@@ -261,7 +333,7 @@ function SavedAddressSelector({
           {selectedSavedAddress.addressLine2 ? (
             <input type="hidden" name="addressLine2" value={selectedSavedAddress.addressLine2} />
           ) : null}
-          <input type="hidden" name="deliveryZoneSlug" value={selectedZone?.slug ?? ""} />
+          <input type="hidden" name="deliveryZoneSlug" value={savedZone?.slug ?? ""} />
           {selectedSavedAddress.latitude ? (
             <input type="hidden" name="latitude" value={selectedSavedAddress.latitude} />
           ) : null}
@@ -284,25 +356,67 @@ function SavedAddressSelector({
   );
 }
 
-function DeliveryField({
-  label,
-  name,
-  required,
+function DeliveryAddressModal({
+  addressLine1,
+  addressLine2,
+  city,
+  department,
+  deliveryNotes,
+  onClose,
 }: {
-  label: string;
-  name: string;
-  required?: boolean;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  department: string;
+  deliveryNotes: string;
+  onClose: () => void;
 }) {
   return (
-    <label className="block text-sm font-semibold">
-      {label}
-      <input
-        className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-        name={name}
-        required={required}
-        type="text"
-      />
-    </label>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
+      <div className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 shrink-0 text-ca-navy-950" />
+            <h2 className="text-lg font-black text-ca-navy-950">Dirección de entrega</h2>
+          </div>
+          <button
+            aria-label="Cerrar"
+            className="rounded-md p-1 text-ca-text-secondary hover:bg-ca-background"
+            onClick={onClose}
+            type="button"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="mt-5 space-y-3 rounded-xl bg-ca-background p-4 text-sm">
+          <ModalRow label="Dirección" value={addressLine1} />
+          {addressLine2 ? <ModalRow label="Referencia" value={addressLine2} /> : null}
+          <ModalRow label="Municipio" value={city} />
+          <ModalRow label="Departamento" value={department} />
+          {deliveryNotes ? <ModalRow label="Notas" value={deliveryNotes} /> : null}
+        </div>
+
+        <p className="mt-3 text-sm text-muted-foreground">
+          ¿Algo incorrecto?{" "}
+          <button
+            className="font-semibold text-ca-navy-950 underline"
+            onClick={onClose}
+            type="button"
+          >
+            Editar dirección
+          </button>
+        </p>
+
+        <button
+          className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-[14px] border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
+          onClick={onClose}
+          type="button"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -318,7 +432,18 @@ function DeliveryTotal({
   return (
     <div className="rounded-md bg-card p-3">
       <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
-      <p className={strong ? "mt-1 text-lg font-bold text-primary" : "mt-1 font-semibold"}>{value}</p>
+      <p className={strong ? "mt-1 text-lg font-bold text-primary" : "mt-1 font-semibold"}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ModalRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="w-24 shrink-0 font-semibold text-ca-text-secondary">{label}</span>
+      <span className="font-medium text-ca-navy-950">{value}</span>
     </div>
   );
 }
