@@ -37,7 +37,6 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
   const [touched, setTouched] = useState({ name: false, email: false });
 
   const requirements = getRequirements(password, confirm);
-  const allMet = requirements.every((r) => r.met);
   const nameValid = isValidName(name);
   const emailValid = isValidEmail(email);
 
@@ -187,8 +186,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
 
       <button
         type="submit"
-        disabled={!allMet || !nameValid || !emailValid}
-        className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800 disabled:cursor-not-allowed disabled:bg-ca-text-secondary/30 disabled:shadow-none"
+        className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800"
       >
         Crear cuenta
       </button>
