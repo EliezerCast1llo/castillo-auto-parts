@@ -97,11 +97,8 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
   await page.getByRole("link", { name: "Continuar al pago" }).click();
   await expect(page).toHaveURL(/\/checkout/);
 
-  // Fill checkout form
-  await page.getByLabel("Nombre completo").fill("Cliente Test");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Teléfono").fill("7777-9999");
-
+  // Usuario autenticado: nombre y email se muestran como campos readonly (no editables)
+  await expect(page.getByText("Cliente Test E2E")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Retiro en bodega" })).toBeVisible();
 
   await page.getByRole("button", { name: "Confirmar y pagar" }).click();

@@ -30,13 +30,13 @@ type Props = {
 
 export function CheckoutLocationPicker({ onLocationFound }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const latRef = useRef<HTMLInputElement>(null);
+  const lngRef = useRef<HTMLInputElement>(null);
+  const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [zoom, setZoom] = useState(14);
   const [mapSize, setMapSize] = useState<MapSize>({ height: 280, width: 640 });
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
-  const selectedLocation = getSelectedLocation(latitude, longitude);
-  const center = selectedLocation ?? DEFAULT_CENTER;
+  const center = mapCenter;
   const tiles = useMemo(() => buildTiles(center, zoom, mapSize), [center, mapSize, zoom]);
 
   useEffect(() => {
@@ -90,6 +90,7 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
         updateLocation(lat, lng);
         if (onLocationFound) reverseGeocode(lat, lng);
         else setGeoStatus("ok");
+
       },
       () => setGeoStatus("error"),
       { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 },
@@ -110,8 +111,9 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
   }
 
   function updateLocation(nextLatitude: number, nextLongitude: number) {
-    setLatitude(formatCoordinate(nextLatitude));
-    setLongitude(formatCoordinate(nextLongitude));
+    if (latRef.current) latRef.current.value = formatCoordinate(nextLatitude);
+    if (lngRef.current) lngRef.current.value = formatCoordinate(nextLongitude);
+    setMapCenter({ latitude: nextLatitude, longitude: nextLongitude });
   }
 
   const statusText =
@@ -185,11 +187,11 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
         </p>
       </div>
 
-      {/* Coordenadas guardadas como hidden — el backend las usa para validar zona */}
-      <input name="latitude" type="hidden" value={latitude} />
-      <input name="longitude" type="hidden" value={longitude} />
-      <input name="formattedAddress" type="hidden" value="" />
-      <input name="placeId" type="hidden" value="" />
+      {/* Uncontrolled hidden inputs — valor escrito por updateLocation via ref */}
+      <input ref={latRef} name="latitude" type="hidden" defaultValue="" />
+      <input ref={lngRef} name="longitude" type="hidden" defaultValue="" />
+      <input name="formattedAddress" type="hidden" value="" readOnly />
+      <input name="placeId" type="hidden" value="" readOnly />
     </div>
   );
 }
