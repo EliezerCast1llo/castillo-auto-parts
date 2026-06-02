@@ -1,46 +1,66 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getCustomerSession } from "@/lib/auth-user";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { formString, optionalFormString } from "@/lib/form-utils";
 
-export async function addAddressAction(formData: FormData) {
-  const session = await getCustomerSession();
-  if (!session) redirect("/auth/login");
+const SV_DEPARTMENTS = [
+  "Ahuachapán", "Cabañas", "Chalatenango", "Cuscatlán", "La Libertad",
+  "La Paz", "La Unión", "Morazán", "San Miguel", "San Salvador",
+  "San Vicente", "Santa Ana", "Sonsonate", "Usulután",
+];
 
-  const addressLine1 = formString(formData, "addressLine1").trim();
-  const addressLine2 = optionalFormString(formData, "addressLine2");
-  const city = formString(formData, "city").trim();
-  const department = formString(formData, "department").trim();
-  const deliveryNotes = optionalFormString(formData, "deliveryNotes");
-  const latitudeRaw = optionalFormString(formData, "latitude");
-  const longitudeRaw = optionalFormString(formData, "longitude");
+export async function createAddress(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) redirect("/auth/login");
+
+  const addressLine1 = String(formData.get("addressLine1") ?? "").trim();
+  const addressLine2 = String(formData.get("addressLine2") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const department = String(formData.get("department") ?? "").trim();
+  const deliveryNotes = String(formData.get("deliveryNotes") ?? "").trim();
+  const latitudeRaw = String(formData.get("latitude") ?? "").trim();
+  const longitudeRaw = String(formData.get("longitude") ?? "").trim();
 
   if (!addressLine1 || !city || !department) {
-    redirect("/account/addresses?estado=invalid");
+    redirect("/account/addresses?estado=missing_fields");
+  }
+
+  if (!SV_DEPARTMENTS.includes(department)) {
+    redirect("/account/addresses?estado=invalid_department");
   }
 
   const latitude = latitudeRaw ? parseFloat(latitudeRaw) : undefined;
   const longitude = longitudeRaw ? parseFloat(longitudeRaw) : undefined;
 
-  const parts = [addressLine1, addressLine2, city, department, "El Salvador"].filter(Boolean);
-  const formattedAddress = parts.join(", ");
+  const formattedAddress = [addressLine1, addressLine2, city, department, "El Salvador"]
+    .filter(Boolean)
+    .join(", ");
 
   await db.address.create({
     data: {
-      userId: session.id,
+      userId: session.user.id,
       addressLine1,
-      addressLine2: addressLine2 || undefined,
+      addressLine2: addressLine2 || null,
       city,
       department,
       country: "SV",
-      deliveryNotes: deliveryNotes || undefined,
+      deliveryNotes: deliveryNotes || null,
       formattedAddress,
       latitude: latitude && !isNaN(latitude) ? latitude : undefined,
       longitude: longitude && !isNaN(longitude) ? longitude : undefined,
     },
   });
 
-  redirect("/account/addresses?estado=added");
+  redirect("/account/addresses?estado=created");
+}
+
+export async function deleteAddress(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) redirect("/auth/login");
+
+  const id = String(formData.get("id") ?? "");
+  await db.address.deleteMany({ where: { id, userId: session.user.id } });
+
+  redirect("/account/addresses?estado=deleted");
 }

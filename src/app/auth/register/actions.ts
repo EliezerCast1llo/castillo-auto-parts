@@ -12,6 +12,8 @@ export async function registerAction(formData: FormData) {
   const password = formString(formData, "password");
   const passwordConfirm = formString(formData, "passwordConfirm");
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
+  const rawPhone = formString(formData, "phone").replace(/\D/g, "");
+  const phone = rawPhone ? `+503${rawPhone}` : undefined;
 
   if (!name || !email || !password) {
     redirect(`/auth/register?estado=missing_fields&next=${encodeURIComponent(nextPath)}`);
@@ -25,7 +27,7 @@ export async function registerAction(formData: FormData) {
     redirect(`/auth/register?estado=password_mismatch&next=${encodeURIComponent(nextPath)}`);
   }
 
-  const result = await registerCustomer({ name, email, password });
+  const result = await registerCustomer({ name, email, password, phone });
 
   if (result.status === "email_exists") {
     redirect(`/auth/register?estado=email_exists&next=${encodeURIComponent(nextPath)}`);

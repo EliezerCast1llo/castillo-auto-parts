@@ -2,7 +2,7 @@
 
 import { MapPin, X } from "lucide-react";
 import { useRef, useState } from "react";
-import { addAddressAction } from "@/app/account/addresses/actions";
+import { createAddress } from "@/app/account/addresses/actions";
 import { CheckoutLocationPicker, type LocationInfo } from "@/components/checkout/checkout-location-picker";
 import type { DeliveryZoneOption } from "@/lib/fulfillment";
 
@@ -61,7 +61,7 @@ export function AddAddressForm({ deliveryZones }: { deliveryZones: DeliveryZoneO
 
   return (
     <>
-      <form ref={formRef} action={addAddressAction} onSubmit={handleSubmit} className="space-y-4">
+      <form ref={formRef} action={createAddress} onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label className="block text-sm font-semibold text-ca-navy-950">

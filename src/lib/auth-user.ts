@@ -54,6 +54,7 @@ export async function registerCustomer(input: {
   name: string;
   email: string;
   password: string;
+  phone?: string;
 }): Promise<RegisterResult> {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
@@ -71,6 +72,7 @@ export async function registerCustomer(input: {
       passwordHash,
       role: "CUSTOMER",
       isActive: true,
+      phone: input.phone ?? null,
     },
   });
 
