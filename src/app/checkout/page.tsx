@@ -183,16 +183,11 @@ function CheckoutForm({
             <CheckoutField autoComplete="tel" label="Teléfono" name="customerPhone" required />
           </div>
         ) : (
-          <>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <CheckoutFieldReadonly label="Nombre" value={userDefaults.name} />
-              <CheckoutFieldReadonly label="Email" value={userDefaults.email} />
-              {userDefaults.phone ? <CheckoutFieldReadonly label="Teléfono" value={userDefaults.phone} /> : null}
-            </div>
-            <input type="hidden" name="customerName" value={userDefaults.name} />
-            <input type="hidden" name="customerEmail" value={userDefaults.email} />
-            <input type="hidden" name="customerPhone" value={userDefaults.phone || "—"} />
-          </>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <CheckoutFieldReadonly label="Nombre" value={userDefaults.name} />
+            <CheckoutFieldReadonly label="Email" value={userDefaults.email} />
+            {userDefaults.phone ? <CheckoutFieldReadonly label="Teléfono" value={userDefaults.phone} /> : null}
+          </div>
         )}
       </section>
 
