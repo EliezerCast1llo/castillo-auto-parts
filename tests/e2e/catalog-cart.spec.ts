@@ -32,10 +32,8 @@ test("local delivery checkout exposes delivery zone and map fields", async ({ pa
   await page.locator('input[value="LOCAL_DELIVERY"]').click();
   await page.locator('select[name="deliveryZoneSlug"]').selectOption("santa-tecla");
   await page.locator('input[name="addressLine1"]').fill("Residencial prueba, Santa Tecla");
-  await page.locator('input[name="latitude"]').fill("13.676900");
-  await page.locator('input[name="longitude"]').fill("-89.279700");
 
-  await expect(page.getByRole("heading", { name: "Ubicación exacta" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Usar mi ubicación" })).toBeVisible();
   await expect(page.locator('select[name="deliveryZoneSlug"]')).toHaveValue("santa-tecla");
   await expect(page.locator('input[readonly]').first()).toHaveValue("La Libertad");
 });
@@ -75,10 +73,15 @@ test("guest can complete local delivery checkout with zone and exact location", 
   await page.getByLabel("Dirección").fill("Colonia Escalón, San Salvador");
   await page.getByLabel("Municipio").selectOption("san-salvador");
   await page.getByLabel("Notas de entrega").fill("Entregar en recepción.");
-  await page.getByLabel("Latitud").fill("13.700000");
-  await page.getByLabel("Longitud").fill("-89.220000");
+  // Coordenadas seteadas directamente en los hidden inputs (el mapa las escribe via ref)
+  await page.evaluate(() => {
+    const lat = document.querySelector('input[name="latitude"]') as HTMLInputElement | null;
+    const lng = document.querySelector('input[name="longitude"]') as HTMLInputElement | null;
+    if (lat) lat.value = "13.700000";
+    if (lng) lng.value = "-89.220000";
+  });
 
-  await expect(page.getByRole("heading", { name: "Ubicación exacta" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Usar mi ubicación" })).toBeVisible();
   await expect(page.getByText("Total estimado")).toBeVisible();
 
   await page.getByRole("button", { name: "Confirmar y pagar" }).click();

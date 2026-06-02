@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { AddAddressModal } from "@/components/account/add-address-modal";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getFulfillmentOptions } from "@/lib/fulfillment";
 import { firstValue } from "@/lib/url-utils";
 import { deleteAddress } from "./actions";
 
@@ -27,10 +28,13 @@ export default async function AccountAddressesPage({ searchParams }: Props) {
   const estado = firstValue(params.estado) ?? "";
   const notice = statusMessages[estado];
 
-  const addresses = await db.address.findMany({
-    where: { userId: session!.user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const [addresses, fulfillmentOptions] = await Promise.all([
+    db.address.findMany({
+      where: { userId: session!.user.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    getFulfillmentOptions(),
+  ]);
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
@@ -47,7 +51,7 @@ export default async function AccountAddressesPage({ searchParams }: Props) {
 
         <div className="mt-4 flex items-center justify-between gap-4">
           <h1 className="text-2xl font-black text-ca-navy-950">Mis direcciones</h1>
-          <AddAddressModal />
+          <AddAddressModal deliveryZones={fulfillmentOptions.deliveryZones} />
         </div>
 
         {notice ? (
@@ -73,7 +77,7 @@ export default async function AccountAddressesPage({ searchParams }: Props) {
                 Guarda una dirección para agilizar tus próximas compras.
               </p>
             </div>
-            <AddAddressModal />
+            <AddAddressModal deliveryZones={fulfillmentOptions.deliveryZones} />
           </div>
         ) : (
           <div className="mt-5 space-y-3">

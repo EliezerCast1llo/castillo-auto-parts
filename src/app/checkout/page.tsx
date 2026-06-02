@@ -2,7 +2,9 @@ import Link from "next/link";
 import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin, PackageCheck } from "lucide-react";
 import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
+import { auth } from "@/lib/auth";
 import { getGuestCart } from "@/lib/cart";
+import { db } from "@/lib/db";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
@@ -21,11 +23,36 @@ type CheckoutPageProps = {
 };
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
-  const cart = await getGuestCart();
-  const fulfillmentOptions = await getFulfillmentOptions();
+  const [cart, fulfillmentOptions, session] = await Promise.all([
+    getGuestCart(),
+    getFulfillmentOptions(),
+    auth(),
+  ]);
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
+
+  let userDefaults: { name: string; email: string; phone: string } | null = null;
+  let savedAddresses: { id: string; formattedAddress: string; addressLine1: string; addressLine2: string | null; city: string; department: string; deliveryNotes: string | null; latitude: string | null; longitude: string | null }[] = [];
+
+  if (session?.user?.id) {
+    const [dbUser, addresses] = await Promise.all([
+      db.user.findUnique({ where: { id: session.user.id }, select: { name: true, email: true, phone: true } }),
+      db.address.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "desc" }, select: { id: true, formattedAddress: true, addressLine1: true, addressLine2: true, city: true, department: true, deliveryNotes: true, latitude: true, longitude: true } }),
+    ]);
+    if (dbUser) {
+      userDefaults = {
+        name: dbUser.name ?? "",
+        email: dbUser.email ?? "",
+        phone: dbUser.phone ?? "",
+      };
+    }
+    savedAddresses = addresses.map((a) => ({
+      ...a,
+      latitude: a.latitude?.toString() ?? null,
+      longitude: a.longitude?.toString() ?? null,
+    }));
+  }
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
@@ -56,7 +83,9 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               <CheckoutForm
                 deliveryZones={fulfillmentOptions.deliveryZones}
                 pickupLocation={fulfillmentOptions.pickupLocation}
+                savedAddresses={savedAddresses}
                 subtotalCents={cart.subtotalCents}
+                userDefaults={userDefaults}
               />
             ) : (
               <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
@@ -116,31 +145,59 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   );
 }
 
+type SavedAddress = {
+  id: string;
+  formattedAddress: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  department: string;
+  deliveryNotes: string | null;
+  latitude: string | null;
+  longitude: string | null;
+};
+
 function CheckoutForm({
   deliveryZones,
   pickupLocation,
+  savedAddresses,
   subtotalCents,
+  userDefaults,
 }: {
   deliveryZones: DeliveryZoneOption[];
   pickupLocation: PickupLocationOption;
+  savedAddresses: SavedAddress[];
   subtotalCents: number;
+  userDefaults: { name: string; email: string; phone: string } | null;
 }) {
+  const isGuest = userDefaults === null;
+
   return (
     <form action={createGuestOrder} className="space-y-4">
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
         <h2 className="text-base font-black text-ca-navy-950">Tus datos</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <CheckoutField autoComplete="name" label="Nombre completo" name="customerName" required />
-          <CheckoutField autoComplete="email" label="Email" name="customerEmail" required type="email" />
-          <CheckoutField autoComplete="tel" label="Teléfono" name="customerPhone" required />
-        </div>
+        {isGuest ? (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <CheckoutField autoComplete="name" label="Nombre completo" name="customerName" required />
+            <CheckoutField autoComplete="email" label="Email" name="customerEmail" required type="email" />
+            <CheckoutField autoComplete="tel" label="Teléfono" name="customerPhone" required />
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <CheckoutFieldReadonly label="Nombre" value={userDefaults.name} />
+            <CheckoutFieldReadonly label="Email" value={userDefaults.email} />
+            {userDefaults.phone ? <CheckoutFieldReadonly label="Teléfono" value={userDefaults.phone} /> : null}
+          </div>
+        )}
       </section>
 
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
         <h2 className="text-base font-black text-ca-navy-950">Método de entrega</h2>
         <CheckoutDeliveryFields
           deliveryZones={deliveryZones}
+          isGuest={isGuest}
           pickupLocation={pickupLocation}
+          savedAddresses={savedAddresses}
           subtotalCents={subtotalCents}
         />
       </section>
@@ -194,6 +251,17 @@ function CheckoutField({
         required={required}
         type={type}
       />
+    </div>
+  );
+}
+
+function CheckoutFieldReadonly({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="block text-sm font-bold text-ca-navy-950">{label}</p>
+      <p className="mt-2 flex h-11 items-center rounded-xl border border-ca-border bg-ca-background px-3 text-sm text-ca-text-secondary">
+        {value || <span className="italic">Sin datos</span>}
+      </p>
     </div>
   );
 }

@@ -2,13 +2,27 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { buildOrderAccessHref } from "@/lib/order-access-token";
 import { createPaidGuestOrderFromCart } from "@/lib/orders";
 
 export async function createGuestOrder(formData: FormData) {
-  // Si hay sesión activa, asociar la orden al usuario
   const session = await auth();
   const userId = session?.user?.id;
+
+  // Para usuarios autenticados, usamos sus datos del perfil directamente
+  // para no depender de hidden inputs ni requerir que tengan teléfono cargado.
+  if (userId) {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true, phone: true },
+    });
+    if (user) {
+      formData.set("customerName", user.name ?? "Cliente");
+      formData.set("customerEmail", user.email);
+      formData.set("customerPhone", user.phone ?? "00000000");
+    }
+  }
 
   const result = await createPaidGuestOrderFromCart(formData, userId);
 

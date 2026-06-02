@@ -19,6 +19,8 @@ export async function createAddress(formData: FormData) {
   const city = String(formData.get("city") ?? "").trim();
   const department = String(formData.get("department") ?? "").trim();
   const deliveryNotes = String(formData.get("deliveryNotes") ?? "").trim();
+  const latitudeRaw = String(formData.get("latitude") ?? "").trim();
+  const longitudeRaw = String(formData.get("longitude") ?? "").trim();
 
   if (!addressLine1 || !city || !department) {
     redirect("/account/addresses?estado=missing_fields");
@@ -27,6 +29,9 @@ export async function createAddress(formData: FormData) {
   if (!SV_DEPARTMENTS.includes(department)) {
     redirect("/account/addresses?estado=invalid_department");
   }
+
+  const latitude = latitudeRaw ? parseFloat(latitudeRaw) : undefined;
+  const longitude = longitudeRaw ? parseFloat(longitudeRaw) : undefined;
 
   const formattedAddress = [addressLine1, addressLine2, city, department, "El Salvador"]
     .filter(Boolean)
@@ -42,6 +47,8 @@ export async function createAddress(formData: FormData) {
       country: "SV",
       deliveryNotes: deliveryNotes || null,
       formattedAddress,
+      latitude: latitude && !isNaN(latitude) ? latitude : undefined,
+      longitude: longitude && !isNaN(longitude) ? longitude : undefined,
     },
   });
 
