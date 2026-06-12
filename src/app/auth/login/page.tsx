@@ -134,6 +134,7 @@ function getErrorMessage(estado: string | undefined) {
     invalid: "Email o contraseña incorrectos.",
     oauth_error: "Error al conectar con Google. Intenta de nuevo.",
     password_reset: "Contraseña restablecida. Inicia sesión con tu nueva contraseña.",
+    rate_limited: "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
   };
   return messages[estado ?? ""] ?? "";
 }

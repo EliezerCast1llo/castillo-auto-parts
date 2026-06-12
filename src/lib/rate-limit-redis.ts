@@ -43,16 +43,27 @@ export function createAdminLoginRateLimiter(): AsyncRateLimiter {
 
 /**
  * Factory principal. Selecciona backend Redis o en memoria según entorno.
+ *
+ * En producción, UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son
+ * obligatorios. El limiter en memoria es inútil en Vercel serverless
+ * multi-instancia y no protege contra fuerza bruta entre instancias.
  */
 export function createAsyncRateLimiter(options: RateLimitOptions): AsyncRateLimiter {
   const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
 
+  if (process.env.NODE_ENV === "production" && (!redisUrl || !redisToken)) {
+    throw new Error(
+      "UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son obligatorios en producción. " +
+        "Crea una base de datos en upstash.com y añade las variables en Vercel.",
+    );
+  }
+
   if (redisUrl && redisToken) {
     return buildRedisRateLimiter(options, redisUrl, redisToken);
   }
 
-  // Fallback: wrapper async sobre el limiter síncrono en memoria
+  // Fallback en memoria — solo dev/test
   const limiter = createRateLimiter(options);
   return {
     async check(key) {
@@ -65,6 +76,42 @@ export function createAsyncRateLimiter(options: RateLimitOptions): AsyncRateLimi
       limiter.reset(key);
     },
   };
+}
+
+/** 10 intentos fallidos → bloqueo 15 min por IP. */
+export function createCustomerLoginRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 10,
+    windowMs: 15 * 60 * 1000,
+    lockoutMs: 15 * 60 * 1000,
+  });
+}
+
+/** 5 registros → bloqueo 1 hora por IP. */
+export function createRegisterRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 5,
+    windowMs: 60 * 60 * 1000,
+    lockoutMs: 60 * 60 * 1000,
+  });
+}
+
+/** 5 solicitudes → bloqueo 1 hora (aplica a clave IP y clave email). */
+export function createForgotPasswordRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 5,
+    windowMs: 60 * 60 * 1000,
+    lockoutMs: 60 * 60 * 1000,
+  });
+}
+
+/** 5 intentos → bloqueo 15 min por IP. */
+export function createResetPasswordRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 5,
+    windowMs: 15 * 60 * 1000,
+    lockoutMs: 15 * 60 * 1000,
+  });
 }
 
 // ---------------------------------------------------------------------------

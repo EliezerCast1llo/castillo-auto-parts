@@ -1,10 +1,15 @@
 "use server";
 
+import { AuthError } from "next-auth";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { formString } from "@/lib/form-utils";
 import { registerCustomer } from "@/lib/auth-user";
+import { createRegisterRateLimiter } from "@/lib/rate-limit-redis";
+
+const registerRateLimiter = createRegisterRateLimiter();
 
 export async function registerAction(formData: FormData) {
   const name = formString(formData, "name").trim();
@@ -15,6 +20,7 @@ export async function registerAction(formData: FormData) {
   const rawPhone = formString(formData, "phone").replace(/\D/g, "");
   const phone = rawPhone ? `+503${rawPhone}` : undefined;
 
+  // Validaciones de formato (no cuentan como intento)
   if (!name || !email || !password) {
     redirect(`/auth/register?estado=missing_fields&next=${encodeURIComponent(nextPath)}`);
   }
@@ -27,16 +33,38 @@ export async function registerAction(formData: FormData) {
     redirect(`/auth/register?estado=password_mismatch&next=${encodeURIComponent(nextPath)}`);
   }
 
+  const key = await getRegisterRateLimitKey();
+  const limitCheck = await registerRateLimiter.check(key);
+  if (!limitCheck.allowed) {
+    redirect(`/auth/register?estado=rate_limited&next=${encodeURIComponent(nextPath)}`);
+  }
+
   const result = await registerCustomer({ name, email, password, phone });
 
   if (result.status === "email_exists") {
+    await registerRateLimiter.registerFailure(key);
     redirect(`/auth/register?estado=email_exists&next=${encodeURIComponent(nextPath)}`);
   }
 
   if (result.status !== "ok") {
+    await registerRateLimiter.registerFailure(key);
     redirect(`/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`);
   }
 
   // Login automático post-registro
-  await signIn("credentials", { email, password, redirectTo: nextPath });
+  try {
+    await signIn("credentials", { email, password, redirectTo: nextPath });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      redirect(`/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`);
+    }
+    await registerRateLimiter.reset(key);
+    throw error;
+  }
+}
+
+async function getRegisterRateLimitKey() {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip")?.trim();
+  return `customer-register:${ip ?? "local"}`;
 }
