@@ -11,11 +11,19 @@ function getHostnameFromUrl(value: string | undefined) {
 }
 
 const r2PublicHostname = getHostnameFromUrl(process.env.CLOUDFLARE_R2_PUBLIC_URL);
+const isProduction = process.env.NODE_ENV === "production";
+
+// En producción solo se permiten imágenes del bucket R2.
+// En desarrollo se añade Unsplash para las imágenes de semilla/prueba.
 const imageRemotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
-  {
-    hostname: "images.unsplash.com",
-    protocol: "https",
-  },
+  ...(!isProduction
+    ? [
+        {
+          hostname: "images.unsplash.com",
+          protocol: "https" as const,
+        },
+      ]
+    : []),
   ...(r2PublicHostname
     ? [
         {
@@ -64,6 +72,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: imageRemotePatterns,
+    minimumCacheTTL: 86400,
+    formats: ["image/avif", "image/webp"],
   },
 };
 
