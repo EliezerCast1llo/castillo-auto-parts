@@ -19,6 +19,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/admin-credentials";
+import { canSignInWithOAuthProfile } from "@/lib/oauth-profile";
 
 // Validación de secreto en producción. Auth.js v5 prefiere AUTH_SECRET;
 // NEXTAUTH_SECRET se mantiene como alias legado por compatibilidad.
@@ -73,6 +74,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
 
   callbacks: {
+    signIn({ account, profile }) {
+      return canSignInWithOAuthProfile({
+        provider: account?.provider,
+        profile,
+      });
+    },
+
     // Embebe id y role en el JWT; revalida rol/isActive contra BD cada 60 s.
     // Devolver null invalida la sesión (usuario desactivado o eliminado).
     async jwt({ token, user }) {

@@ -44,15 +44,16 @@ export function createAdminLoginRateLimiter(): AsyncRateLimiter {
 /**
  * Factory principal. Selecciona backend Redis o en memoria según entorno.
  *
- * En producción, UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son
- * obligatorios. El limiter en memoria es inútil en Vercel serverless
- * multi-instancia y no protege contra fuerza bruta entre instancias.
+ * En producción real, UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son
+ * obligatorios. El runner E2E marca E2E_ISOLATED_DATABASE=true para permitir
+ * un limiter en memoria hermético aunque Next build use NODE_ENV=production.
  */
 export function createAsyncRateLimiter(options: RateLimitOptions): AsyncRateLimiter {
   const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  const isIsolatedE2E = process.env.E2E_ISOLATED_DATABASE === "true";
 
-  if (process.env.NODE_ENV === "production" && (!redisUrl || !redisToken)) {
+  if (process.env.NODE_ENV === "production" && !isIsolatedE2E && (!redisUrl || !redisToken)) {
     throw new Error(
       "UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son obligatorios en producción. " +
         "Crea una base de datos en upstash.com y añade las variables en Vercel.",

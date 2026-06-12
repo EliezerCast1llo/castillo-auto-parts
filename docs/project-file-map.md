@@ -151,6 +151,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/admin-audit.ts` | Escritura de auditoria admin. |
 | `src/lib/admin-products.ts` | Validaciones/normalizaciones de productos admin. |
 | `src/lib/order-access-token.ts` | Token guest para ver orden publica. |
+| `src/lib/oauth-profile.ts` | Reglas puras de seguridad para perfiles OAuth, incluyendo `email_verified` de Google. |
 | `src/lib/r2.ts` | Cliente Cloudflare R2 (S3-compatible). Upload/delete/key helpers, MIME guard, max 5 MB. |
 | `src/lib/rate-limit.ts` | Rate limiter sincrono en memoria (logica pura, probada con Vitest). |
 | `src/lib/rate-limit-redis.ts` | Rate limiter async. Usa Redis (Upstash) si hay credenciales; in-memory si no. |

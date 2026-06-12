@@ -27,6 +27,18 @@ describe("createAsyncRateLimiter — validación de producción", () => {
     ).not.toThrow();
   });
 
+  it("permite el limiter en memoria durante E2E aislado aunque NODE_ENV=production", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("E2E_ISOLATED_DATABASE", "true");
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+
+    const { createAsyncRateLimiter } = await import("./rate-limit-redis");
+    expect(() =>
+      createAsyncRateLimiter({ maxAttempts: 5, windowMs: 60_000, lockoutMs: 60_000 }),
+    ).not.toThrow();
+  });
+
   it("no lanza en producción si Redis está configurado", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://example.upstash.io");

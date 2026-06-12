@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { rmSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
 
 const baseDatabaseUrl = process.env.E2E_DATABASE_URL || process.env.DATABASE_URL;
@@ -36,6 +37,8 @@ const e2eEnv = {
   PLAYWRIGHT_BASE_URL: e2eBaseUrl,
   PLAYWRIGHT_PORT: e2ePort,
   PLAYWRIGHT_WEB_SERVER_COMMAND: `npm run start -- --port ${e2ePort}`,
+  UPSTASH_REDIS_REST_TOKEN: process.env.E2E_UPSTASH_REDIS_REST_TOKEN || "",
+  UPSTASH_REDIS_REST_URL: process.env.E2E_UPSTASH_REDIS_REST_URL || "",
 };
 
 async function main() {
@@ -45,6 +48,7 @@ async function main() {
     console.log(`Preparing isolated E2E database schema "${schemaName}"...`);
     run("npx", ["prisma", "db", "push"], e2eEnv);
     run("npm", ["run", "db:seed"], e2eEnv);
+    rmSync(".next", { force: true, recursive: true });
     run("npm", ["run", "build"], e2eEnv);
 
     const playwrightArgs = process.argv.slice(2);
