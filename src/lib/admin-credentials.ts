@@ -8,6 +8,7 @@
  * Parámetros scrypt: N=16384, r=8, p=1, keyLen=64 (64 bytes = 512 bits)
  */
 
+import "server-only";
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 
 const SCRYPT_OPTS = { N: 16_384, r: 8, p: 1 };

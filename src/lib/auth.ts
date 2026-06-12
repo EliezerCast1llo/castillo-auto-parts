@@ -11,6 +11,7 @@
  * Tipos extendidos en src/types/next-auth.d.ts
  */
 
+import "server-only";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
