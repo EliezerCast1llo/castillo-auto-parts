@@ -32,10 +32,14 @@ export async function requestPasswordReset(formData: FormData) {
 
   // Registrar el intento en ambas claves independientemente del resultado
   // (no revelamos si el email existe; el rate limit aplica igual)
-  await Promise.all([
+  const [ipAttempt, emailAttempt] = await Promise.all([
     forgotPasswordRateLimiter.registerFailure(ipKey),
     forgotPasswordRateLimiter.registerFailure(emailKey),
   ]);
+
+  if (!ipAttempt.allowed || !emailAttempt.allowed) {
+    redirect("/auth/forgot-password?estado=rate_limited");
+  }
 
   // Siempre mostrar éxito para no revelar si el email existe
   const token = await createPasswordResetToken(email);

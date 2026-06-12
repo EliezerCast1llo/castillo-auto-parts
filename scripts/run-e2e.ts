@@ -22,6 +22,7 @@ const e2eEnv = {
     process.env.E2E_ADMIN_ACCESS_SECRET ||
     process.env.ADMIN_ACCESS_SECRET ||
     "e2e-admin-secret-at-least-32-characters-long",
+  AUTH_TRUST_HOST: "1",
   DATABASE_URL: isolatedDatabaseUrl,
   EMAIL_PROVIDER: process.env.E2E_EMAIL_PROVIDER || "console",
   E2E_ISOLATED_DATABASE: "true",
@@ -29,6 +30,7 @@ const e2eEnv = {
     process.env.E2E_GUEST_CART_SECRET ||
     process.env.GUEST_CART_SECRET ||
     "e2e-guest-cart-secret-at-least-32-characters-long",
+  NEXTAUTH_URL: e2eBaseUrl,
   NEXT_PUBLIC_SITE_URL: process.env.E2E_SITE_URL || e2eBaseUrl,
   PAYMENT_PROVIDER: process.env.E2E_PAYMENT_PROVIDER || "mock",
   PLAYWRIGHT_BASE_URL: e2eBaseUrl,

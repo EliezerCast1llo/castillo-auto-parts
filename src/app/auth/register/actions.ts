@@ -51,6 +51,11 @@ export async function registerAction(formData: FormData) {
     redirect(`/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`);
   }
 
+  // Cuenta también registros exitosos para evitar creación masiva de cuentas
+  // con emails únicos desde una misma IP. El siguiente intento queda bloqueado
+  // cuando se alcanza el límite de la ventana.
+  await registerRateLimiter.registerFailure(key);
+
   // Login automático post-registro
   try {
     await signIn("credentials", { email, password, redirectTo: nextPath });
@@ -58,7 +63,6 @@ export async function registerAction(formData: FormData) {
     if (error instanceof AuthError) {
       redirect(`/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`);
     }
-    await registerRateLimiter.reset(key);
     throw error;
   }
 }

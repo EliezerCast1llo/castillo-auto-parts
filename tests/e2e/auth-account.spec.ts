@@ -3,6 +3,12 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+test.beforeEach(async ({ page }, testInfo) => {
+  await page.setExtraHTTPHeaders({
+    "x-forwarded-for": testIpFor(testInfo.titlePath.join(" > ")),
+  });
+});
+
 test.afterAll(async () => {
   await prisma.$disconnect();
 });
@@ -13,6 +19,17 @@ test.afterAll(async () => {
 
 function uniqueEmail(prefix = "qa") {
   return `${prefix}-${Date.now()}@e2e.castilloautoparts.com`;
+}
+
+function testIpFor(value: string) {
+  let hash = 0;
+  for (const char of value) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  }
+
+  const thirdOctet = (hash % 200) + 1;
+  const fourthOctet = ((hash >>> 8) % 200) + 1;
+  return `198.51.${thirdOctet}.${fourthOctet}`;
 }
 
 async function registerUser(page: Page, email: string, password = "TestPassword123!") {
@@ -121,6 +138,22 @@ test("login shows error with wrong credentials", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/auth\/login\?estado=invalid/);
   await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible();
+});
+
+test("login rate limit blocks repeated wrong credentials", async ({ page }, testInfo) => {
+  await page.setExtraHTTPHeaders({
+    "x-forwarded-for": `203.0.113.${10 + testInfo.workerIndex}`,
+  });
+
+  for (let attempt = 1; attempt <= 10; attempt += 1) {
+    await page.goto("/auth/login");
+    await page.getByLabel("Correo electrónico").fill("rate-limit@e2e.castilloautoparts.com");
+    await page.getByLabel("Contraseña").fill(`wrong-password-${attempt}`);
+    await page.getByRole("button", { name: "Entrar" }).click();
+  }
+
+  await expect(page).toHaveURL(/\/auth\/login\?estado=rate_limited/);
+  await expect(page.getByText("Demasiados intentos. Espera unos minutos e intenta de nuevo.")).toBeVisible();
 });
 
 test("register shows error with duplicate email", async ({ page }) => {
