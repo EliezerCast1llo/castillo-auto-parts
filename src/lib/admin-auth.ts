@@ -15,6 +15,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import type { UserRole } from "@prisma/client";
 import {
   ADMIN_SESSION_MAX_AGE_SECONDS,
@@ -161,6 +162,23 @@ export async function setAdminSessionCookie(
     sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
   });
+}
+
+/**
+ * Versión de la verificación de rol apta para route handlers:
+ * devuelve { user } en éxito, o { response } con 401/403 sin redirigir.
+ */
+export async function getAdminUserForHandler(
+  ...allowedRoles: UserRole[]
+): Promise<{ user: AdminSessionUser } | { response: NextResponse }> {
+  const user = await getSessionAdminUser();
+  if (!user) {
+    return { response: NextResponse.json({ error: "No autorizado" }, { status: 401 }) };
+  }
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    return { response: NextResponse.json({ error: "Acceso denegado" }, { status: 403 }) };
+  }
+  return { user };
 }
 
 export async function clearAdminSessionCookie(): Promise<void> {

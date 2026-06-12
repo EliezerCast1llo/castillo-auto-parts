@@ -18,6 +18,7 @@
  * Nunca exponer las credenciales al cliente.
  */
 
+import "server-only";
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 // ---------------------------------------------------------------------------

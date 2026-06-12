@@ -19,7 +19,8 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getAdminUserForHandler } from "@/lib/admin-auth";
+import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { db } from "@/lib/db";
 import {
   buildR2Key,
@@ -29,10 +30,9 @@ import {
 } from "@/lib/r2";
 
 export async function POST(request: NextRequest) {
-  // 1. Autenticación admin
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  // 1. Autenticación y autorización admin (solo ADMIN y MARKETING)
+  const auth = await getAdminUserForHandler("ADMIN", "MARKETING");
+  if ("response" in auth) return auth.response;
 
   // 2. Leer multipart form
   let formData: FormData;
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       });
       const sortOrder = (maxSort._max.sortOrder ?? -1) + 1;
 
-      return tx.productImage.create({
+      const created = await tx.productImage.create({
         data: {
           productId,
           url: uploadResult.publicUrl,
@@ -122,6 +122,17 @@ export async function POST(request: NextRequest) {
         },
         select: { id: true, url: true, isPrimary: true },
       });
+
+      await writeAdminAuditLog(tx, {
+        action: "image.uploaded",
+        entityType: "ProductImage",
+        entityId: created.id,
+        entityLabel: product.name,
+        adminUserId: auth.user.id,
+        adminUserEmail: auth.user.email,
+      });
+
+      return created;
     });
 
     return NextResponse.json({

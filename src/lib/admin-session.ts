@@ -14,6 +14,7 @@
  * base64url no usa `.`, por lo que el split en 6 partes es siempre seguro.
  */
 
+import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { UserRole } from "@prisma/client";
 
