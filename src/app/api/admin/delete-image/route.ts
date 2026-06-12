@@ -20,15 +20,14 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getAdminUserForHandler } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { extractR2Key, deleteFromR2 } from "@/lib/r2";
 
 export async function DELETE(request: NextRequest) {
-  // 1. Autenticación admin
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  // 1. Autenticación y autorización admin (solo ADMIN y MARKETING)
+  const auth = await getAdminUserForHandler("ADMIN", "MARKETING");
+  if ("response" in auth) return auth.response;
 
   // 2. Leer body
   let body: unknown;

@@ -1,5 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { getAdminSecretIssue } from "./admin-auth";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { getAdminSecretIssue, getAdminUserForHandler, ADMIN_SESSION_COOKIE } from "./admin-auth";
+
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(),
+}));
+
+import { cookies } from "next/headers";
+import { createAdminSessionToken } from "./admin-session";
 
 describe("admin secret config", () => {
   it("requires secret", () => {
@@ -20,5 +27,77 @@ describe("admin secret config", () => {
     expect(
       getAdminSecretIssue("a-very-long-and-random-secret-32-chars!!", "production"),
     ).toBeNull();
+  });
+});
+
+describe("getAdminUserForHandler", () => {
+  const TEST_SECRET = "test-admin-secret-long-enough-for-vitest-ok";
+  const TEST_USER_ID = "cm1234567890abcdef";
+
+  function makeToken(role: string) {
+    return createAdminSessionToken(
+      TEST_SECRET,
+      TEST_USER_ID,
+      role as never,
+      `${role.toLowerCase()}@test.com`,
+    );
+  }
+
+  function mockCookieStore(tokenValue: string | undefined) {
+    vi.mocked(cookies).mockResolvedValue({
+      get: (name: string) =>
+        name === ADMIN_SESSION_COOKIE && tokenValue !== undefined
+          ? { name, value: tokenValue }
+          : undefined,
+    } as never);
+  }
+
+  beforeEach(() => {
+    vi.stubEnv("ADMIN_ACCESS_SECRET", TEST_SECRET);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.clearAllMocks();
+  });
+
+  it("returns 401 when no cookie is present", async () => {
+    mockCookieStore(undefined);
+    const result = await getAdminUserForHandler("ADMIN", "MARKETING");
+    expect("response" in result).toBe(true);
+    if ("response" in result) expect(result.response.status).toBe(401);
+  });
+
+  it("returns 401 for an invalid/tampered token", async () => {
+    mockCookieStore("v2.invalid.token.here.boom.sig");
+    const result = await getAdminUserForHandler("ADMIN", "MARKETING");
+    expect("response" in result).toBe(true);
+    if ("response" in result) expect(result.response.status).toBe(401);
+  });
+
+  it.each(["SALES", "SUPPORT", "WAREHOUSE", "ACCOUNTING"] as const)(
+    "returns 403 for role %s",
+    async (role) => {
+      mockCookieStore(makeToken(role));
+      const result = await getAdminUserForHandler("ADMIN", "MARKETING");
+      expect("response" in result).toBe(true);
+      if ("response" in result) expect(result.response.status).toBe(403);
+    },
+  );
+
+  it.each(["ADMIN", "MARKETING"] as const)(
+    "returns the user for role %s",
+    async (role) => {
+      mockCookieStore(makeToken(role));
+      const result = await getAdminUserForHandler("ADMIN", "MARKETING");
+      expect("user" in result).toBe(true);
+      if ("user" in result) expect(result.user.role).toBe(role);
+    },
+  );
+
+  it("allows any authenticated role when no restrictions are specified", async () => {
+    mockCookieStore(makeToken("SALES"));
+    const result = await getAdminUserForHandler();
+    expect("user" in result).toBe(true);
   });
 });
