@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, MapPin, Trash2 } from "lucide-react";
+import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { AddAddressModal } from "@/components/account/add-address-modal";
 import { auth } from "@/lib/auth";
@@ -24,13 +25,15 @@ const statusMessages: Record<string, { msg: string; ok: boolean }> = {
 
 export default async function AccountAddressesPage({ searchParams }: Props) {
   const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login?next=/account/addresses");
+
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado) ?? "";
   const notice = statusMessages[estado];
 
   const [addresses, fulfillmentOptions] = await Promise.all([
     db.address.findMany({
-      where: { userId: session!.user.id },
+      where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
     }),
     getFulfillmentOptions(),

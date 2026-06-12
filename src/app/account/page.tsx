@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ClipboardList, MapPin, User } from "lucide-react";
+import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -20,12 +21,14 @@ type AccountPageProps = {
 
 export default async function AccountPage({ searchParams }: AccountPageProps) {
   const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login?next=/account");
+
   const params = searchParams ? await searchParams : {};
   const statusMessage = getStatusMessage(firstValue(params.estado));
   const errorMessage = getErrorMessage(firstValue(params.estado));
 
   const user = await db.user.findUnique({
-    where: { id: session!.user.id },
+    where: { id: session.user.id },
     select: { name: true, email: true, phone: true, passwordHash: true, image: true },
   });
 
@@ -39,7 +42,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-primary">Mi cuenta</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{session!.user.email}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{session.user.email}</p>
           </div>
           <form action={logoutCustomer}>
             <button type="submit" className="text-sm font-semibold text-muted-foreground hover:text-primary">

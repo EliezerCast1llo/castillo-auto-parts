@@ -20,14 +20,15 @@ import type { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/admin-credentials";
 
-// Validación de secreto en producción
-const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET?.trim() ?? "";
+// Validación de secreto en producción. Auth.js v5 prefiere AUTH_SECRET;
+// NEXTAUTH_SECRET se mantiene como alias legado por compatibilidad.
+const AUTH_SECRET = process.env.AUTH_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim() || "";
 if (
   process.env.NODE_ENV === "production" &&
-  (NEXTAUTH_SECRET.length < 32 || NEXTAUTH_SECRET.includes("replace-with"))
+  (AUTH_SECRET.length < 32 || AUTH_SECRET.includes("replace-with"))
 ) {
   throw new Error(
-    "NEXTAUTH_SECRET no está configurado correctamente para producción. " +
+    "AUTH_SECRET/NEXTAUTH_SECRET no está configurado correctamente para producción. " +
     "Usa `openssl rand -base64 32` para generar un secreto seguro.",
   );
 }

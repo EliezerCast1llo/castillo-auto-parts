@@ -218,6 +218,13 @@ Reglas criticas:
 - Validar webhooks server-side.
 - Procesar webhooks de forma idempotente.
 - Proteger rutas admin.
+
+Actualizacion 2026-06-12:
+
+- `next-auth` queda fijado a version exacta `5.0.0-beta.31`; no usar rangos `^` para Auth.js mientras el proyecto siga en beta.
+- Auth.js v5 debe usar `AUTH_SECRET` como nombre preferido; `NEXTAUTH_SECRET` queda como alias legado aceptado por compatibilidad.
+- La rotacion de secretos de cliente/admin/carrito queda documentada en `docs/auth-secrets-rotation.md`.
+- Cualquier cambio en auth debe correr como minimo `npm run lint`, `npm run typecheck`, `npm test` y `npm run test:e2e -- tests/e2e/auth-account.spec.ts`.
 - No descontar inventario dos veces.
 
 Hallazgos 2026-05-20:
