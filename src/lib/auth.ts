@@ -34,7 +34,7 @@ if (
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 },
 
   providers: [
     Google({
@@ -72,12 +72,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
 
   callbacks: {
-    // Embebe id y role en el JWT en el momento del login
-    jwt({ token, user }) {
+    // Embebe id y role en el JWT; revalida rol/isActive contra BD cada 60 s.
+    // Devolver null invalida la sesión (usuario desactivado o eliminado).
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: UserRole }).role ?? "CUSTOMER";
+        token.roleValidatedAt = Date.now();
+        return token;
       }
+
+      const lastValidated = (token.roleValidatedAt as number | undefined) ?? 0;
+      if (Date.now() - lastValidated > 60_000) {
+        const fresh = await db.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, isActive: true },
+        });
+
+        if (!fresh || !fresh.isActive) return null;
+
+        token.role = fresh.role;
+        token.roleValidatedAt = Date.now();
+      }
+
       return token;
     },
 

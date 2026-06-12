@@ -5,7 +5,14 @@ vi.mock("next/headers", () => ({
   cookies: vi.fn(),
 }));
 
+vi.mock("@/lib/db", () => ({
+  db: {
+    user: { findUnique: vi.fn() },
+  },
+}));
+
 import { cookies } from "next/headers";
+import { db } from "@/lib/db";
 import { createAdminSessionToken } from "./admin-session";
 
 describe("admin secret config", () => {
@@ -75,10 +82,27 @@ describe("getAdminUserForHandler", () => {
     if ("response" in result) expect(result.response.status).toBe(401);
   });
 
+  it("returns 401 when the user is not found in DB (deleted after token issued)", async () => {
+    mockCookieStore(makeToken("ADMIN"));
+    vi.mocked(db.user.findUnique).mockResolvedValue(null);
+    const result = await getAdminUserForHandler("ADMIN", "MARKETING");
+    expect("response" in result).toBe(true);
+    if ("response" in result) expect(result.response.status).toBe(401);
+  });
+
+  it("returns 401 when the user is inactive (deactivated after token issued)", async () => {
+    mockCookieStore(makeToken("ADMIN"));
+    vi.mocked(db.user.findUnique).mockResolvedValue({ isActive: false, role: "ADMIN" } as never);
+    const result = await getAdminUserForHandler("ADMIN", "MARKETING");
+    expect("response" in result).toBe(true);
+    if ("response" in result) expect(result.response.status).toBe(401);
+  });
+
   it.each(["SALES", "SUPPORT", "WAREHOUSE", "ACCOUNTING"] as const)(
     "returns 403 for role %s",
     async (role) => {
       mockCookieStore(makeToken(role));
+      vi.mocked(db.user.findUnique).mockResolvedValue({ isActive: true, role } as never);
       const result = await getAdminUserForHandler("ADMIN", "MARKETING");
       expect("response" in result).toBe(true);
       if ("response" in result) expect(result.response.status).toBe(403);
@@ -89,14 +113,25 @@ describe("getAdminUserForHandler", () => {
     "returns the user for role %s",
     async (role) => {
       mockCookieStore(makeToken(role));
+      vi.mocked(db.user.findUnique).mockResolvedValue({ isActive: true, role } as never);
       const result = await getAdminUserForHandler("ADMIN", "MARKETING");
       expect("user" in result).toBe(true);
       if ("user" in result) expect(result.user.role).toBe(role);
     },
   );
 
+  it("returns the fresh DB role even if token has a stale role", async () => {
+    // Token says SALES but DB now says ADMIN (role was upgraded)
+    mockCookieStore(makeToken("SALES"));
+    vi.mocked(db.user.findUnique).mockResolvedValue({ isActive: true, role: "ADMIN" } as never);
+    const result = await getAdminUserForHandler("ADMIN");
+    expect("user" in result).toBe(true);
+    if ("user" in result) expect(result.user.role).toBe("ADMIN");
+  });
+
   it("allows any authenticated role when no restrictions are specified", async () => {
     mockCookieStore(makeToken("SALES"));
+    vi.mocked(db.user.findUnique).mockResolvedValue({ isActive: true, role: "SALES" } as never);
     const result = await getAdminUserForHandler();
     expect("user" in result).toBe(true);
   });

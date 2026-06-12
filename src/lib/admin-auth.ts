@@ -17,6 +17,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import type { UserRole } from "@prisma/client";
+import { db } from "@/lib/db";
 import {
   ADMIN_SESSION_MAX_AGE_SECONDS,
   createAdminSessionToken,
@@ -89,11 +90,20 @@ export async function getSessionAdminUser(): Promise<AdminSessionUser | null> {
   const payload = verifyAdminSessionToken(token, config.secret);
   if (!payload) return null;
 
+  // Revalida isActive y rol contra la BD en cada request del panel admin.
+  // El panel admin es bajo volumen; la consulta es barata y garantiza que
+  // un usuario desactivado o con rol cambiado pierde acceso de inmediato.
+  const dbUser = await db.user.findUnique({
+    where: { id: payload.userId },
+    select: { isActive: true, role: true },
+  });
+  if (!dbUser || !dbUser.isActive) return null;
+
   return {
     id: payload.userId,
     email: payload.displayName.includes("@") ? payload.displayName : "",
     name: payload.displayName.includes("@") ? null : payload.displayName,
-    role: payload.role,
+    role: dbUser.role,
   };
 }
 
@@ -112,33 +122,18 @@ export async function isAdminAuthenticated(): Promise<boolean> {
  */
 export async function requireAdminRole(...allowedRoles: UserRole[]): Promise<AdminSessionUser> {
   const config = getAdminSecretConfig();
+  if (!config.isConfigured) redirect("/admin/login?estado=not_configured");
+  if (!config.isSafeForRuntime) redirect("/admin/login?estado=unsafe_config");
 
-  if (!config.isConfigured) {
-    redirect("/admin/login?estado=not_configured");
+  // getSessionAdminUser revalida isActive y rol contra la BD
+  const user = await getSessionAdminUser();
+  if (!user) redirect("/admin/login");
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    redirect(ROLE_HOME[user.role] ?? "/admin/orders");
   }
 
-  if (!config.isSafeForRuntime) {
-    redirect("/admin/login?estado=unsafe_config");
-  }
-
-  const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
-  const payload = verifyAdminSessionToken(token, config.secret);
-
-  if (!payload) {
-    redirect("/admin/login");
-  }
-
-  if (allowedRoles.length > 0 && !allowedRoles.includes(payload.role)) {
-    redirect(ROLE_HOME[payload.role] ?? "/admin/orders");
-  }
-
-  return {
-    id: payload.userId,
-    email: payload.displayName.includes("@") ? payload.displayName : "",
-    name: payload.displayName.includes("@") ? null : payload.displayName,
-    role: payload.role,
-  };
+  return user;
 }
 
 // ---------------------------------------------------------------------------

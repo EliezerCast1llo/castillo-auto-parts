@@ -18,5 +18,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     role?: UserRole;
+    /** Timestamp (ms) de la última revalidación de rol/isActive contra la BD. */
+    roleValidatedAt?: number;
   }
 }
