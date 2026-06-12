@@ -19,6 +19,7 @@
  */
 
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 // ---------------------------------------------------------------------------
@@ -44,6 +45,32 @@ export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
  */
 export function isAllowedImageMimeType(mimeType: string): mimeType is AllowedMimeType {
   return (ALLOWED_MIME_TYPES as readonly string[]).includes(mimeType);
+}
+
+/** Cuid v1: c + 24 caracteres alfanuméricos en minúscula. */
+const CUID_RE = /^c[a-z0-9]{24}$/;
+
+/** Valida que un ID tiene formato cuid, previniendo path traversal en claves R2. */
+export function isValidProductId(id: string): boolean {
+  return CUID_RE.test(id);
+}
+
+/** Magic bytes por MIME type. Mínimo de bytes a leer: 12 (WebP necesita hasta byte 11). */
+const MAGIC_CHECKERS: Record<AllowedMimeType, (b: Buffer) => boolean> = {
+  "image/jpeg": (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  "image/jpg": (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  "image/png": (b) =>
+    b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 &&
+    b[4] === 0x0d && b[5] === 0x0a && b[6] === 0x1a && b[7] === 0x0a,
+  "image/webp": (b) =>
+    b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+    b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50,
+};
+
+/** Verifica que el contenido real del buffer coincide con el MIME declarado. */
+export function hasValidImageMagicBytes(buffer: Buffer, mimeType: AllowedMimeType): boolean {
+  if (buffer.length < 12) return false;
+  return MAGIC_CHECKERS[mimeType](buffer);
 }
 
 /**
@@ -103,13 +130,11 @@ export function getR2PublicUrl(key: string): string {
 
 /**
  * Genera una clave única para el objeto en R2.
- * Formato: products/{productId}/{timestamp}-{random}.{ext}
+ * Formato: products/{productId}/{uuid}.{ext}
  */
 export function buildR2Key(productId: string, mimeType: AllowedMimeType): string {
   const ext = mimeType === "image/jpeg" || mimeType === "image/jpg" ? "jpg" : mimeType.split("/")[1];
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).slice(2, 8);
-  return `products/${productId}/${timestamp}-${random}.${ext}`;
+  return `products/${productId}/${randomUUID()}.${ext}`;
 }
 
 // ---------------------------------------------------------------------------
