@@ -42,6 +42,9 @@ function mockTx() {
       findFirst: vi.fn().mockResolvedValue(null),
       update: vi.fn().mockResolvedValue({}),
     },
+    adminAuditLog: {
+      create: vi.fn().mockResolvedValue({}),
+    },
   };
 }
 
@@ -89,27 +92,48 @@ describe("DELETE /api/admin/delete-image — autorización por rol", () => {
     expect(res.status).toBe(404);
   });
 
-  it("devuelve 200 con ok:true para rol ADMIN", async () => {
+  it("devuelve 200 con ok:true para rol ADMIN y escribe auditoría", async () => {
     vi.mocked(getAdminUserForHandler).mockResolvedValue({ user: ADMIN_USER });
     vi.mocked(db.productImage.findUnique).mockResolvedValue(SAMPLE_IMAGE as never);
+    const tx = mockTx();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) => fn(mockTx()));
+    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) => fn(tx));
     const res = await DELETE(makeRequest({ imageId: "img-1" }));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
+    expect(tx.adminAuditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: "image.deleted",
+          entityType: "ProductImage",
+          entityId: "img-1",
+          adminUserId: ADMIN_USER.id,
+          adminUserEmail: ADMIN_USER.email,
+        }),
+      }),
+    );
   });
 
-  it("devuelve 200 para rol MARKETING", async () => {
+  it("devuelve 200 para rol MARKETING y escribe auditoría", async () => {
     vi.mocked(getAdminUserForHandler).mockResolvedValue({ user: MARKETING_USER });
     vi.mocked(db.productImage.findUnique).mockResolvedValue({
       ...SAMPLE_IMAGE,
       id: "img-2",
     } as never);
+    const tx = mockTx();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) => fn(mockTx()));
+    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) => fn(tx));
     const res = await DELETE(makeRequest({ imageId: "img-2" }));
     expect(res.status).toBe(200);
+    expect(tx.adminAuditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: "image.deleted",
+          adminUserId: MARKETING_USER.id,
+        }),
+      }),
+    );
   });
 
   it("reasigna imagen primaria cuando se elimina la primaria (ADMIN)", async () => {

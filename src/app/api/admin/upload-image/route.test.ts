@@ -56,6 +56,9 @@ function mockTx() {
         isPrimary: true,
       }),
     },
+    adminAuditLog: {
+      create: vi.fn().mockResolvedValue({}),
+    },
   };
 }
 
@@ -111,44 +114,62 @@ describe("POST /api/admin/upload-image — autorización por rol", () => {
     expect(res.status).toBe(404);
   });
 
-  it("devuelve 200 con imageId para rol ADMIN", async () => {
+  it("devuelve 200 con imageId para rol ADMIN y escribe auditoría", async () => {
     vi.mocked(getAdminUserForHandler).mockResolvedValue({ user: ADMIN_USER });
     vi.mocked(db.product.findUnique).mockResolvedValue({
       id: "product-id-123",
       name: "Filtro Toyota",
     } as never);
+    const tx = mockTx();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) => fn(mockTx()));
+    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) => fn(tx));
     const res = await POST(makeRequest(makeFormData()));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.imageId).toBe("img-1");
     expect(body.url).toBeDefined();
+    expect(tx.adminAuditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: "image.uploaded",
+          entityType: "ProductImage",
+          adminUserId: ADMIN_USER.id,
+          adminUserEmail: ADMIN_USER.email,
+        }),
+      }),
+    );
   });
 
-  it("devuelve 200 para rol MARKETING", async () => {
+  it("devuelve 200 para rol MARKETING y escribe auditoría", async () => {
     vi.mocked(getAdminUserForHandler).mockResolvedValue({ user: MARKETING_USER });
     vi.mocked(db.product.findUnique).mockResolvedValue({
       id: "product-id-123",
       name: "Filtro Toyota",
     } as never);
+    const tx = {
+      ...mockTx(),
+      productImage: {
+        ...mockTx().productImage,
+        create: vi.fn().mockResolvedValue({
+          id: "img-2",
+          url: "https://cdn.test.com/key.jpg",
+          isPrimary: true,
+        }),
+      },
+    };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) =>
-      fn({
-        ...mockTx(),
-        productImage: {
-          ...mockTx().productImage,
-          create: vi.fn().mockResolvedValue({
-            id: "img-2",
-            url: "https://cdn.test.com/key.jpg",
-            isPrimary: true,
-          }),
-        },
-      }),
-    );
+    (db.$transaction as any).mockImplementation(async (fn: (tx: any) => Promise<any>) => fn(tx));
     const res = await POST(makeRequest(makeFormData()));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.imageId).toBe("img-2");
+    expect(tx.adminAuditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: "image.uploaded",
+          adminUserId: MARKETING_USER.id,
+        }),
+      }),
+    );
   });
 });

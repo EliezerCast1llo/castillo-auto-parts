@@ -20,6 +20,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getAdminUserForHandler } from "@/lib/admin-auth";
+import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { db } from "@/lib/db";
 import {
   buildR2Key,
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
       });
       const sortOrder = (maxSort._max.sortOrder ?? -1) + 1;
 
-      return tx.productImage.create({
+      const created = await tx.productImage.create({
         data: {
           productId,
           url: uploadResult.publicUrl,
@@ -121,6 +122,17 @@ export async function POST(request: NextRequest) {
         },
         select: { id: true, url: true, isPrimary: true },
       });
+
+      await writeAdminAuditLog(tx, {
+        action: "image.uploaded",
+        entityType: "ProductImage",
+        entityId: created.id,
+        entityLabel: product.name,
+        adminUserId: auth.user.id,
+        adminUserEmail: auth.user.email,
+      });
+
+      return created;
     });
 
     return NextResponse.json({
