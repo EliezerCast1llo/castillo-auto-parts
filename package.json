@@ -50,7 +50,7 @@
     "vitest": "^4.1.6"
   },
   "prisma": {
-    "seed": "node --conditions react-server --import tsx/esm prisma/seed.ts"
+    "seed": "NODE_OPTIONS='--conditions react-server' tsx prisma/seed.ts"
   },
   "overrides": {
     "postcss": "^8.5.14"
