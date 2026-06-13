@@ -6,11 +6,12 @@ import { getEmailProvider, getTransactionalEmailFrom } from "@/lib/email";
 import { logError } from "@/lib/logger";
 import { formString } from "@/lib/form-utils";
 import { createPasswordResetToken } from "@/lib/auth-user";
-import { createForgotPasswordRateLimiter } from "@/lib/rate-limit-redis";
+import { createForgotPasswordRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 
-const forgotPasswordRateLimiter = createForgotPasswordRateLimiter();
+let _forgotPasswordRateLimiter: AsyncRateLimiter | undefined;
 
 export async function requestPasswordReset(formData: FormData) {
+  const forgotPasswordRateLimiter = (_forgotPasswordRateLimiter ??= createForgotPasswordRateLimiter());
   const email = formString(formData, "email").trim().toLowerCase();
 
   if (!email) {

@@ -4,11 +4,12 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { formString } from "@/lib/form-utils";
 import { applyPasswordReset } from "@/lib/auth-user";
-import { createResetPasswordRateLimiter } from "@/lib/rate-limit-redis";
+import { createResetPasswordRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 
-const resetPasswordRateLimiter = createResetPasswordRateLimiter();
+let _resetPasswordRateLimiter: AsyncRateLimiter | undefined;
 
 export async function applyPasswordResetAction(formData: FormData) {
+  const resetPasswordRateLimiter = (_resetPasswordRateLimiter ??= createResetPasswordRateLimiter());
   const token = formString(formData, "token");
   const password = formString(formData, "password");
   const passwordConfirm = formString(formData, "passwordConfirm");

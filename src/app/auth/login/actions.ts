@@ -6,11 +6,12 @@ import { redirect } from "next/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { formString } from "@/lib/form-utils";
-import { createCustomerLoginRateLimiter } from "@/lib/rate-limit-redis";
+import { createCustomerLoginRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 
-const loginRateLimiter = createCustomerLoginRateLimiter();
+let _loginRateLimiter: AsyncRateLimiter | undefined;
 
 export async function loginWithCredentials(formData: FormData) {
+  const loginRateLimiter = (_loginRateLimiter ??= createCustomerLoginRateLimiter());
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
   const key = await getLoginRateLimitKey();
 

@@ -7,11 +7,12 @@ import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { formString } from "@/lib/form-utils";
 import { registerCustomer } from "@/lib/auth-user";
-import { createRegisterRateLimiter } from "@/lib/rate-limit-redis";
+import { createRegisterRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 
-const registerRateLimiter = createRegisterRateLimiter();
+let _registerRateLimiter: AsyncRateLimiter | undefined;
 
 export async function registerAction(formData: FormData) {
+  const registerRateLimiter = (_registerRateLimiter ??= createRegisterRateLimiter());
   const name = formString(formData, "name").trim();
   const email = formString(formData, "email").trim().toLowerCase();
   const password = formString(formData, "password");
