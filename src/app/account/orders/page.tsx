@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Package } from "lucide-react";
+import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -16,9 +17,10 @@ export const metadata = {
 
 export default async function AccountOrdersPage() {
   const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login?next=/account/orders");
 
   const orders = await db.order.findMany({
-    where: { userId: session!.user.id },
+    where: { userId: session.user.id },
     include: { items: true },
     orderBy: { createdAt: "desc" },
   });

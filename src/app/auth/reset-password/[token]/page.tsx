@@ -90,6 +90,7 @@ function getErrorMessage(estado: string | undefined) {
   const messages: Record<string, string> = {
     weak_password: "La contraseña debe tener al menos 8 caracteres.",
     password_mismatch: "Las contraseñas no coinciden.",
+    rate_limited: "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
   };
   return messages[estado ?? ""] ?? "";
 }

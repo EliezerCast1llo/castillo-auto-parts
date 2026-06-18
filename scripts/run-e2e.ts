@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { rmSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
 
 const baseDatabaseUrl = process.env.E2E_DATABASE_URL || process.env.DATABASE_URL;
@@ -22,6 +23,7 @@ const e2eEnv = {
     process.env.E2E_ADMIN_ACCESS_SECRET ||
     process.env.ADMIN_ACCESS_SECRET ||
     "e2e-admin-secret-at-least-32-characters-long",
+  AUTH_TRUST_HOST: "1",
   DATABASE_URL: isolatedDatabaseUrl,
   EMAIL_PROVIDER: process.env.E2E_EMAIL_PROVIDER || "console",
   E2E_ISOLATED_DATABASE: "true",
@@ -29,11 +31,14 @@ const e2eEnv = {
     process.env.E2E_GUEST_CART_SECRET ||
     process.env.GUEST_CART_SECRET ||
     "e2e-guest-cart-secret-at-least-32-characters-long",
+  NEXTAUTH_URL: e2eBaseUrl,
   NEXT_PUBLIC_SITE_URL: process.env.E2E_SITE_URL || e2eBaseUrl,
   PAYMENT_PROVIDER: process.env.E2E_PAYMENT_PROVIDER || "mock",
   PLAYWRIGHT_BASE_URL: e2eBaseUrl,
   PLAYWRIGHT_PORT: e2ePort,
   PLAYWRIGHT_WEB_SERVER_COMMAND: `npm run start -- --port ${e2ePort}`,
+  UPSTASH_REDIS_REST_TOKEN: process.env.E2E_UPSTASH_REDIS_REST_TOKEN || "",
+  UPSTASH_REDIS_REST_URL: process.env.E2E_UPSTASH_REDIS_REST_URL || "",
 };
 
 async function main() {
@@ -43,6 +48,7 @@ async function main() {
     console.log(`Preparing isolated E2E database schema "${schemaName}"...`);
     run("npx", ["prisma", "db", "push"], e2eEnv);
     run("npm", ["run", "db:seed"], e2eEnv);
+    rmSync(".next", { force: true, recursive: true });
     run("npm", ["run", "build"], e2eEnv);
 
     const playwrightArgs = process.argv.slice(2);

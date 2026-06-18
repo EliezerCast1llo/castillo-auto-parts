@@ -16,6 +16,8 @@ vi.mock("@/lib/db", () => ({
 vi.mock("@/lib/r2", () => ({
   buildR2Key: vi.fn().mockReturnValue("products/test/key.jpg"),
   isAllowedImageMimeType: vi.fn().mockReturnValue(true),
+  isValidProductId: vi.fn().mockReturnValue(true),
+  hasValidImageMagicBytes: vi.fn().mockReturnValue(true),
   MAX_IMAGE_SIZE_BYTES: 5 * 1024 * 1024,
   uploadToR2: vi.fn().mockResolvedValue({ publicUrl: "https://cdn.test.com/key.jpg" }),
   deleteFromR2: vi.fn().mockResolvedValue(undefined),
@@ -23,7 +25,7 @@ vi.mock("@/lib/r2", () => ({
 
 import { getAdminUserForHandler } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
-import { isAllowedImageMimeType } from "@/lib/r2";
+import { hasValidImageMagicBytes, isAllowedImageMimeType, isValidProductId } from "@/lib/r2";
 
 const ADMIN_USER = { id: "u1", email: "admin@test.com", name: "Admin", role: "ADMIN" as const };
 const MARKETING_USER = { id: "u2", email: "mkt@test.com", name: "Marketing", role: "MARKETING" as const };
@@ -66,6 +68,8 @@ describe("POST /api/admin/upload-image — autorización por rol", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(isAllowedImageMimeType).mockReturnValue(true);
+    vi.mocked(isValidProductId).mockReturnValue(true);
+    vi.mocked(hasValidImageMagicBytes).mockReturnValue(true);
   });
 
   it("devuelve 401 sin sesión admin", async () => {
@@ -105,6 +109,28 @@ describe("POST /api/admin/upload-image — autorización por rol", () => {
     const file = new File(["pdf content"], "doc.pdf", { type: "application/pdf" });
     const res = await POST(makeRequest(makeFormData({ file })));
     expect(res.status).toBe(400);
+  });
+
+  it("devuelve 400 para productId con formato inválido", async () => {
+    vi.mocked(getAdminUserForHandler).mockResolvedValue({ user: ADMIN_USER });
+    vi.mocked(isValidProductId).mockReturnValue(false);
+    const res = await POST(makeRequest(makeFormData({ productId: "../etc/passwd" })));
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toMatch(/productId/);
+  });
+
+  it("devuelve 400 cuando los magic bytes no coinciden con el MIME declarado", async () => {
+    vi.mocked(getAdminUserForHandler).mockResolvedValue({ user: ADMIN_USER });
+    vi.mocked(db.product.findUnique).mockResolvedValue({
+      id: "product-id-123",
+      name: "Filtro Toyota",
+    } as never);
+    vi.mocked(hasValidImageMagicBytes).mockReturnValue(false);
+    const res = await POST(makeRequest(makeFormData()));
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toMatch(/contenido/);
   });
 
   it("devuelve 404 cuando el producto no existe", async () => {

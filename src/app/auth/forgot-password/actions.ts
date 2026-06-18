@@ -1,16 +1,45 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getEmailProvider, getTransactionalEmailFrom } from "@/lib/email";
 import { logError } from "@/lib/logger";
 import { formString } from "@/lib/form-utils";
 import { createPasswordResetToken } from "@/lib/auth-user";
+import { createForgotPasswordRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
+
+let _forgotPasswordRateLimiter: AsyncRateLimiter | undefined;
 
 export async function requestPasswordReset(formData: FormData) {
+  const forgotPasswordRateLimiter = (_forgotPasswordRateLimiter ??= createForgotPasswordRateLimiter());
   const email = formString(formData, "email").trim().toLowerCase();
 
   if (!email) {
     redirect("/auth/forgot-password?estado=missing_email");
+  }
+
+  // Rate limit por IP y por email objetivo (previene email bombing)
+  const ipKey = await getForgotPasswordIpKey();
+  const emailKey = `forgot-password:email:${email}`;
+
+  const [ipCheck, emailCheck] = await Promise.all([
+    forgotPasswordRateLimiter.check(ipKey),
+    forgotPasswordRateLimiter.check(emailKey),
+  ]);
+
+  if (!ipCheck.allowed || !emailCheck.allowed) {
+    redirect("/auth/forgot-password?estado=rate_limited");
+  }
+
+  // Registrar el intento en ambas claves independientemente del resultado
+  // (no revelamos si el email existe; el rate limit aplica igual)
+  const [ipAttempt, emailAttempt] = await Promise.all([
+    forgotPasswordRateLimiter.registerFailure(ipKey),
+    forgotPasswordRateLimiter.registerFailure(emailKey),
+  ]);
+
+  if (!ipAttempt.allowed || !emailAttempt.allowed) {
+    redirect("/auth/forgot-password?estado=rate_limited");
   }
 
   // Siempre mostrar éxito para no revelar si el email existe
@@ -38,4 +67,10 @@ export async function requestPasswordReset(formData: FormData) {
   }
 
   redirect("/auth/forgot-password?estado=sent");
+}
+
+async function getForgotPasswordIpKey() {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip")?.trim();
+  return `forgot-password:ip:${ip ?? "local"}`;
 }

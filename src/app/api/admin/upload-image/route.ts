@@ -24,7 +24,9 @@ import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { db } from "@/lib/db";
 import {
   buildR2Key,
+  hasValidImageMagicBytes,
   isAllowedImageMimeType,
+  isValidProductId,
   MAX_IMAGE_SIZE_BYTES,
   uploadToR2,
 } from "@/lib/r2";
@@ -56,6 +58,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Campo 'productId' requerido" }, { status: 400 });
   }
 
+  if (!isValidProductId(productId)) {
+    return NextResponse.json({ error: "productId inválido" }, { status: 400 });
+  }
+
   if (!isAllowedImageMimeType(file.type)) {
     return NextResponse.json(
       { error: "Tipo de archivo no permitido. Usa JPEG, PNG o WebP." },
@@ -83,9 +89,17 @@ export async function POST(request: NextRequest) {
   const alt = typeof altRaw === "string" && altRaw.trim() ? altRaw.trim() : product.name;
   const isPrimary = isPrimaryRaw === "true";
 
-  // 5. Subir a R2
-  const key = buildR2Key(productId, file.type);
+  // 5. Leer buffer y verificar magic bytes antes de subir
   const buffer = Buffer.from(await file.arrayBuffer());
+
+  if (!hasValidImageMagicBytes(buffer, file.type)) {
+    return NextResponse.json(
+      { error: "El contenido del archivo no corresponde al tipo declarado." },
+      { status: 400 },
+    );
+  }
+
+  const key = buildR2Key(productId, file.type);
 
   let uploadResult: Awaited<ReturnType<typeof uploadToR2>>;
   try {

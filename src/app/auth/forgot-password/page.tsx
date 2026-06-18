@@ -12,7 +12,9 @@ type ForgotPasswordPageProps = {
 
 export default async function ForgotPasswordPage({ searchParams }: ForgotPasswordPageProps) {
   const params = searchParams ? await searchParams : {};
-  const sent = firstValue(params.estado) === "sent";
+  const estado = firstValue(params.estado);
+  const sent = estado === "sent";
+  const rateLimited = estado === "rate_limited";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -33,6 +35,10 @@ export default async function ForgotPasswordPage({ searchParams }: ForgotPasswor
           {sent ? (
             <div className="mt-6 rounded-md bg-success/10 p-4 text-sm font-semibold text-success">
               Si ese correo está registrado, recibirás un enlace para restablecer tu contraseña. Revisa también tu carpeta de spam.
+            </div>
+          ) : rateLimited ? (
+            <div className="mt-6 rounded-md bg-destructive/10 p-4 text-sm font-semibold text-destructive">
+              Demasiados intentos. Espera unos minutos e intenta de nuevo.
             </div>
           ) : (
             <>

@@ -10,11 +10,12 @@ import {
 } from "@/lib/admin-auth";
 import { verifyAdminLogin } from "@/lib/admin-user";
 import { formString } from "@/lib/form-utils";
-import { createAdminLoginRateLimiter } from "@/lib/rate-limit-redis";
+import { createAdminLoginRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 
-const adminLoginRateLimiter = createAdminLoginRateLimiter();
+let _adminLoginRateLimiter: AsyncRateLimiter | undefined;
 
 export async function loginAdmin(formData: FormData) {
+  const adminLoginRateLimiter = (_adminLoginRateLimiter ??= createAdminLoginRateLimiter());
   const config = getAdminSecretConfig();
   const nextPath = getSafeAdminNextPath(formString(formData, "next"));
   const rateLimitKey = await getAdminLoginRateLimitKey();

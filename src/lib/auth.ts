@@ -19,22 +19,24 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/admin-credentials";
+import { canSignInWithOAuthProfile } from "@/lib/oauth-profile";
 
-// Validación de secreto en producción
-const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET?.trim() ?? "";
+// Validación de secreto en producción. Auth.js v5 prefiere AUTH_SECRET;
+// NEXTAUTH_SECRET se mantiene como alias legado por compatibilidad.
+const AUTH_SECRET = process.env.AUTH_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim() || "";
 if (
   process.env.NODE_ENV === "production" &&
-  (NEXTAUTH_SECRET.length < 32 || NEXTAUTH_SECRET.includes("replace-with"))
+  (AUTH_SECRET.length < 32 || AUTH_SECRET.includes("replace-with"))
 ) {
   throw new Error(
-    "NEXTAUTH_SECRET no está configurado correctamente para producción. " +
+    "AUTH_SECRET/NEXTAUTH_SECRET no está configurado correctamente para producción. " +
     "Usa `openssl rand -base64 32` para generar un secreto seguro.",
   );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 },
 
   providers: [
     Google({
@@ -72,12 +74,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
 
   callbacks: {
-    // Embebe id y role en el JWT en el momento del login
-    jwt({ token, user }) {
+    signIn({ account, profile }) {
+      return canSignInWithOAuthProfile({
+        provider: account?.provider,
+        profile,
+      });
+    },
+
+    // Embebe id y role en el JWT; revalida rol/isActive contra BD cada 60 s.
+    // Devolver null invalida la sesión (usuario desactivado o eliminado).
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: UserRole }).role ?? "CUSTOMER";
+        token.roleValidatedAt = Date.now();
+        return token;
       }
+
+      const lastValidated = (token.roleValidatedAt as number | undefined) ?? 0;
+      if (Date.now() - lastValidated > 60_000) {
+        const fresh = await db.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, isActive: true },
+        });
+
+        if (!fresh || !fresh.isActive) return null;
+
+        token.role = fresh.role;
+        token.roleValidatedAt = Date.now();
+      }
+
       return token;
     },
 

@@ -54,6 +54,7 @@ function getErrorMessage(estado: string | undefined) {
     password_mismatch: "Las contraseñas no coinciden.",
     email_exists: "Ya existe una cuenta con ese correo. ¿Quieres iniciar sesión?",
     error: "Ocurrió un error. Intenta de nuevo.",
+    rate_limited: "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
   };
   return messages[estado ?? ""] ?? "";
 }
