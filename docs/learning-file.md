@@ -229,6 +229,13 @@ Actualizacion 2026-06-12:
 - Cualquier cambio en auth debe correr como minimo `npm run lint`, `npm run typecheck`, `npm test` y `npm run test:e2e -- tests/e2e/auth-account.spec.ts`.
 - No descontar inventario dos veces.
 
+Actualizacion 2026-06-21:
+
+- Prisma usa migraciones versionadas; CI, E2E y produccion deben ejecutar `prisma migrate deploy`.
+- `prisma db push` deja de ser parte del flujo operativo porque no conserva historial y puede aplicar cambios destructivos sin una migracion revisable.
+- La migracion `20260621000000_baseline` representa el esquema previo a la Fase 2.
+- Bases existentes creadas con `db push` deben validar que su esquema coincide y marcar el baseline como aplicado; no deben ejecutar el SQL inicial sobre tablas existentes.
+
 Hallazgos 2026-05-20:
 
 - Existe una contrasena admin local temporal en `.env`; no debe versionarse y debe rotarse antes de cualquier deploy publico.

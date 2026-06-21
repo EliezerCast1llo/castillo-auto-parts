@@ -35,6 +35,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `docs/qa-checklists.md` | Checklists manuales por feature/pantalla. |
 | `docs/project-tracking.md` | Forma recomendada de manejar issues, PRs y tablero visual. |
 | `docs/ci-cd-quality-gates.md` | Como funciona CI y como bloquear merges sin pruebas. |
+| `docs/database-migrations.md` | Flujo seguro de baseline, desarrollo y deploy de migraciones Prisma. |
 | `docs/auth-secrets-rotation.md` | Operacion de secretos Auth.js/admin: origen, generacion, rotacion y verificacion. |
 | `docs/project-file-map.md` | Este mapa de archivos. |
 

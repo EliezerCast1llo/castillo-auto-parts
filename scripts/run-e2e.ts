@@ -46,7 +46,7 @@ async function main() {
 
   try {
     console.log(`Preparing isolated E2E database schema "${schemaName}"...`);
-    run("npx", ["prisma", "db", "push"], e2eEnv);
+    run("npm", ["run", "db:migrate:deploy"], e2eEnv);
     run("npm", ["run", "db:seed"], e2eEnv);
     rmSync(".next", { force: true, recursive: true });
     run("npm", ["run", "build"], e2eEnv);
