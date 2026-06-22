@@ -3,29 +3,32 @@ import { getPaymentProvider, resolvePaymentProviderId } from ".";
 import { buildMockPaymentId, mockPaymentProvider } from "./mock-provider";
 
 describe("mock payment provider", () => {
-  it("creates an immediately paid mock checkout result", async () => {
+  it("creates a pending mock checkout result", async () => {
     const payment = await mockPaymentProvider.createPayment({
       amountCents: 1790,
       currency: "USD",
       customerEmail: "cliente@example.com",
       orderNumber: "CAP-20260519-ABC123",
-      redirectUrl: "/orders/CAP-20260519-ABC123",
+      redirectUrl: "http://localhost:3000/orders/CAP-20260519-ABC123?token=test",
     });
 
     expect(payment).toMatchObject({
-      checkoutUrl: "/orders/CAP-20260519-ABC123",
       externalPaymentId: "MOCK-CAP-20260519-ABC123",
       externalReference: "CAP-20260519-ABC123",
       provider: "mock",
-      rawStatus: "SIMULATED_PAID",
-      status: "PAID",
+      rawStatus: "SIMULATED_PENDING",
+      status: "PENDING",
     });
-    expect(payment.paidAt).toBeInstanceOf(Date);
+    expect(payment.checkoutUrl).toContain(
+      "/payments/mock/MOCK-CAP-20260519-ABC123?returnTo=",
+    );
+    expect(payment.paidAt).toBeUndefined();
   });
 
   it("verifies valid mock webhook payloads", async () => {
     const request = new Request("http://localhost/api/payments/mock/webhook", {
       body: JSON.stringify({
+        amountCents: 1790,
         externalEventId: "evt_mock_1",
         externalPaymentId: buildMockPaymentId("CAP-20260519-ABC123"),
         externalReference: "CAP-20260519-ABC123",
@@ -36,6 +39,7 @@ describe("mock payment provider", () => {
 
     await expect(mockPaymentProvider.verifyWebhook(request)).resolves.toMatchObject({
       externalPaymentId: "MOCK-CAP-20260519-ABC123",
+      amountCents: 1790,
       isValid: true,
       provider: "mock",
       status: "PAID",

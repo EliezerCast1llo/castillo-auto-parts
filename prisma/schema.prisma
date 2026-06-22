@@ -25,6 +25,7 @@ enum InventoryStatus {
 }
 
 enum OrderStatus {
+  PAYMENT_PROCESSING
   PAID_PENDING_SHIPMENT
   SHIPPED
   DELIVERED
@@ -256,34 +257,37 @@ model Address {
 }
 
 model Order {
-  id              String        @id @default(cuid())
-  orderNumber     String        @unique
-  accessTokenHash String?
-  userId          String?
-  user            User?         @relation(fields: [userId], references: [id])
-  guestSessionId  String?
-  guestSession    GuestSession? @relation(fields: [guestSessionId], references: [id])
-  customerName    String
-  customerEmail   String
-  customerPhone   String
-  status          OrderStatus   @default(PAID_PENDING_SHIPMENT)
-  subtotalCents   Int
-  taxCents        Int
-  shippingCents   Int           @default(0)
-  totalCents      Int
-  currency        String        @default("USD")
-  addressId       String?
-  address         Address?      @relation(fields: [addressId], references: [id])
-  notes           String?
-  paidAt          DateTime?
-  items           OrderItem[]
-  payment         Payment?
-  invoice         InvoiceDte?
-  shipment        Shipment?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  orderNumber          String        @unique
+  accessTokenHash      String?
+  emailAccessTokenHash String?
+  userId               String?
+  user                 User?         @relation(fields: [userId], references: [id])
+  guestSessionId       String?
+  guestSession         GuestSession? @relation(fields: [guestSessionId], references: [id])
+  customerName         String
+  customerEmail        String
+  customerPhone        String
+  status               OrderStatus   @default(PAYMENT_PROCESSING)
+  subtotalCents        Int
+  taxCents             Int
+  shippingCents        Int           @default(0)
+  totalCents           Int
+  currency             String        @default("USD")
+  addressId            String?
+  address              Address?      @relation(fields: [addressId], references: [id])
+  notes                String?
+  paidAt               DateTime?
+  reservationExpiresAt DateTime?
+  items                OrderItem[]
+  payment              Payment?
+  invoice              InvoiceDte?
+  shipment             Shipment?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   @@index([status])
+  @@index([status, reservationExpiresAt])
   @@index([customerEmail])
   @@index([accessTokenHash])
 }
@@ -321,6 +325,7 @@ model Payment {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
+  @@unique([provider, externalPaymentId])
   @@index([externalPaymentId])
 }
 
@@ -334,6 +339,8 @@ model PaymentEvent {
   payloadJson     Json
   receivedAt      DateTime @default(now())
   isValid         Boolean  @default(false)
+
+  @@unique([provider, externalEventId])
 }
 
 model InvoiceDte {

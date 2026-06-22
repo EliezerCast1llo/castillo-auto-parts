@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, CreditCard, Info, PackageCheck } from "lucide-react";
+import { CheckCircle2, Clock3, CreditCard, Info, PackageCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
-import { formatShipmentMethod } from "@/lib/order-formatters";
+import { formatOrderStatus, formatShipmentMethod } from "@/lib/order-formatters";
 import { verifyOrderAccessToken } from "@/lib/order-access-token";
 import { firstValue } from "@/lib/url-utils";
 
@@ -34,6 +34,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
     include: {
       address: true,
       items: true,
+      payment: true,
       shipment: true,
     },
   });
@@ -42,9 +43,14 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
     notFound();
   }
 
-  if (!verifyOrderAccessToken(accessToken, order.accessTokenHash)) {
+  if (
+    !verifyOrderAccessToken(accessToken, order.accessTokenHash) &&
+    !verifyOrderAccessToken(accessToken, order.emailAccessTokenHash)
+  ) {
     notFound();
   }
+
+  const isPaymentProcessing = order.status === "PAYMENT_PROCESSING";
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -54,10 +60,12 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-4">
             <div className="rounded-md border border-border bg-card p-5">
-              <p className="text-sm font-semibold text-success">Orden creada</p>
+              <p className={`text-sm font-semibold ${isPaymentProcessing ? "text-primary" : "text-success"}`}>
+                {isPaymentProcessing ? "Pago en proceso" : "Orden creada"}
+              </p>
               <h1 className="mt-1 text-2xl font-bold text-primary">{order.orderNumber}</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Estado actual: pendiente de entrega.
+                Estado actual: {formatOrderStatus(order.status).toLowerCase()}.
               </p>
             </div>
 
@@ -116,11 +124,17 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
 
             <div className="mt-5 rounded-md bg-background p-4 text-sm">
               <div className="flex gap-2 font-semibold text-foreground">
-                <CreditCard className="h-4 w-4 text-primary" />
-                Pago confirmado
+                {isPaymentProcessing ? (
+                  <Clock3 className="h-4 w-4 text-primary" />
+                ) : (
+                  <CreditCard className="h-4 w-4 text-primary" />
+                )}
+                {isPaymentProcessing ? "Confirmando pago" : "Pago confirmado"}
               </div>
               <p className="mt-2 text-muted-foreground">
-                Pago simulado por plataforma web para el MVP. La orden ya está lista para preparación.
+                {isPaymentProcessing
+                  ? "Estamos esperando la confirmación segura del proveedor. Esta orden aún no está lista para preparación."
+                  : "El pago fue confirmado y la orden está lista para preparación."}
               </p>
             </div>
 
@@ -155,5 +169,3 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
     </div>
   );
 }
-
-

@@ -22,6 +22,7 @@ type AdminOrdersPageProps = {
 };
 
 const orderStatusOptions: OrderStatus[] = [
+  "PAYMENT_PROCESSING",
   "PAID_PENDING_SHIPMENT",
   "SHIPPED",
   "DELIVERED",
@@ -65,7 +66,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
             <div>
               <h1 className="text-2xl font-bold text-primary">Órdenes</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Revisa compras pagadas, preparación de entrega y estados operativos del MVP.
+                Revisa pagos en confirmación, compras pagadas y preparación de entrega.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
@@ -75,7 +76,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
           </div>
         </section>
 
-        <section className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+        <section className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-6">
           {orderStatusOptions.map((option) => (
             <MetricCard
               key={option}
@@ -217,4 +218,3 @@ function getStatusCount(
 function parseOrderStatus(status: string) {
   return orderStatusOptions.find((option) => option === status);
 }
-

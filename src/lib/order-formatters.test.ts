@@ -12,6 +12,7 @@ import {
 
 describe("formatOrderStatus", () => {
   it("retorna label en español para cada estado", () => {
+    expect(formatOrderStatus(OrderStatus.PAYMENT_PROCESSING)).toBe("Confirmando pago");
     expect(formatOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT)).toBe("Pendiente de entrega");
     expect(formatOrderStatus(OrderStatus.SHIPPED)).toBe("Enviada");
     expect(formatOrderStatus(OrderStatus.DELIVERED)).toBe("Entregada");
@@ -21,6 +22,10 @@ describe("formatOrderStatus", () => {
 });
 
 describe("getOrderStatusClassName", () => {
+  it("retorna clase primaria para pago en confirmación", () => {
+    expect(getOrderStatusClassName(OrderStatus.PAYMENT_PROCESSING)).toContain("primary");
+  });
+
   it("retorna clase warning para pendiente de entrega", () => {
     expect(getOrderStatusClassName(OrderStatus.PAID_PENDING_SHIPMENT)).toContain("warning");
   });

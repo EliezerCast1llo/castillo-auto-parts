@@ -3,8 +3,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { buildOrderAccessHref } from "@/lib/order-access-token";
-import { createPaidGuestOrderFromCart } from "@/lib/orders";
+import { createGuestCheckoutFromCart } from "@/lib/orders";
 
 export async function createGuestOrder(formData: FormData) {
   const session = await auth();
@@ -24,10 +23,10 @@ export async function createGuestOrder(formData: FormData) {
     }
   }
 
-  const result = await createPaidGuestOrderFromCart(formData, userId);
+  const result = await createGuestCheckoutFromCart(formData, userId);
 
   if (result.status === "created") {
-    redirect(buildOrderAccessHref(result.orderNumber, result.accessToken));
+    redirect(result.checkoutUrl);
   }
 
   if (result.status === "empty_cart" || result.status === "stock_issue") {

@@ -25,20 +25,23 @@ export type CreatePaymentResult = {
 };
 
 export type PaymentWebhookEvent = {
+  amountCents?: number;
   provider: PaymentProviderId;
   eventType: string;
   externalEventId?: string;
   externalPaymentId: string;
   externalReference?: string;
+  isProduction?: boolean;
   isValid: boolean;
+  occurredAt?: Date;
   status: PaymentStatus;
   rawPayload: unknown;
 };
 
 export interface PaymentProvider {
+  readonly id: PaymentProviderId;
   createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult>;
   verifyWebhook(request: Request): Promise<PaymentWebhookEvent>;
-  getPaymentStatus(externalPaymentId: string): Promise<PaymentStatus>;
 }
 
 export function isPaymentProviderId(value: string): value is PaymentProviderId {

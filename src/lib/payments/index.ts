@@ -1,7 +1,14 @@
 import { mockPaymentProvider } from "./mock-provider";
 import { isPaymentProviderId, type PaymentProvider, type PaymentProviderId } from "./provider";
+import { createWompiPaymentProvider, getWompiConfig } from "./wompi-provider";
 
 export { buildMockPaymentId, mockPaymentProvider } from "./mock-provider";
+export {
+  createWompiPaymentProvider,
+  getWompiConfig,
+  InvalidWompiWebhookSignatureError,
+  verifyWompiWebhookSignature,
+} from "./wompi-provider";
 export type {
   CreatePaymentInput,
   CreatePaymentResult,
@@ -20,6 +27,10 @@ export function getPaymentProvider(
   if (resolvedProviderId === "mock") {
     assertPaymentProviderAllowed(resolvedProviderId, environment);
     return mockPaymentProvider;
+  }
+
+  if (resolvedProviderId === "wompi") {
+    return createWompiPaymentProvider(getWompiConfig());
   }
 
   throw new Error(`Payment provider "${resolvedProviderId}" is not implemented yet.`);

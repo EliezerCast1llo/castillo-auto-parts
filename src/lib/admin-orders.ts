@@ -15,6 +15,7 @@ import { DEFAULT_LOCATION_CODE } from "./fulfillment";
  * por segunda vez.
  *
  * Diagrama:
+ *   PAYMENT_PROCESSING    → gestionado solo por eventos de pago
  *   PAID_PENDING_SHIPMENT → SHIPPED | CANCELLED | REFUNDED
  *   SHIPPED               → DELIVERED | CANCELLED | REFUNDED
  *   DELIVERED             → (cerrada)
@@ -24,6 +25,7 @@ import { DEFAULT_LOCATION_CODE } from "./fulfillment";
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, ReadonlyArray<OrderStatus>> = {
   CANCELLED: [OrderStatus.REFUNDED],
   DELIVERED: [],
+  PAYMENT_PROCESSING: [],
   PAID_PENDING_SHIPMENT: [OrderStatus.SHIPPED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
   REFUNDED: [],
   SHIPPED: [OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
@@ -160,6 +162,7 @@ function mapShipmentStatus(status: OrderStatus) {
   const statusMap: Record<OrderStatus, string> = {
     CANCELLED: "CANCELLED",
     DELIVERED: "DELIVERED",
+    PAYMENT_PROCESSING: "PENDING",
     PAID_PENDING_SHIPMENT: "PENDING",
     REFUNDED: "CANCELLED",
     SHIPPED: "IN_TRANSIT",

@@ -4,15 +4,20 @@ import type {
 } from "./provider";
 
 export const mockPaymentProvider: PaymentProvider = {
+  id: "mock",
+
   async createPayment(input) {
-    const paidAt = new Date();
     const externalPaymentId = buildMockPaymentId(input.orderNumber);
+    const checkoutUrl = new URL(
+      `/payments/mock/${encodeURIComponent(externalPaymentId)}`,
+      input.redirectUrl,
+    );
+    checkoutUrl.searchParams.set("returnTo", input.redirectUrl);
 
     return {
-      checkoutUrl: input.redirectUrl,
+      checkoutUrl: checkoutUrl.toString(),
       externalPaymentId,
       externalReference: input.orderNumber,
-      paidAt,
       provider: "mock",
       rawPayload: {
         amountCents: input.amountCents,
@@ -20,11 +25,10 @@ export const mockPaymentProvider: PaymentProvider = {
         customerEmail: input.customerEmail,
         metadata: input.metadata ?? {},
         orderNumber: input.orderNumber,
-        paidAt: paidAt.toISOString(),
-        type: "mock.payment.confirmed",
+        type: "mock.payment.created",
       },
-      rawStatus: "SIMULATED_PAID",
-      status: "PAID",
+      rawStatus: "SIMULATED_PENDING",
+      status: "PENDING",
     };
   },
 
@@ -35,20 +39,19 @@ export const mockPaymentProvider: PaymentProvider = {
     const status = parsePaymentStatus(stringValue(payload.status));
 
     return {
+      amountCents: numberValue(payload.amountCents),
       eventType: "mock.webhook.received",
       externalEventId: stringValue(payload.externalEventId),
       externalPaymentId,
       externalReference,
       isValid: Boolean(externalPaymentId && status),
+      isProduction: false,
       provider: "mock",
       rawPayload: payload,
       status: status ?? "FAILED",
     };
   },
 
-  async getPaymentStatus(externalPaymentId) {
-    return externalPaymentId.startsWith("MOCK-") ? "PAID" : "FAILED";
-  },
 };
 
 export function buildMockPaymentId(orderNumber: string) {
@@ -84,4 +87,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function stringValue(value: unknown) {
   return typeof value === "string" ? value : undefined;
+}
+
+function numberValue(value: unknown) {
+  return typeof value === "number" && Number.isInteger(value) ? value : undefined;
 }

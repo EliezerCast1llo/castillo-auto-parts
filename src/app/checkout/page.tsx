@@ -313,7 +313,7 @@ function getStatusMessage(status: string) {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
     db_unavailable: "No pudimos crear la orden. Intenta de nuevo.",
     invalid: "Revisa los datos del formulario.",
-    payment_unavailable: "No pudimos confirmar el pago. Intenta nuevamente.",
+    payment_unavailable: "No pudimos iniciar el pago. Intenta nuevamente.",
   };
   return messages[status] ?? "";
 }
