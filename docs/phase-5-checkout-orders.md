@@ -34,7 +34,7 @@ Primera versión implementada en rama `codex/guest-checkout`.
 - `npm run lint`
 - `npm test`
 - `npm run build`
-- `npm run db:push -- --accept-data-loss`
+- `npm run db:migrate:deploy`
 - `npm run db:seed`
 - QA visual de carrito a checkout y detalle de orden en `http://localhost:3000`.
 

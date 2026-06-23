@@ -1,5 +1,7 @@
 # Phase 3 - Data Persistence
 
+> Nota 2026-06-21: este documento conserva el contexto historico de la fase. El flujo operativo actual usa migraciones Prisma; consultar `docs/database-migrations.md`.
+
 ## Objetivo
 
 Conectar el catalogo visible a una fuente de datos real sin bloquear el avance del MVP si la base local aun no esta disponible.
@@ -9,7 +11,7 @@ Esta fase prepara la transicion de mock data a PostgreSQL/Prisma para productos,
 ## Entregables
 
 - `docker-compose.yml` con PostgreSQL local.
-- Scripts `db:push` y `db:seed`.
+- Scripts de migracion y `db:seed`.
 - Seed inicial desde los productos mock existentes.
 - Campo `technicalDetails` en `Product`.
 - Capa de datos `src/data/products.ts`.
@@ -21,7 +23,7 @@ Esta fase prepara la transicion de mock data a PostgreSQL/Prisma para productos,
 1. Instalar dependencias con `npm install`.
 2. Crear `.env` desde `.env.example`.
 3. Levantar PostgreSQL con `docker compose up -d postgres`.
-4. Ejecutar `npm run db:push`.
+4. Ejecutar `npm run db:migrate:deploy`.
 5. Ejecutar `npm run db:seed`.
 6. Ejecutar `npm run dev`.
 7. Revisar `/`, `/catalog` y `/product/filtro-aceite-toyota-18l`.
@@ -37,7 +39,7 @@ Esta fase prepara la transicion de mock data a PostgreSQL/Prisma para productos,
 ## Riesgos Y Pendientes
 
 - En la Mac actual no se pudo ejecutar PostgreSQL local porque `docker` no esta instalado.
-- Cuando Docker este disponible, hay que correr `db:push` y `db:seed` para validar la ruta completa con base real.
+- Cuando Docker este disponible, hay que correr `db:migrate:deploy` y `db:seed` para validar la ruta completa con base real.
 - El catalogo todavia no tiene imagenes reales.
 - La compatibilidad vehicular aun es simple y debe evolucionar a busqueda por marca/modelo/anio/motor.
 - El manejo de `OUT_OF_STOCK` necesita una regla visual propia cuando avancemos carrito/checkout.

@@ -38,12 +38,15 @@ npm install
 docker compose up -d postgres
 ```
 
-4. Sincronizar schema y cargar seed:
+4. Aplicar migraciones y cargar seed:
 
 ```bash
-npm run db:push
+npm run db:migrate:deploy
 npm run db:seed
 ```
+
+Si la base local ya fue creada anteriormente con `db push`, revisar primero
+`docs/database-migrations.md` para marcar el baseline sin recrear tablas.
 
 5. Ejecutar la app:
 
@@ -66,7 +69,7 @@ npm run test:e2e
 Notas:
 
 - Docker Desktop ya esta instalado en esta Mac y PostgreSQL corre via `docker compose`.
-- `npm run test:e2e` crea un schema PostgreSQL temporal, corre `db push`, seed, build, Playwright, y luego borra ese schema.
+- `npm run test:e2e` crea un schema PostgreSQL temporal, aplica `migrate deploy`, seed, build, Playwright, y luego borra ese schema.
 - El runner E2E usa `http://localhost:3100` por defecto para no chocar con `npm run dev`; se puede cambiar con `E2E_PORT`.
 - Para depurar contra la base actual sin preparar schema aislado, usar `npm run test:e2e:raw`.
 - GitHub Actions corre `quality` y `e2e` en cada PR/push a `main`. Ver `docs/ci-cd-quality-gates.md`.
@@ -79,6 +82,7 @@ Notas:
 - `docs/project-file-map.md`
 - `docs/mvp-change-log.md`
 - `docs/ci-cd-quality-gates.md`
+- `docs/database-migrations.md`
 - `docs/agent-review-findings-2026-05-21.md`
 - `docs/product-requirements.md`
 - `docs/technical-architecture.md`

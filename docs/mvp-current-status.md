@@ -1,6 +1,6 @@
 # MVP Current Status
 
-Fecha: 2026-05-21.
+Fecha: 2026-06-21.
 
 Este documento es la fuente rapida de estado actual del MVP. Los documentos de fase anteriores pueden conservar contexto historico o decisiones previas.
 
@@ -20,7 +20,10 @@ Implementado:
 - Carrito guest firmado por cookie.
 - Checkout guest con retiro en bodega y envio local.
 - Mapa/pin manual con coordenadas requeridas para envio local.
-- Ordenes en estado `PAID_PENDING_SHIPMENT` usando proveedor de pago mock.
+- Checkout asíncrono: orden `PAYMENT_PROCESSING`, pago `PENDING` y reserva temporal de inventario.
+- Simulación explícita de confirmación de pago que usa el mismo procesador idempotente del webhook.
+- Adaptador Wompi y webhook HMAC implementados, pendientes de validación con credenciales sandbox reales.
+- Reserva, confirmación, liberación y expiración atómicas de inventario.
 - Admin protegido por login temporal.
 - Admin de ordenes, productos, inventario, ajustes de entrega, auditoria y avisos de stock.
 - Emails transaccionales con proveedor `console/mock`.
@@ -35,7 +38,7 @@ Implementado:
 Incluido:
 
 - Compra como invitado.
-- Pago simulado desde la web.
+- Pago simulado asíncrono desde la web.
 - Inventario de una bodega principal, modelado para crecer a mas bodegas.
 - Precios en USD con IVA incluido.
 - Retiro en bodega gratis.
@@ -45,7 +48,7 @@ Incluido:
 
 No incluido todavia:
 
-- Pago real con proveedor local.
+- Credenciales y validación sandbox/producción del pago real con Wompi.
 - Apple Pay / Google Pay.
 - Usuario registrado y ordenes asociadas a cuenta.
 - DTE real integrado con Ministerio de Hacienda.
@@ -59,9 +62,10 @@ No incluido todavia:
 
 - Elegir proveedor real.
 - Completar onboarding y credenciales.
-- Implementar webhook verificado.
-- Agregar idempotencia por evento externo.
-- Definir conciliacion, reversas, reembolsos, cancelaciones y restauracion de inventario.
+- Completar onboarding Wompi y validar el adaptador contra sandbox.
+- Configurar `WOMPI_*` y registrar la URL pública del webhook.
+- Configurar el scheduler de expiración con `RESERVATION_CRON_SECRET`.
+- Definir conciliación operativa, reversas y reembolsos reales.
 
 ### DTE
 

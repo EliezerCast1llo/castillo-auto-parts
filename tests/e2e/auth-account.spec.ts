@@ -120,6 +120,8 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
 
   await page.getByRole("button", { name: "Confirmar y pagar" }).click();
 
+  await expect(page).toHaveURL(/\/payments\/mock\/MOCK-CAP-/);
+  await page.getByRole("button", { name: "Simular pago aprobado" }).click();
   await expect(page).toHaveURL(/\/orders\/CAP-\d{8}-[A-Z0-9]{6}\?token=/);
   await expect(page.getByText("Orden creada")).toBeVisible();
 

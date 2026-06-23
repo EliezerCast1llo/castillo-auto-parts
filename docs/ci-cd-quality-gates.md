@@ -94,7 +94,7 @@ Antes de abrir un PR:
 ```bash
 npm run prisma:generate
 npx prisma validate
-npm run db:push
+npm run db:migrate:deploy
 npm run db:seed
 npm run lint
 npm run typecheck
@@ -109,7 +109,7 @@ Flujo del runner E2E:
 
 1. Toma `DATABASE_URL` o `E2E_DATABASE_URL`.
 2. Genera un schema temporal o usa `E2E_DATABASE_SCHEMA`, siempre normalizado con prefijo `e2e_`.
-3. Ejecuta `prisma db push` contra ese schema.
+3. Ejecuta `prisma migrate deploy` contra ese schema.
 4. Ejecuta `npm run db:seed` contra ese schema.
 5. Ejecuta `npm run build`.
 6. Ejecuta Playwright contra `next start` con la app apuntando al mismo schema.

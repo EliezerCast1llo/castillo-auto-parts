@@ -16,18 +16,28 @@ import {
 } from "./checkout";
 import { db } from "./db";
 import {
+  DEFAULT_LOCATION_CODE,
   getActiveDeliveryZones,
   getDeliveryZoneBySlug,
   isCoordinateInsideDeliveryZone,
   type DeliveryZoneOption,
 } from "./fulfillment";
-import { sendOrderConfirmationEmail } from "./email/transactional";
 import { buildAbsoluteAppUrl } from "./email/templates";
+import {
+  InventoryReservationError,
+  reserveInventory,
+} from "./inventory-reservations";
 import { buildOrderAccessHref, createOrderAccessToken, hashOrderAccessToken } from "./order-access-token";
-import { getPaymentProvider, type CreatePaymentResult, type PaymentStatus } from "./payments";
+import { cancelPaymentProcessingOrder } from "./payment-reservations";
+import {
+  getPaymentProvider,
+  type CreatePaymentResult,
+  type PaymentProvider,
+  type PaymentStatus,
+} from "./payments";
 
 export type CreateGuestOrderResult =
-  | { accessToken: string; orderNumber: string; status: "created" }
+  | { accessToken: string; checkoutUrl: string; orderNumber: string; status: "created" }
   | {
       status:
         | "coverage_unavailable"
@@ -44,7 +54,9 @@ class CheckoutDomainError extends Error {
   }
 }
 
-export async function createPaidGuestOrderFromCart(
+const PAYMENT_RESERVATION_TTL_MS = 20 * 60 * 1000;
+
+export async function createGuestCheckoutFromCart(
   formData: FormData,
   userId?: string,
 ): Promise<CreateGuestOrderResult> {
@@ -74,6 +86,7 @@ export async function createPaidGuestOrderFromCart(
 
     const shippingCents = getCheckoutShippingCents(parsed.data, deliveryZone);
 
+    const paymentProvider = getPaymentProvider();
     const order = await db.$transaction(async (tx) => {
       const dbProducts = await tx.product.findMany({
         where: {
@@ -81,7 +94,14 @@ export async function createPaidGuestOrderFromCart(
           isActive: true,
         },
         include: {
-          inventoryStocks: true,
+          inventoryStocks: {
+            take: 1,
+            where: {
+              location: {
+                code: DEFAULT_LOCATION_CODE,
+              },
+            },
+          },
         },
       });
       const productBySku = new Map(dbProducts.map((product) => [product.sku, product]));
@@ -99,8 +119,6 @@ export async function createPaidGuestOrderFromCart(
         }
 
         const lineTotalCents = product.priceCents * line.quantity;
-        const nextAvailableQuantity = availableQuantity - line.quantity;
-
         return {
           orderItem: {
             brandSnapshot: product.brand,
@@ -113,37 +131,26 @@ export async function createPaidGuestOrderFromCart(
             taxCents: calculateIncludedTaxCents(lineTotalCents),
             unitPriceCents: product.priceCents,
           },
-          quantity: line.quantity,
-          requiredQuantityOnHand: stock.quantityReserved + line.quantity,
-          stockId: stock.id,
-          stockStatus: getNextStockStatus(nextAvailableQuantity, stock.reorderPoint),
+          reservation: {
+            currentQuantityOnHand: stock.quantityOnHand,
+            currentQuantityReserved: stock.quantityReserved,
+            quantity: line.quantity,
+            reorderPoint: stock.reorderPoint,
+            stockId: stock.id,
+          },
         };
       });
 
-      const stockUpdates = await Promise.all(
-        preparedLines.map((line) =>
-          tx.inventoryStock.updateMany({
-            data: {
-              quantityOnHand: {
-                decrement: line.quantity,
-              },
-              status: line.stockStatus,
-            },
-            where: {
-              id: line.stockId,
-              quantityOnHand: {
-                gte: line.requiredQuantityOnHand,
-              },
-              status: {
-                notIn: [InventoryStatus.OUT_OF_STOCK, InventoryStatus.PREORDER],
-              },
-            },
-          }),
-        ),
-      );
-
-      if (stockUpdates.some((update) => update.count !== 1)) {
-        throw new CheckoutDomainError("stock_issue");
+      try {
+        await reserveInventory(
+          tx,
+          preparedLines.map((line) => line.reservation),
+        );
+      } catch (error) {
+        if (error instanceof InventoryReservationError) {
+          throw new CheckoutDomainError("stock_issue");
+        }
+        throw error;
       }
 
       const orderLines = preparedLines.map((line) => line.orderItem);
@@ -152,19 +159,6 @@ export async function createPaidGuestOrderFromCart(
       const addressId = await createDeliveryAddress(tx, parsed.data, deliveryZone);
       const orderNumber = buildOrderNumber();
       const accessToken = createOrderAccessToken();
-      const payment = await createPayment({
-        amountCents: totalCents,
-        customerEmail: parsed.data.customerEmail,
-        orderNumber,
-        redirectUrl: buildOrderAccessHref(orderNumber, accessToken),
-      });
-
-      if (payment.status !== "PAID") {
-        throw new CheckoutDomainError("payment_unavailable");
-      }
-
-      const paidAt = payment.paidAt ?? new Date();
-
       const savedOrder = await tx.order.create({
         data: {
           accessTokenHash: hashOrderAccessToken(accessToken),
@@ -189,67 +183,125 @@ export async function createPaidGuestOrderFromCart(
               notes: parsed.data.deliveryNotes,
             },
           },
-          paidAt,
           payment: {
             create: {
               amountCents: totalCents,
-              checkoutUrl: payment.checkoutUrl,
               currency: "USD",
-              events: {
-                create: {
-                  eventType: "payment.confirmed",
-                  externalEventId: payment.externalPaymentId,
-                  isValid: true,
-                  payloadJson: toJsonPayload(payment.rawPayload),
-                  provider: payment.provider,
-                },
-              },
-              externalPaymentId: payment.externalPaymentId,
-              externalReference: payment.externalReference,
-              paidAt,
-              provider: payment.provider,
-              rawStatus: payment.rawStatus,
-              status: mapPaymentStatus(payment.status),
+              provider: paymentProvider.id,
+              status: PrismaPaymentStatus.PENDING,
             },
           },
+          reservationExpiresAt: new Date(Date.now() + PAYMENT_RESERVATION_TTL_MS),
           shippingCents,
-          status: OrderStatus.PAID_PENDING_SHIPMENT,
+          status: OrderStatus.PAYMENT_PROCESSING,
           subtotalCents,
           taxCents: calculateIncludedTaxCents(totalCents),
           totalCents,
         },
         select: {
+          id: true,
           orderNumber: true,
+          payment: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
+
+      if (!savedOrder.payment) throw new CheckoutDomainError("db_unavailable");
 
       return {
         accessToken,
         customerEmail: parsed.data.customerEmail,
-        customerName: parsed.data.customerName,
         orderNumber: savedOrder.orderNumber,
+        paymentId: savedOrder.payment.id,
         totalCents,
       };
     });
 
-    await clearGuestCart();
-    await sendOrderConfirmationEmail({
-      customerEmail: order.customerEmail,
-      customerName: order.customerName,
-      orderNumber: order.orderNumber,
-      orderUrl: buildAbsoluteAppUrl(buildOrderAccessHref(order.orderNumber, order.accessToken)),
-      totalCents: order.totalCents,
-    });
+    let payment: CreatePaymentResult;
+    try {
+      payment = await createPayment(paymentProvider, {
+        amountCents: order.totalCents,
+        customerEmail: order.customerEmail,
+        orderNumber: order.orderNumber,
+        redirectUrl: buildAbsoluteAppUrl(
+          buildOrderAccessHref(order.orderNumber, order.accessToken),
+        ),
+      });
+    } catch {
+      await cancelPendingOrderAfterPaymentFailure(order.orderNumber);
+      return { status: "payment_unavailable" };
+    }
 
-    return { accessToken: order.accessToken, orderNumber: order.orderNumber, status: "created" };
+    if (payment.status !== "PENDING") {
+      await cancelPendingOrderAfterPaymentFailure(order.orderNumber);
+      return { status: "payment_unavailable" };
+    }
+
+    await recordCreatedPayment(order.paymentId, payment);
+
+    try {
+      await clearGuestCart();
+    } catch (error) {
+      logError({ context: "clearGuestCartAfterPendingOrder" }, error);
+    }
+
+    return {
+      accessToken: order.accessToken,
+      checkoutUrl: payment.checkoutUrl,
+      orderNumber: order.orderNumber,
+      status: "created",
+    };
   } catch (error) {
     if (error instanceof CheckoutDomainError) {
       return { status: error.code };
     }
 
-    logError({ context: "createPaidGuestOrderFromCart" }, error);
+    logError({ context: "createGuestCheckoutFromCart" }, error);
     return { status: "db_unavailable" };
   }
+}
+
+async function recordCreatedPayment(paymentId: string, payment: CreatePaymentResult) {
+  await db.$transaction([
+    db.payment.update({
+      data: {
+        checkoutUrl: payment.checkoutUrl,
+        externalPaymentId: payment.externalPaymentId,
+        externalReference: payment.externalReference,
+      },
+      where: { id: paymentId },
+    }),
+    db.payment.updateMany({
+      data: {
+        rawStatus: payment.rawStatus,
+        status: mapPaymentStatus(payment.status),
+      },
+      where: {
+        id: paymentId,
+        status: PrismaPaymentStatus.PENDING,
+      },
+    }),
+    db.paymentEvent.create({
+      data: {
+        eventType: "payment.created",
+        isValid: true,
+        payloadJson: toJsonPayload(payment.rawPayload),
+        paymentId,
+        provider: payment.provider,
+      },
+    }),
+  ]);
+}
+
+async function cancelPendingOrderAfterPaymentFailure(orderNumber: string) {
+  await cancelPaymentProcessingOrder({
+    orderNumber,
+    paymentStatus: PrismaPaymentStatus.FAILED,
+    rawStatus: "PAYMENT_CREATION_FAILED",
+  });
 }
 
 async function createDeliveryAddress(
@@ -320,25 +372,22 @@ function isUnavailable(status: InventoryStatus | undefined) {
   return !status || status === InventoryStatus.OUT_OF_STOCK || status === InventoryStatus.PREORDER;
 }
 
-function getNextStockStatus(availableQuantity: number, reorderPoint: number) {
-  if (availableQuantity <= 0) return InventoryStatus.OUT_OF_STOCK;
-  if (availableQuantity <= reorderPoint) return InventoryStatus.LOW_STOCK;
-  return InventoryStatus.IN_STOCK;
-}
-
-async function createPayment({
-  amountCents,
-  customerEmail,
-  orderNumber,
-  redirectUrl,
-}: {
-  amountCents: number;
-  customerEmail: string;
-  orderNumber: string;
-  redirectUrl: string;
-}): Promise<CreatePaymentResult> {
+async function createPayment(
+  provider: PaymentProvider,
+  {
+    amountCents,
+    customerEmail,
+    orderNumber,
+    redirectUrl,
+  }: {
+    amountCents: number;
+    customerEmail: string;
+    orderNumber: string;
+    redirectUrl: string;
+  },
+): Promise<CreatePaymentResult> {
   try {
-    return await getPaymentProvider().createPayment({
+    return await provider.createPayment({
       amountCents,
       currency: "USD",
       customerEmail,
@@ -349,7 +398,7 @@ async function createPayment({
       redirectUrl,
     });
   } catch (error) {
-    logError({ context: "createPaidGuestOrderFromCart" }, error);
+    logError({ context: "createGuestCheckoutFromCart" }, error);
     throw new CheckoutDomainError("payment_unavailable");
   }
 }

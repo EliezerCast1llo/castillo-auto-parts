@@ -229,6 +229,13 @@ Actualizacion 2026-06-12:
 - Cualquier cambio en auth debe correr como minimo `npm run lint`, `npm run typecheck`, `npm test` y `npm run test:e2e -- tests/e2e/auth-account.spec.ts`.
 - No descontar inventario dos veces.
 
+Actualizacion 2026-06-21:
+
+- Prisma usa migraciones versionadas; CI, E2E y produccion deben ejecutar `prisma migrate deploy`.
+- `prisma db push` deja de ser parte del flujo operativo porque no conserva historial y puede aplicar cambios destructivos sin una migracion revisable.
+- La migracion `20260621000000_baseline` representa el esquema previo a la Fase 2.
+- Bases existentes creadas con `db push` deben validar que su esquema coincide y marcar el baseline como aplicado; no deben ejecutar el SQL inicial sobre tablas existentes.
+
 Hallazgos 2026-05-20:
 
 - Existe una contrasena admin local temporal en `.env`; no debe versionarse y debe rotarse antes de cualquier deploy publico.
@@ -486,7 +493,7 @@ Notas actuales:
 - Docker Desktop fue instalado por el usuario para correr PostgreSQL local.
 - CI en GitHub Actions fue agregado en `.github/workflows/ci.yml`.
 - Falta activar manualmente el branch ruleset de `main` en GitHub para exigir `quality` y `e2e`.
-- `npm run test:e2e` usa `scripts/run-e2e.ts` para crear un schema PostgreSQL temporal, ejecutar Prisma push/seed/build/Playwright con `next start` en puerto `3100` y limpiar el schema. Para depurar sin aislamiento se puede usar `npm run test:e2e:raw`.
+- `npm run test:e2e` usa `scripts/run-e2e.ts` para crear un schema PostgreSQL temporal, ejecutar migraciones/seed/build/Playwright con `next start` en puerto `3100` y limpiar el schema. Para depurar sin aislamiento se puede usar `npm run test:e2e:raw`.
 - En esta Mac algunos archivos bajo Documents pueden aparecer como `dataless` por macOS/iCloud. Si Prisma, Vite, TypeScript o Git se quedan colgados leyendo `.env`, `.env.example`, `next-env.d.ts` o `tsconfig.tsbuildinfo`, materializar el archivo o borrar caches generados antes de repetir comandos. No leer ni sobrescribir `.env` con secretos; si se necesita validar, renombrarlo temporalmente y restaurarlo con `trap`.
 
 ## Verificaciones Habituales
@@ -553,3 +560,9 @@ QA:
 - Las pruebas locales no bastan; GitHub debe bloquear merges si `quality` o `e2e` fallan.
 - Los documentos de fase son historicos; `docs/mvp-current-status.md` y este archivo mandan para el estado vivo.
 - Las superficies informativas principales deben mantenerse claras y consistentes con la base blanca; reservar bloques oscuros para casos realmente justificados por la identidad visual final.
+- PostgreSQL no permite agregar un valor de enum y usarlo como `DEFAULT` dentro de la misma transacción; esos cambios deben vivir en migraciones consecutivas.
+- Crear una orden antes de llamar al proveedor evita transacciones de base de datos abiertas durante una petición externa, pero exige liberar la reserva si falla la creación del enlace.
+- El webhook puede llegar antes de que termine de persistirse la respuesta de creación del enlace. La actualización `PENDING` debe ser condicional para no degradar un pago que el webhook ya confirmó.
+- Confirmar una reserva resta la misma cantidad de `quantityOnHand` y `quantityReserved`; liberar solo resta `quantityReserved`.
+- El redirect del navegador sirve para UX, no como fuente de verdad de pago. El cumplimiento debe depender del webhook autenticado.
+- Un pago tardío después de expirar la reserva requiere revisión manual; no se debe prometer inventario que ya pudo reservar otro cliente.

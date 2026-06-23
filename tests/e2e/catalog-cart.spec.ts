@@ -38,7 +38,10 @@ test("local delivery checkout exposes delivery zone and map fields", async ({ pa
   await expect(page.locator('input[readonly]').first()).toHaveValue("La Libertad");
 });
 
-test("guest can complete pickup checkout with simulated online payment", async ({ page }) => {
+test("guest can create a pickup order awaiting payment confirmation", async ({ page }) => {
+  const sku = "MOCK-SPK-HK-16";
+  const initialStock = await getStockSnapshot(sku);
+
   await addProductToCart(page, "bujia-iridio-hyundai-kia-16l");
   await page.getByRole("link", { name: "Continuar al pago" }).click();
 
@@ -53,11 +56,37 @@ test("guest can complete pickup checkout with simulated online payment", async (
 
   await page.getByRole("button", { name: "Confirmar y pagar" }).click();
 
+  await expect(page).toHaveURL(/\/payments\/mock\/MOCK-CAP-/);
+  await expect(page.getByRole("heading", { name: "Simulación de pago" })).toBeVisible();
+
+  const order = await prisma.order.findFirstOrThrow({
+    include: { payment: true },
+    orderBy: { createdAt: "desc" },
+    where: { customerEmail: "qa-pickup@example.com" },
+  });
+  const reservedStock = await getStockSnapshot(sku);
+
+  expect(order.status).toBe("PAYMENT_PROCESSING");
+  expect(order.payment?.status).toBe("PENDING");
+  expect(order.paidAt).toBeNull();
+  expect(reservedStock.quantityOnHand).toBe(initialStock.quantityOnHand);
+  expect(reservedStock.quantityReserved).toBe(initialStock.quantityReserved + 1);
+
+  await page.getByRole("button", { name: "Simular pago aprobado" }).click();
   await expect(page).toHaveURL(/\/orders\/CAP-\d{8}-[A-Z0-9]{6}\?token=/);
   await expect(page.getByText("Orden creada")).toBeVisible();
   await expect(page.getByText("Estado actual: pendiente de entrega.")).toBeVisible();
   await expect(page.getByText("Retiro en bodega").first()).toBeVisible();
-  await expect(page.getByText("Pago confirmado")).toBeVisible();
+
+  const paidOrder = await prisma.order.findUniqueOrThrow({
+    include: { payment: true },
+    where: { id: order.id },
+  });
+  const confirmedStock = await getStockSnapshot(sku);
+  expect(paidOrder.status).toBe("PAID_PENDING_SHIPMENT");
+  expect(paidOrder.payment?.status).toBe("PAID");
+  expect(confirmedStock.quantityOnHand).toBe(initialStock.quantityOnHand - 1);
+  expect(confirmedStock.quantityReserved).toBe(initialStock.quantityReserved);
 });
 
 test("guest can complete local delivery checkout with zone and exact location", async ({ page }) => {
@@ -86,12 +115,22 @@ test("guest can complete local delivery checkout with zone and exact location", 
 
   await page.getByRole("button", { name: "Confirmar y pagar" }).click();
 
+  await expect(page).toHaveURL(/\/payments\/mock\/MOCK-CAP-/);
+  await page.getByRole("button", { name: "Simular pago aprobado" }).click();
   await expect(page).toHaveURL(/\/orders\/CAP-\d{8}-[A-Z0-9]{6}\?token=/);
   await expect(page.getByText("Orden creada")).toBeVisible();
   await expect(page.getByText("Envío local")).toBeVisible();
   await expect(page.getByText("San Salvador").first()).toBeVisible();
   await expect(page.getByText("$3.00")).toBeVisible();
-  await expect(page.getByText("Pago confirmado")).toBeVisible();
+  await expect(page.getByText("Estado actual: pendiente de entrega.")).toBeVisible();
+
+  const paidOrder = await prisma.order.findFirstOrThrow({
+    include: { payment: true },
+    orderBy: { createdAt: "desc" },
+    where: { customerEmail: "qa-delivery@example.com" },
+  });
+  expect(paidOrder.status).toBe("PAID_PENDING_SHIPMENT");
+  expect(paidOrder.payment?.status).toBe("PAID");
 });
 
 test("guest can request a stock alert when cart item becomes unavailable", async ({ page }) => {
@@ -151,5 +190,17 @@ async function makeProductUnavailable(sku: string) {
       status: InventoryStatus.OUT_OF_STOCK,
     },
     where: { productId: product.id },
+  });
+}
+
+async function getStockSnapshot(sku: string) {
+  return prisma.inventoryStock.findFirstOrThrow({
+    select: {
+      quantityOnHand: true,
+      quantityReserved: true,
+    },
+    where: {
+      product: { sku },
+    },
   });
 }

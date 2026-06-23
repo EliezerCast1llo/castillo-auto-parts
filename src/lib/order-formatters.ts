@@ -18,6 +18,7 @@ import type { OrderStatus } from "@prisma/client";
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   CANCELLED: "Cancelada",
   DELIVERED: "Entregada",
+  PAYMENT_PROCESSING: "Confirmando pago",
   PAID_PENDING_SHIPMENT: "Pendiente de entrega",
   REFUNDED: "Reembolsada",
   SHIPPED: "Enviada",
@@ -32,6 +33,7 @@ export function formatOrderStatus(status: OrderStatus): string {
  * Usa tokens del design system (warning, success, danger, primary).
  */
 export function getOrderStatusClassName(status: OrderStatus): string {
+  if (status === "PAYMENT_PROCESSING") return "bg-primary/10 text-primary";
   if (status === "PAID_PENDING_SHIPMENT") return "bg-warning/15 text-warning";
   if (status === "SHIPPED") return "bg-primary/10 text-primary";
   if (status === "DELIVERED") return "bg-success/10 text-success";

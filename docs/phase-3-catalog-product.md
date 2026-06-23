@@ -57,6 +57,6 @@ La conexion real con PostgreSQL queda pendiente de validacion local completa por
 
 ## Pendientes siguientes
 
-1. Ejecutar `db:push` y `db:seed` cuando Docker/PostgreSQL este disponible.
+1. Ejecutar `db:migrate:deploy` y `db:seed` cuando Docker/PostgreSQL este disponible.
 2. Crear carrito inicial.
 3. Agregar pruebas E2E cuando el flujo tenga navegacion completa.

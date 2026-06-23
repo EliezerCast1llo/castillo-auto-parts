@@ -155,26 +155,33 @@ export default async function AdminOrderDetailPage({
           <aside className="h-fit space-y-4">
             <section className="rounded-md border border-border bg-card p-5 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
               <h2 className="text-lg font-bold text-primary">Cambiar estado</h2>
-              <form action={updateAdminOrderStatus} className="mt-4 space-y-3">
-                <input name="orderNumber" type="hidden" value={order.orderNumber} />
-                <label className="block text-sm font-semibold">
-                  Estado de orden
-                  <select
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-                    defaultValue={order.status}
-                    name="status"
-                  >
-                    {orderStatusOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {formatOrderStatus(status)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white">
-                  Guardar estado
-                </button>
-              </form>
+              {order.status === "PAYMENT_PROCESSING" ? (
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  El pago está en confirmación. Este estado solo puede cambiar mediante un evento
+                  validado del proveedor de pago.
+                </p>
+              ) : (
+                <form action={updateAdminOrderStatus} className="mt-4 space-y-3">
+                  <input name="orderNumber" type="hidden" value={order.orderNumber} />
+                  <label className="block text-sm font-semibold">
+                    Estado de orden
+                    <select
+                      className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
+                      defaultValue={order.status}
+                      name="status"
+                    >
+                      {orderStatusOptions.map((status) => (
+                        <option key={status} value={status}>
+                          {formatOrderStatus(status)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white">
+                    Guardar estado
+                  </button>
+                </form>
+              )}
             </section>
 
             <section className="rounded-md border border-border bg-card p-5">

@@ -20,6 +20,7 @@ let sequence = 0;
 describe("admin order status helpers", () => {
   it("parses only supported order statuses", () => {
     expect(parseAdminOrderStatus("SHIPPED")).toBe(OrderStatus.SHIPPED);
+    expect(parseAdminOrderStatus("PAYMENT_PROCESSING")).toBeUndefined();
     expect(parseAdminOrderStatus("PENDING_PAYMENT")).toBeUndefined();
   });
 });
@@ -39,6 +40,11 @@ describe("ORDER_STATUS_TRANSITIONS (state machine)", () => {
 
   it("bloquea transiciones inválidas desde PAID_PENDING_SHIPMENT", () => {
     expect(canTransitionOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT, OrderStatus.DELIVERED)).toBe(false);
+  });
+
+  it("reserva PAYMENT_PROCESSING para eventos de pago", () => {
+    expect(canTransitionOrderStatus(OrderStatus.PAYMENT_PROCESSING, OrderStatus.PAID_PENDING_SHIPMENT)).toBe(false);
+    expect(canTransitionOrderStatus(OrderStatus.PAYMENT_PROCESSING, OrderStatus.CANCELLED)).toBe(false);
   });
 
   it("permite guardar sin cambio de estado", () => {
@@ -64,6 +70,7 @@ describe("ORDER_STATUS_TRANSITIONS (state machine)", () => {
     expect(isTerminalOrderStatus(OrderStatus.REFUNDED)).toBe(true);
     expect(isTerminalOrderStatus(OrderStatus.DELIVERED)).toBe(true);
     expect(isTerminalOrderStatus(OrderStatus.SHIPPED)).toBe(false);
+    expect(isTerminalOrderStatus(OrderStatus.PAYMENT_PROCESSING)).toBe(false);
     expect(isTerminalOrderStatus(OrderStatus.PAID_PENDING_SHIPMENT)).toBe(false);
   });
 
