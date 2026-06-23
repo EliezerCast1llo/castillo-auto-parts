@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildOrderNumber,
   calculateIncludedTaxCents,
+  calculateOrderTaxCents,
   calculateShippingCents,
   checkoutSchema,
   parseCheckoutFormData,
@@ -17,6 +18,37 @@ describe("checkout helpers", () => {
 
   it("calculates included IVA from total", () => {
     expect(calculateIncludedTaxCents(11300)).toBe(1300);
+  });
+
+  it("composes order IVA from line taxes and tax-included shipping", () => {
+    const itemTaxCents = [
+      calculateIncludedTaxCents(1195),
+      calculateIncludedTaxCents(1195),
+    ];
+
+    expect(
+      calculateOrderTaxCents({
+        itemTaxCents,
+        shippingCents: 200,
+      }),
+    ).toBe(297);
+  });
+
+  it("does not recalculate order IVA from the gross total", () => {
+    const productACents = 1195;
+    const productBCents = 1195;
+    const shippingCents = 200;
+
+    const composedTaxCents = calculateOrderTaxCents({
+      itemTaxCents: [
+        calculateIncludedTaxCents(productACents),
+        calculateIncludedTaxCents(productBCents),
+      ],
+      shippingCents,
+    });
+
+    expect(composedTaxCents).toBe(297);
+    expect(calculateIncludedTaxCents(productACents + productBCents + shippingCents)).toBe(298);
   });
 
   it("requires address fields for local delivery", () => {

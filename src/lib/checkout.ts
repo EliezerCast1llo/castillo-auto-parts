@@ -95,6 +95,20 @@ export function calculateIncludedTaxCents(totalCents: number) {
   return Math.round((totalCents * 13) / 113);
 }
 
+export function calculateOrderTaxCents({
+  itemTaxCents,
+  shippingCents,
+}: {
+  itemTaxCents: number[];
+  shippingCents: number;
+}) {
+  const itemsTaxCents = itemTaxCents.reduce((total, taxCents) => total + taxCents, 0);
+
+  // Regla fiscal provisional del MVP: productos y envio son precios finales
+  // al consumidor con IVA incluido. T-040 debe ratificarla antes de emitir DTE.
+  return itemsTaxCents + calculateIncludedTaxCents(shippingCents);
+}
+
 export function buildOrderNumber(date = new Date(), suffix = randomOrderSuffix()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

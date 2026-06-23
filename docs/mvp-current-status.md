@@ -24,6 +24,7 @@ Implementado:
 - Simulación explícita de confirmación de pago que usa el mismo procesador idempotente del webhook.
 - Adaptador Wompi y webhook HMAC implementados, pendientes de validación con credenciales sandbox reales.
 - Reserva, confirmación, liberación y expiración atómicas de inventario.
+- Cálculo interno de IVA consistente: `Order.taxCents` se compone desde IVA por línea más IVA incluido del envío.
 - Admin protegido por login temporal.
 - Admin de ordenes, productos, inventario, ajustes de entrega, auditoria y avisos de stock.
 - Emails transaccionales con proveedor `console/mock`.
@@ -41,6 +42,7 @@ Incluido:
 - Pago simulado asíncrono desde la web.
 - Inventario de una bodega principal, modelado para crecer a mas bodegas.
 - Precios en USD con IVA incluido.
+- El IVA no se muestra como desglose al cliente; internamente se guarda para conciliación/DTE futura.
 - Retiro en bodega gratis.
 - Envio local por zonas configurables.
 - Solicitud de aviso cuando no hay stock suficiente.
@@ -70,6 +72,7 @@ No incluido todavia:
 ### DTE
 
 - Definir proceso manual MVP con contador.
+- Confirmar con contador si el envío debe emitirse como línea gravada separada, servicio de transporte, cargo exento u otro tratamiento DTE.
 - Crear o actualizar `InvoiceDte` por orden pagada.
 - Definir datos fiscales minimos capturados.
 - Vista admin para estado DTE y revision manual.

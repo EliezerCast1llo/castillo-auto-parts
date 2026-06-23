@@ -10,6 +10,7 @@ import {
   buildFormattedAddress,
   buildOrderNumber,
   calculateIncludedTaxCents,
+  calculateOrderTaxCents,
   getFulfillmentLabel,
   parseCheckoutFormData,
   type CheckoutInput,
@@ -156,6 +157,10 @@ export async function createGuestCheckoutFromCart(
       const orderLines = preparedLines.map((line) => line.orderItem);
       const subtotalCents = orderLines.reduce((total, line) => total + line.lineTotalCents, 0);
       const totalCents = subtotalCents + shippingCents;
+      const taxCents = calculateOrderTaxCents({
+        itemTaxCents: orderLines.map((line) => line.taxCents),
+        shippingCents,
+      });
       const addressId = await createDeliveryAddress(tx, parsed.data, deliveryZone);
       const orderNumber = buildOrderNumber();
       const accessToken = createOrderAccessToken();
@@ -195,7 +200,7 @@ export async function createGuestCheckoutFromCart(
           shippingCents,
           status: OrderStatus.PAYMENT_PROCESSING,
           subtotalCents,
-          taxCents: calculateIncludedTaxCents(totalCents),
+          taxCents,
           totalCents,
         },
         select: {
