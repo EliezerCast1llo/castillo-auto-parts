@@ -73,6 +73,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `docs/phase-4-production-readiness.md` | Resumen de Fase 4: pooling, CSP, operaciones y DTE manual. |
 | `docs/phase-4-dte-manual-bridge.md` | Puente manual DTE hasta contar con contador/proveedor/sandbox. |
 | `docs/phase-5-checkout-orders.md` | Checkout, ordenes y fulfillment inicial. |
+| `docs/phase-5-quality-performance-seo.md` | Fase 5: índices, search DB, email, E2E admin y SEO. |
 | `docs/phase-6-payments.md` | Capa de pagos mock/reemplazable. |
 | `docs/phase-7-admin-orders.md` | Admin de ordenes. |
 | `docs/phase-7-admin-products-inventory.md` | Admin de productos e inventario. |

@@ -115,6 +115,15 @@ export function createResetPasswordRateLimiter(): AsyncRateLimiter {
   });
 }
 
+/** 60 búsquedas → bloqueo 1 min por IP. */
+export function createSearchRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 60,
+    windowMs: 60 * 1000,
+    lockoutMs: 60 * 1000,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Implementación Redis via Upstash REST API (fetch nativo, sin dependencias)
 // ---------------------------------------------------------------------------

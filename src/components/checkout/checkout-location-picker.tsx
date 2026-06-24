@@ -239,13 +239,6 @@ function pointToLatLng(x: number, y: number, zoom: number) {
   return { latitude, longitude };
 }
 
-function getSelectedLocation(latitude: string, longitude: string) {
-  const parsedLatitude = Number(latitude);
-  const parsedLongitude = Number(longitude);
-  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) return null;
-  return { latitude: parsedLatitude, longitude: parsedLongitude };
-}
-
 function formatCoordinate(value: number) {
   return value.toFixed(6);
 }

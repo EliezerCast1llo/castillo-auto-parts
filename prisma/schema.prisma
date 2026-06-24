@@ -157,6 +157,11 @@ model Product {
   orderItems         OrderItem[]
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
+
+  @@index([categoryId])
+  @@index([brand])
+  @@index([isActive, isFeatured])
+  @@index([isActive, brand])
 }
 
 model ProductImage {
@@ -167,6 +172,8 @@ model ProductImage {
   alt       String
   sortOrder Int     @default(0)
   isPrimary Boolean @default(false)
+
+  @@index([productId])
 }
 
 model VehicleCompatibility {
@@ -178,6 +185,7 @@ model VehicleCompatibility {
   yearFrom  Int
   yearTo    Int
 
+  @@index([productId])
   @@index([make, model, yearFrom, yearTo])
 }
 
@@ -235,6 +243,7 @@ model CartItem {
   updatedAt          DateTime @updatedAt
 
   @@unique([cartId, productId])
+  @@index([productId])
 }
 
 model Address {
@@ -307,6 +316,9 @@ model OrderItem {
   quantity            Int
   taxCents            Int
   lineTotalCents      Int
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Payment {

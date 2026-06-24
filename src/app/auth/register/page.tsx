@@ -7,7 +7,10 @@ import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { firstValue } from "@/lib/url-utils";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Crear cuenta | Castillo Auto Parts" };
+export const metadata = {
+  robots: { follow: false, index: false },
+  title: "Crear cuenta | Castillo Auto Parts",
+};
 
 type RegisterPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

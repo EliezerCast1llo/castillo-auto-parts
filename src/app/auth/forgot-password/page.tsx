@@ -4,7 +4,10 @@ import { SiteHeader } from "@/components/site-header";
 import { firstValue } from "@/lib/url-utils";
 import { requestPasswordReset } from "./actions";
 
-export const metadata = { title: "Recuperar contraseña | Castillo Auto Parts" };
+export const metadata = {
+  robots: { follow: false, index: false },
+  title: "Recuperar contraseña | Castillo Auto Parts",
+};
 
 type ForgotPasswordPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

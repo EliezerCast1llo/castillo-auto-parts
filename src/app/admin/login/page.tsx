@@ -12,6 +12,7 @@ type AdminLoginPageProps = {
 };
 
 export const metadata = {
+  robots: { follow: false, index: false },
   title: "Admin | Castillo Auto Parts",
 };
 

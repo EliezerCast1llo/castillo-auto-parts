@@ -26,6 +26,7 @@ Implementado:
 - Reserva, confirmación, liberación y expiración atómicas de inventario.
 - Cálculo interno de IVA consistente: `Order.taxCents` se compone desde IVA por línea más IVA incluido del envío.
 - Preparación de producción Fase 4: `DIRECT_DATABASE_URL`, CSP `Report-Only`, checklist operativo y puente manual DTE documentados.
+- Preparación de calidad Fase 5: índices DB, búsqueda DB/rate-limited, email provider endurecido, E2E admin por rol y SEO noindex.
 - Admin protegido por login temporal.
 - Admin de ordenes, productos, inventario, ajustes de entrega, auditoria y avisos de stock.
 - Emails transaccionales con proveedor `console/mock`.
@@ -130,6 +131,7 @@ Automatizado:
 - Vitest para helpers de negocio.
 - Vitest con Prisma real para transiciones admin de orden e inventario.
 - Playwright para catalogo, carrito, checkout pickup/local completo, aviso de stock y login/admin stock alerts.
+- Playwright cubre autorización de roles admin en rutas permitidas y denegadas.
 - Playwright responsive smoke para detectar overflow horizontal en pantallas cliente criticas, checkout y admin operativo.
 - GitHub Actions corre Prisma validate, lint, typecheck, unit tests, build y E2E en PR/push a `main`.
 - `npm run test:e2e` prepara y limpia su propio schema para no modificar el schema local normal.

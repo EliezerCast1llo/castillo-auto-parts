@@ -12,9 +12,9 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-06-24 (Fase 4 - produccion y cumplimiento).
+- Fecha de ultima actualizacion: 2026-06-24 (Fase 5 - calidad, performance y SEO).
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
-- Rama actual de trabajo: `codex/fase-4-production-readiness`.
+- Rama actual de trabajo: `codex/fase-5-quality-performance-seo`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
 - Marca final: pendiente.
@@ -42,6 +42,13 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 - CSP inicia en `Content-Security-Policy-Report-Only` con nonce por request; no pasar a enforcement sin revisar preview.
 - `docs/production-operations-checklist.md` centraliza revisión Vercel, R2, Resend/DNS, BD y DTE.
 - `docs/phase-4-dte-manual-bridge.md` documenta que DTE sigue manual/pendiente de contador; no emitir real sin sandbox/proveedor.
+
+**Fase 5 — Calidad, performance, testing y SEO:**
+- Catálogo/búsqueda tienen índices adicionales en Prisma y migración versionada.
+- `/api/search` consulta DB con `select/take` mínimo y rate limit por IP; ya no carga todo el catálogo en memoria.
+- `EMAIL_PROVIDER=console` queda bloqueado en producción salvo E2E aislado.
+- E2E cubre autorización admin por rol para rutas permitidas y denegadas.
+- Auth/admin login/reset quedan `noindex`, y auth se elimina del sitemap.
 
 ## Bloques de mejora aplicados (2026-05-26 a 2026-05-27)
 
