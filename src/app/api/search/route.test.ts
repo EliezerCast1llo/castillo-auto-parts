@@ -7,50 +7,47 @@
  */
 
 import { NextRequest } from "next/server";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
-// Mock de getCatalogProducts para no depender de DB en tests unitarios
 vi.mock("@/data/products", () => ({
-  getCatalogProducts: vi.fn(),
+  searchCatalogProducts: vi.fn(),
 }));
 
-import { getCatalogProducts } from "@/data/products";
+const mockRateLimiter = {
+  check: vi.fn(),
+  registerFailure: vi.fn(),
+  reset: vi.fn(),
+};
 
-const mockProducts = [
-  {
-    slug: "filtro-aceite-toyota",
-    name: "Filtro de aceite Toyota",
-    sku: "FLT-001",
-    category: "Filtros",
-    brand: "Toyota",
-    priceCents: 1500,
-    stockStatus: "Disponible",
-    compatibility: "Toyota Corolla 2018-2023",
-    compatibleVehicles: ["Toyota Corolla 2018-2023"],
-    vehicleCompatibilities: [],
-    description: "Filtro de aceite original",
-    technicalDetails: [],
-    partNumber: "90915-YZZF2",
-    stockQuantity: 10,
-  },
-  {
-    slug: "pastillas-freno-honda",
-    name: "Pastillas de freno Honda",
-    sku: "FRN-042",
-    category: "Frenos",
-    brand: "Honda",
-    priceCents: 4500,
-    stockStatus: "Últimas unidades",
-    compatibility: "Honda Civic 2016-2021",
-    compatibleVehicles: ["Honda Civic 2016-2021"],
-    vehicleCompatibilities: [],
-    description: "Pastillas de freno de alto rendimiento",
-    technicalDetails: [],
-    partNumber: "45022-TBA-A01",
-    stockQuantity: 2,
-  },
-];
+vi.mock("@/lib/rate-limit-redis", () => ({
+  createSearchRateLimiter: vi.fn(() => mockRateLimiter),
+}));
+
+import { searchCatalogProducts } from "@/data/products";
+
+const mockProducts = {
+  products: [
+    {
+      category: "Filtros",
+      name: "Filtro de aceite Toyota",
+      priceCents: 1500,
+      sku: "FLT-001",
+      slug: "filtro-aceite-toyota",
+      stockStatus: "Disponible",
+    },
+    {
+      category: "Frenos",
+      name: "Pastillas de freno Honda",
+      priceCents: 4500,
+      sku: "FRN-042",
+      slug: "pastillas-freno-honda",
+      stockStatus: "Últimas unidades",
+    },
+  ],
+  source: "database",
+  status: "ready",
+};
 
 function makeRequest(q: string) {
   return new NextRequest(`http://localhost:3000/api/search?q=${encodeURIComponent(q)}`);
@@ -58,7 +55,11 @@ function makeRequest(q: string) {
 
 describe("GET /api/search", () => {
   beforeEach(() => {
-    vi.mocked(getCatalogProducts).mockResolvedValue(mockProducts as never);
+    vi.clearAllMocks();
+    mockRateLimiter.check.mockResolvedValue({ allowed: true, remainingAttempts: 60 });
+    mockRateLimiter.registerFailure.mockResolvedValue({ allowed: true, remainingAttempts: 59 });
+    mockRateLimiter.reset.mockResolvedValue(undefined);
+    vi.mocked(searchCatalogProducts).mockResolvedValue(mockProducts as never);
   });
 
   it("retorna array vacío para query menor a 2 caracteres", async () => {
@@ -66,6 +67,7 @@ describe("GET /api/search", () => {
     const data = await response.json();
     expect(data.results).toHaveLength(0);
     expect(response.status).toBe(200);
+    expect(searchCatalogProducts).not.toHaveBeenCalled();
   });
 
   it("retorna array vacío para query vacía", async () => {
@@ -82,15 +84,16 @@ describe("GET /api/search", () => {
   it("busca por nombre de producto", async () => {
     const response = await GET(makeRequest("filtro"));
     const data = await response.json();
-    expect(data.results).toHaveLength(1);
+    expect(searchCatalogProducts).toHaveBeenCalledWith("filtro", 6);
+    expect(data.results).toHaveLength(2);
     expect(data.results[0].slug).toBe("filtro-aceite-toyota");
   });
 
   it("busca por SKU", async () => {
     const response = await GET(makeRequest("FRN-042"));
     const data = await response.json();
-    expect(data.results).toHaveLength(1);
-    expect(data.results[0].slug).toBe("pastillas-freno-honda");
+    expect(searchCatalogProducts).toHaveBeenCalledWith("FRN-042", 6);
+    expect(data.results[1].slug).toBe("pastillas-freno-honda");
   });
 
   it("incluye precio formateado en el resultado", async () => {
@@ -107,15 +110,31 @@ describe("GET /api/search", () => {
 
   it("no retorna más de 6 resultados", async () => {
     const manyProducts = Array.from({ length: 10 }, (_, i) => ({
-      ...mockProducts[0],
-      slug: `producto-${i}`,
+      ...mockProducts.products[0],
       name: `Filtro numero ${i}`,
       sku: `SKU-${i}`,
+      slug: `producto-${i}`,
     }));
-    vi.mocked(getCatalogProducts).mockResolvedValue(manyProducts as never);
+    vi.mocked(searchCatalogProducts).mockResolvedValue({
+      products: manyProducts.slice(0, 6),
+      source: "database",
+      status: "ready",
+    } as never);
 
     const response = await GET(makeRequest("filtro"));
     const data = await response.json();
     expect(data.results.length).toBeLessThanOrEqual(6);
+  });
+
+  it("retorna 429 cuando el rate limit bloquea la IP", async () => {
+    mockRateLimiter.check.mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
+
+    const response = await GET(makeRequest("filtro"));
+    const data = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("30");
+    expect(data.error).toContain("Demasiadas búsquedas");
+    expect(searchCatalogProducts).not.toHaveBeenCalled();
   });
 });

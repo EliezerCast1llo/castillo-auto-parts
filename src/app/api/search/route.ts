@@ -3,24 +3,27 @@
  *
  * Route Handler de búsqueda en tiempo real para el autocomplete del header.
  *
- * Reutiliza filterCatalogProducts (misma lógica que el catálogo) para que los
- * resultados del autocomplete sean siempre consistentes con la página de catálogo.
+ * Consulta la base de datos con select/take mínimo para evitar cargar todo el
+ * catálogo en memoria. Fuera de producción conserva fallback mock si la DB no
+ * está disponible.
  *
  * Límites:
  *   - q < 2 caracteres → array vacío (evita queries triviales).
  *   - q > 100 caracteres → 400 (previene abuso).
  *   - Máximo 6 resultados.
+ *   - Rate limit ligero por IP.
  *   - Cache de 30 segundos en CDN (stale-while-revalidate).
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import { getEmptyCatalogFilters, filterCatalogProducts } from "@/data/catalog-filters";
-import { getCatalogProducts } from "@/data/products";
+import { searchCatalogProducts } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
+import { createSearchRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 
 const MAX_RESULTS = 6;
 const MIN_QUERY_LENGTH = 2;
 const MAX_QUERY_LENGTH = 100;
+let _searchRateLimiter: AsyncRateLimiter | undefined;
 
 export type SearchResult = {
   slug: string;
@@ -47,14 +50,32 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [], query: q } satisfies SearchResponse);
   }
 
-  const products = await getCatalogProducts();
+  const rateLimitKey = getSearchRateLimitKey(request);
+  const rateLimiter = (_searchRateLimiter ??= createSearchRateLimiter());
+  const check = await rateLimiter.check(rateLimitKey);
+  if (!check.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas búsquedas. Intenta nuevamente en unos segundos." },
+      {
+        headers: { "Retry-After": String(check.retryAfterSeconds) },
+        status: 429,
+      },
+    );
+  }
 
-  const matched = filterCatalogProducts(products, {
-    ...getEmptyCatalogFilters(),
-    query: q,
-  }).slice(0, MAX_RESULTS);
+  const attempt = await rateLimiter.registerFailure(rateLimitKey);
+  if (!attempt.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas búsquedas. Intenta nuevamente en unos segundos." },
+      {
+        headers: { "Retry-After": String(attempt.retryAfterSeconds) },
+        status: 429,
+      },
+    );
+  }
 
-  const results: SearchResult[] = matched.map((product) => ({
+  const matched = await searchCatalogProducts(q, MAX_RESULTS);
+  const results: SearchResult[] = matched.products.map((product) => ({
     slug: product.slug,
     name: product.name,
     sku: product.sku,
@@ -69,4 +90,10 @@ export async function GET(request: NextRequest) {
       "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
     },
   });
+}
+
+function getSearchRateLimitKey(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  return `search:ip:${forwardedFor || realIp || "local"}`;
 }

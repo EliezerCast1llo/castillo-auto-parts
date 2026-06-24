@@ -29,6 +29,7 @@ export type CatalogProductsResult = {
 };
 
 type DbProduct = Awaited<ReturnType<typeof findDbProducts>>[number];
+type DbSearchProduct = Awaited<ReturnType<typeof findDbSearchProducts>>[number];
 
 // Sin `as const` en el objeto completo: Prisma necesita arrays mutables para orderBy.
 // Los literales "desc"/"asc" se preservan con las aserciones inline.
@@ -54,6 +55,48 @@ const findDbProducts = cache(async () => {
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
   });
 });
+
+function findDbSearchProducts(query: string, limit: number) {
+  return db.product.findMany({
+    where: {
+      isActive: true,
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { sku: { contains: query, mode: "insensitive" } },
+        { partNumber: { contains: query, mode: "insensitive" } },
+        { brand: { contains: query, mode: "insensitive" } },
+        { category: { name: { contains: query, mode: "insensitive" } } },
+        {
+          compatibilities: {
+            some: {
+              OR: [
+                { make: { contains: query, mode: "insensitive" } },
+                { model: { contains: query, mode: "insensitive" } },
+              ],
+            },
+          },
+        },
+      ],
+    },
+    orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
+    select: {
+      category: { select: { name: true } },
+      inventoryStocks: {
+        select: {
+          quantityOnHand: true,
+          quantityReserved: true,
+          status: true,
+        },
+        take: 1,
+      },
+      name: true,
+      priceCents: true,
+      sku: true,
+      slug: true,
+    },
+    take: limit,
+  });
+}
 
 export async function getCatalogProducts(): Promise<CatalogProduct[]> {
   const result = await getCatalogProductsResult();
@@ -191,6 +234,52 @@ export async function getCatalogProductSlugs() {
     return shouldUseMockCatalogFallback()
       ? mockProducts.map((product) => ({ slug: product.slug }))
       : [];
+  }
+}
+
+export type CatalogSearchProduct = {
+  category: string;
+  name: string;
+  priceCents: number;
+  sku: string;
+  slug: string;
+  stockStatus: CatalogProduct["stockStatus"];
+};
+
+export type CatalogSearchProductsResult = {
+  products: CatalogSearchProduct[];
+  source: CatalogProductSource | null;
+  status: CatalogProductStatus;
+};
+
+export async function searchCatalogProducts(
+  query: string,
+  limit: number,
+): Promise<CatalogSearchProductsResult> {
+  try {
+    const products = await findDbSearchProducts(query, limit);
+
+    if (products.length > 0 || !shouldUseMockCatalogFallback()) {
+      return {
+        products: products.map(mapDbSearchProduct),
+        source: "database",
+        status: products.length === 0 ? "empty" : "ready",
+      };
+    }
+
+    return buildMockSearchResult(query, limit);
+  } catch (error) {
+    logCatalogDataError(error);
+
+    if (shouldUseMockCatalogFallback()) {
+      return buildMockSearchResult(query, limit);
+    }
+
+    return {
+      products: [],
+      source: null,
+      status: "unavailable",
+    };
   }
 }
 
@@ -349,6 +438,52 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
       url: img.url,
       alt: img.alt,
     })),
+  };
+}
+
+function mapDbSearchProduct(product: DbSearchProduct): CatalogSearchProduct {
+  const stock = product.inventoryStocks[0];
+  const stockQuantity = stock ? Math.max(stock.quantityOnHand - stock.quantityReserved, 0) : 0;
+
+  return {
+    category: product.category.name,
+    name: product.name,
+    priceCents: product.priceCents,
+    sku: product.sku,
+    slug: product.slug,
+    stockStatus: toStockStatus(stock?.status, stockQuantity),
+  };
+}
+
+function buildMockSearchResult(query: string, limit: number): CatalogSearchProductsResult {
+  const products = filterCatalogProducts(mockProducts, {
+    ...getEmptySearchFilters(),
+    query,
+  }).slice(0, limit);
+
+  return {
+    products: products.map((product) => ({
+      category: product.category,
+      name: product.name,
+      priceCents: product.priceCents,
+      sku: product.sku,
+      slug: product.slug,
+      stockStatus: product.stockStatus,
+    })),
+    source: "mock",
+    status: "ready",
+  };
+}
+
+function getEmptySearchFilters(): CatalogFilters {
+  return {
+    brands: [],
+    categories: [],
+    query: "",
+    stockStatuses: [],
+    vehicleMake: "",
+    vehicleModel: "",
+    vehicleYear: "",
   };
 }
 
