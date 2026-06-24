@@ -25,6 +25,7 @@ Implementado:
 - Adaptador Wompi y webhook HMAC implementados, pendientes de validación con credenciales sandbox reales.
 - Reserva, confirmación, liberación y expiración atómicas de inventario.
 - Cálculo interno de IVA consistente: `Order.taxCents` se compone desde IVA por línea más IVA incluido del envío.
+- Preparación de producción Fase 4: `DIRECT_DATABASE_URL`, CSP `Report-Only`, checklist operativo y puente manual DTE documentados.
 - Admin protegido por login temporal.
 - Admin de ordenes, productos, inventario, ajustes de entrega, auditoria y avisos de stock.
 - Emails transaccionales con proveedor `console/mock`.
@@ -54,6 +55,7 @@ No incluido todavia:
 - Apple Pay / Google Pay.
 - Usuario registrado y ordenes asociadas a cuenta.
 - DTE real integrado con Ministerio de Hacienda.
+- CSP en modo enforcement; por ahora está en `Report-Only` para observar violaciones.
 - Chat de soporte.
 - Proveedor final de mapa/autocomplete.
 - Escaner de factura para cargar inventario.
@@ -77,6 +79,13 @@ No incluido todavia:
 - Definir datos fiscales minimos capturados.
 - Vista admin para estado DTE y revision manual.
 - Gate: ninguna venta real sin proceso fiscal claro.
+
+### Infraestructura
+
+- Configurar `DATABASE_URL` pooled y `DIRECT_DATABASE_URL` directa en Vercel.
+- Confirmar proveedor de PostgreSQL gestionado y revisar métricas de conexiones.
+- Revisar `docs/production-operations-checklist.md` antes de cualquier lanzamiento público.
+- Revisar violaciones CSP en preview antes de pasar de `Report-Only` a enforcement.
 
 ### Auth y Clientes
 
