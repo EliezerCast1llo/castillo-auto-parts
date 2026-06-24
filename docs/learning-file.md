@@ -8,15 +8,30 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-05-27 (Bloque 6).
+- Fecha de ultima actualizacion: 2026-06-23 (Fase 3 - consistencia de IVA).
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
-- Rama actual de trabajo: `claude/block-6-r2-images`.
+- Rama actual de trabajo: `codex/fase-3-iva-consistency`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
 - Marca final: pendiente.
 - Producto: e-commerce de repuestos automotrices para El Salvador.
 - Mercado inicial: San Salvador y Santa Tecla.
 - Horizonte objetivo: MVP robusto en aproximadamente 3 meses.
+
+## Fases recientes (2026-06)
+
+**Fase 2 — Pagos asíncronos e inventario:**
+- El checkout crea orden `PAYMENT_PROCESSING`, pago `PENDING` y reserva temporal de inventario.
+- El cumplimiento ocurre por procesador idempotente de eventos de pago, usado tanto por webhook real como por mock QA.
+- Wompi tiene adapter y webhook HMAC implementados, pendientes de credenciales sandbox reales.
+- El inventario se reserva, confirma, libera y expira de forma atómica.
+
+**Fase 3 — Consistencia de IVA:**
+- Regla provisional: productos y envío son montos finales al consumidor con IVA incluido.
+- La UI no desglosa IVA; solo informa que los precios ya incluyen IVA.
+- Internamente `Order.taxCents` se compone como `SUM(OrderItem.taxCents) + IVA incluido del envío`.
+- No recalcular el IVA total desde `subtotalCents + shippingCents`, porque puede descuadrar por redondeos de centavos.
+- Antes de DTE real, contador/proveedor DTE debe confirmar el tratamiento fiscal exacto del envío.
 
 ## Bloques de mejora aplicados (2026-05-26 a 2026-05-27)
 
