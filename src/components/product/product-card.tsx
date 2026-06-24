@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle, ShieldCheck, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { addCartItem } from "@/app/cart/actions";
 import { isPurchasableStockStatus, type CatalogProduct } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
@@ -58,17 +58,6 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
           {product.compatibility}
         </p>
 
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <ProductTrustPill
-            icon={<ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />}
-            label="Compatibilidad"
-          />
-          <ProductTrustPill
-            icon={<MessageCircle className="h-3.5 w-3.5" strokeWidth={2} />}
-            label="Asesoría disponible"
-          />
-        </div>
-
         {/* Price + CTA */}
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <div>
@@ -94,14 +83,5 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         </div>
       </div>
     </article>
-  );
-}
-
-function ProductTrustPill({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <span className="inline-flex min-h-7 items-center justify-center gap-1.5 rounded-lg bg-ca-background/75 px-2 text-center text-[10px] font-black text-ca-text-secondary">
-      <span className="text-ca-blue-700">{icon}</span>
-      <span className="line-clamp-1">{label}</span>
-    </span>
   );
 }
