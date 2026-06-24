@@ -9,9 +9,21 @@ export function getEmailProvider(): EmailProvider {
     return resendEmailProvider;
   }
 
-  return consoleEmailProvider;
+  if (provider === "console") {
+    if (canUseConsoleEmailProvider()) {
+      return consoleEmailProvider;
+    }
+
+    throw new Error("EMAIL_PROVIDER=console no está permitido en producción.");
+  }
+
+  throw new Error(`EMAIL_PROVIDER inválido: ${provider}. Usa "resend" o "console".`);
 }
 
 export function getTransactionalEmailFrom() {
   return process.env.EMAIL_FROM?.trim() || "Castillo Auto Parts <no-reply@castilloautoparts.local>";
+}
+
+function canUseConsoleEmailProvider() {
+  return process.env.NODE_ENV !== "production" || process.env.E2E_ISOLATED_DATABASE === "true";
 }
