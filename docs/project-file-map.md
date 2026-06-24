@@ -95,6 +95,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/app/cart/actions.ts` | Server actions de carrito y avisos de stock. |
 | `src/app/checkout/page.tsx` | Checkout guest con retiro/envio local y mapa. |
 | `src/app/checkout/actions.ts` | Server action de checkout. |
+| `src/app/ayuda/page.tsx` | Ayuda, FAQ y contacto para soporte/compras sin tocar pagos reales. |
 | `src/app/orders/[orderNumber]/page.tsx` | Vista publica de orden guest protegida por token. |
 | `src/app/design/page.tsx` | Ruta interna para materializar direccion visual. |
 
@@ -133,6 +134,9 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/components/product/product-visual.tsx` | Visual placeholder consistente de producto. |
 | `src/components/product/quantity-stepper.tsx` | Selector editable con botones menos/mas. |
 | `src/components/product/stock-badge.tsx` | Label publico de disponibilidad en espanol. |
+| `src/components/product/compatibility-badge.tsx` | Badge presentacional de compatibilidad para vehiculo activo futuro. |
+| `src/components/empty-state.tsx` | Estado vacio reutilizable con sugerencias y soporte. |
+| `src/components/whatsapp-cta.tsx` | CTA reusable de soporte por WhatsApp con fallback a ayuda. |
 | `src/components/checkout/checkout-delivery-fields.tsx` | Campos de entrega a domicilio. |
 | `src/components/checkout/checkout-location-picker.tsx` | Mapa/pin para ubicacion. |
 | `src/components/admin/admin-nav.tsx` | Navegacion admin. |
@@ -166,6 +170,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/form-utils.ts` | Helpers centralizados para leer FormData: `formString`, `optionalFormString`, `optionalFormStringOrNull`. |
 | `src/lib/url-utils.ts` | Helpers centralizados para query params: `firstValue`, `allValues`. |
 | `src/lib/order-formatters.ts` | Formatters de dominio para ordenes, envios y pagos (labels en es-SV, colores de badge). |
+| `src/lib/contact.ts` | Configuracion publica de contacto/WhatsApp para CTAs comerciales. |
 | `src/app/api/search/route.ts` | Route Handler GET /api/search?q= para autocomplete en tiempo real. |
 | `src/app/api/admin/upload-image/route.ts` | POST handler admin: valida, sube imagen a R2 y crea ProductImage en DB. |
 | `src/app/api/admin/delete-image/route.ts` | DELETE handler admin: borra ProductImage de DB y objeto de R2. |

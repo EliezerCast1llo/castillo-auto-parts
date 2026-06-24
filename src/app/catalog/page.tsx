@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { CatalogActiveFilters } from "@/components/product/catalog-active-filters";
 import { CatalogFilterForm } from "@/components/product/catalog-filter-form";
 import { CatalogPagination } from "@/components/catalog-pagination";
@@ -128,26 +128,22 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                 />
               </>
             ) : (
-              <div className="rounded-2xl border border-ca-border bg-white p-6 shadow-[var(--ca-shadow-soft)]">
-                <h3 className="text-lg font-black text-ca-navy-950">
-                  {totalCount === 0
-                    ? "Aún no hay productos activos"
-                    : "Sin resultados para esos filtros"}
-                </h3>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-ca-text-secondary">
-                  {totalCount === 0
+              <EmptyState
+                actionHref={activeFilterCount > 0 ? "/catalog" : undefined}
+                actionLabel={activeFilterCount > 0 ? "Limpiar filtros" : undefined}
+                description={
+                  totalCount === 0
                     ? "El catálogo está disponible pero todavía no hay inventario publicado."
-                    : "Prueba quitar un filtro, buscar por número de parte o revisar otra combinación."}
-                </p>
-                {activeFilterCount > 0 ? (
-                  <Link
-                    className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
-                    href="/catalog"
-                  >
-                    Limpiar filtros
-                  </Link>
-                ) : null}
-              </div>
+                    : "Prueba quitar un filtro, buscar por número de parte o escríbenos y te ayudamos a ubicar el repuesto correcto."
+                }
+                showWhatsApp
+                suggestions={["amortiguadores", "pastillas de freno", "filtro de aceite", "bujías"]}
+                title={
+                  totalCount === 0
+                    ? "Aún no hay productos activos"
+                    : "No encontramos repuestos con esos filtros"
+                }
+              />
             )}
           </section>
         </div>

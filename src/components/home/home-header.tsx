@@ -11,12 +11,14 @@ import {
 import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
 import { MobileMenu } from "@/components/mobile-menu";
+import { WhatsAppCTA } from "@/components/whatsapp-cta";
+import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
 const navItems = [
   { label: "Catálogo", href: "/catalog", hasMenu: true },
   { label: "Marcas", href: "/catalog?brand=Bosch" },
   { label: "Ofertas", href: "/catalog?stock=Últimas unidades" },
-  { label: "Ayuda", href: "/catalog?q=soporte", hasMenu: true },
+  { label: "Ayuda", href: "/ayuda", hasMenu: true },
 ];
 
 export async function HomeHeader() {
@@ -118,6 +120,14 @@ export function MainNavbar({ cartItemCount, accountHref, accountLabel }: MainNav
           <UserRound className="h-5 w-5" strokeWidth={1.8} />
           {accountLabel}
         </Link>
+
+        <div className="hidden xl:block">
+          <WhatsAppCTA
+            label="Asesoría"
+            phone={SUPPORT_WHATSAPP_NUMBER}
+            variant="subtle"
+          />
+        </div>
 
         {/* Carrito */}
         <Link
