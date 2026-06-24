@@ -1,6 +1,6 @@
 # Database Migrations
 
-Fecha: 2026-06-21.
+Fecha: 2026-06-24.
 
 Este documento define el flujo seguro de migraciones PostgreSQL con Prisma para Castillo Auto Parts.
 
@@ -11,6 +11,7 @@ Este documento define el flujo seguro de migraciones PostgreSQL con Prisma para 
 - No usar `prisma db push` sobre bases con datos reales.
 - Cada cambio de `prisma/schema.prisma` debe incluir su migracion SQL en el mismo PR.
 - Revisar el SQL antes de aplicar una migracion que elimine o transforme datos.
+- En producción serverless, `DATABASE_URL` debe ser pooled y `DIRECT_DATABASE_URL` debe ser directa.
 
 ## Base nueva
 
@@ -28,7 +29,7 @@ La migracion inicial `20260621000000_baseline` crea el esquema completo previo a
 No ejecutar el baseline directamente sobre una base que ya contiene las tablas. Primero:
 
 1. Crear un backup.
-2. Confirmar que `DATABASE_URL` apunta al ambiente correcto.
+2. Confirmar que `DATABASE_URL` y `DIRECT_DATABASE_URL` apuntan al ambiente correcto.
 3. Comparar la base existente contra el datamodel:
 
 ```bash
@@ -71,6 +72,8 @@ npm run db:migrate:deploy
 ```
 
 `migrate deploy` aplica solo migraciones pendientes y no genera migraciones nuevas. El seed no debe ejecutarse automaticamente en produccion salvo que exista una decision operativa explicita.
+
+Prisma Migrate debe usar `DIRECT_DATABASE_URL` cuando `DATABASE_URL` sea una URL pooled. Ver `docs/database-pooling.md`.
 
 ## Fallos y rollback
 

@@ -15,6 +15,7 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
+import { buildContentSecurityPolicy } from "@/lib/content-security-policy";
 
 const ADMIN_SESSION_COOKIE = "castillo_admin_session";
 const ADMIN_SESSION_VERSION = "v2";
@@ -54,9 +55,18 @@ const ROLE_HOME: Record<string, string> = {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const nonce = createNonce();
+  const csp = buildContentSecurityPolicy({ nonce });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
 
   if (pathname.startsWith("/admin/login")) {
-    return NextResponse.next();
+    return withCspHeaders(NextResponse.next({ request: { headers: requestHeaders } }), csp, nonce);
+  }
+
+  if (!pathname.startsWith("/admin")) {
+    return withCspHeaders(NextResponse.next({ request: { headers: requestHeaders } }), csp, nonce);
   }
 
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
@@ -67,17 +77,17 @@ export async function middleware(request: NextRequest) {
   if (!payload) {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("next", getSafeNextPath(pathname));
-    return NextResponse.redirect(loginUrl);
+    return withCspHeaders(NextResponse.redirect(loginUrl), csp, nonce);
   }
 
   // Verificar permisos de rol para la ruta actual
   const allowed = isRoleAllowedForPath(payload.role, pathname);
   if (!allowed) {
     const homeUrl = new URL(ROLE_HOME[payload.role] ?? "/admin/orders", request.url);
-    return NextResponse.redirect(homeUrl);
+    return withCspHeaders(NextResponse.redirect(homeUrl), csp, nonce);
   }
 
-  return NextResponse.next();
+  return withCspHeaders(NextResponse.next({ request: { headers: requestHeaders } }), csp, nonce);
 }
 
 function isRoleAllowedForPath(role: string, pathname: string): boolean {
@@ -189,6 +199,20 @@ function getSafeNextPath(pathname: string): string {
   return "/admin/orders";
 }
 
+function withCspHeaders(response: NextResponse, csp: string, nonce: string) {
+  response.headers.set("Content-Security-Policy-Report-Only", csp);
+  response.headers.set("x-nonce", nonce);
+  return response;
+}
+
+function createNonce() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return uint8ArrayToBase64Url(bytes);
+}
+
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:avif|css|gif|ico|jpg|jpeg|js|map|png|svg|webp)$).*)",
+  ],
 };

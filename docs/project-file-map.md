@@ -68,13 +68,18 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `docs/phase-2-technical-setup.md` | Setup tecnico inicial. |
 | `docs/phase-3-catalog-product.md` | Catalogo y detalle de producto. |
 | `docs/phase-3-data-persistence.md` | Persistencia con Prisma/PostgreSQL. |
+| `docs/phase-3-iva-consistency.md` | Regla interna de IVA incluido y redondeo por linea. |
 | `docs/phase-4-cart.md` | Carrito guest y reglas de stock. |
+| `docs/phase-4-production-readiness.md` | Resumen de Fase 4: pooling, CSP, operaciones y DTE manual. |
+| `docs/phase-4-dte-manual-bridge.md` | Puente manual DTE hasta contar con contador/proveedor/sandbox. |
 | `docs/phase-5-checkout-orders.md` | Checkout, ordenes y fulfillment inicial. |
 | `docs/phase-6-payments.md` | Capa de pagos mock/reemplazable. |
 | `docs/phase-7-admin-orders.md` | Admin de ordenes. |
 | `docs/phase-7-admin-products-inventory.md` | Admin de productos e inventario. |
 | `docs/phase-7-admin-fulfillment-settings.md` | Admin de retiro, zonas y tarifas. |
 | `docs/phase-8-fulfillment-stock-qa.md` | Mapa, cobertura, avisos de stock y QA. |
+| `docs/database-pooling.md` | Regla `DATABASE_URL` pooled + `DIRECT_DATABASE_URL` directa. |
+| `docs/production-operations-checklist.md` | Checklist manual de Vercel, R2, Resend/DNS, BD, DTE y CSP. |
 
 ## App Router
 

@@ -8,9 +8,9 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 ## Estado Actual
 
-- Fecha de ultima actualizacion: 2026-06-23 (Fase 3 - consistencia de IVA).
+- Fecha de ultima actualizacion: 2026-06-24 (Fase 4 - produccion y cumplimiento).
 - Repo: `EliezerCast1llo/castillo-auto-parts`.
-- Rama actual de trabajo: `codex/fase-3-iva-consistency`.
+- Rama actual de trabajo: `codex/fase-4-production-readiness`.
 - Rama principal: `main`.
 - Codename: `Castillo Auto Parts`.
 - Marca final: pendiente.
@@ -32,6 +32,12 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 - Internamente `Order.taxCents` se compone como `SUM(OrderItem.taxCents) + IVA incluido del envío`.
 - No recalcular el IVA total desde `subtotalCents + shippingCents`, porque puede descuadrar por redondeos de centavos.
 - Antes de DTE real, contador/proveedor DTE debe confirmar el tratamiento fiscal exacto del envío.
+
+**Fase 4 — Producción y cumplimiento:**
+- `DATABASE_URL` queda reservada para runtime pooled; `DIRECT_DATABASE_URL` para migraciones/directo.
+- CSP inicia en `Content-Security-Policy-Report-Only` con nonce por request; no pasar a enforcement sin revisar preview.
+- `docs/production-operations-checklist.md` centraliza revisión Vercel, R2, Resend/DNS, BD y DTE.
+- `docs/phase-4-dte-manual-bridge.md` documenta que DTE sigue manual/pendiente de contador; no emitir real sin sandbox/proveedor.
 
 ## Bloques de mejora aplicados (2026-05-26 a 2026-05-27)
 
