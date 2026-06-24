@@ -128,7 +128,6 @@ export function CheckoutDeliveryFields({
           {hasSavedAddresses ? (
             <SavedAddressSelector
               addresses={savedAddresses}
-              deliveryZones={deliveryZones}
               selectedAddressId={selectedAddressId}
               selectedSavedAddress={selectedSavedAddress}
               savedZone={savedZone}
@@ -278,14 +277,12 @@ export function CheckoutDeliveryFields({
 
 function SavedAddressSelector({
   addresses,
-  deliveryZones,
   selectedAddressId,
   selectedSavedAddress,
   savedZone,
   setSelectedAddressId,
 }: {
   addresses: SavedAddress[];
-  deliveryZones: DeliveryZoneOption[];
   selectedAddressId: string;
   selectedSavedAddress: SavedAddress | undefined;
   savedZone: DeliveryZoneOption | undefined;
