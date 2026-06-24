@@ -61,16 +61,16 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <ProductTrustPill
             icon={<ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />}
-            label="Verificación"
+            label="Compatibilidad"
           />
           <ProductTrustPill
             icon={<MessageCircle className="h-3.5 w-3.5" strokeWidth={2} />}
-            label="Asesoría"
+            label="Asesoría disponible"
           />
         </div>
 
         {/* Price + CTA */}
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-ca-border pt-4">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <div>
             <span
               className="text-2xl text-ca-navy-950"
@@ -82,6 +82,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
           <form action={addCartItem}>
             <input name="sku" type="hidden" value={product.sku} />
             <input name="quantity" type="hidden" value="1" />
+            <input name="stayOnPage" type="hidden" value="true" />
             <button
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-ca-navy-950 px-4 text-xs font-black text-white shadow-[0_6px_14px_rgba(6,25,51,0.15)] transition hover:bg-ca-navy-800 hover:shadow-[0_8px_18px_rgba(6,25,51,0.22)] disabled:bg-[#EEF2F6] disabled:text-[#7B8798] disabled:shadow-none"
               disabled={!isAvailable}
@@ -98,9 +99,9 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
 
 function ProductTrustPill({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <span className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-xl border border-ca-border bg-ca-background px-2 text-[11px] font-black text-ca-navy-950">
+    <span className="inline-flex min-h-7 items-center justify-center gap-1.5 rounded-lg bg-ca-background/75 px-2 text-center text-[10px] font-black text-ca-text-secondary">
       <span className="text-ca-blue-700">{icon}</span>
-      <span className="truncate">{label}</span>
+      <span className="line-clamp-1">{label}</span>
     </span>
   );
 }

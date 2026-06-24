@@ -19,15 +19,20 @@ test("customer can add an available product to the guest cart", async ({ page })
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
 
-  await expect(page).toHaveURL(/\/cart\?estado=added/);
+  await expect(page).toHaveURL(/\/catalog$/);
+  await expect(page.getByRole("link", { name: /Ver carrito, 1 producto/ })).toBeVisible();
+
+  await page.getByRole("link", { name: /Ver carrito, 1 producto/ }).click();
+  await expect(page).toHaveURL(/\/cart$/);
   await expect(page.getByRole("heading", { name: "Tu carrito" })).toBeVisible();
-  await expect(page.getByText("Producto agregado al carrito.")).toBeVisible();
+  await expect(page.getByText("1 producto").first()).toBeVisible();
 });
 
 test("local delivery checkout exposes delivery zone and map fields", async ({ page }) => {
   await page.goto("/catalog");
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
+  await page.getByRole("link", { name: /Ver carrito, 1 producto/ }).click();
   await page.getByRole("link", { name: "Continuar al pago" }).click();
   await page.locator('input[value="LOCAL_DELIVERY"]').click();
   await page.locator('select[name="deliveryZoneSlug"]').selectOption("santa-tecla");
