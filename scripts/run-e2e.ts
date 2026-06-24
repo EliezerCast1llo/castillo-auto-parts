@@ -25,6 +25,7 @@ const e2eEnv = {
     "e2e-admin-secret-at-least-32-characters-long",
   AUTH_TRUST_HOST: "1",
   DATABASE_URL: isolatedDatabaseUrl,
+  DIRECT_DATABASE_URL: isolatedDatabaseUrl,
   EMAIL_PROVIDER: process.env.E2E_EMAIL_PROVIDER || "console",
   E2E_ISOLATED_DATABASE: "true",
   GUEST_CART_SECRET:
