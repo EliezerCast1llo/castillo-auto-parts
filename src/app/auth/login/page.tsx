@@ -8,7 +8,10 @@ import { firstValue } from "@/lib/url-utils";
 import { loginWithCredentials, loginWithGoogle } from "./actions";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Iniciar sesión | Castillo Auto Parts" };
+export const metadata = {
+  robots: { follow: false, index: false },
+  title: "Iniciar sesión | Castillo Auto Parts",
+};
 
 type LoginPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

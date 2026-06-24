@@ -7,7 +7,10 @@ import { applyPasswordResetAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Nueva contraseña | Castillo Auto Parts" };
+export const metadata = {
+  robots: { follow: false, index: false },
+  title: "Nueva contraseña | Castillo Auto Parts",
+};
 
 type ResetPasswordPageProps = {
   params: Promise<{ token: string }>;
