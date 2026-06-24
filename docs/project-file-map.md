@@ -79,6 +79,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `docs/phase-7-admin-products-inventory.md` | Admin de productos e inventario. |
 | `docs/phase-7-admin-fulfillment-settings.md` | Admin de retiro, zonas y tarifas. |
 | `docs/phase-8-fulfillment-stock-qa.md` | Mapa, cobertura, avisos de stock y QA. |
+| `docs/non-payment-mvp-audit-brief.md` | Brief para auditar y planificar mejoras del MVP sin pagos reales. |
 | `docs/database-pooling.md` | Regla `DATABASE_URL` pooled + `DIRECT_DATABASE_URL` directa. |
 | `docs/production-operations-checklist.md` | Checklist manual de Vercel, R2, Resend/DNS, BD, DTE y CSP. |
 
