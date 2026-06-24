@@ -1,4 +1,5 @@
 import { cache } from "react";
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { logError } from "@/lib/logger";
 import {
@@ -8,7 +9,12 @@ import {
   type MockProduct,
 } from "./mock-products";
 import { shouldUseMockCatalogFallback } from "./catalog-source";
-import { buildPrismaWhere, filterCatalogProducts, type CatalogFilters } from "./catalog-filters";
+import {
+  buildPrismaWhere,
+  filterCatalogProducts,
+  type CatalogFilters,
+  type CatalogSort,
+} from "./catalog-filters";
 
 export { shouldUseMockCatalogFallback } from "./catalog-source";
 
@@ -312,6 +318,7 @@ export type PaginatedCatalogResult = {
 export async function getFilteredCatalogProducts(
   filters: CatalogFilters,
   page: number,
+  sort: CatalogSort = "relevance",
 ): Promise<PaginatedCatalogResult> {
   const safePage = Math.max(1, Math.floor(page));
 
@@ -322,7 +329,7 @@ export async function getFilteredCatalogProducts(
       db.product.findMany({
         where,
         include: productInclude,
-        orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
+        orderBy: getCatalogOrderBy(sort),
         skip: (safePage - 1) * PAGE_SIZE,
         take: PAGE_SIZE,
       }),
@@ -340,12 +347,12 @@ export async function getFilteredCatalogProducts(
     }
 
     // DB respondió vacía y estamos en modo fallback → usar mock
-    return buildMockPaginatedResult(filters, safePage);
+    return buildMockPaginatedResult(filters, safePage, sort);
   } catch (error) {
     logCatalogDataError(error);
 
     if (shouldUseMockCatalogFallback()) {
-      return buildMockPaginatedResult(filters, safePage);
+      return buildMockPaginatedResult(filters, safePage, sort);
     }
 
     return {
@@ -363,8 +370,12 @@ export async function getFilteredCatalogProducts(
  * Paginación en memoria sobre el mock, usada solo cuando la DB no responde
  * y el fallback está habilitado (siempre fuera de producción).
  */
-function buildMockPaginatedResult(filters: CatalogFilters, page: number): PaginatedCatalogResult {
-  const filtered = filterCatalogProducts(mockProducts, filters);
+function buildMockPaginatedResult(
+  filters: CatalogFilters,
+  page: number,
+  sort: CatalogSort = "relevance",
+): PaginatedCatalogResult {
+  const filtered = sortCatalogProducts(filterCatalogProducts(mockProducts, filters), sort);
   const totalCount = filtered.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -377,6 +388,44 @@ function buildMockPaginatedResult(filters: CatalogFilters, page: number): Pagina
     source: "mock",
     status: "ready",
   };
+}
+
+function getCatalogOrderBy(sort: CatalogSort): Prisma.ProductOrderByWithRelationInput[] {
+  if (sort === "price-asc") {
+    return [{ priceCents: "asc" }, { name: "asc" }];
+  }
+
+  if (sort === "price-desc") {
+    return [{ priceCents: "desc" }, { name: "asc" }];
+  }
+
+  if (sort === "newest") {
+    return [{ createdAt: "desc" }, { name: "asc" }];
+  }
+
+  return [{ isFeatured: "desc" }, { name: "asc" }];
+}
+
+function sortCatalogProducts(products: CatalogProduct[], sort: CatalogSort) {
+  const sorted = [...products];
+
+  if (sort === "price-asc") {
+    return sorted.sort((left, right) => left.priceCents - right.priceCents || compareByName(left, right));
+  }
+
+  if (sort === "price-desc") {
+    return sorted.sort((left, right) => right.priceCents - left.priceCents || compareByName(left, right));
+  }
+
+  if (sort === "newest") {
+    return sorted.reverse();
+  }
+
+  return sorted;
+}
+
+function compareByName(left: CatalogProduct, right: CatalogProduct) {
+  return left.name.localeCompare(right.name, "es");
 }
 
 export async function getRelatedCatalogProducts(product: CatalogProduct) {

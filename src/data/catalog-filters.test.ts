@@ -6,6 +6,7 @@ import {
   getCatalogFilterOptions,
   getEmptyCatalogFilters,
   parseCatalogFilters,
+  parseCatalogSort,
   stockStatusToPrismaStatuses,
 } from "./catalog-filters";
 import { mockProducts } from "./mock-products";
@@ -21,6 +22,12 @@ describe("catalog filters", () => {
     expect(filters.categories).toEqual(["Filtros", "Frenos"]);
     expect(filters.query).toBe("toyota");
     expect(filters.stockStatuses).toEqual(["Disponible"]);
+  });
+
+  it("parses catalog sort safely", () => {
+    expect(parseCatalogSort({ sort: "price-asc" })).toBe("price-asc");
+    expect(parseCatalogSort({ sort: "unknown" })).toBe("relevance");
+    expect(parseCatalogSort({})).toBe("relevance");
   });
 
   it("filters products by query across sku and part number", () => {

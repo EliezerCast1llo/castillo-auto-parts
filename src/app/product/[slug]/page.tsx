@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, ShoppingCart, Truck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, ShoppingCart, Truck } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
@@ -12,6 +12,7 @@ import {
   getCatalogProductBySlug,
   getCatalogProductSlugs,
   getRelatedCatalogProducts,
+  type CatalogProduct,
 } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
@@ -53,14 +54,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <SiteHeader />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <Link
-          href="/catalog"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver al catálogo
-        </Link>
+        <ProductBreadcrumb product={product} />
 
         {/* Cuerpo principal — aside va abajo en mobile, lateral en lg */}
         <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px]">
@@ -206,6 +200,42 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ) : null}
       </div>
     </main>
+  );
+}
+
+function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <nav
+        aria-label="Ruta del producto"
+        className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
+      >
+        <Link className="transition hover:text-ca-navy-950" href="/">
+          Inicio
+        </Link>
+        <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
+        <Link className="transition hover:text-ca-navy-950" href="/catalog">
+          Catálogo
+        </Link>
+        <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
+        <Link
+          className="transition hover:text-ca-navy-950"
+          href={`/catalog?category=${encodeURIComponent(product.category)}`}
+        >
+          {product.category}
+        </Link>
+        <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
+        <span className="line-clamp-1 text-ca-navy-950">{product.name}</span>
+      </nav>
+
+      <Link
+        href="/catalog"
+        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Volver al catálogo
+      </Link>
+    </div>
   );
 }
 

@@ -12,19 +12,19 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
     : options.vehicleModels;
 
   return (
-    <section className="rounded-md border border-border bg-card p-4 shadow-[0_10px_26px_rgba(18,50,74,0.04)]">
+    <section className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
       <div className="mb-4 flex items-center gap-2">
-        <span className="rounded-md bg-primary/10 p-2 text-primary">
+        <span className="rounded-xl bg-ca-gold-400/18 p-2 text-ca-navy-950">
           <Car className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-base font-semibold">Busca por vehículo</h2>
-          <p className="text-xs text-muted-foreground">Marca, modelo y año</p>
+          <h2 className="text-base font-black text-ca-navy-950">Busca por vehículo</h2>
+          <p className="text-xs font-medium text-ca-text-secondary">Marca, modelo y año</p>
         </div>
       </div>
       <div className="space-y-3">
         <select
-          className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium"
+          className="h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-bold text-ca-navy-950 outline-none transition focus:border-ca-blue-700 focus:bg-white"
           defaultValue={filters.vehicleMake}
           name="vehicleMake"
         >
@@ -36,7 +36,7 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
           ))}
         </select>
         <select
-          className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium"
+          className="h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-bold text-ca-navy-950 outline-none transition focus:border-ca-blue-700 focus:bg-white"
           defaultValue={filters.vehicleModel}
           name="vehicleModel"
         >
@@ -48,7 +48,7 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
           ))}
         </select>
         <select
-          className="h-11 w-full rounded-md border border-border bg-background px-3 text-sm font-medium"
+          className="h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-bold text-ca-navy-950 outline-none transition focus:border-ca-blue-700 focus:bg-white"
           defaultValue={filters.vehicleYear}
           name="vehicleYear"
         >

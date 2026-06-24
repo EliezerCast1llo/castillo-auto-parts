@@ -1,31 +1,37 @@
 import Link from "next/link";
 import { X } from "lucide-react";
-import type { CatalogFilters } from "@/data/catalog-filters";
+import type { CatalogFilters, CatalogSort } from "@/data/catalog-filters";
 
 type FilterChip = {
   href: string;
   label: string;
 };
 
-export function CatalogActiveFilters({ filters }: { filters: CatalogFilters }) {
-  const chips = getActiveFilterChips(filters);
+export function CatalogActiveFilters({
+  filters,
+  sort = "relevance",
+}: {
+  filters: CatalogFilters;
+  sort?: CatalogSort;
+}) {
+  const chips = getActiveFilterChips(filters, sort);
 
   if (chips.length === 0) {
     return null;
   }
 
   return (
-    <section className="rounded-md border border-border bg-card p-4">
+    <section className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-primary">Filtros activos</p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-sm font-black text-ca-navy-950">Filtros activos</p>
+          <p className="mt-1 text-xs font-medium text-ca-text-secondary">
             Quita un filtro específico o limpia todo para ampliar resultados.
           </p>
         </div>
         <Link
-          className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-card px-3 text-sm font-semibold text-primary"
-          href="/catalog"
+          className="inline-flex h-9 items-center justify-center rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+          href={sort === "relevance" ? "/catalog" : `/catalog?sort=${sort}`}
         >
           Limpiar todo
         </Link>
@@ -36,7 +42,7 @@ export function CatalogActiveFilters({ filters }: { filters: CatalogFilters }) {
           <Link
             key={`${chip.label}-${chip.href}`}
             aria-label={`Quitar filtro ${chip.label}`}
-            className="inline-flex min-h-9 items-center gap-2 rounded-md bg-primary/10 px-3 text-sm font-semibold text-primary"
+            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-ca-navy-950/10 bg-ca-navy-950/5 px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950/25 hover:bg-ca-background"
             href={chip.href}
           >
             {chip.label}
@@ -48,20 +54,20 @@ export function CatalogActiveFilters({ filters }: { filters: CatalogFilters }) {
   );
 }
 
-function getActiveFilterChips(filters: CatalogFilters): FilterChip[] {
+function getActiveFilterChips(filters: CatalogFilters, sort: CatalogSort): FilterChip[] {
   const chips: FilterChip[] = [];
 
   if (filters.query) {
     chips.push({
       label: `Búsqueda: ${filters.query}`,
-      href: buildCatalogHref(filters, { query: "" }),
+      href: buildCatalogHref(filters, sort, { query: "" }),
     });
   }
 
   if (filters.vehicleMake) {
     chips.push({
       label: `Marca vehículo: ${filters.vehicleMake}`,
-      href: buildCatalogHref(filters, {
+      href: buildCatalogHref(filters, sort, {
         vehicleMake: "",
         vehicleModel: "",
         vehicleYear: "",
@@ -72,21 +78,21 @@ function getActiveFilterChips(filters: CatalogFilters): FilterChip[] {
   if (filters.vehicleModel) {
     chips.push({
       label: `Modelo: ${filters.vehicleModel}`,
-      href: buildCatalogHref(filters, { vehicleModel: "", vehicleYear: "" }),
+      href: buildCatalogHref(filters, sort, { vehicleModel: "", vehicleYear: "" }),
     });
   }
 
   if (filters.vehicleYear) {
     chips.push({
       label: `Año: ${filters.vehicleYear}`,
-      href: buildCatalogHref(filters, { vehicleYear: "" }),
+      href: buildCatalogHref(filters, sort, { vehicleYear: "" }),
     });
   }
 
   filters.categories.forEach((category) => {
     chips.push({
       label: `Categoría: ${category}`,
-      href: buildCatalogHref(filters, {
+      href: buildCatalogHref(filters, sort, {
         categories: filters.categories.filter((item) => item !== category),
       }),
     });
@@ -95,7 +101,7 @@ function getActiveFilterChips(filters: CatalogFilters): FilterChip[] {
   filters.brands.forEach((brand) => {
     chips.push({
       label: `Marca producto: ${brand}`,
-      href: buildCatalogHref(filters, {
+      href: buildCatalogHref(filters, sort, {
         brands: filters.brands.filter((item) => item !== brand),
       }),
     });
@@ -104,7 +110,7 @@ function getActiveFilterChips(filters: CatalogFilters): FilterChip[] {
   filters.stockStatuses.forEach((status) => {
     chips.push({
       label: `Disponibilidad: ${status}`,
-      href: buildCatalogHref(filters, {
+      href: buildCatalogHref(filters, sort, {
         stockStatuses: filters.stockStatuses.filter((item) => item !== status),
       }),
     });
@@ -120,7 +126,7 @@ type FilterPatch = Partial<
   >
 >;
 
-function buildCatalogHref(filters: CatalogFilters, patch: FilterPatch) {
+function buildCatalogHref(filters: CatalogFilters, sort: CatalogSort, patch: FilterPatch) {
   const next: CatalogFilters = {
     ...filters,
     categories: [...filters.categories],
@@ -137,6 +143,7 @@ function buildCatalogHref(filters: CatalogFilters, patch: FilterPatch) {
   appendParam(params, "vehicleMake", next.vehicleMake);
   appendParam(params, "vehicleModel", next.vehicleModel);
   appendParam(params, "vehicleYear", next.vehicleYear);
+  if (sort !== "relevance") appendParam(params, "sort", sort);
 
   const query = params.toString();
   return query ? `/catalog?${query}` : "/catalog";
