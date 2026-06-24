@@ -6,6 +6,10 @@ Este archivo resume lo aprendido y decidido durante el proyecto para que cualqui
 
 Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitectura, reglas del negocio o estado de implementacion.
 
+## Convenciones de trabajo
+
+- **Branch por tarea:** al iniciar cualquier tarea que modifique el repo, crear primero una nueva branch desde `main` (convención `claude/<tema>` o `codex/<tema>`). No commitear trabajo directamente en `main`; `main` solo recibe merges vía PR. (Acordado 2026-06-24.)
+
 ## Estado Actual
 
 - Fecha de ultima actualizacion: 2026-05-27 (Bloque 6).
