@@ -59,7 +59,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         </p>
 
         {/* Price + CTA */}
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-ca-border pt-4">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <div>
             <span
               className="text-2xl text-ca-navy-950"
@@ -71,6 +71,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
           <form action={addCartItem}>
             <input name="sku" type="hidden" value={product.sku} />
             <input name="quantity" type="hidden" value="1" />
+            <input name="stayOnPage" type="hidden" value="true" />
             <button
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-ca-navy-950 px-4 text-xs font-black text-white shadow-[0_6px_14px_rgba(6,25,51,0.15)] transition hover:bg-ca-navy-800 hover:shadow-[0_8px_18px_rgba(6,25,51,0.22)] disabled:bg-[#EEF2F6] disabled:text-[#7B8798] disabled:shadow-none"
               disabled={!isAvailable}

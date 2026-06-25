@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
+import { SortDropdown } from "@/components/catalog/sort-dropdown";
 import { CatalogActiveFilters } from "@/components/product/catalog-active-filters";
 import { CatalogFilterForm } from "@/components/product/catalog-filter-form";
 import { CatalogPagination } from "@/components/catalog-pagination";
@@ -12,6 +14,7 @@ import {
   countActiveCatalogFilters,
   getCatalogFilterOptions,
   parseCatalogFilters,
+  parseCatalogSort,
   type CatalogSearchParams,
 } from "@/data/catalog-filters";
 import { getCatalogProducts, getFilteredCatalogProducts } from "@/data/products";
@@ -50,9 +53,10 @@ type CatalogPageProps = {
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
   const filters = parseCatalogFilters(resolvedParams);
+  const sort = parseCatalogSort(resolvedParams);
   const page = Math.max(1, Number(resolvedParams.page ?? 1) || 1);
 
-  const catalogResult = await getFilteredCatalogProducts(filters, page);
+  const catalogResult = await getFilteredCatalogProducts(filters, page, sort);
   const allProducts = await getCatalogProducts();
   const filterOptions = getCatalogFilterOptions(allProducts);
 
@@ -62,6 +66,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   const filterContent = (
     <CatalogFilterForm key={filterKey}>
+      {sort !== "relevance" ? <input name="sort" type="hidden" value={sort} /> : null}
       <VehicleSearchPanel filters={filters} options={filterOptions} />
       <ProductFilters
         activeFilterCount={activeFilterCount}
@@ -88,31 +93,36 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           </aside>
 
           <section className="min-w-0 space-y-5">
+            <CatalogBreadcrumb filters={filters} />
             <CatalogHero />
 
             {status === "unavailable" ? <CatalogUnavailableState /> : null}
 
             {/* Barra de resultados */}
-            <div className="flex flex-col justify-between gap-3 rounded-2xl border border-ca-border bg-white px-5 py-4 shadow-[var(--ca-shadow-soft)] md:flex-row md:items-center">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-ca-border bg-white px-5 py-4 shadow-[var(--ca-shadow-soft)] md:flex-row md:items-center">
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
                   {source === "mock" ? "Inventario de prueba" : "Inventario activo"}
                 </p>
                 <h2 className="mt-1 text-xl font-black text-ca-navy-950">Catálogo de repuestos</h2>
+                <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
+                  {getCatalogSummary(filters, totalCount)}
+                </p>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="rounded-xl bg-ca-background px-3 py-2 text-sm font-bold text-ca-text-secondary">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <span className="inline-flex h-11 items-center justify-center rounded-xl bg-ca-background px-3 text-sm font-bold text-ca-text-secondary">
                   {totalCount} {totalCount === 1 ? "producto" : "productos"}
                 </span>
                 {totalPages > 1 ? (
-                  <span className="text-sm text-ca-text-secondary">
+                  <span className="inline-flex h-11 items-center text-sm font-bold text-ca-text-secondary">
                     Pág. {currentPage}/{totalPages}
                   </span>
                 ) : null}
+                <SortDropdown value={sort} />
               </div>
             </div>
 
-            <CatalogActiveFilters filters={filters} />
+            <CatalogActiveFilters filters={filters} sort={sort} />
 
             {status === "unavailable" ? null : filteredProducts.length > 0 ? (
               <>
@@ -128,31 +138,54 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                 />
               </>
             ) : (
-              <div className="rounded-2xl border border-ca-border bg-white p-6 shadow-[var(--ca-shadow-soft)]">
-                <h3 className="text-lg font-black text-ca-navy-950">
-                  {totalCount === 0
-                    ? "Aún no hay productos activos"
-                    : "Sin resultados para esos filtros"}
-                </h3>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-ca-text-secondary">
-                  {totalCount === 0
+              <EmptyState
+                actionHref={activeFilterCount > 0 ? "/catalog" : undefined}
+                actionLabel={activeFilterCount > 0 ? "Limpiar filtros" : undefined}
+                description={
+                  totalCount === 0
                     ? "El catálogo está disponible pero todavía no hay inventario publicado."
-                    : "Prueba quitar un filtro, buscar por número de parte o revisar otra combinación."}
-                </p>
-                {activeFilterCount > 0 ? (
-                  <Link
-                    className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
-                    href="/catalog"
-                  >
-                    Limpiar filtros
-                  </Link>
-                ) : null}
-              </div>
+                    : "Prueba quitar un filtro, buscar por número de parte o escríbenos y te ayudamos a ubicar el repuesto correcto."
+                }
+                showWhatsApp
+                suggestions={["amortiguadores", "pastillas de freno", "filtro de aceite", "bujías"]}
+                title={
+                  totalCount === 0
+                    ? "Aún no hay productos activos"
+                    : "No encontramos repuestos con esos filtros"
+                }
+              />
             )}
           </section>
         </div>
       </div>
     </main>
+  );
+}
+
+function CatalogBreadcrumb({ filters }: { filters: ReturnType<typeof parseCatalogFilters> }) {
+  const current = filters.categories[0] ?? (filters.query ? `Búsqueda: ${filters.query}` : "Catálogo");
+
+  return (
+    <nav
+      aria-label="Ruta del catálogo"
+      className="flex flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
+    >
+      <Link className="transition hover:text-ca-navy-950" href="/">
+        Inicio
+      </Link>
+      <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
+      {current === "Catálogo" ? (
+        <span className="text-ca-navy-950">Catálogo</span>
+      ) : (
+        <>
+          <Link className="transition hover:text-ca-navy-950" href="/catalog">
+            Catálogo
+          </Link>
+          <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
+          <span className="text-ca-navy-950">{current}</span>
+        </>
+      )}
+    </nav>
   );
 }
 
@@ -166,6 +199,22 @@ function CatalogUnavailableState() {
       </p>
     </div>
   );
+}
+
+function getCatalogSummary(filters: ReturnType<typeof parseCatalogFilters>, totalCount: number) {
+  if (totalCount === 0) {
+    return "Ajusta la búsqueda o consulta con asesoría para ubicar el repuesto correcto.";
+  }
+
+  if (filters.query) {
+    return `Resultados para "${filters.query}" con filtros de vehículo, marca y disponibilidad cuando aplican.`;
+  }
+
+  if (filters.categories.length > 0) {
+    return `Productos filtrados por ${filters.categories[0]} con stock y precio visibles.`;
+  }
+
+  return "Explora repuestos con stock visible, precio final con IVA incluido y filtros rápidos.";
 }
 
 function CatalogHero() {

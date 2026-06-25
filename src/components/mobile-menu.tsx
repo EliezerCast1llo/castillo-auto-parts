@@ -16,6 +16,7 @@ const navLinks = [
   { label: "Catálogo", href: "/catalog" },
   { label: "Marcas", href: "/catalog?brand=Bosch" },
   { label: "Ofertas", href: "/catalog?stock=Últimas unidades" },
+  { label: "Ayuda", href: "/ayuda" },
 ];
 
 export function MobileMenu({

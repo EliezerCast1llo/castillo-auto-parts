@@ -49,18 +49,18 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
   const pageNumbers = buildPageNumbers(currentPage, totalPages);
 
   return (
-    <nav aria-label="Paginación del catálogo" className="flex items-center justify-center gap-1">
+    <nav aria-label="Paginación del catálogo" className="flex flex-wrap items-center justify-center gap-1.5">
       {/* Anterior */}
       {currentPage > 1 ? (
         <a
           href={buildHref(currentPage - 1)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-semibold text-primary hover:bg-primary/5"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           aria-label="Página anterior"
         >
           ‹ Anterior
         </a>
       ) : (
-        <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-semibold text-muted-foreground opacity-50 cursor-not-allowed">
+        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
           ‹ Anterior
         </span>
       )}
@@ -70,7 +70,7 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
         item === "ellipsis" ? (
           <span
             key={`ellipsis-${index}`}
-            className="inline-flex h-9 w-9 items-center justify-center text-sm text-muted-foreground"
+            className="inline-flex h-10 w-10 items-center justify-center text-sm font-bold text-ca-text-secondary"
             aria-hidden="true"
           >
             …
@@ -79,7 +79,7 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
           <span
             key={item}
             aria-current="page"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary text-sm font-bold text-white"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ca-navy-950 text-sm font-black text-white shadow-[0_8px_18px_rgba(6,25,51,0.16)]"
           >
             {item}
           </span>
@@ -87,7 +87,7 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
           <a
             key={item}
             href={buildHref(item)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-sm font-semibold text-primary hover:bg-primary/5"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-ca-border bg-white text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-background"
             aria-label={`Página ${item}`}
           >
             {item}
@@ -99,13 +99,13 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
       {currentPage < totalPages ? (
         <a
           href={buildHref(currentPage + 1)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-semibold text-primary hover:bg-primary/5"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           aria-label="Página siguiente"
         >
           Siguiente ›
         </a>
       ) : (
-        <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-sm font-semibold text-muted-foreground opacity-50 cursor-not-allowed">
+        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
           Siguiente ›
         </span>
       )}

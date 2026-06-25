@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
 import { MobileMenu } from "@/components/mobile-menu";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";
+import { WhatsAppCTA } from "@/components/whatsapp-cta";
+import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
 export async function SiteHeader() {
   const [cartItemCount, session] = await Promise.all([
@@ -19,10 +21,10 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-ca-border bg-white/95 shadow-[0_2px_16px_rgba(6,25,51,0.08)] backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
 
           {/* Logo */}
-          <Link href="/" className="flex shrink-0 items-center gap-3">
+          <Link href="/" className="order-1 flex shrink-0 items-center gap-3">
             <span className="relative flex h-9 w-9 items-center justify-center rounded-[10px] bg-ca-navy-950 text-white shadow-[0_4px_14px_rgba(6,25,51,0.3)]">
               <Wrench className="h-[18px] w-[18px]" strokeWidth={2} />
               <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-ca-gold-400" />
@@ -34,18 +36,26 @@ export async function SiteHeader() {
           </Link>
 
           {/* Search */}
-          <div className="flex-1">
+          <div className="order-3 w-full min-w-0 sm:order-2 sm:flex-1">
             <SearchAutocomplete />
           </div>
 
           {/* Actions */}
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="order-2 ml-auto flex shrink-0 items-center gap-2 sm:order-3 sm:ml-0">
             <Link
               className="hidden h-10 items-center rounded-xl border border-ca-border bg-white px-3 text-sm font-bold text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white sm:inline-flex"
               href="/catalog"
             >
               Catálogo
             </Link>
+
+            <div className="hidden lg:block">
+              <WhatsAppCTA
+                label="Asesoría"
+                phone={SUPPORT_WHATSAPP_NUMBER}
+                variant="subtle"
+              />
+            </div>
 
             <Link
               href={accountHref}

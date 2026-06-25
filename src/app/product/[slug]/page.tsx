@@ -1,18 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, MessageCircle, ShoppingCart, Truck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, ShoppingCart, Truck } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
+import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { addCartItem } from "@/app/cart/actions";
 import {
   getCatalogProductBySlug,
   getCatalogProductSlugs,
   getRelatedCatalogProducts,
+  type CatalogProduct,
 } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
+import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
 export const dynamic = "force-dynamic";
 
@@ -44,20 +47,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const relatedProducts = await getRelatedCatalogProducts(product);
   const isAvailable = product.stockStatus !== "No disponible";
+  const supportMessage = `Hola, necesito validar compatibilidad del repuesto ${product.name} (SKU ${product.sku}, parte ${product.partNumber}).`;
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <SiteHeader />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <Link
-          href="/catalog"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Volver al catálogo
-        </Link>
+        <ProductBreadcrumb product={product} />
 
         {/* Cuerpo principal — aside va abajo en mobile, lateral en lg */}
         <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px]">
@@ -140,6 +137,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </p>
             </div>
 
+            <div className="mt-4 rounded-xl border border-ca-border bg-white p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
+                <div>
+                  <p className="text-sm font-black text-ca-navy-950">Compatibilidad antes de comprar</p>
+                  <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
+                    Revisa la lista compatible o consulta con un asesor usando el SKU para evitar errores de instalación.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Acción principal */}
             <form action={addCartItem} className="mt-4 space-y-3">
               <input name="sku" type="hidden" value={product.sku} />
@@ -158,13 +167,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </button>
             </form>
 
-            <button
-              className="mt-2.5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
-              type="button"
-            >
-              <MessageCircle className="h-4 w-4 text-ca-text-secondary" />
-              Validar con asesor
-            </button>
+            <WhatsAppCTA
+              className="mt-2.5 w-full"
+              label="Validar con asesor"
+              message={supportMessage}
+              phone={SUPPORT_WHATSAPP_NUMBER}
+            />
 
             {/* Envío */}
             <div className="mt-4 flex items-start gap-3 rounded-xl bg-ca-background p-4 text-sm">
@@ -192,6 +200,42 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ) : null}
       </div>
     </main>
+  );
+}
+
+function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <nav
+        aria-label="Ruta del producto"
+        className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
+      >
+        <Link className="transition hover:text-ca-navy-950" href="/">
+          Inicio
+        </Link>
+        <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
+        <Link className="transition hover:text-ca-navy-950" href="/catalog">
+          Catálogo
+        </Link>
+        <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
+        <Link
+          className="transition hover:text-ca-navy-950"
+          href={`/catalog?category=${encodeURIComponent(product.category)}`}
+        >
+          {product.category}
+        </Link>
+        <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
+        <span className="line-clamp-1 text-ca-navy-950">{product.name}</span>
+      </nav>
+
+      <Link
+        href="/catalog"
+        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Volver al catálogo
+      </Link>
+    </div>
   );
 }
 

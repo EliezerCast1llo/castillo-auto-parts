@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addGuestCartItem, removeGuestCartItem, updateGuestCartItem } from "@/lib/cart";
 import { createRateLimiter } from "@/lib/rate-limit";
@@ -15,7 +16,15 @@ const stockAlertRateLimiter = createRateLimiter({
 export async function addCartItem(formData: FormData) {
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 1);
+  const shouldStayOnPage = formData.get("stayOnPage") === "true";
   const result = await addGuestCartItem(sku, quantity);
+
+  if (shouldStayOnPage) {
+    revalidatePath("/");
+    revalidatePath("/catalog");
+    revalidatePath("/cart");
+    return;
+  }
 
   redirect(`/cart?estado=${result}`);
 }

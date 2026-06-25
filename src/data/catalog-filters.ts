@@ -23,6 +23,15 @@ export type CatalogFilterOptions = {
   vehicleYears: string[];
 };
 
+export type CatalogSort = "relevance" | "price-asc" | "price-desc" | "newest";
+
+export const catalogSortOptions: { label: string; value: CatalogSort }[] = [
+  { label: "Relevancia", value: "relevance" },
+  { label: "Precio: menor a mayor", value: "price-asc" },
+  { label: "Precio: mayor a menor", value: "price-desc" },
+  { label: "Más nuevos", value: "newest" },
+];
+
 const stockStatusOrder: CatalogProduct["stockStatus"][] = [
   "Disponible",
   "Últimas unidades",
@@ -39,6 +48,11 @@ export function parseCatalogFilters(searchParams: CatalogSearchParams): CatalogF
     vehicleModel: firstValue(searchParams.vehicleModel),
     vehicleYear: firstValue(searchParams.vehicleYear),
   };
+}
+
+export function parseCatalogSort(searchParams: CatalogSearchParams): CatalogSort {
+  const sort = firstValue(searchParams.sort);
+  return isCatalogSort(sort) ? sort : "relevance";
 }
 
 export function getEmptyCatalogFilters(): CatalogFilters {
@@ -263,6 +277,10 @@ function normalizedSet(values: string[]) {
 
 function isCatalogStockStatus(value: string): value is CatalogProduct["stockStatus"] {
   return stockStatusOrder.some((status) => status === value);
+}
+
+function isCatalogSort(value: string): value is CatalogSort {
+  return catalogSortOptions.some((option) => option.value === value);
 }
 
 function uniqueSorted(values: string[]) {
