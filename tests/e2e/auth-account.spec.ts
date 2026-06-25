@@ -98,7 +98,7 @@ test("customer can view empty orders list", async ({ page }) => {
   await page.getByRole("link", { name: "Mis órdenes" }).click();
   await expect(page).toHaveURL(/\/account\/orders/);
   await expect(page.getByRole("heading", { name: "Mis órdenes" })).toBeVisible();
-  await expect(page.getByText("Aún no tienes órdenes")).toBeVisible();
+  await expect(page.getByText("No tienes órdenes todavía")).toBeVisible();
 });
 
 test("customer registers, adds to cart, and completes pickup checkout", async ({ page }) => {
@@ -130,7 +130,7 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
   await page.goto("/account/orders");
   await expect(page.getByRole("heading", { name: "Mis órdenes" })).toBeVisible();
   // Order list should NOT be empty anymore
-  await expect(page.getByText("Aún no tienes órdenes")).not.toBeVisible();
+  await expect(page.getByText("No tienes órdenes todavía")).not.toBeVisible();
 });
 
 test("login shows error with wrong credentials", async ({ page }) => {
