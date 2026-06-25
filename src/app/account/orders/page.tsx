@@ -1,11 +1,23 @@
 import Link from "next/link";
-import { ArrowLeft, Package } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  ChevronDown,
+  Headphones,
+  PackageSearch,
+  Phone,
+  ShoppingBag,
+} from "lucide-react";
 import { redirect } from "next/navigation";
+import {
+  AccountOrderCard,
+  accountOrderCardInclude,
+} from "@/components/account/account-order-card";
 import { SiteHeader } from "@/components/site-header";
+import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { auth } from "@/lib/auth";
+import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { db } from "@/lib/db";
-import { formatCurrency } from "@/lib/money";
-import { formatDateTime, formatOrderStatus, getOrderStatusClassName } from "@/lib/order-formatters";
 
 export const dynamic = "force-dynamic";
 
@@ -21,72 +33,124 @@ export default async function AccountOrdersPage() {
 
   const orders = await db.order.findMany({
     where: { userId: session.user.id },
-    include: { items: true },
+    include: accountOrderCardInclude,
     orderBy: { createdAt: "desc" },
   });
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <SiteHeader />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <Link href="/account" className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
-            <ArrowLeft className="h-4 w-4" />
-            Mi cuenta
-          </Link>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <Link
+              className="inline-flex items-center gap-2 text-sm font-black text-ca-navy-950 transition hover:text-ca-blue-700"
+              href="/account"
+            >
+              <ArrowLeft className="h-4 w-4" strokeWidth={2} />
+              Mi cuenta
+            </Link>
+
+            <h1 className="mt-4 text-3xl font-black tracking-tight text-ca-navy-950 sm:text-4xl">
+              Mis órdenes
+            </h1>
+            <p className="mt-2 max-w-2xl text-base font-medium text-ca-text-secondary">
+              Consulta el estado de tus pedidos y el historial de compras.
+            </p>
+          </div>
+
+          <button
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 shadow-[var(--ca-shadow-soft)] transition hover:border-ca-blue-700/30 hover:bg-white sm:w-auto"
+            type="button"
+          >
+            <CalendarDays className="h-4 w-4" strokeWidth={1.9} />
+            Últimos 6 meses
+            <ChevronDown className="h-4 w-4" strokeWidth={1.9} />
+          </button>
         </div>
 
-        <h1 className="mt-4 text-2xl font-bold text-primary">Mis órdenes</h1>
-
         {orders.length === 0 ? (
-          <div className="mt-8 flex flex-col items-center gap-3 rounded-md border border-border bg-card py-12 text-center">
-            <Package className="h-10 w-10 text-muted-foreground" />
-            <p className="font-semibold text-primary">Aún no tienes órdenes</p>
-            <p className="text-sm text-muted-foreground">
-              Cuando realices una compra, aparecerá aquí.
-            </p>
-            <Link
-              href="/catalog"
-              className="mt-2 inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-semibold text-white"
-            >
-              Ver catálogo
-            </Link>
-          </div>
+          <EmptyOrders />
         ) : (
-          <div className="mt-5 space-y-4">
+          <div className="mt-6 space-y-4">
             {orders.map((order) => (
-              <div
-                key={order.id}
-                className="rounded-md border border-border bg-card p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">{formatDateTime(order.createdAt)}</p>
-                    <p className="mt-0.5 font-bold text-primary">{order.orderNumber}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-bold ${getOrderStatusClassName(order.status)}`}
-                    >
-                      {formatOrderStatus(order.status)}
-                    </span>
-                    <p className="text-sm font-bold text-primary">
-                      {formatCurrency(order.totalCents)}
-                    </p>
-                  </div>
-                </div>
-
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
-                  {" · "}
-                  {order.items.map((i) => i.productNameSnapshot).join(", ")}
-                </p>
-              </div>
+              <AccountOrderCard key={order.id} order={order} />
             ))}
           </div>
         )}
+
+        <OrderHelpCard />
       </div>
     </main>
+  );
+}
+
+function EmptyOrders() {
+  return (
+    <section className="mt-8 rounded-2xl border border-ca-border bg-white p-8 text-center shadow-[var(--ca-shadow-soft)] sm:p-12">
+      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ca-background text-ca-navy-950">
+        <PackageSearch className="h-7 w-7" strokeWidth={1.8} />
+      </span>
+      <h2 className="mt-5 text-2xl font-black text-ca-navy-950">
+        No tienes órdenes todavía
+      </h2>
+      <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-ca-text-secondary">
+        Cuando compres un repuesto, podrás consultar aquí el estado, fecha estimada y detalle de entrega.
+      </p>
+      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+        <Link
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-ca-navy-950 px-5 text-sm font-black text-white shadow-[0_8px_18px_rgba(6,25,51,0.16)] transition hover:bg-ca-navy-800"
+          href="/catalog"
+        >
+          <ShoppingBag className="h-4 w-4" strokeWidth={1.9} />
+          Ver catálogo
+        </Link>
+        <WhatsAppCTA
+          className="h-11 justify-center"
+          label="Contactar asesor"
+          phone={SUPPORT_WHATSAPP_NUMBER}
+          variant="subtle"
+        />
+      </div>
+    </section>
+  );
+}
+
+function OrderHelpCard() {
+  return (
+    <section className="mt-5 flex flex-col gap-4 rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-4">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ca-background text-ca-navy-950">
+          <Headphones className="h-7 w-7" strokeWidth={1.8} />
+        </span>
+        <div>
+          <h2 className="text-base font-black text-ca-navy-950">
+            ¿Necesitas ayuda con tu pedido?
+          </h2>
+          <p className="mt-1 text-sm font-medium text-ca-text-secondary">
+            Nuestro equipo está para ayudarte.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-2 sm:flex sm:items-center">
+        <WhatsAppCTA
+          className="h-11 justify-center"
+          label="Contactar asesor"
+          phone={SUPPORT_WHATSAPP_NUMBER}
+          variant="subtle"
+        />
+        {SUPPORT_WHATSAPP_NUMBER ? (
+          <a
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 transition hover:bg-ca-background"
+            href={`tel:+${SUPPORT_WHATSAPP_NUMBER}`}
+          >
+            <Phone className="h-4 w-4" strokeWidth={1.9} />
+            +{SUPPORT_WHATSAPP_NUMBER}
+          </a>
+        ) : null}
+      </div>
+    </section>
   );
 }
