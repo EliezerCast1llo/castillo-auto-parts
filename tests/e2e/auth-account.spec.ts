@@ -91,6 +91,29 @@ test("customer can log in and log out", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Mi cuenta" })).toBeVisible();
 });
 
+test("customer account keeps name and email read-only while phone is editable", async ({ page }) => {
+  const email = uniqueEmail("profile");
+  await registerUser(page, email);
+
+  await expect(page.getByRole("heading", { name: "Mi cuenta" })).toBeVisible();
+  await expect(page.getByText("Cliente Test E2E")).toBeVisible();
+  await expect(page.getByText(email).first()).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Nombre completo" })).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: "Correo electrónico" })).toHaveCount(0);
+
+  const phoneInput = page.getByRole("textbox", { name: "Teléfono" });
+  await expect(phoneInput).toBeVisible();
+  await phoneInput.fill("7777-8888");
+  await page.getByRole("button", { name: "Guardar teléfono" }).click();
+
+  await expect(page).toHaveURL(/\/account\?estado=updated/);
+  await expect(page.getByText("Teléfono actualizado correctamente.")).toBeVisible();
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  expect(user?.name).toBe("Cliente Test E2E");
+  expect(user?.phone).toBe("7777-8888");
+});
+
 test("customer can view empty orders list", async ({ page }) => {
   const email = uniqueEmail("orders");
   await registerUser(page, email);

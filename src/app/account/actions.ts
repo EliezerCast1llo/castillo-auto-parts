@@ -2,8 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { signOut } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { formString } from "@/lib/form-utils";
-import { getCustomerSession, updateCustomerPassword, updateCustomerProfile } from "@/lib/auth-user";
+import { getCustomerSession, updateCustomerPassword } from "@/lib/auth-user";
 
 export async function logoutCustomer() {
   await signOut({ redirectTo: "/" });
@@ -13,12 +14,15 @@ export async function updateProfileAction(formData: FormData) {
   const session = await getCustomerSession();
   if (!session) redirect("/auth/login");
 
-  const name = formString(formData, "name").trim();
   const phone = formString(formData, "phone").trim();
+  const phoneDigits = phone.replace(/\D/g, "");
 
-  if (!name) redirect("/account?estado=missing_name");
+  if (phone && phoneDigits.length < 8) redirect("/account?estado=invalid_phone");
 
-  await updateCustomerProfile(session.id, { name, phone: phone || undefined });
+  await db.user.update({
+    where: { id: session.id },
+    data: { phone: phone || null },
+  });
   redirect("/account?estado=updated");
 }
 

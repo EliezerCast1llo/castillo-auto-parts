@@ -1,6 +1,12 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { ClipboardList, MapPin, User } from "lucide-react";
+import { CalendarDays, CheckCircle2, ClipboardList, Home, MapPin } from "lucide-react";
 import { redirect } from "next/navigation";
+import { AccountOverviewHeader } from "@/components/account/account-overview-header";
+import { AccountPasswordForm } from "@/components/account/account-password-form";
+import { AccountProfileForm } from "@/components/account/account-profile-form";
+import { AccountQuickActions } from "@/components/account/account-quick-actions";
+import { AccountSupportCard } from "@/components/account/account-support-card";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -24,176 +30,247 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   if (!session?.user?.id) redirect("/auth/login?next=/account");
 
   const params = searchParams ? await searchParams : {};
-  const statusMessage = getStatusMessage(firstValue(params.estado));
-  const errorMessage = getErrorMessage(firstValue(params.estado));
+  const estado = firstValue(params.estado);
+  const statusMessage = getStatusMessage(estado);
+  const errorMessage = getErrorMessage(estado);
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, email: true, phone: true, passwordHash: true, image: true },
+    select: {
+      _count: {
+        select: {
+          addresses: true,
+          orders: true,
+        },
+      },
+      createdAt: true,
+      email: true,
+      image: true,
+      isActive: true,
+      lastLoginAt: true,
+      name: true,
+      passwordHash: true,
+      phone: true,
+    },
   });
 
-  const hasPassword = Boolean(user?.passwordHash);
+  if (!user) redirect("/auth/login?next=/account");
+
+  const hasPassword = Boolean(user.passwordHash);
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <SiteHeader />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-primary">Mi cuenta</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{session.user.email}</p>
-          </div>
-          <form action={logoutCustomer}>
-            <button type="submit" className="text-sm font-semibold text-muted-foreground hover:text-primary">
-              Cerrar sesión
-            </button>
-          </form>
-        </div>
-
-        {/* Quick links */}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Link
-            href="/account/orders"
-            className="flex items-center gap-3 rounded-md border border-border bg-card p-4 hover:border-primary/40"
-          >
-            <ClipboardList className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm font-bold text-primary">Mis órdenes</p>
-              <p className="text-xs text-muted-foreground">Historial de compras</p>
-            </div>
+      <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
+        <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-sm font-bold text-ca-text-secondary">
+          <Link className="inline-flex items-center gap-1.5 transition hover:text-ca-navy-950" href="/">
+            <Home className="h-4 w-4" strokeWidth={1.8} />
+            Inicio
           </Link>
-          <Link
-            href="/account/addresses"
-            className="flex items-center gap-3 rounded-md border border-border bg-card p-4 hover:border-primary/40"
-          >
-            <MapPin className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm font-bold text-primary">Mis direcciones</p>
-              <p className="text-xs text-muted-foreground">Direcciones guardadas</p>
+          <span aria-hidden="true">/</span>
+          <span className="text-ca-navy-950">Mi cuenta</span>
+        </nav>
+
+        <div className="space-y-5">
+          <AccountOverviewHeader
+            createdAt={user.createdAt}
+            email={user.email}
+            hasPassword={hasPassword}
+            image={user.image}
+            isActive={user.isActive}
+            logoutAction={logoutCustomer}
+            name={user.name}
+          />
+
+          <AccountQuickActions
+            addressesCount={user._count.addresses}
+            ordersCount={user._count.orders}
+          />
+
+          <AccountNotice errorMessage={errorMessage} statusMessage={statusMessage} />
+
+          <div className="grid gap-5 lg:grid-cols-12">
+            <div className="lg:col-span-6">
+              <AccountProfileForm
+                action={updateProfileAction}
+                email={user.email}
+                name={user.name}
+                phone={user.phone}
+              />
             </div>
-          </Link>
+
+            <div className="lg:col-span-6">
+              <AccountPasswordForm action={changePasswordAction} hasPassword={hasPassword} />
+            </div>
+
+            <div className="lg:col-span-8">
+              <AccountSupportCard />
+            </div>
+
+            <aside className="lg:col-span-4">
+              <AccountSummaryCard
+                addressesCount={user._count.addresses}
+                createdAt={user.createdAt}
+                isActive={user.isActive}
+                lastLoginAt={user.lastLoginAt}
+                ordersCount={user._count.orders}
+              />
+            </aside>
+          </div>
         </div>
-
-        {statusMessage ? (
-          <div className="mt-5 rounded-md bg-success/10 p-3 text-sm font-semibold text-success">
-            {statusMessage}
-          </div>
-        ) : null}
-
-        {errorMessage ? (
-          <div className="mt-5 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
-            {errorMessage}
-          </div>
-        ) : null}
-
-        {/* Perfil */}
-        <section className="mt-6 rounded-md border border-border bg-card p-5">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-primary" />
-            <h2 className="text-base font-bold text-primary">Datos personales</h2>
-          </div>
-
-          <form action={updateProfileAction} className="mt-4 space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-semibold">
-                Nombre completo
-                <input
-                  name="name"
-                  required
-                  type="text"
-                  defaultValue={user?.name ?? ""}
-                  className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-                />
-              </label>
-              <label className="block text-sm font-semibold">
-                Teléfono
-                <input
-                  name="phone"
-                  type="tel"
-                  defaultValue={user?.phone ?? ""}
-                  className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-                />
-              </label>
-            </div>
-            <button
-              type="submit"
-              className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-white"
-            >
-              Guardar cambios
-            </button>
-          </form>
-        </section>
-
-        {/* Cambiar contraseña (solo si tiene credenciales propias) */}
-        {hasPassword ? (
-          <section className="mt-4 rounded-md border border-border bg-card p-5">
-            <h2 className="text-base font-bold text-primary">Cambiar contraseña</h2>
-
-            <form action={changePasswordAction} className="mt-4 space-y-4">
-              <label className="block text-sm font-semibold">
-                Contraseña actual
-                <input
-                  name="currentPassword"
-                  required
-                  type="password"
-                  autoComplete="current-password"
-                  className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-                />
-              </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-semibold">
-                  Nueva contraseña
-                  <input
-                    name="newPassword"
-                    required
-                    type="password"
-                    minLength={8}
-                    autoComplete="new-password"
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-                  />
-                </label>
-                <label className="block text-sm font-semibold">
-                  Confirmar contraseña
-                  <input
-                    name="confirmPassword"
-                    required
-                    type="password"
-                    minLength={8}
-                    autoComplete="new-password"
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-                  />
-                </label>
-              </div>
-              <button
-                type="submit"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-primary px-5 text-sm font-semibold text-primary"
-              >
-                Cambiar contraseña
-              </button>
-            </form>
-          </section>
-        ) : null}
       </div>
     </main>
   );
 }
 
+function AccountNotice({
+  errorMessage,
+  statusMessage,
+}: {
+  errorMessage: string;
+  statusMessage: string;
+}) {
+  if (!statusMessage && !errorMessage) return null;
+
+  if (statusMessage) {
+    return (
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700 shadow-[0_8px_20px_rgba(22,128,58,0.08)]">
+        {statusMessage}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-600 shadow-[0_8px_20px_rgba(180,35,24,0.08)]">
+      {errorMessage}
+    </div>
+  );
+}
+
+function AccountSummaryCard({
+  addressesCount,
+  createdAt,
+  isActive,
+  lastLoginAt,
+  ordersCount,
+}: {
+  addressesCount: number;
+  createdAt: Date;
+  isActive: boolean;
+  lastLoginAt: Date | null;
+  ordersCount: number;
+}) {
+  return (
+    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ca-background text-ca-navy-950">
+          <CheckCircle2 className="h-5 w-5" strokeWidth={1.8} />
+        </span>
+        <div>
+          <h2 className="text-lg font-black text-ca-navy-950">Resumen de cuenta</h2>
+          <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
+            Datos rápidos de tu actividad.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3">
+        <SummaryRow
+          icon={<CheckCircle2 className="h-4 w-4" strokeWidth={2} />}
+          label="Estado"
+          value={isActive ? "Cuenta activa" : "Cuenta inactiva"}
+        />
+        <SummaryRow
+          icon={<ClipboardList className="h-4 w-4" strokeWidth={2} />}
+          label="Órdenes"
+          value={formatOrdersCount(ordersCount)}
+        />
+        <SummaryRow
+          icon={<MapPin className="h-4 w-4" strokeWidth={2} />}
+          label="Direcciones"
+          value={formatAddressesCount(addressesCount)}
+        />
+        <SummaryRow
+          icon={<CalendarDays className="h-4 w-4" strokeWidth={2} />}
+          label="Miembro desde"
+          value={formatMonthYear(createdAt)}
+        />
+        {lastLoginAt ? (
+          <SummaryRow
+            icon={<CalendarDays className="h-4 w-4" strokeWidth={2} />}
+            label="Último acceso"
+            value={formatShortDate(lastLoginAt)}
+          />
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function SummaryRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-ca-border bg-ca-background px-3 py-3">
+      <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-ca-text-secondary">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-ca-navy-950">
+          {icon}
+        </span>
+        {label}
+      </span>
+      <span className="text-right text-sm font-black text-ca-navy-950">{value}</span>
+    </div>
+  );
+}
+
 function getStatusMessage(estado: string | undefined) {
   const messages: Record<string, string> = {
-    updated: "Datos actualizados correctamente.",
     password_changed: "Contraseña cambiada correctamente.",
+    updated: "Teléfono actualizado correctamente.",
   };
   return messages[estado ?? ""] ?? "";
 }
 
 function getErrorMessage(estado: string | undefined) {
   const messages: Record<string, string> = {
+    invalid_phone: "Ingresa un teléfono válido o deja el campo vacío.",
     missing_name: "El nombre es requerido.",
-    weak_password: "La contraseña debe tener al menos 8 caracteres.",
-    password_mismatch: "Las contraseñas no coinciden.",
-    wrong_password: "La contraseña actual es incorrecta.",
     no_credentials: "Tu cuenta no tiene contraseña propia (usas Google).",
+    password_mismatch: "Las contraseñas no coinciden.",
+    weak_password: "La contraseña debe tener al menos 8 caracteres.",
+    wrong_password: "La contraseña actual es incorrecta.",
   };
   return messages[estado ?? ""] ?? "";
+}
+
+function formatOrdersCount(value: number) {
+  if (value === 1) return "1 orden";
+  return `${value} órdenes`;
+}
+
+function formatAddressesCount(value: number) {
+  if (value === 1) return "1 dirección";
+  return `${value} direcciones`;
+}
+
+function formatMonthYear(value: Date) {
+  return new Intl.DateTimeFormat("es-SV", {
+    month: "long",
+    timeZone: "America/El_Salvador",
+    year: "numeric",
+  }).format(value);
+}
+
+function formatShortDate(value: Date) {
+  return new Intl.DateTimeFormat("es-SV", {
+    dateStyle: "medium",
+    timeZone: "America/El_Salvador",
+  }).format(value);
 }
