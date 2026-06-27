@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
-import { CalendarDays, CheckCircle2, ClipboardList, Home, MapPin } from "lucide-react";
+import { Home } from "lucide-react";
 import { redirect } from "next/navigation";
 import { AccountOverviewHeader } from "@/components/account/account-overview-header";
 import { AccountPasswordForm } from "@/components/account/account-password-form";
@@ -47,7 +46,6 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
       email: true,
       image: true,
       isActive: true,
-      lastLoginAt: true,
       name: true,
       passwordHash: true,
       phone: true,
@@ -90,8 +88,8 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
 
           <AccountNotice errorMessage={errorMessage} statusMessage={statusMessage} />
 
-          <div className="grid gap-5 lg:grid-cols-12">
-            <div className="lg:col-span-6">
+          <div className="grid items-stretch gap-5 lg:grid-cols-2">
+            <div className="min-w-0">
               <AccountProfileForm
                 action={updateProfileAction}
                 email={user.email}
@@ -100,23 +98,13 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               />
             </div>
 
-            <div className="lg:col-span-6">
+            <div className="min-w-0">
               <AccountPasswordForm action={changePasswordAction} hasPassword={hasPassword} />
             </div>
 
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-2">
               <AccountSupportCard />
             </div>
-
-            <aside className="lg:col-span-4">
-              <AccountSummaryCard
-                addressesCount={user._count.addresses}
-                createdAt={user.createdAt}
-                isActive={user.isActive}
-                lastLoginAt={user.lastLoginAt}
-                ordersCount={user._count.orders}
-              />
-            </aside>
           </div>
         </div>
       </div>
@@ -148,88 +136,6 @@ function AccountNotice({
   );
 }
 
-function AccountSummaryCard({
-  addressesCount,
-  createdAt,
-  isActive,
-  lastLoginAt,
-  ordersCount,
-}: {
-  addressesCount: number;
-  createdAt: Date;
-  isActive: boolean;
-  lastLoginAt: Date | null;
-  ordersCount: number;
-}) {
-  return (
-    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
-      <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ca-background text-ca-navy-950">
-          <CheckCircle2 className="h-5 w-5" strokeWidth={1.8} />
-        </span>
-        <div>
-          <h2 className="text-lg font-black text-ca-navy-950">Resumen de cuenta</h2>
-          <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
-            Datos rápidos de tu actividad.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-5 grid gap-3">
-        <SummaryRow
-          icon={<CheckCircle2 className="h-4 w-4" strokeWidth={2} />}
-          label="Estado"
-          value={isActive ? "Cuenta activa" : "Cuenta inactiva"}
-        />
-        <SummaryRow
-          icon={<ClipboardList className="h-4 w-4" strokeWidth={2} />}
-          label="Órdenes"
-          value={formatOrdersCount(ordersCount)}
-        />
-        <SummaryRow
-          icon={<MapPin className="h-4 w-4" strokeWidth={2} />}
-          label="Direcciones"
-          value={formatAddressesCount(addressesCount)}
-        />
-        <SummaryRow
-          icon={<CalendarDays className="h-4 w-4" strokeWidth={2} />}
-          label="Miembro desde"
-          value={formatMonthYear(createdAt)}
-        />
-        {lastLoginAt ? (
-          <SummaryRow
-            icon={<CalendarDays className="h-4 w-4" strokeWidth={2} />}
-            label="Último acceso"
-            value={formatShortDate(lastLoginAt)}
-          />
-        ) : null}
-      </div>
-    </section>
-  );
-}
-
-function SummaryRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-ca-border bg-ca-background px-3 py-3">
-      <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-ca-text-secondary">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-ca-navy-950">
-          {icon}
-        </span>
-        {label}
-      </span>
-      <span className="text-right text-sm font-black text-ca-navy-950">{value}</span>
-    </div>
-  );
-}
-
 function getStatusMessage(estado: string | undefined) {
   const messages: Record<string, string> = {
     password_changed: "Contraseña cambiada correctamente.",
@@ -248,29 +154,4 @@ function getErrorMessage(estado: string | undefined) {
     wrong_password: "La contraseña actual es incorrecta.",
   };
   return messages[estado ?? ""] ?? "";
-}
-
-function formatOrdersCount(value: number) {
-  if (value === 1) return "1 orden";
-  return `${value} órdenes`;
-}
-
-function formatAddressesCount(value: number) {
-  if (value === 1) return "1 dirección";
-  return `${value} direcciones`;
-}
-
-function formatMonthYear(value: Date) {
-  return new Intl.DateTimeFormat("es-SV", {
-    month: "long",
-    timeZone: "America/El_Salvador",
-    year: "numeric",
-  }).format(value);
-}
-
-function formatShortDate(value: Date) {
-  return new Intl.DateTimeFormat("es-SV", {
-    dateStyle: "medium",
-    timeZone: "America/El_Salvador",
-  }).format(value);
 }

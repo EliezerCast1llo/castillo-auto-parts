@@ -7,7 +7,7 @@ type AccountPasswordFormProps = {
 
 export function AccountPasswordForm({ action, hasPassword }: AccountPasswordFormProps) {
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
+    <section className="h-full rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
       <div className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ca-background text-ca-navy-950">
           <Lock className="h-5 w-5" strokeWidth={1.8} />
