@@ -19,6 +19,9 @@ test("customer can add an available product to the guest cart", async ({ page })
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
 
+  // Sin redirect: toast de confirmación, el usuario permanece en el catálogo
+  // y el contador del header se actualiza.
+  await expect(page.getByText("Agregado al carrito")).toBeVisible();
   await expect(page).toHaveURL(/\/catalog$/);
   await expect(page.getByRole("link", { name: /Ver carrito, 1 producto/ })).toBeVisible();
 
@@ -32,6 +35,7 @@ test("local delivery checkout exposes delivery zone and map fields", async ({ pa
   await page.goto("/catalog");
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
+  await expect(page.getByText("Agregado al carrito")).toBeVisible();
   await page.getByRole("link", { name: /Ver carrito, 1 producto/ }).click();
   await page.getByRole("link", { name: "Continuar al pago" }).click();
   await page.locator('input[value="LOCAL_DELIVERY"]').click();
@@ -170,7 +174,8 @@ test("guest can request a stock alert when cart item becomes unavailable", async
 async function addProductToCart(page: Page, slug: string) {
   await page.goto(`/product/${slug}`);
   await page.getByRole("button", { name: "Agregar al carrito" }).click();
-  await expect(page).toHaveURL(/\/cart\?estado=added/);
+  await expect(page.getByText("Agregado al carrito")).toBeVisible();
+  await page.goto("/cart");
 }
 
 async function fillCustomerFields(

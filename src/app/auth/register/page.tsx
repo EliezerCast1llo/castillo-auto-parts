@@ -32,7 +32,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         <div className="mx-auto w-full max-w-md">
           {/* Header */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)]">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-white shadow-ca-button-hover">
               <UserPlus className="h-5 w-5" />
             </span>
             <div>
@@ -41,7 +41,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-ca-border bg-white p-6 shadow-[var(--ca-shadow-premium)]">
+          <div className="mt-6 rounded-2xl border border-ca-border bg-white p-6 shadow-ca-premium">
             <RegisterForm nextPath={nextPath} errorMessage={errorMessage} />
           </div>
         </div>

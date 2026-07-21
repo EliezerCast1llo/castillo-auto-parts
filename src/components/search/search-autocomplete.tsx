@@ -172,7 +172,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
     return (
       <form
         action="/catalog"
-        className="relative z-40 flex items-center gap-2 rounded-[18px] border border-white/15 bg-white p-2 shadow-[var(--ca-shadow-premium)]"
+        className="relative z-40 flex items-center gap-2 rounded-[18px] border border-white/15 bg-white p-2 shadow-ca-premium"
         onSubmit={handleSubmit}
       >
         <div className="relative flex-1">
@@ -206,7 +206,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
               ref={dropdownRef}
               id="search-dropdown"
               role="listbox"
-              className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-[var(--ca-shadow-premium)]"
+              className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-ca-premium"
             >
               <SearchDropdownItems
                 results={results}
@@ -272,7 +272,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
           ref={dropdownRef}
           id="search-dropdown"
           role="listbox"
-          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-[var(--ca-shadow-premium)]"
+          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-ca-premium"
         >
           <SearchDropdownItems
             results={results}

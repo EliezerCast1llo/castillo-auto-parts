@@ -16,8 +16,7 @@ export function FeaturedProducts({ catalogStatus, products }: FeaturedProductsPr
           <span className="h-6 w-1 rounded-full bg-ca-gold-400" />
           <div>
             <h2
-              className="text-2xl text-ca-navy-950"
-              style={{ fontFamily: "var(--font-display), ui-sans-serif", fontWeight: 900, letterSpacing: "0.01em" }}
+              className="font-display text-2xl font-black tracking-[0.01em] text-ca-navy-950"
             >
               Productos destacados
             </h2>
@@ -45,7 +44,7 @@ export function FeaturedProducts({ catalogStatus, products }: FeaturedProductsPr
           ))}
         </div>
       ) : (
-        <div className="rounded-[20px] border border-ca-border bg-white p-8 shadow-[var(--ca-shadow-soft)]">
+        <div className="rounded-[20px] border border-ca-border bg-white p-8 shadow-ca-soft">
           <div className="flex items-start gap-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-ca-navy-950/[0.07] text-ca-navy-900">
               <PackageSearch className="h-6 w-6" />

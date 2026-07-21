@@ -131,6 +131,7 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
   // Add a product to cart
   await page.goto("/catalog");
   await page.getByRole("button", { name: "Agregar" }).first().click();
+  await expect(page.getByText("Agregado al carrito")).toBeVisible();
   await expect(page).toHaveURL(/\/catalog$/);
   await page.getByRole("link", { name: /Ver carrito, 1 producto/ }).click();
 

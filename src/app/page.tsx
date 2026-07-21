@@ -5,20 +5,26 @@ import { HomeHeader } from "@/components/home/home-header";
 import { SearchHero } from "@/components/home/search-hero";
 import { TrustStrip } from "@/components/home/trust-strip";
 import { PopularSearches } from "@/components/product/popular-searches";
-import { getCatalogFilterOptions } from "@/data/catalog-filters";
-import { getCatalogProductsResult, getFeaturedCatalogProductsResult } from "@/data/products";
+import { JsonLd } from "@/components/seo/json-ld";
+import { getCatalogFacets, getFeaturedCatalogProductsResult } from "@/data/products";
+import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/structured-data";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  alternates: { canonical: "/" },
+};
+
 export default async function Home() {
-  const [catalogResult, featuredResult] = await Promise.all([
-    getCatalogProductsResult(),
+  const [filterOptions, featuredResult] = await Promise.all([
+    getCatalogFacets(),
     getFeaturedCatalogProductsResult(),
   ]);
-  const filterOptions = getCatalogFilterOptions(catalogResult.products);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <JsonLd data={buildOrganizationJsonLd()} />
+      <JsonLd data={buildWebSiteJsonLd()} />
       <HomeHeader />
       <SearchHero filterOptions={filterOptions} />
 

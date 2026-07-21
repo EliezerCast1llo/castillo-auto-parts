@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -11,7 +12,12 @@ import {
 import { shouldUseMockCatalogFallback } from "./catalog-source";
 import {
   buildPrismaWhere,
+  buildVehicleFilterOptions,
   filterCatalogProducts,
+  getCatalogFilterOptions,
+  stockStatusOrder,
+  uniqueSorted,
+  type CatalogFilterOptions,
   type CatalogFilters,
   type CatalogSort,
 } from "./catalog-filters";
@@ -23,6 +29,27 @@ export { shouldUseMockCatalogFallback } from "./catalog-source";
  * Se puede ajustar sin cambiar la lógica de paginación.
  */
 export const PAGE_SIZE = 12;
+
+// ---------------------------------------------------------------------------
+// Data cache (unstable_cache) con tags
+//
+// - Tag "catalog": todas las listas/facetas del catálogo. Las server actions
+//   de admin lo invalidan con revalidateTag(CATALOG_CACHE_TAG) al mutar
+//   productos.
+// - Tag `product:{slug}` (productCacheTag): detalle individual.
+// - `revalidate` actúa como red de seguridad si una mutación olvida invalidar.
+//
+// Solo se cachea la query cruda a DB: los errores propagan (y por tanto no se
+// cachean) y la decisión de mock-fallback ocurre fuera del cache, para no
+// congelar datos simulados ni estados de error.
+// ---------------------------------------------------------------------------
+
+export const CATALOG_CACHE_TAG = "catalog";
+const CATALOG_REVALIDATE_SECONDS = 300;
+
+export function productCacheTag(slug: string) {
+  return `product:${slug}`;
+}
 
 export type CatalogProduct = MockProduct;
 export type CatalogProductSource = "database" | "mock";
@@ -48,19 +75,113 @@ const productInclude = {
   },
 };
 
-/**
- * React.cache() deduplicates esta query dentro del mismo render tree.
- * Si múltiples Server Components en la misma request llaman getCatalogProducts(),
- * solo se ejecuta una query a DB. Cada nueva request/render obtiene datos frescos.
- * Documentación: https://react.dev/reference/react/cache
- */
-const findDbProducts = cache(async () => {
+/** Query cruda del catálogo activo, sin cache. */
+function queryAllActiveProducts() {
   return db.product.findMany({
     where: { isActive: true },
     include: productInclude,
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
   });
-});
+}
+
+/**
+ * Doble capa de cache:
+ * - unstable_cache: data cache entre requests, invalidado por tag "catalog".
+ * - React.cache(): dedupe dentro del mismo render tree — si múltiples Server
+ *   Components en la misma request llaman getCatalogProducts(), una sola lectura.
+ * Documentación: https://react.dev/reference/react/cache
+ */
+const findDbProducts = cache(
+  unstable_cache(queryAllActiveProducts, ["catalog-products"], {
+    revalidate: CATALOG_REVALIDATE_SECONDS,
+    tags: [CATALOG_CACHE_TAG],
+  }),
+);
+
+/**
+ * Variante sin data cache, deduplicada solo dentro de la request.
+ * Úsala donde el stock debe ser exacto (carrito, checkout): servir stock
+ * cacheado ahí permitiría comprar un producto ya agotado.
+ */
+const findLiveDbProducts = cache(queryAllActiveProducts);
+
+const findDbFeaturedProducts = unstable_cache(
+  async () =>
+    db.product.findMany({
+      where: { isActive: true, isFeatured: true },
+      include: productInclude,
+      orderBy: { name: "asc" },
+      take: 6,
+    }),
+  ["catalog-featured-products"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+);
+
+/**
+ * Detalle por slug: cache por-slug con tag propio para invalidación quirúrgica
+ * desde admin, más react.cache para dedupe generateMetadata + page en la misma
+ * request (antes eran dos queries).
+ */
+const findDbProductBySlug = cache(async (slug: string) =>
+  unstable_cache(
+    () =>
+      db.product.findUnique({
+        where: { slug },
+        include: productInclude,
+      }),
+    ["catalog-product-by-slug", slug],
+    {
+      revalidate: CATALOG_REVALIDATE_SECONDS,
+      tags: [CATALOG_CACHE_TAG, productCacheTag(slug)],
+    },
+  )(),
+);
+
+const findDbProductSlugs = unstable_cache(
+  () =>
+    db.product.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true },
+      orderBy: { name: "asc" },
+    }),
+  ["catalog-product-slugs"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+);
+
+const findDbFilteredProducts = unstable_cache(
+  async (filters: CatalogFilters, page: number, sort: CatalogSort) => {
+    const where = buildPrismaWhere(filters);
+    const [totalCount, products] = await Promise.all([
+      db.product.count({ where }),
+      db.product.findMany({
+        where,
+        include: productInclude,
+        orderBy: getCatalogOrderBy(sort),
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      }),
+    ]);
+    return { totalCount, products };
+  },
+  ["catalog-filtered-products"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+);
+
+const findDbRelatedProducts = unstable_cache(
+  (categoryName: string, excludeSlug: string) =>
+    db.product.findMany({
+      where: {
+        isActive: true,
+        slug: { not: excludeSlug },
+        category: { name: categoryName },
+      },
+      include: productInclude,
+      orderBy: { name: "asc" },
+      take: 3,
+    }),
+  ["catalog-related-products"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+);
 
 function findDbSearchProducts(query: string, limit: number) {
   return db.product.findMany({
@@ -109,9 +230,20 @@ export async function getCatalogProducts(): Promise<CatalogProduct[]> {
   return result.products;
 }
 
-export async function getCatalogProductsResult(): Promise<CatalogProductsResult> {
+/**
+ * Catálogo con stock en vivo (sin data cache). Para carrito y checkout, donde
+ * un stock desactualizado permitiría comprar producto agotado.
+ */
+export async function getLiveCatalogProducts(): Promise<CatalogProduct[]> {
+  const result = await getCatalogProductsResult({ live: true });
+  return result.products;
+}
+
+export async function getCatalogProductsResult({
+  live = false,
+}: { live?: boolean } = {}): Promise<CatalogProductsResult> {
   try {
-    const products = await findDbProducts();
+    const products = live ? await findLiveDbProducts() : await findDbProducts();
     if (products.length > 0) {
       return {
         products: products.map(mapDbProduct),
@@ -159,12 +291,7 @@ export async function getFeaturedCatalogProducts(): Promise<CatalogProduct[]> {
 
 export async function getFeaturedCatalogProductsResult(): Promise<CatalogProductsResult> {
   try {
-    const products = await db.product.findMany({
-      where: { isActive: true, isFeatured: true },
-      include: productInclude,
-      orderBy: { name: "asc" },
-      take: 6,
-    });
+    const products = await findDbFeaturedProducts();
 
     if (products.length > 0) {
       return {
@@ -208,10 +335,7 @@ export async function getFeaturedCatalogProductsResult(): Promise<CatalogProduct
 
 export async function getCatalogProductBySlug(slug: string): Promise<CatalogProduct | undefined> {
   try {
-    const product = await db.product.findUnique({
-      where: { slug },
-      include: productInclude,
-    });
+    const product = await findDbProductBySlug(slug);
 
     return product ? mapDbProduct(product) : getFallbackProductBySlug(slug);
   } catch (error) {
@@ -221,26 +345,41 @@ export async function getCatalogProductBySlug(slug: string): Promise<CatalogProd
 }
 
 export async function getCatalogProductSlugs() {
+  const entries = await getCatalogSitemapEntries();
+  return entries.map(({ slug }) => ({ slug }));
+}
+
+export type CatalogSitemapEntry = {
+  slug: string;
+  lastModified: Date | string;
+};
+
+/**
+ * Slugs con fecha real de última modificación, para el sitemap.
+ * En mock fallback no hay updatedAt: se usa la fecha actual (solo dev).
+ */
+export async function getCatalogSitemapEntries(): Promise<CatalogSitemapEntry[]> {
   try {
-    const products = await db.product.findMany({
-      where: { isActive: true },
-      select: { slug: true },
-      orderBy: { name: "asc" },
-    });
+    const products = await findDbProductSlugs();
 
     if (products.length > 0) {
-      return products.map((product) => ({ slug: product.slug }));
+      return products.map((product) => ({
+        slug: product.slug,
+        lastModified: product.updatedAt,
+      }));
     }
 
-    return shouldUseMockCatalogFallback()
-      ? mockProducts.map((product) => ({ slug: product.slug }))
-      : [];
+    return buildMockSitemapEntries();
   } catch (error) {
     logCatalogDataError(error);
-    return shouldUseMockCatalogFallback()
-      ? mockProducts.map((product) => ({ slug: product.slug }))
-      : [];
+    return buildMockSitemapEntries();
   }
+}
+
+function buildMockSitemapEntries(): CatalogSitemapEntry[] {
+  return shouldUseMockCatalogFallback()
+    ? mockProducts.map((product) => ({ slug: product.slug, lastModified: new Date() }))
+    : [];
 }
 
 export type CatalogSearchProduct = {
@@ -323,17 +462,7 @@ export async function getFilteredCatalogProducts(
   const safePage = Math.max(1, Math.floor(page));
 
   try {
-    const where = buildPrismaWhere(filters);
-    const [totalCount, products] = await Promise.all([
-      db.product.count({ where }),
-      db.product.findMany({
-        where,
-        include: productInclude,
-        orderBy: getCatalogOrderBy(sort),
-        skip: (safePage - 1) * PAGE_SIZE,
-        take: PAGE_SIZE,
-      }),
-    ]);
+    const { totalCount, products } = await findDbFilteredProducts(filters, safePage, sort);
 
     if (totalCount > 0 || !shouldUseMockCatalogFallback()) {
       return {
@@ -428,18 +557,83 @@ function compareByName(left: CatalogProduct, right: CatalogProduct) {
   return left.name.localeCompare(right.name, "es");
 }
 
+// ---------------------------------------------------------------------------
+// Facetas del catálogo (opciones de filtros)
+// ---------------------------------------------------------------------------
+
+/**
+ * Facetas con queries agregadas — evita cargar la tabla completa de productos
+ * (con todas sus relaciones) solo para derivar las opciones de filtro.
+ */
+const findDbCatalogFacets = unstable_cache(
+  async () => {
+    const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
+      db.product.groupBy({ by: ["brand"], where: { isActive: true } }),
+      db.productCategory.findMany({
+        where: { isActive: true, products: { some: { isActive: true } } },
+        select: { name: true },
+      }),
+      db.inventoryStock.groupBy({
+        by: ["status"],
+        where: { product: { isActive: true } },
+      }),
+      db.vehicleCompatibility.findMany({
+        where: { product: { isActive: true } },
+        select: { make: true, model: true, yearFrom: true, yearTo: true },
+        distinct: ["make", "model", "yearFrom", "yearTo"],
+      }),
+    ]);
+
+    return {
+      brands: brandGroups.map((group) => group.brand),
+      categories: categories.map((category) => category.name),
+      stockStatuses: stockGroups.map((group) => group.status),
+      vehicles,
+    };
+  },
+  ["catalog-facets"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+);
+
+/**
+ * Opciones de filtro del catálogo. Con DB disponible usa agregaciones; en
+ * fallback deriva las opciones del mock con getCatalogFilterOptions.
+ */
+export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
+  try {
+    const facets = await findDbCatalogFacets();
+    const hasData = facets.brands.length > 0 || facets.categories.length > 0;
+
+    if (hasData || !shouldUseMockCatalogFallback()) {
+      // quantity=1: a nivel de faceta solo interesa el mapeo del enum al label
+      // de UI (IN_STOCK → "Disponible"), no la cantidad real por producto.
+      const stockStatusSet = new Set(
+        facets.stockStatuses.map((status) => toStockStatus(status, 1)),
+      );
+
+      return {
+        brands: uniqueSorted(facets.brands),
+        categories: uniqueSorted(facets.categories),
+        stockStatuses: stockStatusOrder.filter((status) => stockStatusSet.has(status)),
+        ...buildVehicleFilterOptions(facets.vehicles),
+      };
+    }
+
+    return getCatalogFilterOptions(mockProducts);
+  } catch (error) {
+    logCatalogDataError(error);
+
+    if (shouldUseMockCatalogFallback()) {
+      return getCatalogFilterOptions(mockProducts);
+    }
+
+    return getCatalogFilterOptions([]);
+  }
+}
+
 export async function getRelatedCatalogProducts(product: CatalogProduct) {
   try {
-    const products = await db.product.findMany({
-      where: {
-        isActive: true,
-        slug: { not: product.slug },
-        category: { name: product.category },
-      },
-      include: productInclude,
-      orderBy: { name: "asc" },
-      take: 3,
-    });
+    const products = await findDbRelatedProducts(product.category, product.slug);
 
     return products.length > 0
       ? products.map(mapDbProduct)

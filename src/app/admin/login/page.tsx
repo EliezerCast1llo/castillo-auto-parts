@@ -31,7 +31,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
       <SiteHeader />
 
       <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-md rounded-md border border-border bg-card p-6 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+        <div className="mx-auto w-full max-w-md rounded-md border border-border bg-card p-6 shadow-ca-card">
           <div className="flex items-center gap-3">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-primary text-white">
               <LockKeyhole className="h-5 w-5" />

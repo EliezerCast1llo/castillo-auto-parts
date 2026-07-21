@@ -30,7 +30,7 @@ const popularSearches = [
 
 export function PopularSearches() {
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-black text-ca-navy-950">Lo más buscado</h2>
         <Link className="inline-flex shrink-0 items-center gap-2 text-sm font-black text-ca-blue-700" href="/catalog">
@@ -43,7 +43,7 @@ export function PopularSearches() {
         {popularSearches.map((search) => (
           <Link
             key={search.label}
-            className="group grid min-h-24 grid-cols-[48px_1fr] items-center gap-3 rounded-[14px] border border-ca-border bg-ca-background p-3.5 transition hover:-translate-y-0.5 hover:border-[#c3cfdd] hover:bg-white"
+            className="group grid min-h-24 grid-cols-[48px_1fr] items-center gap-3 rounded-[14px] border border-ca-border bg-ca-background p-3.5 transition hover:-translate-y-0.5 hover:border-ca-border-hover hover:bg-white"
             href={search.href}
           >
             <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-white text-ca-navy-900 shadow-[0_8px_18px_rgba(6,25,51,0.06)] transition group-hover:bg-ca-navy-900 group-hover:text-white">

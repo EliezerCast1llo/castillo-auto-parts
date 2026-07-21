@@ -55,7 +55,7 @@ export default async function CartPage({ searchParams }: CartPageProps) {
           {/* Columna de items */}
           <div className="space-y-4">
             {/* Header */}
-            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
               <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
                 Carrito de compras
               </p>
@@ -81,7 +81,7 @@ export default async function CartPage({ searchParams }: CartPageProps) {
           </div>
 
           {/* Resumen del pedido */}
-          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-premium)] lg:sticky lg:top-6">
+          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium lg:sticky lg:top-6">
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-ca-navy-950" strokeWidth={1.8} />
               <h2 className="text-lg font-black text-ca-navy-950">Resumen del pedido</h2>
@@ -113,7 +113,7 @@ export default async function CartPage({ searchParams }: CartPageProps) {
 
             {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <Link
-                className="mt-5 inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800"
+                className="mt-5 inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
                 href="/checkout"
               >
                 Continuar al pago
@@ -138,7 +138,7 @@ function CartLineItem({ line }: { line: CartLine }) {
   const isUnavailable = line.issue === "unavailable";
 
   return (
-    <article className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
+    <article className="rounded-2xl border border-ca-border bg-white p-4 shadow-ca-soft">
       <div className="flex gap-4">
         {/* Imagen/visual */}
         <Link
@@ -259,7 +259,7 @@ function LineIssue({ line }: { line: CartLine }) {
 
 function EmptyCart() {
   return (
-    <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-[var(--ca-shadow-soft)]">
+    <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-ca-soft">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-ca-navy-950/5">
         <ShoppingCart className="h-8 w-8 text-ca-navy-950" strokeWidth={1.5} />
       </div>

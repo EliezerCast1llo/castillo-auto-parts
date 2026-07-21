@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
@@ -12,12 +13,11 @@ import { FilterDrawer } from "@/components/catalog/filter-drawer";
 import { SiteHeader } from "@/components/site-header";
 import {
   countActiveCatalogFilters,
-  getCatalogFilterOptions,
   parseCatalogFilters,
   parseCatalogSort,
   type CatalogSearchParams,
 } from "@/data/catalog-filters";
-import { getCatalogProducts, getFilteredCatalogProducts } from "@/data/products";
+import { getCatalogFacets, getFilteredCatalogProducts } from "@/data/products";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,7 @@ export async function generateMetadata({
   searchParams,
 }: {
   searchParams?: Promise<CatalogSearchParams>;
-}): Promise<{ title: string; description: string }> {
+}): Promise<Metadata> {
   const params = searchParams ? await searchParams : {};
   const filters = parseCatalogFilters(params);
 
@@ -43,7 +43,13 @@ export async function generateMetadata({
     ? `Repuestos automotrices ${parts.join(", ")} disponibles en El Salvador. Stock visible, compatibilidad clara.`
     : "Catálogo completo de repuestos automotrices para El Salvador. Filtra por vehículo, marca o categoría.";
 
-  return { title, description };
+  return {
+    title,
+    description,
+    // Canonical siempre al catálogo limpio: las combinaciones de filtros por
+    // query param no deben competir entre sí como contenido duplicado.
+    alternates: { canonical: "/catalog" },
+  };
 }
 
 type CatalogPageProps = {
@@ -56,9 +62,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const sort = parseCatalogSort(resolvedParams);
   const page = Math.max(1, Number(resolvedParams.page ?? 1) || 1);
 
-  const catalogResult = await getFilteredCatalogProducts(filters, page, sort);
-  const allProducts = await getCatalogProducts();
-  const filterOptions = getCatalogFilterOptions(allProducts);
+  const [catalogResult, filterOptions] = await Promise.all([
+    getFilteredCatalogProducts(filters, page, sort),
+    getCatalogFacets(),
+  ]);
 
   const { products: filteredProducts, totalCount, totalPages, currentPage, source, status } = catalogResult;
   const activeFilterCount = countActiveCatalogFilters(filters);
@@ -99,7 +106,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             {status === "unavailable" ? <CatalogUnavailableState /> : null}
 
             {/* Barra de resultados */}
-            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-ca-border bg-white px-5 py-4 shadow-[var(--ca-shadow-soft)] md:flex-row md:items-center">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-ca-border bg-white px-5 py-4 shadow-ca-soft md:flex-row md:items-center">
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
                   {source === "mock" ? "Inventario de prueba" : "Inventario activo"}
@@ -191,7 +198,7 @@ function CatalogBreadcrumb({ filters }: { filters: ReturnType<typeof parseCatalo
 
 function CatalogUnavailableState() {
   return (
-    <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-[var(--ca-shadow-soft)]">
+    <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-ca-soft">
       <p className="text-sm font-black uppercase tracking-widest text-red-500">No disponible</p>
       <h2 className="mt-1 text-xl font-black text-ca-navy-950">Catálogo temporalmente no disponible</h2>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">
@@ -219,7 +226,7 @@ function getCatalogSummary(filters: ReturnType<typeof parseCatalogFilters>, tota
 
 function CatalogHero() {
   return (
-    <section className="overflow-hidden rounded-2xl border border-ca-border bg-white shadow-[var(--ca-shadow-soft)]">
+    <section className="overflow-hidden rounded-2xl border border-ca-border bg-white shadow-ca-soft">
       <div className="grid gap-5 p-5 md:grid-cols-[1fr_240px] md:p-6">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">

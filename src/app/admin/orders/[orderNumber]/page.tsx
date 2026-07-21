@@ -153,7 +153,7 @@ export default async function AdminOrderDetailPage({
           </div>
 
           <aside className="h-fit space-y-4">
-            <section className="rounded-md border border-border bg-card p-5 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+            <section className="rounded-md border border-border bg-card p-5 shadow-ca-card">
               <h2 className="text-lg font-bold text-primary">Cambiar estado</h2>
               {order.status === "PAYMENT_PROCESSING" ? (
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">

@@ -1,8 +1,9 @@
 "use server";
 
 import { InventoryStatus, Prisma } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { CATALOG_CACHE_TAG, productCacheTag } from "@/data/products";
 import {
   normalizeAdminInventoryStatus,
   parseAdminPriceCents,
@@ -155,6 +156,8 @@ export async function updateAdminProduct(formData: FormData) {
         }),
       });
 
+      // Slug anterior: si cambió, invalidar también su tag y su path
+      updateTag(productCacheTag(existingProduct.slug));
       revalidatePath(`/product/${existingProduct.slug}`);
       return savedProduct;
     });
@@ -364,6 +367,11 @@ async function upsertInventoryStock(
 }
 
 function revalidateProductPaths(slug: string) {
+  // Invalida el data cache del catálogo (unstable_cache en src/data/products.ts).
+  // updateTag (Next 16): expiración inmediata con read-your-own-writes en actions.
+  updateTag(CATALOG_CACHE_TAG);
+  updateTag(productCacheTag(slug));
+
   revalidatePath("/");
   revalidatePath("/catalog");
   revalidatePath("/admin/products");

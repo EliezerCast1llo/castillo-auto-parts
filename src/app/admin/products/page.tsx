@@ -108,7 +108,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
           <ProductFilterForm query={query} status={status} />
         </section>
 
-        <section className="mt-5 rounded-md border border-border bg-card shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+        <section className="mt-5 rounded-md border border-border bg-card shadow-ca-card">
           <div className="flex items-center gap-2 border-b border-border p-5">
             <Package className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-bold text-primary">Catálogo admin</h2>

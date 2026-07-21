@@ -32,7 +32,7 @@ export const catalogSortOptions: { label: string; value: CatalogSort }[] = [
   { label: "Más nuevos", value: "newest" },
 ];
 
-const stockStatusOrder: CatalogProduct["stockStatus"][] = [
+export const stockStatusOrder: CatalogProduct["stockStatus"][] = [
   "Disponible",
   "Últimas unidades",
   "No disponible",
@@ -87,6 +87,25 @@ export function filterCatalogProducts(products: CatalogProduct[], filters: Catal
 export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilterOptions {
   const vehicles = products.flatMap((product) => product.vehicleCompatibilities);
 
+  return {
+    categories: uniqueSorted(products.map((product) => product.category)),
+    brands: uniqueSorted(products.map((product) => product.brand)),
+    stockStatuses: stockStatusOrder.filter((status) =>
+      products.some((product) => product.stockStatus === status),
+    ),
+    ...buildVehicleFilterOptions(vehicles),
+  };
+}
+
+export type VehicleFacet = Pick<VehicleCompatibility, "make" | "model" | "yearFrom" | "yearTo">;
+
+/**
+ * Convierte una lista plana de compatibilidades vehiculares (venga del mock o
+ * de una query agregada a DB) en las opciones de filtro de vehículo.
+ */
+export function buildVehicleFilterOptions(
+  vehicles: VehicleFacet[],
+): Pick<CatalogFilterOptions, "vehicleMakes" | "vehicleModels" | "vehicleModelsByMake" | "vehicleYears"> {
   const vehicleModelsByMake = vehicles.reduce<Record<string, Set<string>>>((accumulator, vehicle) => {
     accumulator[vehicle.make] ??= new Set<string>();
     accumulator[vehicle.make].add(vehicle.model);
@@ -94,11 +113,6 @@ export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilt
   }, {});
 
   return {
-    categories: uniqueSorted(products.map((product) => product.category)),
-    brands: uniqueSorted(products.map((product) => product.brand)),
-    stockStatuses: stockStatusOrder.filter((status) =>
-      products.some((product) => product.stockStatus === status),
-    ),
     vehicleMakes: uniqueSorted(vehicles.map((vehicle) => vehicle.make)),
     vehicleModels: uniqueSorted(vehicles.map((vehicle) => vehicle.model)),
     vehicleModelsByMake: Object.fromEntries(
@@ -283,7 +297,7 @@ function isCatalogSort(value: string): value is CatalogSort {
   return catalogSortOptions.some((option) => option.value === value);
 }
 
-function uniqueSorted(values: string[]) {
+export function uniqueSorted(values: string[]) {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b, "es"));
 }
 

@@ -130,7 +130,7 @@ export function AddAddressForm({ deliveryZones }: { deliveryZones: DeliveryZoneO
         <CheckoutLocationPicker onLocationFound={handleLocationFound} />
 
         <button
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_8px_16px_rgba(6,25,51,0.15)] transition hover:bg-ca-navy-800"
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button transition hover:bg-ca-navy-800"
           type="submit"
         >
           Revisar y guardar
@@ -204,7 +204,7 @@ function AddressConfirmModal({
             Editar
           </button>
           <button
-            className="inline-flex h-11 items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_8px_16px_rgba(6,25,51,0.15)] transition hover:bg-ca-navy-800"
+            className="inline-flex h-11 items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button transition hover:bg-ca-navy-800"
             onClick={onConfirm}
             type="button"
           >

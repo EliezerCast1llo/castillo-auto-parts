@@ -70,7 +70,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
         <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Formulario */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
               <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
                 Finalizar compra
               </p>
@@ -93,7 +93,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
           </div>
 
           {/* Resumen — sticky en desktop, visible debajo en mobile */}
-          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-premium)] lg:sticky lg:top-6">
+          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium lg:sticky lg:top-6">
             <div className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-ca-navy-950" strokeWidth={1.8} />
               <h2 className="text-lg font-black text-ca-navy-950">Tu pedido</h2>
@@ -174,7 +174,7 @@ function CheckoutForm({
 
   return (
     <form action={createGuestOrder} className="space-y-4">
-      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">Tus datos</h2>
         {isGuest ? (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -191,7 +191,7 @@ function CheckoutForm({
         )}
       </section>
 
-      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">Método de entrega</h2>
         <CheckoutDeliveryFields
           deliveryZones={deliveryZones}
@@ -202,7 +202,7 @@ function CheckoutForm({
         />
       </section>
 
-      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">Pago</h2>
         <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-ca-border bg-ca-background px-4 text-sm font-bold text-ca-navy-950">
           <input
@@ -216,7 +216,7 @@ function CheckoutForm({
         </label>
       </section>
 
-      <button className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800">
+      <button className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800">
         <PackageCheck className="h-4 w-4" strokeWidth={2} />
         Confirmar y pagar
       </button>
@@ -268,7 +268,7 @@ function CheckoutFieldReadonly({ label, value }: { label: string; value: string 
 
 function EmptyCheckout({ hasIssues }: { hasIssues: boolean }) {
   return (
-    <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-[var(--ca-shadow-soft)]">
+    <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-ca-soft">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-ca-navy-950/5">
         <MapPin className="h-8 w-8 text-ca-navy-950" strokeWidth={1.5} />
       </div>

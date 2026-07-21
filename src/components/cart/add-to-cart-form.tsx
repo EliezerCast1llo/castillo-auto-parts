@@ -1,0 +1,87 @@
+"use client";
+
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2, ShoppingCart } from "lucide-react";
+import { addCartItemInline, type AddCartItemInlineState } from "@/app/cart/actions";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
+
+const STATUS_MESSAGES: Record<
+  NonNullable<AddCartItemInlineState>["status"],
+  { message: string; tone: "success" | "error" }
+> = {
+  added: { message: "Agregado al carrito", tone: "success" },
+  quantity_adjusted: {
+    message: "Agregado — cantidad ajustada al stock disponible",
+    tone: "success",
+  },
+  unavailable: { message: "Producto no disponible por ahora", tone: "error" },
+  invalid: { message: "No se pudo agregar al carrito", tone: "error" },
+};
+
+type AddToCartFormProps = {
+  sku: string;
+  available: boolean;
+  /** Controles extra dentro del form (p.ej. QuantityStepper). Si no hay, se envía quantity=1. */
+  children?: ReactNode;
+  label?: string;
+  unavailableLabel?: string;
+  className?: string;
+  buttonClassName?: string;
+  buttonSize?: "sm" | "md" | "lg";
+};
+
+/**
+ * Form de agregar al carrito sin redirect: muestra toast, permanece en la
+ * página y refresca el contador del header vía router.refresh().
+ */
+export function AddToCartForm({
+  sku,
+  available,
+  children,
+  label = "Agregar",
+  unavailableLabel = "No disponible",
+  className,
+  buttonClassName,
+  buttonSize = "md",
+}: AddToCartFormProps) {
+  const [state, formAction, pending] = useActionState(addCartItemInline, null);
+  const lastHandledAtRef = useRef<number | null>(null);
+  const router = useRouter();
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (!state || state.at === lastHandledAtRef.current) return;
+    lastHandledAtRef.current = state.at;
+
+    const feedback = STATUS_MESSAGES[state.status];
+    showToast(feedback.message, feedback.tone);
+
+    if (feedback.tone === "success") {
+      // Actualiza el badge del carrito en SiteHeader (server component)
+      router.refresh();
+    }
+  }, [state, router, showToast]);
+
+  return (
+    <form action={formAction} className={className}>
+      <input name="sku" type="hidden" value={sku} />
+      {children ?? <input name="quantity" type="hidden" value="1" />}
+      <Button
+        type="submit"
+        size={buttonSize}
+        disabled={!available || pending}
+        className={cn("w-full", buttonClassName)}
+      >
+        {pending ? (
+          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+        ) : (
+          <ShoppingCart className="h-4 w-4" strokeWidth={2} />
+        )}
+        {available ? label : unavailableLabel}
+      </Button>
+    </form>
+  );
+}

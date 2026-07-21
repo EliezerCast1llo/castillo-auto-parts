@@ -29,6 +29,34 @@ export async function addCartItem(formData: FormData) {
   redirect(`/cart?estado=${result}`);
 }
 
+export type AddCartItemInlineState = {
+  status: Awaited<ReturnType<typeof addGuestCartItem>>;
+  /** Cambia en cada envío para que el cliente reaccione aunque el status se repita. */
+  at: number;
+} | null;
+
+/**
+ * Variante sin redirect para el flujo "toast + seguir comprando".
+ * Devuelve el resultado para que el cliente muestre feedback y refresque el
+ * contador del carrito sin navegar.
+ */
+export async function addCartItemInline(
+  _previousState: AddCartItemInlineState,
+  formData: FormData,
+): Promise<AddCartItemInlineState> {
+  const sku = String(formData.get("sku") ?? "");
+  const quantity = Number(formData.get("quantity") ?? 1);
+  const status = await addGuestCartItem(sku, quantity);
+
+  // Refresca el contador del carrito en el header también cuando el cliente no
+  // puede ejecutar router.refresh() (envío del form sin JS).
+  revalidatePath("/");
+  revalidatePath("/catalog");
+  revalidatePath("/cart");
+
+  return { status, at: Date.now() };
+}
+
 export async function updateCartItem(formData: FormData) {
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 0);

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart } from "lucide-react";
-import { addCartItem } from "@/app/cart/actions";
+import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { isPurchasableStockStatus, type CatalogProduct } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { ProductVisual } from "./product-visual";
@@ -11,12 +10,12 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
   const isAvailable = isPurchasableStockStatus(product.stockStatus);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ca-border bg-white shadow-[var(--ca-shadow-soft)] transition duration-200 hover:-translate-y-1 hover:border-[#c3cfdd] hover:shadow-[var(--ca-shadow-premium)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ca-border bg-white shadow-ca-soft transition duration-200 hover:-translate-y-1 hover:border-ca-border-hover hover:shadow-ca-premium">
       {/* Image area */}
       <Link
         aria-label={`Ver detalle de ${product.name}`}
         href={`/product/${product.slug}`}
-        className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-white via-ca-background to-[#dde7f1]"
+        className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-white via-ca-background to-ca-surface-tint"
       >
         <div className="absolute inset-x-6 bottom-4 h-8 rounded-full bg-ca-navy-950/10 blur-xl" />
         {product.primaryImageUrl ? (
@@ -61,25 +60,15 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         {/* Price + CTA */}
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <div>
-            <span
-              className="text-2xl text-ca-navy-950"
-              style={{ fontFamily: "var(--font-display), ui-sans-serif", fontWeight: 900 }}
-            >
+            <span className="font-display text-2xl font-black text-ca-navy-950">
               {formatCurrency(product.priceCents)}
             </span>
           </div>
-          <form action={addCartItem}>
-            <input name="sku" type="hidden" value={product.sku} />
-            <input name="quantity" type="hidden" value="1" />
-            <input name="stayOnPage" type="hidden" value="true" />
-            <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-ca-navy-950 px-4 text-xs font-black text-white shadow-[0_6px_14px_rgba(6,25,51,0.15)] transition hover:bg-ca-navy-800 hover:shadow-[0_8px_18px_rgba(6,25,51,0.22)] disabled:bg-[#EEF2F6] disabled:text-[#7B8798] disabled:shadow-none"
-              disabled={!isAvailable}
-            >
-              <ShoppingCart className="h-3.5 w-3.5" strokeWidth={2} />
-              {isAvailable ? "Agregar" : "No disponible"}
-            </button>
-          </form>
+          <AddToCartForm
+            available={isAvailable}
+            buttonClassName="w-auto text-xs"
+            sku={product.sku}
+          />
         </div>
       </div>
     </article>
