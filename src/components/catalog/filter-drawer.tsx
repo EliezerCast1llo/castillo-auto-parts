@@ -46,7 +46,7 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
 
       {/* Drawer bottom sheet */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-[100] flex max-h-[85vh] flex-col rounded-t-[24px] bg-white shadow-[var(--ca-shadow-hero)] transition-transform duration-300 lg:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-[100] flex max-h-[85vh] flex-col rounded-t-[24px] bg-white shadow-ca-hero transition-transform duration-300 lg:hidden ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
         role="dialog"

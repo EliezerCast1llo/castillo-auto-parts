@@ -48,13 +48,12 @@ const categories = [
 
 export function CategoryQuickLinks() {
   return (
-    <section className="animate-fade-up delay-150 rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+    <section className="animate-fade-up delay-150 rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="h-5 w-1 rounded-full bg-ca-navy-950" />
           <h2
-            className="text-xl text-ca-navy-950"
-            style={{ fontFamily: "var(--font-display), ui-sans-serif", fontWeight: 800, letterSpacing: "0.02em" }}
+            className="font-display text-xl font-extrabold tracking-[0.02em] text-ca-navy-950"
           >
             Explorar catálogo
           </h2>
@@ -71,7 +70,7 @@ export function CategoryQuickLinks() {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {categories.map((category) => (
           <Link
-            className="group flex min-h-[90px] flex-col items-center justify-center gap-2.5 rounded-[14px] border border-ca-border bg-ca-background p-3 text-center transition hover:-translate-y-0.5 hover:border-[#c3cfdd] hover:bg-white hover:shadow-[var(--ca-shadow-soft)]"
+            className="group flex min-h-[90px] flex-col items-center justify-center gap-2.5 rounded-[14px] border border-ca-border bg-ca-background p-3 text-center transition hover:-translate-y-0.5 hover:border-ca-border-hover hover:bg-white hover:shadow-ca-soft"
             href={category.href}
             key={category.label}
           >

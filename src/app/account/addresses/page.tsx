@@ -70,7 +70,7 @@ export default async function AccountAddressesPage({ searchParams }: Props) {
         ) : null}
 
         {addresses.length === 0 ? (
-          <div className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-ca-border bg-white py-14 text-center shadow-[var(--ca-shadow-soft)]">
+          <div className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-ca-border bg-white py-14 text-center shadow-ca-soft">
             <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ca-navy-950/[0.07] text-ca-navy-950">
               <MapPin className="h-7 w-7" strokeWidth={1.6} />
             </span>
@@ -87,7 +87,7 @@ export default async function AccountAddressesPage({ searchParams }: Props) {
             {addresses.map((address) => (
               <div
                 key={address.id}
-                className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]"
+                className="rounded-2xl border border-ca-border bg-white p-4 shadow-ca-soft"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">

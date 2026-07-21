@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, ChevronRight, ShoppingCart, Truck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Truck } from "lucide-react";
+import { AddToCartForm } from "@/components/cart/add-to-cart-form";
+import { JsonLd } from "@/components/seo/json-ld";
+import {
+  buildBreadcrumbJsonLd,
+  buildProductJsonLd,
+  type BreadcrumbEntry,
+} from "@/lib/structured-data";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
-import { addCartItem } from "@/app/cart/actions";
 import {
   getCatalogProductBySlug,
   getCatalogProductSlugs,
@@ -33,9 +39,20 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
   if (!product) return { title: "Producto no encontrado | Castillo Auto Parts" };
 
+  const description =
+    product.description ||
+    `${product.name} ${product.brand} · ${product.compatibility}. Repuestos con stock visible en El Salvador.`;
+
   return {
     title: `${product.name} | Castillo Auto Parts`,
-    description: product.description,
+    description,
+    alternates: { canonical: `/product/${product.slug}` },
+    openGraph: {
+      title: product.name,
+      description,
+      url: `/product/${product.slug}`,
+      type: "website",
+    },
   };
 }
 
@@ -49,8 +66,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const isAvailable = product.stockStatus !== "No disponible";
   const supportMessage = `Hola, necesito validar compatibilidad del repuesto ${product.name} (SKU ${product.sku}, parte ${product.partNumber}).`;
 
+  const breadcrumbs: BreadcrumbEntry[] = [
+    { name: "Inicio", path: "/" },
+    { name: "Catálogo", path: "/catalog" },
+    { name: product.category, path: `/catalog?category=${encodeURIComponent(product.category)}` },
+    { name: product.name, path: `/product/${product.slug}` },
+  ];
+
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
+      <JsonLd data={buildProductJsonLd(product)} />
+      <JsonLd data={buildBreadcrumbJsonLd(breadcrumbs)} />
       <SiteHeader />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
@@ -61,7 +87,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           {/* Panel izquierdo: galería + descripción + compatibilidad */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
+            <div className="rounded-2xl border border-ca-border bg-white p-4 shadow-ca-soft">
               <ProductGallery
                 images={product.images}
                 productName={product.name}
@@ -69,13 +95,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             </div>
 
-            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
               <h2 className="text-base font-black text-ca-navy-950">Descripción</h2>
               <p className="mt-3 text-sm leading-6 text-ca-text-secondary">{product.description}</p>
             </div>
 
             {product.compatibleVehicles.length > 0 ? (
-              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
                 <h2 className="text-base font-black text-ca-navy-950">Compatibilidad verificada</h2>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {product.compatibleVehicles.map((vehicle) => (
@@ -92,7 +118,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ) : null}
 
             {product.technicalDetails.length > 0 ? (
-              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)]">
+              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
                 <h2 className="text-base font-black text-ca-navy-950">Detalles técnicos</h2>
                 <ul className="mt-3 space-y-2">
                   {product.technicalDetails.map((detail) => (
@@ -107,7 +133,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           {/* Panel derecho: precio + compra (en mobile va después de la galería) */}
-          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-premium)]">
+          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium">
             {/* Categoría + título + badge */}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -150,22 +176,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             {/* Acción principal */}
-            <form action={addCartItem} className="mt-4 space-y-3">
-              <input name="sku" type="hidden" value={product.sku} />
+            <AddToCartForm
+              available={isAvailable}
+              buttonClassName="h-[52px] rounded-[14px]"
+              buttonSize="lg"
+              className="mt-4 space-y-3"
+              label="Agregar al carrito"
+              sku={product.sku}
+            >
               <label className="block text-sm font-bold text-ca-navy-950">
                 Cantidad
                 <div className="mt-2">
                   <QuantityStepper disabled={!isAvailable} max={product.stockQuantity} />
                 </div>
               </label>
-              <button
-                className="inline-flex h-13 h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800 disabled:cursor-not-allowed disabled:bg-ca-text-secondary/30 disabled:shadow-none"
-                disabled={!isAvailable}
-              >
-                <ShoppingCart className="h-4 w-4" strokeWidth={2} />
-                {isAvailable ? "Agregar al carrito" : "No disponible"}
-              </button>
-            </form>
+            </AddToCartForm>
 
             <WhatsAppCTA
               className="mt-2.5 w-full"

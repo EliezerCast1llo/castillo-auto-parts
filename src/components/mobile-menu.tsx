@@ -62,7 +62,7 @@ export function MobileMenu({
 
           {/* Drawer lateral */}
           <div
-            className="fixed inset-y-0 right-0 z-[100] flex w-72 max-w-[85vw] flex-col bg-white shadow-[var(--ca-shadow-hero)]"
+            className="fixed inset-y-0 right-0 z-[100] flex w-72 max-w-[85vw] flex-col bg-white shadow-ca-hero"
             role="dialog"
             aria-modal
             aria-label="Menú de navegación"

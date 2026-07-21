@@ -62,6 +62,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Fija la raíz del workspace: evita que Turbopack infiera una raíz incorrecta
+  // por lockfiles ajenos en directorios superiores.
+  turbopack: {
+    root: __dirname,
+  },
   async headers() {
     return [
       {

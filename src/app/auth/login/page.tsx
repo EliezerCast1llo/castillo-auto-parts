@@ -33,7 +33,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="mx-auto w-full max-w-md">
           {/* Header */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)]">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-white shadow-ca-button-hover">
               <LogIn className="h-5 w-5" />
             </span>
             <div>
@@ -42,7 +42,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-ca-border bg-white p-6 shadow-[var(--ca-shadow-premium)]">
+          <div className="mt-6 rounded-2xl border border-ca-border bg-white p-6 shadow-ca-premium">
             {errorMessage ? (
               <div className="mb-5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">
                 {errorMessage}
@@ -92,7 +92,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
               <button
                 type="submit"
-                className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800"
+                className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
               >
                 Entrar
               </button>

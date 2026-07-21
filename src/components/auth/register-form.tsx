@@ -186,7 +186,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
 
       <button
         type="submit"
-        className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-[0_10px_20px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800"
+        className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
       >
         Crear cuenta
       </button>

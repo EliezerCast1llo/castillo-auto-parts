@@ -75,7 +75,7 @@ export default async function AdminStockAlertsPage({ searchParams }: AdminStockA
           ))}
         </section>
 
-        <section className="mt-5 overflow-hidden rounded-md border border-border bg-card shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+        <section className="mt-5 overflow-hidden rounded-md border border-border bg-card shadow-ca-card">
           {alerts.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-border text-sm">

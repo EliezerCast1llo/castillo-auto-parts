@@ -29,7 +29,7 @@ const trustItems = [
 
 export function TrustStrip() {
   return (
-    <section className="animate-fade-up overflow-hidden rounded-2xl border border-ca-border bg-white shadow-[var(--ca-shadow-soft)]">
+    <section className="animate-fade-up overflow-hidden rounded-2xl border border-ca-border bg-white shadow-ca-soft">
       <div className="grid divide-y divide-ca-border sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
         {trustItems.map((item, i) => (
           <div

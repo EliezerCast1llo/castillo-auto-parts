@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getCatalogProductSlugs } from "@/data/products";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://castilloautoparts.com";
+import { getCatalogSitemapEntries } from "@/data/products";
+import { SITE_URL } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Páginas estáticas
@@ -26,13 +25,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Páginas de producto
+  // Páginas de producto con fecha real de última modificación
   let productPages: MetadataRoute.Sitemap = [];
   try {
-    const slugs = await getCatalogProductSlugs();
-    productPages = slugs.map(({ slug }) => ({
+    const entries = await getCatalogSitemapEntries();
+    productPages = entries.map(({ slug, lastModified }) => ({
       url: `${SITE_URL}/product/${slug}`,
-      lastModified: new Date(),
+      lastModified,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     }));

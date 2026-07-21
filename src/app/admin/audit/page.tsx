@@ -36,7 +36,7 @@ export default async function AdminAuditPage() {
           </div>
         </section>
 
-        <section className="mt-5 overflow-hidden rounded-md border border-border bg-card shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+        <section className="mt-5 overflow-hidden rounded-md border border-border bg-card shadow-ca-card">
           {logs.length > 0 ? (
             <div className="divide-y divide-border">
               {logs.map((log) => (

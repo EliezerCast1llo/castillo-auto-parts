@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, Outfit } from "next/font/google";
+import { ToastProvider } from "@/components/ui/toast";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const barlowCondensed = Barlow_Condensed({
@@ -12,11 +14,6 @@ const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-sans",
 });
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://castilloautoparts.com";
-const SITE_NAME = "Castillo Auto Parts";
-const SITE_DESCRIPTION =
-  "Repuestos automotrices para El Salvador. Catálogo con compatibilidad verificada, stock en tiempo real y entrega en San Salvador y Santa Tecla.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -52,7 +49,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${barlowCondensed.variable} ${outfit.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${barlowCondensed.variable} ${outfit.variable} font-sans antialiased`}>
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }

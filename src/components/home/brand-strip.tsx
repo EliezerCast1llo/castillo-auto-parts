@@ -21,8 +21,7 @@ export function BrandStrip() {
         <div className="flex items-center gap-3">
           <span className="h-5 w-1 rounded-full bg-ca-gold-400" />
           <h2
-            className="text-xl text-ca-navy-950"
-            style={{ fontFamily: "var(--font-display), ui-sans-serif", fontWeight: 800, letterSpacing: "0.02em" }}
+            className="font-display text-xl font-extrabold tracking-[0.02em] text-ca-navy-950"
           >
             Marcas destacadas
           </h2>
@@ -45,8 +44,7 @@ export function BrandStrip() {
             style={{ animationDelay: `${i * 0.04}s` }}
           >
             <span
-              className="text-[11px] font-black tracking-[0.12em] text-ca-navy-900 transition group-hover:text-ca-blue-700"
-              style={{ fontFamily: "var(--font-display), ui-sans-serif" }}
+              className="font-display text-[11px] font-black tracking-[0.12em] text-ca-navy-900 transition group-hover:text-ca-blue-700"
             >
               {brand}
             </span>

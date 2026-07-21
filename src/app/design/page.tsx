@@ -285,7 +285,7 @@ function ProductDetailPreview() {
         </div>
       </div>
 
-      <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+      <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-ca-card">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-bold text-success">{sampleProduct.category}</p>
@@ -351,7 +351,7 @@ function CartPreview() {
         ))}
       </div>
 
-      <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-[0_16px_40px_rgba(18,50,74,0.08)]">
+      <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-ca-card">
         <div className="flex items-center gap-2">
           <ShoppingCart className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-bold text-primary">Resumen</h3>

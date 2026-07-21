@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { getCatalogProducts, type CatalogProduct } from "@/data/products";
+import { getLiveCatalogProducts, type CatalogProduct } from "@/data/products";
 import {
   parseSignedStoredCart,
   removeStoredCartItem,
@@ -33,7 +33,7 @@ export type GuestCart = {
 };
 
 export async function getGuestCart(): Promise<GuestCart> {
-  const [items, products] = await Promise.all([readGuestCartItems(), getCatalogProducts()]);
+  const [items, products] = await Promise.all([readGuestCartItems(), getLiveCatalogProducts()]);
   const productBySku = new Map(products.map((product) => [product.sku, product]));
   const lines = items.flatMap((item): CartLine[] => {
     const product = productBySku.get(item.sku);
@@ -164,7 +164,7 @@ async function findProductBySku(sku: string) {
   const cleanSku = normalizeCartSku(sku);
   if (!cleanSku) return undefined;
 
-  const products = await getCatalogProducts();
+  const products = await getLiveCatalogProducts();
   return products.find((product) => product.sku === cleanSku);
 }
 

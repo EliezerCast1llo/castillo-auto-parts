@@ -100,7 +100,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
               onClick={handleClose}
             />
 
-            <div className="fixed inset-x-4 top-1/2 z-[100] w-full max-w-lg -translate-y-1/2 rounded-2xl border border-ca-border bg-white shadow-[var(--ca-shadow-hero)] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
+            <div className="fixed inset-x-4 top-1/2 z-[100] w-full max-w-lg -translate-y-1/2 rounded-2xl border border-ca-border bg-white shadow-ca-hero sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
               {/* Header */}
               <div className="flex items-center justify-between border-b border-ca-border px-5 py-4">
                 <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
                     </button>
                     <button
                       type="submit"
-                      className="h-11 flex-1 rounded-xl bg-ca-navy-950 text-sm font-black text-white shadow-[0_6px_14px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800"
+                      className="h-11 flex-1 rounded-xl bg-ca-navy-950 text-sm font-black text-white shadow-ca-button transition hover:bg-ca-navy-800"
                     >
                       Revisar dirección
                     </button>
@@ -272,7 +272,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
                       disabled={saving}
                       onClick={handleConfirm}
                       type="button"
-                      className="h-11 flex-1 rounded-xl bg-ca-navy-950 text-sm font-black text-white shadow-[0_6px_14px_rgba(6,25,51,0.18)] transition hover:bg-ca-navy-800 disabled:opacity-60"
+                      className="h-11 flex-1 rounded-xl bg-ca-navy-950 text-sm font-black text-white shadow-ca-button transition hover:bg-ca-navy-800 disabled:opacity-60"
                     >
                       {saving ? "Guardando…" : "Guardar dirección"}
                     </button>
@@ -290,7 +290,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-10 items-center gap-2 rounded-xl bg-ca-navy-950 px-4 text-sm font-black text-white shadow-[0_6px_14px_rgba(6,25,51,0.15)] transition hover:bg-ca-navy-800"
+        className="inline-flex h-10 items-center gap-2 rounded-xl bg-ca-navy-950 px-4 text-sm font-black text-white shadow-ca-button transition hover:bg-ca-navy-800"
       >
         <Plus className="h-4 w-4" strokeWidth={2.5} />
         Nueva dirección
