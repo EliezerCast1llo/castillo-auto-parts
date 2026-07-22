@@ -85,6 +85,8 @@ No incluido todavia:
 
 - Configurar `DATABASE_URL` pooled y `DIRECT_DATABASE_URL` directa en Vercel.
 - Confirmar proveedor de PostgreSQL gestionado y revisar métricas de conexiones.
+- Verificar en preproducción que una caída de PostgreSQL nunca activa datos mock bajo `NODE_ENV=production`; debe mostrarse un estado no disponible y generarse una alerta operativa.
+- Confirmar después de restaurar la base de datos que Home, Catálogo, Producto, Carrito y Checkout usan datos persistidos.
 - Revisar `docs/production-operations-checklist.md` antes de cualquier lanzamiento público.
 - Revisar violaciones CSP en preview antes de pasar de `Report-Only` a enforcement.
 

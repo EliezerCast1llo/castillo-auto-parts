@@ -598,3 +598,4 @@ QA:
 - Confirmar una reserva resta la misma cantidad de `quantityOnHand` y `quantityReserved`; liberar solo resta `quantityReserved`.
 - El redirect del navegador sirve para UX, no como fuente de verdad de pago. El cumplimiento debe depender del webhook autenticado.
 - Un pago tardío después de expirar la reserva requiere revisión manual; no se debe prometer inventario que ya pudo reservar otro cliente.
+- En desarrollo, Home y Catálogo pueden seguir visibles con datos mock cuando PostgreSQL está caído. Esa continuidad visual no demuestra que la base de datos esté sana; antes de producción se debe verificar en un ambiente controlado que `NODE_ENV=production` deshabilita el fallback y nunca presenta inventario mock como real.
