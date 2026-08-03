@@ -124,6 +124,36 @@ test("customer can view empty orders list", async ({ page }) => {
   await expect(page.getByText("No tienes órdenes todavía")).toBeVisible();
 });
 
+test("customer can save an address after reviewing it", async ({ page }) => {
+  const email = uniqueEmail("address");
+  await registerUser(page, email);
+
+  await page.goto("/account/addresses");
+  await expect(page.getByRole("heading", { name: "Mis direcciones" })).toBeVisible();
+  await page.getByRole("button", { name: "Nueva dirección" }).first().click();
+
+  await page.getByLabel("Dirección").fill("12 avenida sur");
+  await page.getByLabel("Referencia").fill("Casa 12");
+  await page.getByLabel("Municipio").selectOption({ label: "Santa Tecla" });
+  await page.getByRole("button", { name: "Revisar dirección" }).click();
+
+  await expect(page.getByRole("heading", { name: "Confirma tu dirección" })).toBeVisible();
+  await page.getByRole("button", { name: "Guardar dirección" }).click();
+
+  await expect(page).toHaveURL(/\/account\/addresses\?estado=created/);
+  await expect(page.getByText("Dirección guardada correctamente.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Confirma tu dirección" })).not.toBeVisible();
+
+  const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+  const address = await prisma.address.findFirst({ where: { userId: user.id } });
+  expect(address).toMatchObject({
+    addressLine1: "12 avenida sur",
+    addressLine2: "Casa 12",
+    city: "Santa Tecla",
+    department: "La Libertad",
+  });
+});
+
 test("customer registers, adds to cart, and completes pickup checkout", async ({ page }) => {
   const email = uniqueEmail("checkout");
   await registerUser(page, email);

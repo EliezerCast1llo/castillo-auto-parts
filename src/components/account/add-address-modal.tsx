@@ -84,11 +84,16 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
 
   async function handleConfirm() {
     if (!formRef.current) return;
-    setSaving(true);
     const fd = new FormData(formRef.current);
-    await createAddress(fd);
-    setSaving(false);
-    handleClose();
+    setSaving(true);
+    setOpen(false);
+    setStep("form");
+
+    try {
+      await createAddress(fd);
+    } finally {
+      setSaving(false);
+    }
   }
 
   const modal =
@@ -118,12 +123,12 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
                 </button>
               </div>
 
-              {step === "form" ? (
-                <form
-                  ref={formRef}
-                  onSubmit={handleFormSubmit}
-                  className="max-h-[80vh] space-y-4 overflow-y-auto p-5"
-                >
+              <form
+                ref={formRef}
+                hidden={step !== "form"}
+                onSubmit={handleFormSubmit}
+                className="max-h-[80vh] space-y-4 overflow-y-auto p-5"
+              >
                   {/* Hidden fields consumed by the server action */}
                   <input type="hidden" name="city" value={fields.city} />
                   <input type="hidden" name="department" value={fields.department} />
@@ -241,8 +246,9 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
                       Revisar dirección
                     </button>
                   </div>
-                </form>
-              ) : (
+              </form>
+
+              {step === "confirm" ? (
                 <div className="p-5">
                   <p className="text-sm text-ca-text-secondary">
                     Verifica que los datos sean correctos antes de guardar.
@@ -278,7 +284,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
                     </button>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </>,
           document.body,
