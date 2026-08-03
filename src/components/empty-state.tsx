@@ -7,6 +7,8 @@ type EmptyStateProps = {
   actionHref?: string;
   actionLabel?: string;
   description?: string;
+  /** Icono del estado vacío; por defecto SearchX. */
+  icon?: React.ReactNode;
   showWhatsApp?: boolean;
   suggestions?: string[];
   title: string;
@@ -16,6 +18,7 @@ export function EmptyState({
   actionHref,
   actionLabel,
   description,
+  icon,
   showWhatsApp = false,
   suggestions = [],
   title,
@@ -24,7 +27,7 @@ export function EmptyState({
     <div className="rounded-2xl border border-ca-border bg-white p-6 shadow-[var(--ca-shadow-soft)] sm:p-8">
       <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ca-navy-950/7 text-ca-navy-950">
-          <SearchX className="h-7 w-7" strokeWidth={1.8} />
+          {icon ?? <SearchX className="h-7 w-7" strokeWidth={1.8} />}
         </span>
         <h3 className="mt-4 text-xl font-black text-ca-navy-950">{title}</h3>
         {description ? (

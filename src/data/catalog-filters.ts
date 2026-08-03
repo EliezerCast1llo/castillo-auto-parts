@@ -16,12 +16,22 @@ export type CatalogFilters = {
 export type CatalogFilterOptions = {
   categories: string[];
   brands: string[];
+  /** Productos activos por categoría/marca; alimenta los "(n)" de la UI. */
+  categoryCounts: Record<string, number>;
+  brandCounts: Record<string, number>;
   stockStatuses: CatalogProduct["stockStatus"][];
   vehicleMakes: string[];
   vehicleModels: string[];
   vehicleModelsByMake: Record<string, string[]>;
   vehicleYears: string[];
+  vehicleYearsByMake: Record<string, string[]>;
+  vehicleYearsByMakeModel: Record<string, string[]>;
 };
+
+/** Clave de vehicleYearsByMakeModel: separa make y model sin ambigüedad. */
+export function vehicleMakeModelKey(make: string, model: string) {
+  return `${make}::${model}`;
+}
 
 export type CatalogSort = "relevance" | "price-asc" | "price-desc" | "newest";
 
@@ -90,6 +100,8 @@ export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilt
   return {
     categories: uniqueSorted(products.map((product) => product.category)),
     brands: uniqueSorted(products.map((product) => product.brand)),
+    categoryCounts: countBy(products, (product) => product.category),
+    brandCounts: countBy(products, (product) => product.brand),
     stockStatuses: stockStatusOrder.filter((status) =>
       products.some((product) => product.stockStatus === status),
     ),
@@ -105,12 +117,32 @@ export type VehicleFacet = Pick<VehicleCompatibility, "make" | "model" | "yearFr
  */
 export function buildVehicleFilterOptions(
   vehicles: VehicleFacet[],
-): Pick<CatalogFilterOptions, "vehicleMakes" | "vehicleModels" | "vehicleModelsByMake" | "vehicleYears"> {
-  const vehicleModelsByMake = vehicles.reduce<Record<string, Set<string>>>((accumulator, vehicle) => {
-    accumulator[vehicle.make] ??= new Set<string>();
-    accumulator[vehicle.make].add(vehicle.model);
-    return accumulator;
-  }, {});
+): Pick<
+  CatalogFilterOptions,
+  | "vehicleMakes"
+  | "vehicleModels"
+  | "vehicleModelsByMake"
+  | "vehicleYears"
+  | "vehicleYearsByMake"
+  | "vehicleYearsByMakeModel"
+> {
+  const vehicleModelsByMake: Record<string, Set<string>> = {};
+  const vehicleYearsByMake: Record<string, Set<string>> = {};
+  const vehicleYearsByMakeModel: Record<string, Set<string>> = {};
+
+  for (const vehicle of vehicles) {
+    const years = range(vehicle.yearFrom, vehicle.yearTo).map(String);
+    const makeModelKey = vehicleMakeModelKey(vehicle.make, vehicle.model);
+
+    (vehicleModelsByMake[vehicle.make] ??= new Set<string>()).add(vehicle.model);
+
+    const makeYears = (vehicleYearsByMake[vehicle.make] ??= new Set<string>());
+    const makeModelYears = (vehicleYearsByMakeModel[makeModelKey] ??= new Set<string>());
+    for (const year of years) {
+      makeYears.add(year);
+      makeModelYears.add(year);
+    }
+  }
 
   return {
     vehicleMakes: uniqueSorted(vehicles.map((vehicle) => vehicle.make)),
@@ -121,7 +153,18 @@ export function buildVehicleFilterOptions(
     vehicleYears: uniqueSorted(
       vehicles.flatMap((vehicle) => range(vehicle.yearFrom, vehicle.yearTo).map(String)),
     ).sort((a, b) => Number(b) - Number(a)),
+    vehicleYearsByMake: sortYearSets(vehicleYearsByMake),
+    vehicleYearsByMakeModel: sortYearSets(vehicleYearsByMakeModel),
   };
+}
+
+function sortYearSets(record: Record<string, Set<string>>): Record<string, string[]> {
+  return Object.fromEntries(
+    Object.entries(record).map(([key, years]) => [
+      key,
+      [...years].sort((a, b) => Number(b) - Number(a)),
+    ]),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -295,6 +338,15 @@ function isCatalogStockStatus(value: string): value is CatalogProduct["stockStat
 
 function isCatalogSort(value: string): value is CatalogSort {
   return catalogSortOptions.some((option) => option.value === value);
+}
+
+function countBy<T>(items: T[], keyOf: (item: T) => string): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const item of items) {
+    const key = keyOf(item);
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
 }
 
 export function uniqueSorted(values: string[]) {

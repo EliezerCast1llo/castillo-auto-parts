@@ -1,5 +1,6 @@
 import type { InventoryStatus, ProductCategory } from "@prisma/client";
 import { Save } from "lucide-react";
+import { CompatibilityEditor } from "@/components/admin/compatibility-editor";
 import { formatAdminPriceInput } from "@/lib/admin-products";
 
 type AdminProductFormProduct = {
@@ -177,12 +178,7 @@ export function AdminProductForm({
             name="technicalDetails"
             rows={4}
           />
-          <AdminTextarea
-            defaultValue={formatCompatibilities(product?.compatibilities ?? [])}
-            label="Compatibilidad"
-            name="compatibilities"
-            rows={4}
-          />
+          <CompatibilityEditor defaultCompatibilities={product?.compatibilities ?? []} />
         </div>
       </section>
 
@@ -253,16 +249,3 @@ function formatTechnicalDetails(value: unknown) {
     : "";
 }
 
-function formatCompatibilities(
-  compatibilities: AdminProductFormProduct["compatibilities"],
-) {
-  return compatibilities
-    .map((compatibility) =>
-      [
-        compatibility.make,
-        compatibility.model,
-        `${compatibility.yearFrom}-${compatibility.yearTo}`,
-      ].join(" "),
-    )
-    .join("\n");
-}

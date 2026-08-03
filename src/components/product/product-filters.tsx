@@ -50,7 +50,8 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
               type="checkbox"
               value={category}
             />
-            {category}
+            <span className="flex-1">{category}</span>
+            <FacetCount count={options.categoryCounts[category]} />
           </label>
         ))}
       </fieldset>
@@ -66,7 +67,8 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
               type="checkbox"
               value={brand}
             />
-            {brand}
+            <span className="flex-1">{brand}</span>
+            <FacetCount count={options.brandCounts[brand]} />
           </label>
         ))}
       </fieldset>
@@ -101,5 +103,15 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
         ) : null}
       </div>
     </section>
+  );
+}
+
+function FacetCount({ count }: { count?: number }) {
+  if (typeof count !== "number") return null;
+
+  return (
+    <span className="rounded-full bg-ca-background px-2 py-0.5 text-xs font-bold text-ca-text-secondary">
+      {count}
+    </span>
   );
 }

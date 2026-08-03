@@ -26,6 +26,16 @@ export function buildProductJsonLd(product: CatalogProduct): WithContext<Thing> 
     description: product.description || product.compatibility,
     url: `${SITE_URL}/product/${product.slug}`,
     ...(product.primaryImageUrl ? { image: product.primaryImageUrl } : {}),
+    ...(product.vehicleCompatibilities.length > 0
+      ? {
+          isAccessoryOrSparePartFor: product.vehicleCompatibilities.map((vehicle) => ({
+            "@type": "Car",
+            brand: { "@type": "Brand", name: vehicle.make },
+            model: vehicle.model,
+            vehicleModelDate: `${vehicle.yearFrom}/${vehicle.yearTo}`,
+          })),
+        }
+      : {}),
     offers: {
       "@type": "Offer",
       url: `${SITE_URL}/product/${product.slug}`,

@@ -6,13 +6,13 @@ import {
   Headphones,
   PackageSearch,
   Phone,
-  ShoppingBag,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import {
   AccountOrderCard,
   accountOrderCardInclude,
 } from "@/components/account/account-order-card";
+import { EmptyState } from "@/components/empty-state";
 import { SiteHeader } from "@/components/site-header";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { auth } from "@/lib/auth";
@@ -88,32 +88,16 @@ export default async function AccountOrdersPage() {
 
 function EmptyOrders() {
   return (
-    <section className="mt-8 rounded-2xl border border-ca-border bg-white p-8 text-center shadow-[var(--ca-shadow-soft)] sm:p-12">
-      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ca-background text-ca-navy-950">
-        <PackageSearch className="h-7 w-7" strokeWidth={1.8} />
-      </span>
-      <h2 className="mt-5 text-2xl font-black text-ca-navy-950">
-        No tienes órdenes todavía
-      </h2>
-      <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-ca-text-secondary">
-        Cuando compres un repuesto, podrás consultar aquí el estado, fecha estimada y detalle de entrega.
-      </p>
-      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-        <Link
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-ca-navy-950 px-5 text-sm font-black text-white shadow-[0_8px_18px_rgba(6,25,51,0.16)] transition hover:bg-ca-navy-800"
-          href="/catalog"
-        >
-          <ShoppingBag className="h-4 w-4" strokeWidth={1.9} />
-          Ver catálogo
-        </Link>
-        <WhatsAppCTA
-          className="h-11 justify-center"
-          label="Contactar asesor"
-          phone={SUPPORT_WHATSAPP_NUMBER}
-          variant="subtle"
-        />
-      </div>
-    </section>
+    <div className="mt-8">
+      <EmptyState
+        actionHref="/catalog"
+        actionLabel="Ver catálogo"
+        description="Cuando compres un repuesto, podrás consultar aquí el estado, fecha estimada y detalle de entrega."
+        icon={<PackageSearch className="h-7 w-7" strokeWidth={1.8} />}
+        showWhatsApp
+        title="No tienes órdenes todavía"
+      />
+    </div>
   );
 }
 

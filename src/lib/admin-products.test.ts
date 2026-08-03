@@ -40,6 +40,25 @@ describe("admin product helpers", () => {
     });
   });
 
+  it("parses multi-word makes and canonicalizes casing", () => {
+    expect(
+      parseCompatibilityLines("Land Rover Defender 2015-2020\ntoyota   corolla cross 2021-2024"),
+    ).toEqual({
+      invalidLines: [],
+      items: [
+        { make: "Land Rover", model: "Defender", yearFrom: 2015, yearTo: 2020 },
+        { make: "Toyota", model: "corolla cross", yearFrom: 2021, yearTo: 2024 },
+      ],
+    });
+  });
+
+  it("falls back to first word as make for unknown brands", () => {
+    expect(parseCompatibilityLines("BYD Dolphin 2023-2025")).toEqual({
+      invalidLines: [],
+      items: [{ make: "Byd", model: "Dolphin", yearFrom: 2023, yearTo: 2025 }],
+    });
+  });
+
   it("returns invalid compatibility lines", () => {
     expect(parseCompatibilityLines("Corolla 2009\nToyota Yaris 2020-2010")).toEqual({
       invalidLines: ["Corolla 2009", "Toyota Yaris 2020-2010"],

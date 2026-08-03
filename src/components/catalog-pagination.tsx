@@ -1,8 +1,8 @@
 /**
  * CatalogPagination — componente Server de paginación para el catálogo.
  *
- * URL-first: genera <a href> conservando todos los filtros activos en la query
- * string y solo cambiando el parámetro `page`. No usa estado cliente ni JS.
+ * URL-first: genera enlaces (<Link>) conservando todos los filtros activos en
+ * la query string y solo cambiando el parámetro `page`.
  *
  * Props:
  *   currentPage  — página actual (1-based).
@@ -17,15 +17,23 @@
  *   - Las páginas anteriores/siguientes más lejanas se truncan con "…".
  */
 
+import Link from "next/link";
 import type { CatalogSearchParams } from "@/data/catalog-filters";
 
 type CatalogPaginationProps = {
   currentPage: number;
   totalPages: number;
   searchParams: CatalogSearchParams;
+  /** Ruta base de los enlaces; por defecto el catálogo. */
+  basePath?: string;
 };
 
-export function CatalogPagination({ currentPage, totalPages, searchParams }: CatalogPaginationProps) {
+export function CatalogPagination({
+  currentPage,
+  totalPages,
+  searchParams,
+  basePath = "/catalog",
+}: CatalogPaginationProps) {
   if (totalPages <= 1) return null;
 
   const buildHref = (page: number) => {
@@ -43,7 +51,7 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
     if (page > 1) params.set("page", String(page));
 
     const qs = params.toString();
-    return qs ? `/catalog?${qs}` : "/catalog";
+    return qs ? `${basePath}?${qs}` : basePath;
   };
 
   const pageNumbers = buildPageNumbers(currentPage, totalPages);
@@ -52,13 +60,13 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
     <nav aria-label="Paginación del catálogo" className="flex flex-wrap items-center justify-center gap-1.5">
       {/* Anterior */}
       {currentPage > 1 ? (
-        <a
+        <Link
           href={buildHref(currentPage - 1)}
           className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           aria-label="Página anterior"
         >
           ‹ Anterior
-        </a>
+        </Link>
       ) : (
         <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
           ‹ Anterior
@@ -84,26 +92,26 @@ export function CatalogPagination({ currentPage, totalPages, searchParams }: Cat
             {item}
           </span>
         ) : (
-          <a
+          <Link
             key={item}
             href={buildHref(item)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-ca-border bg-white text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-background"
             aria-label={`Página ${item}`}
           >
             {item}
-          </a>
+          </Link>
         ),
       )}
 
       {/* Siguiente */}
       {currentPage < totalPages ? (
-        <a
+        <Link
           href={buildHref(currentPage + 1)}
           className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           aria-label="Página siguiente"
         >
           Siguiente ›
-        </a>
+        </Link>
       ) : (
         <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
           Siguiente ›

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { isPurchasableStockStatus, type CatalogProduct } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
+import { MyVehicleCompatibility } from "./my-vehicle-compatibility";
 import { ProductVisual } from "./product-visual";
 import { StockBadge } from "./stock-badge";
 
@@ -35,27 +36,30 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
           <StockBadge status={product.stockStatus} />
         </span>
         {/* Brand accent */}
-        <span className="absolute right-3 top-3 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-ca-blue-700 shadow-[0_2px_6px_rgba(6,25,51,0.08)] backdrop-blur-sm">
+        <span className="absolute right-3 top-3 rounded-lg bg-white/90 px-2 py-1 text-xs font-black uppercase tracking-[0.1em] text-ca-blue-700 shadow-[0_2px_6px_rgba(6,25,51,0.08)] backdrop-blur-sm">
           {product.brand}
         </span>
       </Link>
 
       {/* Content */}
       <div className="flex flex-1 flex-col p-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-ca-text-secondary">{product.category}</p>
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-ca-text-secondary">{product.category}</p>
         <Link
           href={`/product/${product.slug}`}
           className="mt-1.5 line-clamp-2 min-h-12 text-[15px] font-black leading-[1.4] text-ca-navy-950 transition group-hover:text-ca-blue-700"
         >
           {product.name}
         </Link>
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-ca-text-secondary/70">
+        <p className="mt-1 text-xs font-bold uppercase tracking-wider text-ca-text-secondary/70">
           SKU {product.sku}
         </p>
         <p className="mt-2.5 line-clamp-3 min-h-[58px] text-xs leading-[1.6] text-ca-text-secondary">
           <span className="font-black text-ca-navy-950">Compatible: </span>
           {product.compatibility}
         </p>
+        <div className="mt-2 empty:hidden">
+          <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
+        </div>
 
         {/* Price + CTA */}
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">

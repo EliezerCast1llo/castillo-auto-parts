@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { Menu, ShoppingCart, User, X } from "lucide-react";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import { siteNavItems as navLinks } from "@/lib/nav";
 
 type MobileMenuProps = {
   cartItemCount: number;
@@ -12,12 +13,6 @@ type MobileMenuProps = {
   variant?: "dark" | "light";
 };
 
-const navLinks = [
-  { label: "Catálogo", href: "/catalog" },
-  { label: "Marcas", href: "/catalog?brand=Bosch" },
-  { label: "Ofertas", href: "/catalog?stock=Últimas unidades" },
-  { label: "Ayuda", href: "/ayuda" },
-];
 
 export function MobileMenu({
   cartItemCount,
@@ -26,6 +21,8 @@ export function MobileMenu({
   variant = "dark",
 }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // useSyncExternalStore devuelve false en SSR, true en cliente — sin setState en effect
   const mounted = useSyncExternalStore(
@@ -44,6 +41,24 @@ export function MobileMenu({
     window.addEventListener("popstate", close);
     return () => window.removeEventListener("popstate", close);
   }, []);
+
+  // Accesibilidad: Escape cierra; foco entra al abrir y vuelve al trigger al cerrar
+  useEffect(() => {
+    if (!open) return;
+
+    closeButtonRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    const trigger = triggerRef.current;
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      trigger?.focus();
+    };
+  }, [open]);
 
   const toggleClass =
     variant === "dark"
@@ -75,6 +90,7 @@ export function MobileMenu({
                 aria-label="Cerrar menú"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-ca-background"
                 onClick={() => setOpen(false)}
+                ref={closeButtonRef}
               >
                 <X className="h-5 w-5 text-ca-text-secondary" />
               </button>
@@ -152,6 +168,7 @@ export function MobileMenu({
         aria-expanded={open}
         className={toggleClass}
         onClick={() => setOpen(true)}
+        ref={triggerRef}
       >
         <Menu className="h-5 w-5" strokeWidth={1.9} />
       </button>

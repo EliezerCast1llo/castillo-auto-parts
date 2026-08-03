@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { buildMyVehicleClearCookie, buildMyVehicleSetCookie } from "@/lib/my-vehicle";
 
 type CatalogFilterFormProps = {
   children: ReactNode;
@@ -39,6 +40,20 @@ export function CatalogFilterForm({ children }: CatalogFilterFormProps) {
           if (textValue) {
             params.append(key, textValue);
           }
+        }
+
+        // Persistir "mi vehículo": si el formulario incluye el selector de
+        // vehículo, la selección actual (o su ausencia) manda sobre la cookie.
+        if (formData.has("vehicleMake")) {
+          const make = String(formData.get("vehicleMake") ?? "").trim();
+
+          document.cookie = make
+            ? buildMyVehicleSetCookie({
+                make,
+                model: String(formData.get("vehicleModel") ?? "").trim() || undefined,
+                year: String(formData.get("vehicleYear") ?? "").trim() || undefined,
+              })
+            : buildMyVehicleClearCookie();
         }
 
         const query = params.toString();
