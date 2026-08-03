@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Car, X } from "lucide-react";
 import { buildMyVehicleClearCookie } from "@/lib/my-vehicle";
@@ -10,6 +11,9 @@ import { buildMyVehicleClearCookie } from "@/lib/my-vehicle";
  */
 export function MyVehicleBanner({ vehicleLabel }: { vehicleLabel: string }) {
   const router = useRouter();
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ca-blue-700/20 bg-ca-blue-700/5 px-4 py-3">
@@ -24,6 +28,7 @@ export function MyVehicleBanner({ vehicleLabel }: { vehicleLabel: string }) {
         className="inline-flex items-center gap-1.5 rounded-full border border-ca-border bg-white px-3 py-1.5 text-xs font-black text-ca-navy-950 transition hover:border-ca-border-hover hover:bg-ca-background"
         onClick={() => {
           document.cookie = buildMyVehicleClearCookie();
+          setDismissed(true);
           router.refresh();
         }}
         type="button"
