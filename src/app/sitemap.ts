@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getCatalogSitemapEntries } from "@/data/products";
+import { getCatalogFacets, getCatalogSitemapEntries } from "@/data/products";
+import { vehicleMakeSlug } from "@/data/vehicle-catalog";
 import { SITE_URL } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -39,5 +40,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Si la DB no está disponible en build, omitir productos
   }
 
-  return [...staticPages, ...productPages];
+  // Landing pages por marca de vehículo
+  let vehiclePages: MetadataRoute.Sitemap = [];
+  try {
+    const facets = await getCatalogFacets();
+    vehiclePages = facets.vehicleMakes.map((make) => ({
+      url: `${SITE_URL}/vehiculos/${vehicleMakeSlug(make)}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+  } catch {
+    // Si la DB no está disponible en build, omitir marcas
+  }
+
+  return [...staticPages, ...vehiclePages, ...productPages];
 }

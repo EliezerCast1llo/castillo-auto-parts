@@ -99,6 +99,23 @@ describe("catalog filters", () => {
     expect(options.vehicleYears).toContain("2022");
   });
 
+  it("builds dependent vehicle year facets by make and make+model", () => {
+    const options = getCatalogFilterOptions(mockProducts);
+
+    expect(Object.keys(options.vehicleYearsByMake)).toContain("Toyota");
+    expect(options.vehicleYearsByMake.Toyota).toContain("2022");
+    // Orden descendente (años recientes primero)
+    expect(options.vehicleYearsByMake.Toyota).toEqual(
+      [...options.vehicleYearsByMake.Toyota].sort((a, b) => Number(b) - Number(a)),
+    );
+
+    const corollaYears = options.vehicleYearsByMakeModel["Toyota::Corolla"];
+    expect(corollaYears).toBeDefined();
+    expect(corollaYears.every((year) => options.vehicleYearsByMake.Toyota.includes(year))).toBe(
+      true,
+    );
+  });
+
   it("counts active filters", () => {
     const filters = parseCatalogFilters({
       brand: ["WIX", "NGK"],

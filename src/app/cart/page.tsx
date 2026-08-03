@@ -12,7 +12,9 @@ import { ProductVisual } from "@/components/product/product-visual";
 import { StockBadge } from "@/components/product/stock-badge";
 import { CartQuantityControl } from "@/components/cart/cart-quantity-control";
 import { CartNotice } from "@/components/cart/cart-notice";
+import { EmptyState } from "@/components/empty-state";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { getGuestCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
@@ -130,6 +132,7 @@ export default async function CartPage({ searchParams }: CartPageProps) {
           </aside>
         </div>
       </div>
+      <SiteFooter />
     </main>
   );
 }
@@ -259,21 +262,13 @@ function LineIssue({ line }: { line: CartLine }) {
 
 function EmptyCart() {
   return (
-    <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-ca-soft">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-ca-navy-950/5">
-        <ShoppingCart className="h-8 w-8 text-ca-navy-950" strokeWidth={1.5} />
-      </div>
-      <h2 className="mt-4 text-xl font-black text-ca-navy-950">Tu carrito está vacío</h2>
-      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ca-text-secondary">
-        Explora el catálogo y agrega los repuestos que necesitas.
-      </p>
-      <Link
-        className="mt-5 inline-flex h-12 items-center justify-center rounded-[14px] bg-ca-navy-950 px-6 text-sm font-black text-white transition hover:bg-ca-navy-800"
-        href="/catalog"
-      >
-        Explorar catálogo
-      </Link>
-    </div>
+    <EmptyState
+      actionHref="/catalog"
+      actionLabel="Explorar catálogo"
+      description="Explora el catálogo y agrega los repuestos que necesitas."
+      icon={<ShoppingCart className="h-7 w-7" strokeWidth={1.5} />}
+      title="Tu carrito está vacío"
+    />
   );
 }
 

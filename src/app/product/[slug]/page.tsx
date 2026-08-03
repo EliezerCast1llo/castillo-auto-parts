@@ -8,11 +8,13 @@ import {
   buildProductJsonLd,
   type BreadcrumbEntry,
 } from "@/lib/structured-data";
+import { MyVehicleCompatibility } from "@/components/product/my-vehicle-compatibility";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import {
   getCatalogProductBySlug,
@@ -103,6 +105,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {product.compatibleVehicles.length > 0 ? (
               <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
                 <h2 className="text-base font-black text-ca-navy-950">Compatibilidad verificada</h2>
+                <div className="mt-3 empty:hidden">
+                  <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
+                </div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {product.compatibleVehicles.map((vehicle) => (
                     <div
@@ -224,6 +229,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         ) : null}
       </div>
+      <SiteFooter />
     </main>
   );
 }

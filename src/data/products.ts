@@ -568,10 +568,13 @@ function compareByName(left: CatalogProduct, right: CatalogProduct) {
 const findDbCatalogFacets = unstable_cache(
   async () => {
     const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
-      db.product.groupBy({ by: ["brand"], where: { isActive: true } }),
+      db.product.groupBy({ by: ["brand"], where: { isActive: true }, _count: { _all: true } }),
       db.productCategory.findMany({
         where: { isActive: true, products: { some: { isActive: true } } },
-        select: { name: true },
+        select: {
+          name: true,
+          _count: { select: { products: { where: { isActive: true } } } },
+        },
       }),
       db.inventoryStock.groupBy({
         by: ["status"],
@@ -586,7 +589,13 @@ const findDbCatalogFacets = unstable_cache(
 
     return {
       brands: brandGroups.map((group) => group.brand),
+      brandCounts: Object.fromEntries(
+        brandGroups.map((group) => [group.brand, group._count._all]),
+      ),
       categories: categories.map((category) => category.name),
+      categoryCounts: Object.fromEntries(
+        categories.map((category) => [category.name, category._count.products]),
+      ),
       stockStatuses: stockGroups.map((group) => group.status),
       vehicles,
     };
@@ -613,7 +622,9 @@ export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
 
       return {
         brands: uniqueSorted(facets.brands),
+        brandCounts: facets.brandCounts,
         categories: uniqueSorted(facets.categories),
+        categoryCounts: facets.categoryCounts,
         stockStatuses: stockStatusOrder.filter((status) => stockStatusSet.has(status)),
         ...buildVehicleFilterOptions(facets.vehicles),
       };

@@ -10,7 +10,11 @@ import { ProductCard } from "@/components/product/product-card";
 import { ProductFilters } from "@/components/product/product-filters";
 import { VehicleSearchPanel } from "@/components/product/vehicle-search-panel";
 import { FilterDrawer } from "@/components/catalog/filter-drawer";
+import { MyVehicleBanner } from "@/components/catalog/my-vehicle-banner";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { formatMyVehicle } from "@/lib/my-vehicle";
+import { getMyVehicle } from "@/lib/my-vehicle-server";
 import {
   countActiveCatalogFilters,
   parseCatalogFilters,
@@ -61,6 +65,16 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const filters = parseCatalogFilters(resolvedParams);
   const sort = parseCatalogSort(resolvedParams);
   const page = Math.max(1, Number(resolvedParams.page ?? 1) || 1);
+
+  // "Mi vehículo": si la URL no trae filtro de vehículo, pre-aplicar la
+  // selección guardada en cookie (el usuario la quita desde el banner).
+  const myVehicle = await getMyVehicle();
+  const vehicleFromCookie = !filters.vehicleMake && myVehicle ? myVehicle : null;
+  if (vehicleFromCookie) {
+    filters.vehicleMake = vehicleFromCookie.make;
+    filters.vehicleModel = vehicleFromCookie.model ?? "";
+    filters.vehicleYear = vehicleFromCookie.year ?? "";
+  }
 
   const [catalogResult, filterOptions] = await Promise.all([
     getFilteredCatalogProducts(filters, page, sort),
@@ -129,7 +143,15 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               </div>
             </div>
 
-            <CatalogActiveFilters filters={filters} sort={sort} />
+            {vehicleFromCookie ? (
+              <MyVehicleBanner vehicleLabel={formatMyVehicle(vehicleFromCookie)} />
+            ) : null}
+
+            <CatalogActiveFilters
+              filters={filters}
+              hideVehicleChips={Boolean(vehicleFromCookie)}
+              sort={sort}
+            />
 
             {status === "unavailable" ? null : filteredProducts.length > 0 ? (
               <>
@@ -165,6 +187,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           </section>
         </div>
       </div>
+      <SiteFooter />
     </main>
   );
 }
@@ -246,9 +269,9 @@ function CatalogHero() {
         </div>
 
         <div className="grid gap-2 rounded-xl border border-ca-border bg-ca-background p-4">
-          <HeroMetric label="Catálogo MVP" value="50–80 SKUs" />
           <HeroMetric label="IVA" value="13% incluido" />
-          <HeroMetric label="Retiro" value="Gratis" />
+          <HeroMetric label="Retiro en tienda" value="Gratis" />
+          <HeroMetric label="Entrega" value="San Salvador y Santa Tecla" />
         </div>
       </div>
     </section>

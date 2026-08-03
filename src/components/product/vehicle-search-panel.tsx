@@ -1,5 +1,9 @@
+"use client";
+
 import { Car } from "lucide-react";
 import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filters";
+import { useVehicleSelection } from "@/components/product/use-vehicle-selection";
+import { Select } from "@/components/ui/select";
 
 type VehicleSearchPanelProps = {
   filters: CatalogFilters;
@@ -7,9 +11,12 @@ type VehicleSearchPanelProps = {
 };
 
 export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps) {
-  const vehicleModels = filters.vehicleMake
-    ? options.vehicleModelsByMake[filters.vehicleMake] ?? options.vehicleModels
-    : options.vehicleModels;
+  const selection = useVehicleSelection({
+    options,
+    initialMake: filters.vehicleMake,
+    initialModel: filters.vehicleModel,
+    initialYear: filters.vehicleYear,
+  });
 
   return (
     <section className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
@@ -23,10 +30,11 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
         </div>
       </div>
       <div className="space-y-3">
-        <select
-          className="h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-bold text-ca-navy-950 outline-none transition focus:border-ca-blue-700 focus:bg-white"
-          defaultValue={filters.vehicleMake}
+        <Select
+          aria-label="Marca de vehículo"
           name="vehicleMake"
+          onChange={selection.handleMakeChange}
+          value={selection.make}
         >
           <option value="">Marca</option>
           {options.vehicleMakes.map((make) => (
@@ -34,31 +42,33 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
               {make}
             </option>
           ))}
-        </select>
-        <select
-          className="h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-bold text-ca-navy-950 outline-none transition focus:border-ca-blue-700 focus:bg-white"
-          defaultValue={filters.vehicleModel}
+        </Select>
+        <Select
+          aria-label="Modelo de vehículo"
           name="vehicleModel"
+          onChange={selection.handleModelChange}
+          value={selection.model}
         >
           <option value="">Modelo</option>
-          {vehicleModels.map((model) => (
+          {selection.models.map((model) => (
             <option key={model} value={model}>
               {model}
             </option>
           ))}
-        </select>
-        <select
-          className="h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-bold text-ca-navy-950 outline-none transition focus:border-ca-blue-700 focus:bg-white"
-          defaultValue={filters.vehicleYear}
+        </Select>
+        <Select
+          aria-label="Año de vehículo"
           name="vehicleYear"
+          onChange={selection.handleYearChange}
+          value={selection.year}
         >
           <option value="">Año</option>
-          {options.vehicleYears.map((year) => (
+          {selection.years.map((year) => (
             <option key={year} value={year}>
               {year}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
     </section>
   );

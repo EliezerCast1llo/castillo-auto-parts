@@ -10,11 +10,21 @@ type FilterChip = {
 export function CatalogActiveFilters({
   filters,
   sort = "relevance",
+  hideVehicleChips = false,
 }: {
   filters: CatalogFilters;
   sort?: CatalogSort;
+  /**
+   * Cuando el filtro de vehículo viene de la cookie "mi vehículo" (no de la
+   * URL), quitarlo vía chip no funcionaría (la cookie lo re-aplicaría); el
+   * banner de MyVehicleBanner es quien lo gestiona.
+   */
+  hideVehicleChips?: boolean;
 }) {
-  const chips = getActiveFilterChips(filters, sort);
+  const chips = getActiveFilterChips(
+    hideVehicleChips ? { ...filters, vehicleMake: "", vehicleModel: "", vehicleYear: "" } : filters,
+    sort,
+  );
 
   if (chips.length === 0) {
     return null;

@@ -1,4 +1,5 @@
 import { InventoryStatus } from "@prisma/client";
+import { canonicalizeVehicle, splitMakeAndModel } from "@/data/vehicle-catalog";
 
 export type ParsedCompatibility = {
   make: string;
@@ -44,15 +45,25 @@ export function parseCompatibilityLines(value: string) {
   const invalidLines: string[] = [];
 
   for (const line of lines) {
-    const match = line.match(/^([A-Za-zÁÉÍÓÚÑáéíóúñ]+)\s+(.+?)\s+(\d{4})\s*-\s*(\d{4})$/);
+    // Separar "Marca Modelo" (texto libre) del rango "YYYY-YYYY" al final.
+    const match = line.match(/^(.+?)\s+(\d{4})\s*-\s*(\d{4})$/);
 
     if (!match) {
       invalidLines.push(line);
       continue;
     }
 
-    const yearFrom = Number(match[3]);
-    const yearTo = Number(match[4]);
+    // Longest-prefix contra marcas canónicas: soporta marcas multi-palabra
+    // ("Land Rover Defender"); fallback: primera palabra = marca.
+    const split = splitMakeAndModel(match[1]);
+
+    if (!split) {
+      invalidLines.push(line);
+      continue;
+    }
+
+    const yearFrom = Number(match[2]);
+    const yearTo = Number(match[3]);
 
     if (yearFrom > yearTo) {
       invalidLines.push(line);
@@ -60,8 +71,7 @@ export function parseCompatibilityLines(value: string) {
     }
 
     items.push({
-      make: match[1],
-      model: match[2],
+      ...canonicalizeVehicle(split),
       yearFrom,
       yearTo,
     });

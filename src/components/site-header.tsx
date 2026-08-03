@@ -1,15 +1,25 @@
 import Link from "next/link";
-import { ShoppingCart, User, Wrench } from "lucide-react";
+import { ShieldCheck, ShoppingCart, Truck, User, UserRound, Wrench } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
 import { MobileMenu } from "@/components/mobile-menu";
+import { MyVehicleChip } from "@/components/my-vehicle-chip";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { buttonVariants } from "@/components/ui/button";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
+import { siteNavItems } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
-export async function SiteHeader() {
+type SiteHeaderProps = {
+  /**
+   * "default": header claro sticky con buscador (páginas internas).
+   * "hero": header navy con utility bar (home).
+   */
+  variant?: "default" | "hero";
+};
+
+export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
   const [cartItemCount, session] = await Promise.all([
     getGuestCartItemCount(),
     auth(),
@@ -19,6 +29,16 @@ export async function SiteHeader() {
   const accountLabel = session?.user
     ? (session.user.name?.split(" ")[0] ?? "Mi cuenta")
     : "Ingresar";
+
+  if (variant === "hero") {
+    return (
+      <HeroHeader
+        accountHref={accountHref}
+        accountLabel={accountLabel}
+        cartItemCount={cartItemCount}
+      />
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-ca-border bg-white/95 shadow-[0_2px_16px_rgba(6,25,51,0.08)] backdrop-blur-md">
@@ -44,17 +64,21 @@ export async function SiteHeader() {
 
           {/* Actions */}
           <div className="order-2 ml-auto flex shrink-0 items-center gap-2 sm:order-3 sm:ml-0">
-            <Link
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "hidden px-3 font-bold sm:inline-flex",
-              )}
-              href="/catalog"
-            >
-              Catálogo
-            </Link>
+            <MyVehicleChip />
 
-            <div className="hidden lg:block">
+            <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
+              {siteNavItems.map((item) => (
+                <Link
+                  className="inline-flex h-10 items-center rounded-xl px-3 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
+                  href={item.href}
+                  key={item.label}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="hidden xl:block">
               <WhatsAppCTA
                 label="Asesoría"
                 phone={SUPPORT_WHATSAPP_NUMBER}
@@ -67,7 +91,7 @@ export async function SiteHeader() {
               aria-label={accountLabel}
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "hidden px-3 font-bold md:inline-flex",
+                "hidden px-3 font-bold lg:inline-flex",
               )}
             >
               <User className="h-4 w-4" />
@@ -91,7 +115,7 @@ export async function SiteHeader() {
               ) : null}
             </Link>
 
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <MobileMenu
                 cartItemCount={cartItemCount}
                 accountHref={accountHref}
@@ -103,5 +127,119 @@ export async function SiteHeader() {
         </div>
       </div>
     </header>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Variante hero (home): header navy con utility bar
+// ---------------------------------------------------------------------------
+
+type HeroHeaderProps = {
+  accountHref: string;
+  accountLabel: string;
+  cartItemCount: number;
+};
+
+function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProps) {
+  return (
+    <header className="bg-ca-navy-950 text-white">
+      <UtilityBar />
+      <div className="ca-container flex min-h-16 items-center justify-between gap-5 py-3">
+        {/* Logo */}
+        <Link href="/" className="flex min-w-0 items-center gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-ca-gold-400 text-ca-navy-950 shadow-[0_10px_24px_rgba(217,162,27,0.25)]">
+            <Wrench className="h-6 w-6" strokeWidth={2} />
+          </span>
+          <span className="min-w-0 leading-none">
+            <span className="block truncate text-xl font-black tracking-[0.1em]">CASTILLO</span>
+            <span className="mt-1 block truncate text-xs font-bold tracking-[0.28em] text-white/78">
+              AUTO PARTS
+            </span>
+          </span>
+        </Link>
+
+        {/* Nav desktop */}
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Navegación principal">
+          {siteNavItems.map((item) => (
+            <Link
+              className="inline-flex items-center gap-1 text-sm font-bold text-white/88 transition hover:text-ca-gold-400"
+              href={item.href}
+              key={item.label}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Acciones */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Cuenta — visible en desktop */}
+          <Link
+            className="hidden h-10 items-center gap-2 rounded-full px-3 text-sm font-bold text-white/88 transition hover:bg-white/10 md:inline-flex"
+            href={accountHref}
+          >
+            <UserRound className="h-5 w-5" strokeWidth={1.8} />
+            {accountLabel}
+          </Link>
+
+          <div className="hidden xl:block">
+            <WhatsAppCTA
+              label="Asesoría"
+              phone={SUPPORT_WHATSAPP_NUMBER}
+              variant="subtle"
+            />
+          </div>
+
+          {/* Carrito */}
+          <Link
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/[0.16]"
+            aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
+            href="/cart"
+          >
+            <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />
+            {cartItemCount > 0 ? (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ca-gold-400 px-1 text-[11px] font-black text-ca-navy-950">
+                {cartItemCount}
+              </span>
+            ) : null}
+          </Link>
+
+          {/* Hamburguesa mobile */}
+          <div className="lg:hidden">
+            <MobileMenu
+              cartItemCount={cartItemCount}
+              accountHref={accountHref}
+              accountLabel={accountLabel}
+              variant="dark"
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function UtilityBar() {
+  return (
+    <div className="border-b border-white/10 bg-ca-navy-950">
+      <div className="ca-container flex min-h-9 items-center justify-between gap-4 py-1 text-xs font-bold text-white/78">
+        <p className="hidden tracking-[0.01em] text-white/76 md:block">
+          Repuestos originales <span className="mx-2 text-ca-gold-400">•</span> Entrega rápida
+        </p>
+        <p className="tracking-[0.01em] text-white/76 md:hidden">Castillo Auto Parts</p>
+
+        <div className="flex items-center justify-end gap-3 sm:gap-4">
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+            <ShieldCheck className="h-4 w-4 text-ca-gold-400" strokeWidth={1.9} />
+            Garantía
+          </span>
+          <span className="hidden h-4 w-px bg-white/14 sm:block" />
+          <span className="hidden items-center gap-1.5 whitespace-nowrap sm:inline-flex">
+            <Truck className="h-4 w-4 text-ca-gold-400" strokeWidth={1.9} />
+            Entrega local
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }

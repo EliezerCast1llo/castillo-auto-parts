@@ -1,7 +1,7 @@
 "use client";
 
 import { SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type FilterDrawerProps = {
   activeFilterCount: number;
@@ -10,10 +10,30 @@ type FilterDrawerProps = {
 
 export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  // Accesibilidad: Escape cierra; foco entra al abrir y vuelve al trigger al cerrar
+  useEffect(() => {
+    if (!open) return;
+
+    closeButtonRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    const trigger = triggerRef.current;
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      trigger?.focus();
+    };
   }, [open]);
 
   return (
@@ -22,8 +42,10 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
       <div className="sticky top-0 z-30 -mx-4 border-b border-ca-border bg-white px-4 py-3 lg:hidden">
         <button
           type="button"
+          aria-expanded={open}
           onClick={() => setOpen(true)}
           className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-ca-border bg-white text-sm font-bold text-ca-navy-950 shadow-sm transition hover:bg-ca-background"
+          ref={triggerRef}
         >
           <SlidersHorizontal className="h-4 w-4" strokeWidth={1.9} />
           Filtros
@@ -44,11 +66,13 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
         />
       ) : null}
 
-      {/* Drawer bottom sheet */}
+      {/* Drawer bottom sheet — inert cuando está cerrado para que sus inputs
+          (duplicados del sidebar desktop) no sean tabulables ni lean lectores */}
       <div
         className={`fixed inset-x-0 bottom-0 z-[100] flex max-h-[85vh] flex-col rounded-t-[24px] bg-white shadow-ca-hero transition-transform duration-300 lg:hidden ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
+        inert={!open}
         role="dialog"
         aria-modal
         aria-label="Filtros"
@@ -68,6 +92,7 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
             aria-label="Cerrar filtros"
             onClick={() => setOpen(false)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-ca-background"
+            ref={closeButtonRef}
           >
             <X className="h-5 w-5 text-ca-text-secondary" />
           </button>

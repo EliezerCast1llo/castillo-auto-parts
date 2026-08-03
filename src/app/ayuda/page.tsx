@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, MapPin, PackageCheck, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
@@ -173,6 +174,7 @@ export default function HelpPage() {
           </div>
         </section>
       </section>
+      <SiteFooter />
     </main>
   );
 }
