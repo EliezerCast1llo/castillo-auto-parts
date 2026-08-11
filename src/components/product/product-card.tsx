@@ -2,75 +2,75 @@ import Image from "next/image";
 import Link from "next/link";
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { isPurchasableStockStatus, type CatalogProduct } from "@/data/products";
-import { formatCurrency } from "@/lib/money";
 import { MyVehicleCompatibility } from "./my-vehicle-compatibility";
+import { ProductPrice } from "./product-price";
 import { ProductVisual } from "./product-visual";
 import { StockBadge } from "./stock-badge";
 
+/**
+ * Tarjeta de catálogo. Plana a propósito: borde de 1px, sin sombra y sin
+ * levantar al hover. La media va sobre blanco liso, sin degradado ni panel
+ * interior, para que la foto (cuando la haya) sea lo único que se vea.
+ * La jerarquía la lleva el precio, no el peso uniforme de la tipografía.
+ */
 export function ProductCard({ product }: { product: CatalogProduct }) {
   const isAvailable = isPurchasableStockStatus(product.stockStatus);
+  const href = `/product/${product.slug}`;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ca-border bg-white shadow-ca-soft transition duration-200 hover:-translate-y-1 hover:border-ca-border-hover hover:shadow-ca-premium">
-      {/* Image area */}
+    <article className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-white transition-colors hover:border-ca-navy-950/30">
       <Link
         aria-label={`Ver detalle de ${product.name}`}
-        href={`/product/${product.slug}`}
-        className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-white via-ca-background to-ca-surface-tint"
+        className="relative flex h-40 items-center justify-center border-b border-ca-border bg-white p-3"
+        href={href}
       >
-        <div className="absolute inset-x-6 bottom-4 h-8 rounded-full bg-ca-navy-950/10 blur-xl" />
         {product.primaryImageUrl ? (
           <Image
-            src={product.primaryImageUrl}
             alt={product.name}
+            className="object-contain p-1"
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
-            className="object-contain p-3 transition duration-300 group-hover:scale-105"
+            src={product.primaryImageUrl}
           />
         ) : (
-          <div className="transition duration-300 group-hover:scale-105">
-            <ProductVisual kind={product.category} seed={product.sku} />
-          </div>
+          <ProductVisual kind={product.category} seed={product.sku} />
         )}
-        <span className="absolute left-3 top-3">
-          <StockBadge status={product.stockStatus} />
-        </span>
-        {/* Brand accent */}
-        <span className="absolute right-3 top-3 rounded-lg bg-white/90 px-2 py-1 text-xs font-black uppercase tracking-[0.1em] text-ca-blue-700 shadow-[0_2px_6px_rgba(6,25,51,0.08)] backdrop-blur-sm">
-          {product.brand}
-        </span>
       </Link>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-ca-text-secondary">{product.category}</p>
+      <div className="flex flex-1 flex-col p-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-ca-text-secondary">
+            {product.category}
+          </p>
+          <p className="shrink-0 text-[11px] font-black uppercase tracking-[0.08em] text-ca-navy-950">
+            {product.brand}
+          </p>
+        </div>
+
         <Link
-          href={`/product/${product.slug}`}
-          className="mt-1.5 line-clamp-2 min-h-12 text-[15px] font-black leading-[1.4] text-ca-navy-950 transition group-hover:text-ca-blue-700"
+          className="mt-1 line-clamp-2 min-h-10 text-sm font-bold leading-snug text-ca-navy-950 underline-offset-2 group-hover:underline"
+          href={href}
         >
           {product.name}
         </Link>
-        <p className="mt-1 text-xs font-bold uppercase tracking-wider text-ca-text-secondary/70">
-          SKU {product.sku}
-        </p>
-        <p className="mt-2.5 line-clamp-3 min-h-[58px] text-xs leading-[1.6] text-ca-text-secondary">
-          <span className="font-black text-ca-navy-950">Compatible: </span>
+
+        <p className="mt-1 text-xs text-ca-text-secondary">SKU {product.sku}</p>
+
+        <p className="mt-2 line-clamp-2 min-h-8 text-xs leading-snug text-ca-text-secondary">
+          <span className="font-bold text-ca-navy-950">Compatible: </span>
           {product.compatibility}
         </p>
-        <div className="mt-2 empty:hidden">
+
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <StockBadge status={product.stockStatus} />
           <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
         </div>
 
-        {/* Price + CTA */}
-        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-          <div>
-            <span className="font-display text-2xl font-black text-ca-navy-950">
-              {formatCurrency(product.priceCents)}
-            </span>
-          </div>
+        <div className="mt-auto pt-3">
+          <ProductPrice cents={product.priceCents} />
           <AddToCartForm
             available={isAvailable}
-            buttonClassName="w-auto text-xs"
+            buttonClassName="mt-2 w-full rounded-ca-control shadow-none hover:shadow-none"
             sku={product.sku}
           />
         </div>

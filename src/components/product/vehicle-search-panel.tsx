@@ -5,6 +5,9 @@ import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filter
 import { useVehicleSelection } from "@/components/product/use-vehicle-selection";
 import { Select } from "@/components/ui/select";
 
+/** Aplana la primitiva Select a la escala del catálogo (radio y peso menores). */
+const FLAT_SELECT = "h-10 rounded-ca-control bg-white font-normal";
+
 type VehicleSearchPanelProps = {
   filters: CatalogFilters;
   options: CatalogFilterOptions;
@@ -19,18 +22,14 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
   });
 
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
-      <div className="mb-4 flex items-center gap-2">
-        <span className="rounded-xl bg-ca-gold-400/18 p-2 text-ca-navy-950">
-          <Car className="h-5 w-5" />
-        </span>
-        <div>
-          <h2 className="text-base font-black text-ca-navy-950">Busca por vehículo</h2>
-          <p className="text-xs font-medium text-ca-text-secondary">Marca, modelo y año</p>
-        </div>
-      </div>
-      <div className="space-y-3">
+    <section>
+      <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-ca-navy-950">
+        <Car aria-hidden className="h-4 w-4 shrink-0 text-ca-text-secondary" />
+        Busca por vehículo
+      </h2>
+      <div className="mt-2 space-y-2">
         <Select
+          className={FLAT_SELECT}
           aria-label="Marca de vehículo"
           name="vehicleMake"
           onChange={selection.handleMakeChange}
@@ -44,6 +43,7 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
           ))}
         </Select>
         <Select
+          className={FLAT_SELECT}
           aria-label="Modelo de vehículo"
           name="vehicleModel"
           onChange={selection.handleModelChange}
@@ -57,6 +57,7 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
           ))}
         </Select>
         <Select
+          className={FLAT_SELECT}
           aria-label="Año de vehículo"
           name="vehicleYear"
           onChange={selection.handleYearChange}
