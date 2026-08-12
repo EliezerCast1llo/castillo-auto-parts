@@ -1,9 +1,19 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 // ---------------------------------------------------------------------------
 // Filtro por vehículo: selects dependientes, cookie "mi vehículo",
 // badge de compatibilidad y landing /vehiculos/[make].
 // ---------------------------------------------------------------------------
+
+/** Total de resultados que anuncia la barra del catálogo ("N productos"). */
+async function catalogTotal(page: Page) {
+  const label = await page
+    .locator("span", { hasText: /^\d+ productos?$/ })
+    .first()
+    .innerText();
+
+  return Number(label.replace(/\D/g, ""));
+}
 
 test("home vehicle selector narrows models without reload and filters catalog", async ({ page }) => {
   await page.goto("/");
@@ -47,9 +57,16 @@ test("vehicle selection persists as cookie and pre-applies on catalog", async ({
   // El badge de compatibilidad aparece en las cards
   await expect(page.getByText(/Compatible con tu Toyota Corolla/).first()).toBeVisible();
 
-  // "Quitar" borra la cookie y el banner desaparece
+  const filteredTotal = await catalogTotal(page);
+
+  // "Quitar" borra la cookie: se comprueba el efecto (el catálogo deja de
+  // estar filtrado), no solo que el aviso se vaya — ocultarlo en cliente
+  // bastaría para pasar con el filtro todavía aplicado.
   await page.getByRole("button", { name: "Quitar" }).click();
+
   await expect(page.getByText("Mostrando repuestos para tu vehículo")).toBeHidden();
+  await expect(page.getByText(/Compatible con tu Toyota Corolla/)).toHaveCount(0);
+  await expect.poll(() => catalogTotal(page)).toBeGreaterThan(filteredTotal);
 });
 
 test("vehicle make landing page lists compatible products", async ({ page }) => {
