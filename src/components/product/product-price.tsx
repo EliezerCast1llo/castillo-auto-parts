@@ -1,10 +1,12 @@
-import { formatCurrencyParts } from "@/lib/money";
+import { formatCurrency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 /**
- * Precio con tipografía de retail: el entero domina y símbolo y centavos van
- * arriba, más pequeños. Da al precio un peso visual distinto al del resto del
- * texto de la tarjeta, donde antes todo competía en el mismo negro.
+ * Precio de producto. Un solo tamaño y con separador decimal: la variante
+ * de retail (entero grande, centavos en superíndice) se probó y a la escala
+ * de la tarjeta se leía ambigua, porque "12" y "95" quedaban pegados con
+ * tamaños distintos y sin punto que los separara. El peso visual lo dan el
+ * cuerpo y la tipografía display, no el truco del superíndice.
  */
 export function ProductPrice({
   cents,
@@ -15,15 +17,15 @@ export function ProductPrice({
   className?: string;
   size?: "md" | "lg";
 }) {
-  const { currency, integer, fraction } = formatCurrencyParts(cents);
-  const integerSize = size === "lg" ? "text-4xl" : "text-2xl";
-  const affixSize = size === "lg" ? "text-lg" : "text-sm";
-
   return (
-    <p className={cn("flex items-start font-display font-black text-ca-navy-950", className)}>
-      <span className={cn(affixSize, "mt-0.5")}>{currency}</span>
-      <span className={cn(integerSize, "leading-none tracking-tight")}>{integer}</span>
-      {fraction ? <span className={cn(affixSize, "mt-0.5")}>{fraction}</span> : null}
+    <p
+      className={cn(
+        "font-display font-black leading-none text-ca-navy-950",
+        size === "lg" ? "text-3xl" : "text-xl",
+        className,
+      )}
+    >
+      {formatCurrency(cents)}
     </p>
   );
 }
