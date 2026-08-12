@@ -34,7 +34,7 @@ export function BrandStrip({ vehicleMakes = [], partBrands = [] }: BrandStripPro
             <BrandTile
               href={`/vehiculos/${vehicleMakeSlug(make)}`}
               key={make}
-              label={make.toUpperCase()}
+              label={make}
             />
           ))}
         </BrandGroup>
@@ -46,7 +46,7 @@ export function BrandStrip({ vehicleMakes = [], partBrands = [] }: BrandStripPro
             <BrandTile
               href={`/catalog?brand=${encodeURIComponent(brand)}`}
               key={brand}
-              label={brand.toUpperCase()}
+              label={brand}
             />
           ))}
         </BrandGroup>
@@ -91,15 +91,19 @@ function BrandGroup({
   );
 }
 
+/**
+ * Casilla compacta en la tipografía de cuerpo. Antes iba en display
+ * condensada a 11px, en versales y con mucho tracking: a ese tamaño la
+ * condensada se lee peor y el recuadro quedaba desproporcionado para el
+ * texto que contiene.
+ */
 function BrandTile({ href, label }: { href: string; label: string }) {
   return (
     <Link
-      className="group flex h-[52px] items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-center transition-colors hover:border-ca-navy-950/30"
+      className="flex h-10 items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-center text-sm font-semibold text-ca-navy-950 transition-colors hover:border-ca-navy-950/30 hover:text-ca-blue-700"
       href={href}
     >
-      <span className="font-display text-[11px] font-black tracking-[0.12em] text-ca-navy-900 transition group-hover:text-ca-blue-700">
-        {label}
-      </span>
+      {label}
     </Link>
   );
 }
