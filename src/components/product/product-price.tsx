@@ -2,11 +2,13 @@ import { formatCurrency } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 /**
- * Precio de producto. Un solo tamaño y con separador decimal: la variante
- * de retail (entero grande, centavos en superíndice) se probó y a la escala
- * de la tarjeta se leía ambigua, porque "12" y "95" quedaban pegados con
- * tamaños distintos y sin punto que los separara. El peso visual lo dan el
- * cuerpo y la tipografía display, no el truco del superíndice.
+ * Precio de producto en Outfit semibold.
+ *
+ * Va en la fuente de cuerpo y no en la display a propósito: Barlow Condensed
+ * es una condensada pensada para titulares, y en peso negro a 20px cierra las
+ * contraformas de las cifras (8, 9, 6, 0) hasta volverlas difíciles de leer.
+ * La display sigue en titulares, logo y botones, que es donde está la voz de
+ * la marca; los datos van en la tipografía de texto.
  */
 export function ProductPrice({
   cents,
@@ -20,7 +22,7 @@ export function ProductPrice({
   return (
     <p
       className={cn(
-        "font-display font-black leading-none text-ca-navy-950",
+        "font-sans font-semibold leading-none text-ca-navy-950",
         size === "lg" ? "text-3xl" : "text-xl",
         className,
       )}
