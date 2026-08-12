@@ -3,7 +3,6 @@ import Link from "next/link";
 import { CheckCircle2, MapPin, PackageSearch, ShieldCheck, Truck } from "lucide-react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";
-import { ProductVisual } from "@/components/product/product-visual";
 import { VehicleSelector } from "@/components/home/vehicle-selector";
 
 const heroSignals = [
@@ -19,12 +18,6 @@ const heroSignals = [
     icon: MapPin,
     label: "Entrega en El Salvador",
   },
-];
-
-const floatingParts = [
-  { brand: "BOSCH", label: "Filtros de aceite", seed: "bosch-filter" },
-  { brand: "NGK", label: "Bujías", seed: "ngk-spark" },
-  { brand: "WIX", label: "Filtros de aire", seed: "wix-air" },
 ];
 
 export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOptions }) {
@@ -97,9 +90,6 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
               />
               <div className="absolute inset-0 bg-gradient-to-r from-ca-navy-950/40 via-ca-navy-950/15 to-ca-navy-950/28" />
               <div className="absolute inset-0 bg-gradient-to-t from-ca-navy-950/55 via-transparent to-ca-navy-950/10" />
-              <FloatingPartCard className="left-[8%] top-8" part={floatingParts[0]} />
-              <FloatingPartCard className="right-6 top-12 hidden sm:block" part={floatingParts[1]} />
-              <FloatingPartCard className="bottom-8 right-[10%] hidden md:block" part={floatingParts[2]} />
             </div>
           </div>
         </div>
@@ -107,26 +97,6 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
 
       <VehicleSelector filterOptions={filterOptions} />
     </section>
-  );
-}
-
-function FloatingPartCard({
-  className,
-  part,
-}: {
-  className: string;
-  part: { brand: string; label: string; seed: string };
-}) {
-  return (
-    <div
-      className={`absolute z-20 flex min-w-36 items-center gap-2.5 rounded-ca-surface border border-white/40 bg-white/92 p-2.5 text-ca-navy-950 backdrop-blur-sm ${className}`}
-    >
-      <div>
-        <p className="text-[11px] font-black uppercase tracking-[0.1em] text-ca-blue-700">{part.brand}</p>
-        <p className="mt-0.5 text-xs font-bold text-ca-navy-950">{part.label}</p>
-      </div>
-      <ProductVisual kind={part.label} seed={part.seed} size="thumb" />
-    </div>
   );
 }
 

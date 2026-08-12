@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, ShoppingCart, Truck, User, UserRound, Wrench } from "lucide-react";
+import { MessageCircle, ShoppingCart, Truck, User, UserRound, Wrench } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
 import { MobileMenu } from "@/components/mobile-menu";
@@ -223,22 +223,25 @@ function UtilityBar() {
   return (
     <div className="border-b border-white/10 bg-ca-navy-950">
       <div className="ca-container flex min-h-9 items-center justify-between gap-4 py-1 text-xs font-bold text-white/78">
-        <p className="hidden tracking-[0.01em] text-white/76 md:block">
-          Repuestos originales <span className="mx-2 text-ca-gold-400">•</span> Entrega rápida
+        {/* Dato concreto y acción, no promesas: las de "garantía / entrega /
+            pago seguro" ya se dicen en el hero y se repetían aquí. */}
+        <p className="inline-flex items-center gap-1.5 tracking-[0.01em] text-white/76">
+          <Truck className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
+          <span className="hidden sm:inline">Entrega en San Salvador y Santa Tecla</span>
+          <span className="sm:hidden">San Salvador y Santa Tecla</span>
         </p>
-        <p className="tracking-[0.01em] text-white/76 md:hidden">Castillo Auto Parts</p>
 
-        <div className="flex items-center justify-end gap-3 sm:gap-4">
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-            <ShieldCheck className="h-4 w-4 text-ca-gold-400" strokeWidth={1.9} />
-            Garantía
-          </span>
-          <span className="hidden h-4 w-px bg-white/14 sm:block" />
-          <span className="hidden items-center gap-1.5 whitespace-nowrap sm:inline-flex">
-            <Truck className="h-4 w-4 text-ca-gold-400" strokeWidth={1.9} />
-            Entrega local
-          </span>
-        </div>
+        {SUPPORT_WHATSAPP_NUMBER ? (
+          <a
+            className="inline-flex items-center gap-1.5 whitespace-nowrap text-white/76 transition hover:text-white"
+            href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}`}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <MessageCircle className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
+            Asesoría por WhatsApp
+          </a>
+        ) : null}
       </div>
     </div>
   );

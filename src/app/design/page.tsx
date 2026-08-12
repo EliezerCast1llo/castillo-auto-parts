@@ -11,11 +11,9 @@ import {
   Truck,
   Wrench,
 } from "lucide-react";
-import { CategoryRail } from "@/components/home/category-rail";
 import { HomeHero } from "@/components/home/home-hero";
 import { CatalogActiveFilters } from "@/components/product/catalog-active-filters";
 import { CatalogFilterForm } from "@/components/product/catalog-filter-form";
-import { PopularSearches } from "@/components/product/popular-searches";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductFilters } from "@/components/product/product-filters";
 import { ProductVisual } from "@/components/product/product-visual";
@@ -75,8 +73,6 @@ export default function DesignPreviewPage() {
         >
           <div className="space-y-5">
             <HomeHero />
-            <PopularSearches />
-            <CategoryRail />
           </div>
         </DesignSection>
 

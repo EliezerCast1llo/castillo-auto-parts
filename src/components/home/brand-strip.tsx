@@ -3,68 +3,101 @@ import { ArrowRight } from "lucide-react";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
 
 type BrandStripProps = {
-  /** Marcas de vehículo reales del catálogo (facets); enlazan a /vehiculos/[make]. */
+  /** Marcas de vehículo del catálogo; enlazan a /vehiculos/[make]. */
   vehicleMakes?: string[];
+  /** Fabricantes de repuesto; enlazan al filtro de marca del catálogo. */
+  partBrands?: string[];
 };
 
-/** Marcas de repuesto (fabricantes); enlazan al filtro de marca del catálogo. */
-const partBrands = ["BOSCH", "NGK", "WIX"];
-
-export function BrandStrip({ vehicleMakes = [] }: BrandStripProps) {
-  const makes = vehicleMakes.slice(0, 7);
+/**
+ * Dos cosas distintas, dos bloques distintos.
+ *
+ * Antes un único bloque titulado "Repuestos por marca de vehículo" listaba
+ * Honda…Toyota y a continuación BOSCH, NGK y WIX, que no son marcas de
+ * vehículo sino fabricantes de repuesto, y además estaban escritos a mano.
+ * Ahora ambas listas salen de las facetas del catálogo y van separadas,
+ * porque llevan a sitios distintos: la del vehículo a su landing, la del
+ * fabricante al filtro de marca.
+ */
+export function BrandStrip({ vehicleMakes = [], partBrands = [] }: BrandStripProps) {
+  const makes = vehicleMakes.slice(0, 10);
+  const brands = partBrands.slice(0, 10);
 
   return (
-    <section className="animate-fade-up delay-100 space-y-4">
+    <div className="space-y-6">
+      {makes.length > 0 ? (
+        <BrandGroup
+          cta={{ href: "/catalog", label: "Ver catálogo" }}
+          title="Repuestos por marca de vehículo"
+        >
+          {makes.map((make) => (
+            <BrandTile
+              href={`/vehiculos/${vehicleMakeSlug(make)}`}
+              key={make}
+              label={make.toUpperCase()}
+            />
+          ))}
+        </BrandGroup>
+      ) : null}
+
+      {brands.length > 0 ? (
+        <BrandGroup title="Marcas de repuesto">
+          {brands.map((brand) => (
+            <BrandTile
+              href={`/catalog?brand=${encodeURIComponent(brand)}`}
+              key={brand}
+              label={brand.toUpperCase()}
+            />
+          ))}
+        </BrandGroup>
+      ) : null}
+    </div>
+  );
+}
+
+function BrandGroup({
+  children,
+  cta,
+  title,
+}: {
+  children: React.ReactNode;
+  cta?: { href: string; label: string };
+  title: string;
+}) {
+  return (
+    <section className="space-y-3">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="h-5 w-1 rounded-full bg-ca-gold-400" />
-          <h2
-            className="font-display text-xl font-extrabold tracking-[0.02em] text-ca-navy-950"
-          >
-            Repuestos por marca de vehículo
+          <span className="h-5 w-1 bg-ca-gold-400" />
+          <h2 className="font-display text-xl font-extrabold tracking-[0.02em] text-ca-navy-950">
+            {title}
           </h2>
         </div>
-        <Link
-          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
-          href="/catalog"
-        >
-          Ver todas
-          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-        </Link>
+        {cta ? (
+          <Link
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
+            href={cta.href}
+          >
+            {cta.label}
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+          </Link>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10">
-        {makes.map((make, i) => (
-          <BrandTile
-            href={`/vehiculos/${vehicleMakeSlug(make)}`}
-            index={i}
-            key={make}
-            label={make.toUpperCase()}
-          />
-        ))}
-        {partBrands.map((brand, i) => (
-          <BrandTile
-            href={`/catalog?brand=${encodeURIComponent(brand)}`}
-            index={makes.length + i}
-            key={brand}
-            label={brand}
-          />
-        ))}
+        {children}
       </div>
     </section>
   );
 }
 
-function BrandTile({ href, index, label }: { href: string; index: number; label: string }) {
+function BrandTile({ href, label }: { href: string; label: string }) {
   return (
     <Link
-      className="ca-card-lift group flex h-[52px] items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-center"
+      className="group flex h-[52px] items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-center transition-colors hover:border-ca-navy-950/30"
       href={href}
-      style={{ animationDelay: `${index * 0.04}s` }}
     >
-      <span
-        className="font-display text-[11px] font-black tracking-[0.12em] text-ca-navy-900 transition group-hover:text-ca-blue-700"
-      >
+      <span className="font-display text-[11px] font-black tracking-[0.12em] text-ca-navy-900 transition group-hover:text-ca-blue-700">
         {label}
       </span>
     </Link>
