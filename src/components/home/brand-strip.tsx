@@ -58,7 +58,7 @@ export function BrandStrip({ vehicleMakes = [] }: BrandStripProps) {
 function BrandTile({ href, index, label }: { href: string; index: number; label: string }) {
   return (
     <Link
-      className="ca-card-lift group flex h-[52px] items-center justify-center rounded-xl border border-ca-border bg-white px-3 text-center shadow-[0_2px_8px_rgba(6,25,51,0.04)]"
+      className="ca-card-lift group flex h-[52px] items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-center"
       href={href}
       style={{ animationDelay: `${index * 0.04}s` }}
     >

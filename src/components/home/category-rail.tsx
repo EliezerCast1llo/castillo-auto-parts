@@ -48,7 +48,7 @@ const categories = [
 
 export function CategoryQuickLinks() {
   return (
-    <section className="animate-fade-up delay-150 rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
+    <section className="animate-fade-up delay-150 rounded-ca-surface border border-ca-border bg-white p-5">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="h-5 w-1 rounded-full bg-ca-navy-950" />
@@ -70,11 +70,11 @@ export function CategoryQuickLinks() {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {categories.map((category) => (
           <Link
-            className="group flex min-h-[90px] flex-col items-center justify-center gap-2.5 rounded-[14px] border border-ca-border bg-ca-background p-3 text-center transition hover:-translate-y-0.5 hover:border-ca-border-hover hover:bg-white hover:shadow-ca-soft"
+            className="group flex min-h-[90px] flex-col items-center justify-center gap-2.5 rounded-ca-control border border-ca-border bg-ca-background p-3 text-center transition hover:-translate-y-0.5 hover:border-ca-border-hover hover:bg-white"
             href={category.href}
             key={category.label}
           >
-            <span className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${category.color} ${category.hoverColor}`}>
+            <span className={`flex h-10 w-10 items-center justify-center rounded-ca-control transition ${category.color} ${category.hoverColor}`}>
               <category.icon className="h-6 w-6" strokeWidth={1.8} />
             </span>
             <span className="text-xs font-black leading-4 text-ca-navy-950 sm:text-[13px]">

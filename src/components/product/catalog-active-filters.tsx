@@ -31,7 +31,7 @@ export function CatalogActiveFilters({
   }
 
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
+    <section className="rounded-ca-surface border border-ca-border bg-white p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-black text-ca-navy-950">Filtros activos</p>
@@ -40,7 +40,7 @@ export function CatalogActiveFilters({
           </p>
         </div>
         <Link
-          className="inline-flex h-9 items-center justify-center rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+          className="inline-flex h-9 items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           href={sort === "relevance" ? "/catalog" : `/catalog?sort=${sort}`}
         >
           Limpiar todo

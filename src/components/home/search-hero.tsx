@@ -44,7 +44,7 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
         </div>
 
         {/* Hero card */}
-        <div className="animate-fade-up delay-100 relative mt-0 overflow-hidden rounded-b-[28px] border border-white/[0.07] bg-ca-navy-900 shadow-ca-hero">
+        <div className="animate-fade-up delay-100 relative mt-0 overflow-hidden rounded-b-[28px] border border-white/[0.07] bg-ca-navy-900">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_42%,rgba(18,103,197,0.26),transparent_27rem)]" />
 
           <div className="grid min-h-[390px] lg:grid-cols-[0.88fr_1.12fr]">
@@ -75,7 +75,7 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
               <div className="animate-fade-up delay-500 mt-8 grid gap-3 sm:grid-cols-3 lg:max-w-2xl">
                 {heroSignals.map((signal) => (
                   <div className="flex items-center gap-3" key={signal.label}>
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-ca-gold-400/20 bg-ca-gold-400/10 text-ca-gold-400">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control border border-ca-gold-400/20 bg-ca-gold-400/10 text-ca-gold-400">
                       <signal.icon className="h-5 w-5" strokeWidth={1.8} />
                     </span>
                     <span className="text-sm font-semibold leading-5 text-white/85">{signal.label}</span>
@@ -119,7 +119,7 @@ function FloatingPartCard({
 }) {
   return (
     <div
-      className={`absolute z-20 flex min-w-36 items-center gap-2.5 rounded-2xl border border-white/40 bg-white/92 p-2.5 text-ca-navy-950 shadow-[0_12px_28px_rgba(6,25,51,0.18)] backdrop-blur-sm ${className}`}
+      className={`absolute z-20 flex min-w-36 items-center gap-2.5 rounded-ca-surface border border-white/40 bg-white/92 p-2.5 text-ca-navy-950 backdrop-blur-sm ${className}`}
     >
       <div>
         <p className="text-[11px] font-black uppercase tracking-[0.1em] text-ca-blue-700">{part.brand}</p>

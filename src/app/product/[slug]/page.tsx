@@ -11,6 +11,7 @@ import {
 import { MyVehicleCompatibility } from "@/components/product/my-vehicle-compatibility";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGallery } from "@/components/product/product-gallery";
+import { ProductPrice } from "@/components/product/product-price";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
@@ -22,7 +23,6 @@ import {
   getRelatedCatalogProducts,
   type CatalogProduct,
 } from "@/data/products";
-import { formatCurrency } from "@/lib/money";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
 export const dynamic = "force-dynamic";
@@ -89,7 +89,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           {/* Panel izquierdo: galería + descripción + compatibilidad */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-ca-border bg-white p-4 shadow-ca-soft">
+            <div className="rounded-ca-surface border border-ca-border bg-white p-4">
               <ProductGallery
                 images={product.images}
                 productName={product.name}
@@ -97,13 +97,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             </div>
 
-            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
+            <div className="rounded-ca-surface border border-ca-border bg-white p-5">
               <h2 className="text-base font-black text-ca-navy-950">Descripción</h2>
               <p className="mt-3 text-sm leading-6 text-ca-text-secondary">{product.description}</p>
             </div>
 
             {product.compatibleVehicles.length > 0 ? (
-              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
+              <div className="rounded-ca-surface border border-ca-border bg-white p-5">
                 <h2 className="text-base font-black text-ca-navy-950">Compatibilidad verificada</h2>
                 <div className="mt-3 empty:hidden">
                   <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
@@ -112,7 +112,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {product.compatibleVehicles.map((vehicle) => (
                     <div
                       key={vehicle}
-                      className="flex min-h-11 items-center gap-2 rounded-xl bg-ca-background px-3 text-sm font-medium text-ca-text-primary"
+                      className="flex min-h-11 items-center gap-2 rounded-ca-control bg-ca-background px-3 text-sm font-medium text-ca-text-primary"
                     >
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-ca-success" />
                       {vehicle}
@@ -123,7 +123,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ) : null}
 
             {product.technicalDetails.length > 0 ? (
-              <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
+              <div className="rounded-ca-surface border border-ca-border bg-white p-5">
                 <h2 className="text-base font-black text-ca-navy-950">Detalles técnicos</h2>
                 <ul className="mt-3 space-y-2">
                   {product.technicalDetails.map((detail) => (
@@ -138,7 +138,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           {/* Panel derecho: precio + compra (en mobile va después de la galería) */}
-          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium">
+          <aside className="h-fit rounded-ca-surface border border-ca-border bg-white p-5">
             {/* Categoría + título + badge */}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -161,14 +161,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </dl>
 
             {/* Precio */}
-            <div className="mt-5 rounded-xl bg-ca-background px-4 py-3">
+            <div className="mt-5 rounded-ca-control bg-ca-background px-4 py-3">
               <p className="text-xs font-bold text-ca-text-secondary">Precio con IVA incluido</p>
-              <p className="mt-1 text-3xl font-black text-ca-navy-950">
-                {formatCurrency(product.priceCents)}
-              </p>
+              <ProductPrice className="mt-1.5" cents={product.priceCents} size="lg" />
             </div>
 
-            <div className="mt-4 rounded-xl border border-ca-border bg-white p-4">
+            <div className="mt-4 rounded-ca-control border border-ca-border bg-white p-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
                 <div>
@@ -183,7 +181,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {/* Acción principal */}
             <AddToCartForm
               available={isAvailable}
-              buttonClassName="h-[52px] rounded-[14px]"
+              buttonClassName="h-[52px] rounded-ca-control"
               buttonSize="lg"
               className="mt-4 space-y-3"
               label="Agregar al carrito"
@@ -205,7 +203,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
 
             {/* Envío */}
-            <div className="mt-4 flex items-start gap-3 rounded-xl bg-ca-background p-4 text-sm">
+            <div className="mt-4 flex items-start gap-3 rounded-ca-control bg-ca-background p-4 text-sm">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
               <div>
                 <p className="font-bold text-ca-navy-950">Retiro en bodega o envío local</p>
@@ -261,7 +259,7 @@ function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
 
       <Link
         href="/catalog"
-        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
       >
         <ArrowLeft className="h-4 w-4" />
         Volver al catálogo
@@ -272,7 +270,7 @@ function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
 
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-ca-background p-3">
+    <div className="rounded-ca-control bg-ca-background p-3">
       <dt className="text-[11px] font-bold uppercase tracking-wider text-ca-text-secondary">{label}</dt>
       <dd className="mt-0.5 text-sm font-bold text-ca-navy-950">{value}</dd>
     </div>
