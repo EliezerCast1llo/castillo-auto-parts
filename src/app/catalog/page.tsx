@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { SortDropdown } from "@/components/catalog/sort-dropdown";
 import { CatalogActiveFilters } from "@/components/product/catalog-active-filters";
@@ -81,7 +81,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     getCatalogFacets(),
   ]);
 
-  const { products: filteredProducts, totalCount, totalPages, currentPage, source, status } = catalogResult;
+  const { products: filteredProducts, totalCount, totalPages, currentPage, status } = catalogResult;
   const activeFilterCount = countActiveCatalogFilters(filters);
   const filterKey = JSON.stringify(filters);
 
@@ -108,34 +108,32 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         </FilterDrawer>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          {/* Sidebar de filtros — solo visible en desktop */}
-          <aside className="hidden lg:block lg:sticky lg:top-6 lg:self-start">
+          {/* Sidebar de filtros — solo visible en desktop. La superficie la
+              pone el aside: dentro solo hay secciones separadas por reglas. */}
+          <aside className="hidden rounded-ca-surface border border-ca-border bg-white p-4 lg:block lg:sticky lg:top-6 lg:self-start">
             {filterContent}
           </aside>
 
           <section className="min-w-0 space-y-5">
             <CatalogBreadcrumb filters={filters} />
-            <CatalogHero />
 
             {status === "unavailable" ? <CatalogUnavailableState /> : null}
 
-            {/* Barra de resultados */}
-            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-ca-border bg-white px-5 py-4 shadow-ca-soft md:flex-row md:items-center">
+            {/* Encabezado y barra de resultados en una sola fila: los productos
+                empiezan lo antes posible en lugar de tras un banner. */}
+            <div className="flex flex-col justify-between gap-3 border-b border-ca-border pb-4 md:flex-row md:items-end">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
-                  {source === "mock" ? "Inventario de prueba" : "Inventario activo"}
-                </p>
-                <h2 className="mt-1 text-xl font-black text-ca-navy-950">Catálogo de repuestos</h2>
-                <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
+                <h1 className="text-xl font-black text-ca-navy-950">Catálogo de repuestos</h1>
+                <p className="mt-1 text-sm text-ca-text-secondary">
                   {getCatalogSummary(filters, totalCount)}
                 </p>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <span className="inline-flex h-11 items-center justify-center rounded-xl bg-ca-background px-3 text-sm font-bold text-ca-text-secondary">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-bold text-ca-navy-950">
                   {totalCount} {totalCount === 1 ? "producto" : "productos"}
                 </span>
                 {totalPages > 1 ? (
-                  <span className="inline-flex h-11 items-center text-sm font-bold text-ca-text-secondary">
+                  <span className="text-sm text-ca-text-secondary">
                     Pág. {currentPage}/{totalPages}
                   </span>
                 ) : null}
@@ -245,53 +243,4 @@ function getCatalogSummary(filters: ReturnType<typeof parseCatalogFilters>, tota
   }
 
   return "Explora repuestos con stock visible, precio final con IVA incluido y filtros rápidos.";
-}
-
-function CatalogHero() {
-  return (
-    <section className="overflow-hidden rounded-2xl border border-ca-border bg-white shadow-ca-soft">
-      <div className="grid gap-5 p-5 md:grid-cols-[1fr_240px] md:p-6">
-        <div>
-          <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
-            Compatibilidad clara
-          </p>
-          <h1 className="mt-2 max-w-2xl text-2xl font-black leading-tight text-ca-navy-950 sm:text-3xl">
-            Encuentra el repuesto correcto antes de pagar
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-ca-text-secondary">
-            Filtra por vehículo, categoría, marca o número de parte. Precio, stock y compatibilidad visibles desde la lista.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <HeroChip icon={<ShieldCheck className="h-3.5 w-3.5" />} label="Pago seguro" />
-            <HeroChip icon={<MapPin className="h-3.5 w-3.5" />} label="San Salvador y Santa Tecla" />
-            <HeroChip icon={<SlidersHorizontal className="h-3.5 w-3.5" />} label="Filtros en tiempo real" />
-          </div>
-        </div>
-
-        <div className="grid gap-2 rounded-xl border border-ca-border bg-ca-background p-4">
-          <HeroMetric label="IVA" value="13% incluido" />
-          <HeroMetric label="Retiro en tienda" value="Gratis" />
-          <HeroMetric label="Entrega" value="San Salvador y Santa Tecla" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function HeroChip({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div className="inline-flex h-8 items-center gap-1.5 rounded-full border border-ca-navy-950/15 bg-ca-navy-950/5 px-3 text-xs font-bold text-ca-navy-950">
-      {icon}
-      {label}
-    </div>
-  );
-}
-
-function HeroMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-ca-border bg-white p-3">
-      <p className="text-xs font-semibold text-ca-text-secondary">{label}</p>
-      <p className="mt-0.5 text-base font-black text-ca-navy-950">{value}</p>
-    </div>
-  );
 }

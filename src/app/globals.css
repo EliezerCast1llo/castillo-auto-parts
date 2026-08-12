@@ -22,6 +22,14 @@
   --ca-radius-md: 14px;
   --ca-radius-lg: 20px;
   --ca-radius-xl: 28px;
+  /* Escala plana para superficies de datos (catálogo). Sustituye a la escala
+     redondeada de arriba, que queda para las páginas aún sin migrar: el radio
+     grande y la sombra suave son lo que hace que una grilla de repuestos
+     parezca una landing en vez de una tienda. */
+  --ca-radius-control: 4px;
+  --ca-radius-surface: 6px;
+  /* Sombra única, y solo para lo que de verdad flota sobre la página. */
+  --ca-shadow-overlay: 0 4px 16px rgba(6, 25, 51, 0.12);
   --ca-shadow-soft: 0 8px 24px rgba(6, 25, 51, 0.07);
   --ca-shadow-premium: 0 16px 42px rgba(6, 25, 51, 0.13);
   --ca-shadow-hero: 0 28px 72px rgba(6, 25, 51, 0.25);
@@ -81,6 +89,9 @@
   --color-ca-disabled-text: var(--ca-disabled-text);
   --color-ca-text-primary: var(--ca-text-primary);
   --color-ca-text-secondary: var(--ca-text-secondary);
+  --radius-ca-control: var(--ca-radius-control);
+  --radius-ca-surface: var(--ca-radius-surface);
+  --shadow-ca-overlay: var(--ca-shadow-overlay);
   --shadow-ca-soft: var(--ca-shadow-soft);
   --shadow-ca-premium: var(--ca-shadow-premium);
   --shadow-ca-hero: var(--ca-shadow-hero);

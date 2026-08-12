@@ -18,20 +18,21 @@ const iconSizes = {
   thumb: "h-8 w-8",
 };
 
+/**
+ * Marcador de producto sin foto. Deliberadamente plano y en gris: es un hueco
+ * honesto, no un adorno. La versión anterior apilaba degradado, mancha
+ * borrosa, dos círculos de color y un panel interior con sombra, y ese
+ * apilado era justo lo que hacía parecer maqueta a la grilla entera.
+ */
 export function ProductVisual({ kind, seed, size = "card" }: ProductVisualProps) {
   const visualType = getProductVisualType(kind ?? seed);
 
   return (
     <div
       aria-hidden="true"
-      className={`relative flex ${sizes[size]} items-center justify-center overflow-hidden rounded-[24px] bg-gradient-to-br from-white via-[#eef3f8] to-[#d9e3ee] shadow-inner`}
+      className={`flex ${sizes[size]} items-center justify-center text-ca-border-hover`}
     >
-      <div className="absolute inset-x-4 bottom-3 h-5 rounded-full bg-ca-navy-950/10 blur-md" />
-      <div className="absolute -right-5 -top-7 h-20 w-20 rounded-full bg-ca-blue-700/10" />
-      <div className="absolute -bottom-8 -left-6 h-24 w-24 rounded-full bg-ca-gold-400/12" />
-      <div className="relative flex h-[74%] w-[74%] items-center justify-center rounded-[22px] border border-white/70 bg-white/75 text-ca-navy-900 shadow-[0_14px_30px_rgba(6,25,51,0.12)]">
-        {renderProductIcon(visualType, size)}
-      </div>
+      {renderProductIcon(visualType, size)}
     </div>
   );
 }

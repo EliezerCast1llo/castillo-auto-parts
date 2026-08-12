@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filters";
 
 type ProductFiltersProps = {
@@ -8,29 +8,20 @@ type ProductFiltersProps = {
   options: CatalogFilterOptions;
 };
 
+/**
+ * Facetas del catálogo. Sin tarjeta ni sombra propias: la superficie la pone
+ * el contenedor (aside en desktop, drawer en móvil) y aquí solo hay listas
+ * separadas por reglas, que es lo que hace legible una columna de filtros.
+ */
 export function ProductFilters({ activeFilterCount, filters, options }: ProductFiltersProps) {
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)]">
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="rounded-xl bg-ca-navy-950/7 p-2 text-ca-navy-950">
-            <SlidersHorizontal className="h-5 w-5" />
-          </span>
-          <h2 className="text-base font-black text-ca-navy-950">Filtros</h2>
-        </div>
-        {activeFilterCount > 0 ? (
-          <span className="rounded-full bg-ca-gold-400 px-2.5 py-1 text-xs font-black text-ca-navy-950">
-            {activeFilterCount}
-          </span>
-        ) : null}
-      </div>
-
-      <label className="block text-sm font-black text-ca-navy-950">
-        Buscar
-        <div className="mt-2 flex h-11 items-center gap-2 rounded-xl border border-ca-border bg-ca-background px-3 transition focus-within:border-ca-blue-700 focus-within:bg-white">
-          <Search className="h-4 w-4 text-ca-text-secondary" />
+    <section className="border-t border-ca-border pt-4">
+      <label className="block">
+        <FilterHeading>Buscar</FilterHeading>
+        <div className="mt-2 flex h-10 items-center gap-2 rounded-ca-control border border-ca-border bg-white px-2.5 transition focus-within:border-ca-blue-700">
+          <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" />
           <input
-            className="w-full bg-transparent text-sm font-semibold text-ca-navy-950 outline-none placeholder:text-ca-text-secondary"
+            className="w-full bg-transparent text-sm text-ca-navy-950 outline-none placeholder:text-ca-text-secondary"
             defaultValue={filters.query}
             name="q"
             placeholder="Nombre, SKU o parte"
@@ -39,66 +30,52 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
         </div>
       </label>
 
-      <fieldset className="mt-5 space-y-2">
-        <legend className="mb-2 text-sm font-black text-ca-navy-950">Categoría</legend>
+      <FilterGroup legend="Categoría">
         {options.categories.map((category) => (
-          <label key={category} className="flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-ca-text-secondary transition hover:bg-ca-background hover:text-ca-navy-950">
-            <input
-              className="h-4 w-4 accent-ca-navy-950"
-              defaultChecked={filters.categories.includes(category)}
-              name="category"
-              type="checkbox"
-              value={category}
-            />
-            <span className="flex-1">{category}</span>
-            <FacetCount count={options.categoryCounts[category]} />
-          </label>
+          <FilterOption
+            key={category}
+            count={options.categoryCounts[category]}
+            defaultChecked={filters.categories.includes(category)}
+            label={category}
+            name="category"
+          />
         ))}
-      </fieldset>
+      </FilterGroup>
 
-      <fieldset className="mt-5 space-y-2">
-        <legend className="mb-2 text-sm font-black text-ca-navy-950">Marca</legend>
+      <FilterGroup legend="Marca">
         {options.brands.map((brand) => (
-          <label key={brand} className="flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-ca-text-secondary transition hover:bg-ca-background hover:text-ca-navy-950">
-            <input
-              className="h-4 w-4 accent-ca-navy-950"
-              defaultChecked={filters.brands.includes(brand)}
-              name="brand"
-              type="checkbox"
-              value={brand}
-            />
-            <span className="flex-1">{brand}</span>
-            <FacetCount count={options.brandCounts[brand]} />
-          </label>
+          <FilterOption
+            key={brand}
+            count={options.brandCounts[brand]}
+            defaultChecked={filters.brands.includes(brand)}
+            label={brand}
+            name="brand"
+          />
         ))}
-      </fieldset>
+      </FilterGroup>
 
-      <fieldset className="mt-5 space-y-2">
-        <legend className="mb-2 text-sm font-black text-ca-navy-950">Disponibilidad</legend>
+      <FilterGroup legend="Disponibilidad">
         {options.stockStatuses.map((status) => (
-          <label key={status} className="flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-ca-text-secondary transition hover:bg-ca-background hover:text-ca-navy-950">
-            <input
-              className="h-4 w-4 accent-ca-navy-950"
-              defaultChecked={filters.stockStatuses.includes(status)}
-              name="stock"
-              type="checkbox"
-              value={status}
-            />
-            {status}
-          </label>
+          <FilterOption
+            key={status}
+            defaultChecked={filters.stockStatuses.includes(status)}
+            label={status}
+            name="stock"
+          />
         ))}
-      </fieldset>
+      </FilterGroup>
 
-      <div className="mt-5 grid gap-2">
-        <button className="inline-flex h-11 items-center justify-center rounded-xl bg-ca-navy-950 px-4 text-sm font-black text-white shadow-[0_8px_18px_rgba(6,25,51,0.16)] transition hover:bg-ca-navy-800">
+      <div className="mt-4 grid gap-2 border-t border-ca-border pt-4">
+        {/* Los filtros se aplican al cambiar; el botón es el camino sin JS. */}
+        <button className="inline-flex h-10 items-center justify-center rounded-ca-control border border-ca-navy-950 bg-white px-4 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-navy-950 hover:text-white">
           Buscar
         </button>
         {activeFilterCount > 0 ? (
           <Link
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 transition hover:bg-ca-background"
+            className="inline-flex h-10 items-center justify-center rounded-ca-control px-4 text-sm font-bold text-ca-text-secondary underline-offset-2 transition hover:text-ca-navy-950 hover:underline"
             href="/catalog"
           >
-            Limpiar filtros
+            Limpiar filtros ({activeFilterCount})
           </Link>
         ) : null}
       </div>
@@ -106,12 +83,48 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
   );
 }
 
-function FacetCount({ count }: { count?: number }) {
-  if (typeof count !== "number") return null;
-
+function FilterHeading({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full bg-ca-background px-2 py-0.5 text-xs font-bold text-ca-text-secondary">
-      {count}
+    <span className="text-xs font-black uppercase tracking-[0.1em] text-ca-navy-950">
+      {children}
     </span>
+  );
+}
+
+function FilterGroup({ children, legend }: { children: React.ReactNode; legend: string }) {
+  return (
+    <fieldset className="mt-4 border-t border-ca-border pt-4">
+      <legend className="sr-only">{legend}</legend>
+      <FilterHeading>{legend}</FilterHeading>
+      <div className="mt-1.5">{children}</div>
+    </fieldset>
+  );
+}
+
+function FilterOption({
+  count,
+  defaultChecked,
+  label,
+  name,
+}: {
+  count?: number;
+  defaultChecked: boolean;
+  label: string;
+  name: string;
+}) {
+  return (
+    <label className="flex min-h-8 cursor-pointer items-center gap-2 text-sm text-ca-text-primary transition hover:text-ca-blue-700">
+      <input
+        className="h-4 w-4 shrink-0 accent-ca-navy-950"
+        defaultChecked={defaultChecked}
+        name={name}
+        type="checkbox"
+        value={label}
+      />
+      <span className="flex-1">{label}</span>
+      {typeof count === "number" ? (
+        <span className="shrink-0 text-xs text-ca-text-secondary">({count})</span>
+      ) : null}
+    </label>
   );
 }
