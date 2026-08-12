@@ -25,7 +25,7 @@ export async function SiteFooter() {
         {/* Marca */}
         <div>
           <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-ca-gold-400 text-ca-navy-950">
+            <span className="flex h-10 w-10 items-center justify-center rounded-ca-control bg-ca-gold-400 text-ca-navy-950">
               <Wrench className="h-5 w-5" strokeWidth={2} />
             </span>
             <span className="leading-none">

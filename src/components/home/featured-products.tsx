@@ -44,7 +44,7 @@ export function FeaturedProducts({ catalogStatus, products }: FeaturedProductsPr
           ))}
         </div>
       ) : (
-        <div className="rounded-[20px] border border-ca-border bg-white p-8 shadow-ca-soft">
+        <div className="rounded-[20px] border border-ca-border bg-white p-8">
           <div className="flex items-start gap-4">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-ca-navy-950/[0.07] text-ca-navy-900">
               <PackageSearch className="h-6 w-6" />

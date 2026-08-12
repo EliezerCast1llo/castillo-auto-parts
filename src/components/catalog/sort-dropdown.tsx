@@ -18,7 +18,7 @@ export function SortDropdown({ value }: SortDropdownProps) {
       <span className="text-[11px] font-black uppercase tracking-[0.12em] text-ca-text-secondary">
         Ordenar
       </span>
-      <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 shadow-[0_4px_14px_rgba(6,25,51,0.04)] transition focus-within:border-ca-blue-700">
+      <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition focus-within:border-ca-blue-700">
         <ArrowUpDown className="h-4 w-4 shrink-0 text-ca-blue-700" strokeWidth={1.9} />
         <select
           aria-label="Ordenar catálogo"

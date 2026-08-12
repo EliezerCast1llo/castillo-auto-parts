@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * repetidos en filtros, auth y checkout (fondo gris que se aclara en focus).
  */
 export const inputVariants = cva(
-  "w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-semibold text-ca-navy-950 outline-none transition placeholder:text-ca-text-secondary focus:border-ca-blue-700 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60",
+  "w-full rounded-ca-control border border-ca-border bg-ca-background px-3 text-sm font-semibold text-ca-navy-950 outline-none transition placeholder:text-ca-text-secondary focus:border-ca-blue-700 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60",
   {
     variants: {
       size: {

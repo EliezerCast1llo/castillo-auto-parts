@@ -41,13 +41,13 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-ca-border bg-white/95 shadow-[0_2px_16px_rgba(6,25,51,0.08)] backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-ca-border bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
 
           {/* Logo */}
           <Link href="/" className="order-1 flex shrink-0 items-center gap-3">
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-[10px] bg-ca-navy-950 text-white shadow-[0_4px_14px_rgba(6,25,51,0.3)]">
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-[10px] bg-ca-navy-950 text-white">
               <Wrench className="h-[18px] w-[18px]" strokeWidth={2} />
               <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-ca-gold-400" />
             </span>
@@ -69,7 +69,7 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
             <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
               {siteNavItems.map((item) => (
                 <Link
-                  className="inline-flex h-10 items-center rounded-xl px-3 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
+                  className="inline-flex h-10 items-center rounded-ca-control px-3 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
                   href={item.href}
                   key={item.label}
                 >
@@ -108,7 +108,7 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
               {cartItemCount > 0 ? (
                 <span
                   data-testid="cart-count"
-                  className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-ca-gold-400 px-1 text-[10px] font-black text-ca-navy-950 shadow-[0_2px_6px_rgba(217,162,27,0.5)]"
+                  className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-ca-gold-400 px-1 text-[10px] font-black text-ca-navy-950"
                 >
                   {cartItemCount}
                 </span>
@@ -147,7 +147,7 @@ function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProp
       <div className="ca-container flex min-h-16 items-center justify-between gap-5 py-3">
         {/* Logo */}
         <Link href="/" className="flex min-w-0 items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-ca-gold-400 text-ca-navy-950 shadow-[0_10px_24px_rgba(217,162,27,0.25)]">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-ca-gold-400 text-ca-navy-950">
             <Wrench className="h-6 w-6" strokeWidth={2} />
           </span>
           <span className="min-w-0 leading-none">

@@ -62,13 +62,13 @@ export function CatalogPagination({
       {currentPage > 1 ? (
         <Link
           href={buildHref(currentPage - 1)}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+          className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           aria-label="Página anterior"
         >
           ‹ Anterior
         </Link>
       ) : (
-        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
+        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
           ‹ Anterior
         </span>
       )}
@@ -87,7 +87,7 @@ export function CatalogPagination({
           <span
             key={item}
             aria-current="page"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ca-navy-950 text-sm font-black text-white shadow-[0_8px_18px_rgba(6,25,51,0.16)]"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-ca-control bg-ca-navy-950 text-sm font-black text-white"
           >
             {item}
           </span>
@@ -95,7 +95,7 @@ export function CatalogPagination({
           <Link
             key={item}
             href={buildHref(item)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-ca-border bg-white text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-background"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-ca-control border border-ca-border bg-white text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-background"
             aria-label={`Página ${item}`}
           >
             {item}
@@ -107,13 +107,13 @@ export function CatalogPagination({
       {currentPage < totalPages ? (
         <Link
           href={buildHref(currentPage + 1)}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+          className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           aria-label="Página siguiente"
         >
           Siguiente ›
         </Link>
       ) : (
-        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-xl border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
+        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
           Siguiente ›
         </span>
       )}

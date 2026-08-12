@@ -15,7 +15,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
     <div className="ca-container relative z-30 mt-5 lg:absolute lg:inset-x-0 lg:bottom-0 lg:mt-0 lg:translate-y-1/2">
       <form
         action="/catalog"
-        className="grid items-end gap-4 rounded-[22px] border border-ca-border bg-white p-4 text-ca-text-primary shadow-ca-premium lg:grid-cols-[244px_repeat(3,minmax(0,1fr))_260px] xl:p-5"
+        className="grid items-end gap-4 rounded-ca-surface border border-ca-border bg-white p-4 text-ca-text-primary lg:grid-cols-[244px_repeat(3,minmax(0,1fr))_260px] xl:p-5"
         onSubmit={(event) => {
           event.preventDefault();
 
@@ -37,7 +37,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         }}
       >
         <div className="flex items-center gap-4 self-stretch border-ca-border lg:border-r lg:pr-5">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ca-navy-950 text-white shadow-[0_6px_18px_rgba(6,25,51,0.22)]">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ca-navy-950 text-white">
             <Car className="h-7 w-7" strokeWidth={1.7} />
           </span>
           <div className="min-w-0">
@@ -94,7 +94,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         </VehicleSelectField>
 
         <button
-          className="inline-flex h-12 w-full items-center justify-center gap-2.5 self-end whitespace-nowrap rounded-[14px] bg-gradient-to-r from-ca-gold-500 to-ca-gold-400 px-6 font-display text-sm font-extrabold tracking-[0.04em] text-ca-navy-950 shadow-[0_10px_22px_rgba(217,162,27,0.25)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(217,162,27,0.32)] active:translate-y-0"
+          className="inline-flex h-12 w-full items-center justify-center gap-2.5 self-end whitespace-nowrap rounded-ca-control bg-gradient-to-r from-ca-gold-500 to-ca-gold-400 px-6 font-display text-sm font-extrabold tracking-[0.04em] text-ca-navy-950 transition duration-200 hover:-translate-y-0.5 active:translate-y-0"
           type="submit"
         >
           <Search className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
@@ -131,7 +131,7 @@ function VehicleSelectField({
         {label}
       </span>
       <select
-        className="h-12 w-full rounded-[12px] border border-ca-border bg-white px-3 text-sm font-semibold text-ca-text-secondary outline-none transition focus:border-ca-blue-700 focus:ring-2 focus:ring-ca-blue-700/15"
+        className="h-12 w-full rounded-ca-control border border-ca-border bg-white px-3 text-sm font-semibold text-ca-text-secondary outline-none transition focus:border-ca-blue-700 focus:ring-2 focus:ring-ca-blue-700/15"
         name={name}
         onChange={onChange}
         value={value}

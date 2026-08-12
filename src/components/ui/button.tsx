@@ -10,14 +10,12 @@ import { cn } from "@/lib/utils";
  * en el className del <Link>.
  */
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-xl font-black transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ca-blue-700 disabled:pointer-events-none disabled:bg-ca-disabled-bg disabled:text-ca-disabled-text disabled:shadow-none",
+  "inline-flex items-center justify-center gap-2 rounded-ca-control font-black transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ca-blue-700 disabled:pointer-events-none disabled:bg-ca-disabled-bg disabled:text-ca-disabled-text disabled:shadow-none",
   {
     variants: {
       variant: {
-        primary:
-          "bg-ca-navy-950 text-white shadow-ca-button hover:bg-ca-navy-800 hover:shadow-ca-button-hover",
-        accent:
-          "bg-ca-gold-400 text-ca-navy-950 shadow-ca-button hover:bg-ca-gold-500 hover:shadow-ca-button-hover",
+        primary: "bg-ca-navy-950 text-white hover:bg-ca-navy-800",
+        accent: "bg-ca-gold-400 text-ca-navy-950 hover:bg-ca-gold-500",
         outline:
           "border border-ca-border bg-white text-ca-navy-950 hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white",
         ghost: "font-bold text-ca-text-secondary hover:text-ca-navy-950",
