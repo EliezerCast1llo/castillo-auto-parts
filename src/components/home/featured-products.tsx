@@ -32,8 +32,8 @@ export function FeaturedProducts({ catalogStatus, products }: FeaturedProductsPr
       </div>
 
       {products.length > 0 ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {products.slice(0, 4).map((product, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {products.slice(0, 6).map((product, i) => (
             <div
               key={product.sku}
               className="animate-scale-in"
@@ -44,9 +44,9 @@ export function FeaturedProducts({ catalogStatus, products }: FeaturedProductsPr
           ))}
         </div>
       ) : (
-        <div className="rounded-[20px] border border-ca-border bg-white p-8">
+        <div className="rounded-ca-surface border border-ca-border bg-white p-8">
           <div className="flex items-start gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-ca-navy-950/[0.07] text-ca-navy-900">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-ca-control bg-ca-navy-950/[0.07] text-ca-navy-900">
               <PackageSearch className="h-6 w-6" />
             </span>
             <div>
