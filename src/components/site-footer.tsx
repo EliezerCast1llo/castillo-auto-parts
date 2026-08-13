@@ -11,8 +11,11 @@ import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
  */
 export async function SiteFooter() {
   let vehicleMakes: string[] = [];
+  let partBrands: string[] = [];
   try {
-    vehicleMakes = (await getCatalogFacets()).vehicleMakes.slice(0, 6);
+    const facets = await getCatalogFacets();
+    vehicleMakes = facets.vehicleMakes.slice(0, 6);
+    partBrands = facets.brands.slice(0, 6);
   } catch {
     // Sin marcas si el catálogo no responde; el footer no debe romper la página.
   }
@@ -21,7 +24,7 @@ export async function SiteFooter() {
 
   return (
     <footer className="border-t border-white/10 bg-ca-navy-950 text-white">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-5 lg:px-8">
         {/* Marca */}
         <div>
           <Link href="/" className="flex items-center gap-3">
@@ -72,6 +75,18 @@ export async function SiteFooter() {
             <FooterLink href="/catalog">Buscar por vehículo</FooterLink>
           )}
         </FooterColumn>
+
+        {/* Marcas de repuesto — la navegación por fabricante vive aquí, no
+            como franja en la home: es un índice, no una sección destacada. */}
+        {partBrands.length > 0 ? (
+          <FooterColumn title="Marcas de repuesto">
+            {partBrands.map((brand) => (
+              <FooterLink href={`/catalog?brand=${encodeURIComponent(brand)}`} key={brand}>
+                {brand}
+              </FooterLink>
+            ))}
+          </FooterColumn>
+        ) : null}
 
         {/* Soporte */}
         <FooterColumn title="Soporte">
