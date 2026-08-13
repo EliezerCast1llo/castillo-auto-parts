@@ -30,12 +30,6 @@ export function CategoryQuickLinks({ options }: { options: CatalogFilterOptions 
           ) : null}
         </Link>
       ))}
-      <Link
-        className="ml-auto text-sm font-bold text-ca-blue-700 underline-offset-4 hover:underline"
-        href="/catalog"
-      >
-        Ver catálogo completo
-      </Link>
     </section>
   );
 }
