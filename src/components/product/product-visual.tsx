@@ -1,9 +1,21 @@
-import { BatteryCharging, Disc3, Filter, Gauge, PlugZap, Sparkles, Wrench } from "lucide-react";
+import {
+  BatteryCharging,
+  CloudRain,
+  Disc3,
+  Filter,
+  Gauge,
+  Lightbulb,
+  PlugZap,
+  Sparkles,
+  Wrench,
+} from "lucide-react";
 
 type ProductVisualProps = {
   kind?: string;
   seed: string;
   size?: "card" | "large" | "thumb";
+  /** Color del icono. Por defecto gris, para que sea un hueco discreto. */
+  tone?: string;
 };
 
 const sizes = {
@@ -24,20 +36,31 @@ const iconSizes = {
  * borrosa, dos círculos de color y un panel interior con sombra, y ese
  * apilado era justo lo que hacía parecer maqueta a la grilla entera.
  */
-export function ProductVisual({ kind, seed, size = "card" }: ProductVisualProps) {
+export function ProductVisual({
+  kind,
+  seed,
+  size = "card",
+  tone = "text-ca-border-hover",
+}: ProductVisualProps) {
   const visualType = getProductVisualType(kind ?? seed);
 
   return (
-    <div
-      aria-hidden="true"
-      className={`flex ${sizes[size]} items-center justify-center text-ca-border-hover`}
-    >
+    <div aria-hidden="true" className={`flex ${sizes[size]} items-center justify-center ${tone}`}>
       {renderProductIcon(visualType, size)}
     </div>
   );
 }
 
-type ProductVisualType = "battery" | "brake" | "electric" | "filter" | "fluid" | "shock" | "tool";
+type ProductVisualType =
+  | "battery"
+  | "brake"
+  | "electric"
+  | "filter"
+  | "fluid"
+  | "light"
+  | "shock"
+  | "tool"
+  | "wiper";
 
 function getProductVisualType(value: string): ProductVisualType {
   const normalized = value
@@ -48,11 +71,24 @@ function getProductVisualType(value: string): ProductVisualType {
   if (normalized.includes("filtro")) return "filter";
   if (normalized.includes("freno") || normalized.includes("pastilla")) return "brake";
   if (normalized.includes("bujia") || normalized.includes("electrico")) return "electric";
+  if (normalized.includes("foco") || normalized.includes("bombillo") || normalized.includes("luz"))
+    return "light";
+  if (normalized.includes("escobilla") || normalized.includes("limpiaparabrisas")) return "wiper";
   if (normalized.includes("bateria")) return "battery";
   if (normalized.includes("amortiguador") || normalized.includes("suspension")) return "shock";
   if (normalized.includes("fluido") || normalized.includes("aceite")) return "fluid";
 
-  const fallbackTypes: ProductVisualType[] = ["filter", "brake", "electric", "shock", "battery", "tool", "fluid"];
+  const fallbackTypes: ProductVisualType[] = [
+    "filter",
+    "brake",
+    "electric",
+    "shock",
+    "battery",
+    "tool",
+    "fluid",
+    "light",
+    "wiper",
+  ];
   return fallbackTypes[hashSeed(value) % fallbackTypes.length];
 }
 
@@ -65,6 +101,8 @@ function renderProductIcon(type: ProductVisualType, size: ProductVisualProps["si
   if (type === "battery") return <BatteryCharging className={className} strokeWidth={1.75} />;
   if (type === "shock") return <Gauge className={className} strokeWidth={1.75} />;
   if (type === "fluid") return <Sparkles className={className} strokeWidth={1.75} />;
+  if (type === "light") return <Lightbulb className={className} strokeWidth={1.75} />;
+  if (type === "wiper") return <CloudRain className={className} strokeWidth={1.75} />;
   return <Wrench className={className} strokeWidth={1.75} />;
 }
 
