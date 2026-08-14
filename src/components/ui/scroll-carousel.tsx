@@ -6,6 +6,24 @@ import type { ReactNode } from "react";
 
 /** Cada cuánto avanza solo. */
 const AUTOPLAY_MS = 5000;
+
+/**
+ * Distancia de una tarjeta, medida entre los dos primeros hijos para que
+ * incluya el hueco sea cual sea el ancho.
+ *
+ * El avance automático se mide en tarjetas y no en pantallas: un carrusel con
+ * pocos productos tiene menos recorrido, así que al avanzar una pantalla el
+ * salto se recorta y el navegador lo anima en un tiempo parecido al de un
+ * salto largo. El resultado era que los rieles con más producto parecían ir
+ * más rápido. A una tarjeta por avance, todos van igual.
+ */
+function cardStep(track: HTMLElement) {
+  const [first, second] = track.children;
+  if (!first) return track.clientWidth;
+  if (!second) return (first as HTMLElement).offsetWidth;
+
+  return (second as HTMLElement).offsetLeft - (first as HTMLElement).offsetLeft;
+}
 /** Tras tocar el carrusel, cuánto espera antes de retomar el avance solo. */
 const RESUME_AFTER_INTERACTION_MS = 10000;
 
@@ -77,7 +95,7 @@ export function ScrollCarousel({
       if (!onScreen || hoveredRef.current || Date.now() < interactedUntilRef.current) return;
 
       const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
-      track.scrollTo({ behavior: "smooth", left: atEnd ? 0 : track.scrollLeft + track.clientWidth });
+      track.scrollTo({ behavior: "smooth", left: atEnd ? 0 : track.scrollLeft + cardStep(track) });
     }, AUTOPLAY_MS);
 
     return () => {
