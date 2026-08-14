@@ -1,18 +1,24 @@
 import Link from "next/link";
 import { ArrowRight, PackageSearch } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
+import { ScrollCarousel } from "@/components/ui/scroll-carousel";
 import { parseCatalogFilters } from "@/data/catalog-filters";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
-import { getFilteredCatalogProducts, type CatalogProductsResult } from "@/data/products";
+import {
+  getFilteredCatalogProducts,
+  type CatalogProductsResult,
+} from "@/data/products";
 
 const MAX_RAILS = 6;
-const PER_RAIL = 4;
+const PER_RAIL = 12;
 
 /**
  * Bloques de producto, uno por categoría.
  *
  * En vez de una única sección de destacados, la home es una sucesión de
- * producto: cada categoría trae sus primeras piezas y un enlace a su filtro.
+ * producto: cada categoría trae sus piezas en un carrusel y un enlace a su
+ * filtro. El carrusel es lo que da la sensación de recorrido: se ven cuatro
+ * tarjetas y el resto se pasa con las flechas.
  *
  * Se consulta por categoría en lugar de traer el catálogo entero y agrupar en
  * memoria: cada query va paginada y cacheada por su propio tag, que es lo que
@@ -26,7 +32,10 @@ export async function CategoryProductRails({
   options: CatalogFilterOptions;
 }) {
   const categories = [...options.categories]
-    .sort((a, b) => (options.categoryCounts[b] ?? 0) - (options.categoryCounts[a] ?? 0))
+    .sort(
+      (a, b) =>
+        (options.categoryCounts[b] ?? 0) - (options.categoryCounts[a] ?? 0),
+    )
     .slice(0, MAX_RAILS);
 
   const rails = await Promise.all(
@@ -42,41 +51,50 @@ export async function CategoryProductRails({
 
   const visible = rails.filter((rail) => rail.products.length > 0);
 
-  if (visible.length === 0) return <EmptyCatalogNotice status={catalogStatus} />;
+  if (visible.length === 0)
+    return <EmptyCatalogNotice status={catalogStatus} />;
 
   return (
     <>
-      {visible
-        .map((rail) => (
-          <section className="space-y-3" key={rail.category}>
-            <div className="flex items-baseline justify-between gap-4 border-b border-ca-border pb-2">
-              <h2 className="font-display text-lg font-extrabold text-ca-navy-950">
-                {rail.category}
-              </h2>
-              <Link
-                className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
-                href={`/catalog?category=${encodeURIComponent(rail.category)}`}
-              >
-                Ver todo en {rail.category}
-                {typeof options.categoryCounts[rail.category] === "number"
-                  ? ` (${options.categoryCounts[rail.category]})`
-                  : ""}
-                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-              </Link>
-            </div>
+      {visible.map((rail) => (
+        <section className="space-y-3" key={rail.category}>
+          <div className="flex items-baseline justify-between gap-4 border-b border-ca-border pb-2">
+            <h2 className="font-display text-lg font-extrabold text-ca-navy-950">
+              {rail.category}
+            </h2>
+            <Link
+              className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
+              href={`/catalog?category=${encodeURIComponent(rail.category)}`}
+            >
+              Ver todo en {rail.category}
+              {typeof options.categoryCounts[rail.category] === "number"
+                ? ` (${options.categoryCounts[rail.category]})`
+                : ""}
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </Link>
+          </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {rail.products.map((product) => (
-                <ProductCard key={product.sku} product={product} />
-              ))}
-            </div>
-          </section>
-        ))}
+          <ScrollCarousel label={`Productos de ${rail.category}`}>
+            {rail.products.map((product) => (
+              <div
+                className="w-[240px] shrink-0 snap-start sm:w-[264px] lg:w-[calc((100%-3rem)/4)]"
+                key={product.sku}
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </ScrollCarousel>
+        </section>
+      ))}
     </>
   );
 }
 
-function EmptyCatalogNotice({ status }: { status: CatalogProductsResult["status"] }) {
+function EmptyCatalogNotice({
+  status,
+}: {
+  status: CatalogProductsResult["status"];
+}) {
   return (
     <div className="rounded-ca-surface border border-ca-border bg-white p-8">
       <div className="flex items-start gap-4">
