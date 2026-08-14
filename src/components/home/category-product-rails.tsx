@@ -5,7 +5,7 @@ import { parseCatalogFilters } from "@/data/catalog-filters";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import { getFilteredCatalogProducts, type CatalogProductsResult } from "@/data/products";
 
-const MAX_RAILS = 4;
+const MAX_RAILS = 6;
 const PER_RAIL = 4;
 
 /**
