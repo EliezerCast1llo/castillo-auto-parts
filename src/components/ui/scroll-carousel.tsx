@@ -4,22 +4,36 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 
+/** Cada cuánto avanza solo. */
+const AUTOPLAY_MS = 5000;
+/** Tras tocar el carrusel, cuánto espera antes de retomar el avance solo. */
+const RESUME_AFTER_INTERACTION_MS = 10000;
+
 /**
- * Carrusel horizontal con flechas.
+ * Carrusel horizontal con flechas y avance automático.
  *
  * El contenido va en un track con scroll nativo —así funciona con gesto táctil
  * y con teclado sin JavaScript— y las flechas solo lo desplazan. Se ocultan
  * cuando no hay nada que pasar en esa dirección, para no ofrecer un control
  * muerto.
+ *
+ * El avance automático se detiene cuando estorbaría: con el puntero encima,
+ * con el foco dentro, mientras el carrusel está fuera de pantalla, y durante
+ * unos segundos después de que la persona lo haya movido a mano. Y no arranca
+ * si el sistema pide movimiento reducido.
  */
 export function ScrollCarousel({
+  autoPlay = false,
   children,
   label,
 }: {
+  autoPlay?: boolean;
   children: ReactNode;
   label: string;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const hoveredRef = useRef(false);
+  const interactedUntilRef = useRef(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -43,10 +57,44 @@ export function ScrollCarousel({
     return () => observer.disconnect();
   }, [syncArrows]);
 
+  // Avance automático
+  useEffect(() => {
+    if (!autoPlay) return;
+    const track = trackRef.current;
+    if (!track) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let onScreen = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(track);
+
+    const timer = window.setInterval(() => {
+      if (!onScreen || hoveredRef.current || Date.now() < interactedUntilRef.current) return;
+
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+      track.scrollTo({ behavior: "smooth", left: atEnd ? 0 : track.scrollLeft + track.clientWidth });
+    }, AUTOPLAY_MS);
+
+    return () => {
+      window.clearInterval(timer);
+      observer.disconnect();
+    };
+  }, [autoPlay]);
+
+  const holdAutoPlay = () => {
+    interactedUntilRef.current = Date.now() + RESUME_AFTER_INTERACTION_MS;
+  };
+
   const scrollByPage = (direction: 1 | -1) => {
     const track = trackRef.current;
     if (!track) return;
 
+    holdAutoPlay();
     // Página completa: en desktop las tarjetas llenan el ancho exacto del
     // track, así que avanzar una pantalla las deja alineadas en vez de dejar
     // media tarjeta cortada en el borde.
@@ -54,11 +102,27 @@ export function ScrollCarousel({
   };
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onBlurCapture={() => {
+        hoveredRef.current = false;
+      }}
+      onFocusCapture={() => {
+        hoveredRef.current = true;
+      }}
+      onPointerEnter={() => {
+        hoveredRef.current = true;
+      }}
+      onPointerLeave={() => {
+        hoveredRef.current = false;
+      }}
+    >
       <div
         aria-label={label}
         className="ca-no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth"
+        onPointerDown={holdAutoPlay}
         onScroll={syncArrows}
+        onWheel={holdAutoPlay}
         ref={trackRef}
         role="group"
         tabIndex={0}

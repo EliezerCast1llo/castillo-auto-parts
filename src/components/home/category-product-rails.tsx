@@ -74,7 +74,7 @@ export async function CategoryProductRails({
             </Link>
           </div>
 
-          <ScrollCarousel label={`Productos de ${rail.category}`}>
+          <ScrollCarousel autoPlay label={`Productos de ${rail.category}`}>
             {rail.products.map((product) => (
               <div
                 className="w-[240px] shrink-0 snap-start sm:w-[264px] lg:w-[calc((100%-3rem)/4)]"

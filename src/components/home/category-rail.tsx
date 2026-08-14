@@ -28,7 +28,7 @@ export function CategoryQuickLinks({
       </h2>
 
       <div className="mt-3">
-        <ScrollCarousel label="Categorías del catálogo">
+        <ScrollCarousel autoPlay label="Categorías del catálogo">
           {options.categories.map((category) => (
             <div
               className="w-[168px] shrink-0 snap-start sm:w-[190px]"
