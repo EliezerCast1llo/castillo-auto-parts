@@ -20,8 +20,17 @@ test("home vehicle selector narrows models without reload and filters catalog", 
 
   const makeSelect = page.locator('select[name="vehicleMake"]');
   const modelSelect = page.locator('select[name="vehicleModel"]');
+  const yearSelect = page.locator('select[name="vehicleYear"]');
+  const submit = page.getByRole("button", { name: "Buscar repuestos" });
+
+  // Cada paso se habilita solo cuando el anterior está elegido
+  await expect(modelSelect).toBeDisabled();
+  await expect(yearSelect).toBeDisabled();
+  await expect(submit).toBeDisabled();
 
   await makeSelect.selectOption("Toyota");
+  await expect(modelSelect).toBeEnabled();
+  await expect(yearSelect).toBeDisabled();
 
   // Los modelos se restringen en memoria (sin navegación)
   const modelOptions = await modelSelect.locator("option").allTextContents();
@@ -30,7 +39,13 @@ test("home vehicle selector narrows models without reload and filters catalog", 
   await expect(page).toHaveURL("/");
 
   await modelSelect.selectOption("Corolla");
-  await page.getByRole("button", { name: "Buscar compatibilidad" }).click();
+  await expect(yearSelect).toBeEnabled();
+  // Falta el año: la búsqueda sigue bloqueada
+  await expect(submit).toBeDisabled();
+
+  await yearSelect.selectOption("2015");
+  await expect(submit).toBeEnabled();
+  await submit.click();
 
   await expect(page).toHaveURL(/\/catalog\?.*vehicleMake=Toyota/);
   await expect(page.getByText("Filtro de aceite para Toyota 1.8L")).toBeVisible();
@@ -41,7 +56,8 @@ test("vehicle selection persists as cookie and pre-applies on catalog", async ({
 
   await page.locator('select[name="vehicleMake"]').selectOption("Toyota");
   await page.locator('select[name="vehicleModel"]').selectOption("Corolla");
-  await page.getByRole("button", { name: "Buscar compatibilidad" }).click();
+  await page.locator('select[name="vehicleYear"]').selectOption("2015");
+  await page.getByRole("button", { name: "Buscar repuestos" }).click();
   await expect(page).toHaveURL(/vehicleMake=Toyota/);
 
   // Cookie guardada

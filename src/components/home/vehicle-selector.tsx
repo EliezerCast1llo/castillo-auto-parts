@@ -11,6 +11,10 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
   const router = useRouter();
   const selection = useVehicleSelection({ options: filterOptions });
 
+  // Los tres pasos son obligatorios: la búsqueda solo tiene sentido con el
+  // vehículo completo, y así el botón indica cuándo falta algo.
+  const isComplete = Boolean(selection.make && selection.model && selection.year);
+
   return (
     <div className="ca-container relative z-30 mt-5 lg:absolute lg:inset-x-0 lg:bottom-0 lg:mt-0 lg:translate-y-1/2">
       <form
@@ -18,6 +22,9 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         className="grid items-end gap-4 rounded-ca-surface border border-ca-border bg-white p-4 text-ca-text-primary lg:grid-cols-[244px_repeat(3,minmax(0,1fr))_260px] xl:p-5"
         onSubmit={(event) => {
           event.preventDefault();
+          // El botón ya va deshabilitado, pero un Enter en un select también
+          // envía el formulario: se comprueba aquí para no navegar a medias.
+          if (!isComplete) return;
 
           const params = new URLSearchParams();
           if (selection.make) params.set("vehicleMake", selection.make);
@@ -65,11 +72,12 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
           ))}
         </VehicleSelectField>
         <VehicleSelectField
+          disabled={!selection.make}
           index="2"
           label="Modelo"
           name="vehicleModel"
           onChange={selection.handleModelChange}
-          placeholder="Selecciona modelo"
+          placeholder={selection.make ? "Selecciona modelo" : "Elige la marca primero"}
           value={selection.model}
         >
           {selection.models.map((model) => (
@@ -79,11 +87,12 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
           ))}
         </VehicleSelectField>
         <VehicleSelectField
+          disabled={!selection.model}
           index="3"
           label="Año"
           name="vehicleYear"
           onChange={selection.handleYearChange}
-          placeholder="Selecciona año"
+          placeholder={selection.model ? "Selecciona año" : "Elige el modelo primero"}
           value={selection.year}
         >
           {selection.years.map((year) => (
@@ -94,11 +103,12 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         </VehicleSelectField>
 
         <button
-          className="inline-flex h-12 w-full items-center justify-center gap-2.5 self-end whitespace-nowrap rounded-ca-control bg-gradient-to-r from-ca-gold-500 to-ca-gold-400 px-6 font-display text-sm font-extrabold tracking-[0.04em] text-ca-navy-950 transition duration-200 hover:-translate-y-0.5 active:translate-y-0"
+          className="inline-flex h-12 w-full items-center justify-center gap-2.5 self-end whitespace-nowrap rounded-ca-control bg-gradient-to-r from-ca-gold-500 to-ca-gold-400 px-6 font-display text-sm font-extrabold tracking-[0.04em] text-ca-navy-950 transition duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:bg-none disabled:bg-ca-disabled-bg disabled:text-ca-disabled-text"
+          disabled={!isComplete}
           type="submit"
         >
           <Search className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
-          <span>Buscar compatibilidad</span>
+          <span>Buscar repuestos</span>
         </button>
       </form>
     </div>
@@ -107,6 +117,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
 
 function VehicleSelectField({
   children,
+  disabled = false,
   index,
   label,
   name,
@@ -115,6 +126,7 @@ function VehicleSelectField({
   value,
 }: {
   children: ReactNode;
+  disabled?: boolean;
   index: string;
   label: string;
   name: string;
@@ -125,13 +137,18 @@ function VehicleSelectField({
   return (
     <label className="block text-sm font-bold text-ca-navy-950">
       <span className="mb-2 flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ca-navy-950 text-[11px] font-black text-white">
+        <span
+          className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-black ${
+            disabled ? "bg-ca-disabled-bg text-ca-disabled-text" : "bg-ca-navy-950 text-white"
+          }`}
+        >
           {index}
         </span>
         {label}
       </span>
       <select
-        className="h-12 w-full rounded-ca-control border border-ca-border bg-white px-3 text-sm font-semibold text-ca-text-secondary outline-none transition focus:border-ca-blue-700 focus:ring-2 focus:ring-ca-blue-700/15"
+        className="h-12 w-full rounded-ca-control border border-ca-border bg-white px-3 text-sm font-semibold text-ca-text-secondary outline-none transition focus:border-ca-blue-700 focus:ring-2 focus:ring-ca-blue-700/15 disabled:cursor-not-allowed disabled:bg-ca-disabled-bg disabled:text-ca-disabled-text"
+        disabled={disabled}
         name={name}
         onChange={onChange}
         value={value}

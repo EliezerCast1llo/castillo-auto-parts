@@ -45,11 +45,12 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
         <Select
           className={FLAT_SELECT}
           aria-label="Modelo de vehículo"
+          disabled={!selection.make}
           name="vehicleModel"
           onChange={selection.handleModelChange}
           value={selection.model}
         >
-          <option value="">Modelo</option>
+          <option value="">{selection.make ? "Modelo" : "Elige la marca"}</option>
           {selection.models.map((model) => (
             <option key={model} value={model}>
               {model}
@@ -59,11 +60,12 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
         <Select
           className={FLAT_SELECT}
           aria-label="Año de vehículo"
+          disabled={!selection.model}
           name="vehicleYear"
           onChange={selection.handleYearChange}
           value={selection.year}
         >
-          <option value="">Año</option>
+          <option value="">{selection.model ? "Año" : "Elige el modelo"}</option>
           {selection.years.map((year) => (
             <option key={year} value={year}>
               {year}
