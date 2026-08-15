@@ -1,12 +1,15 @@
 import {
   BatteryCharging,
+  CircuitBoard,
   CloudRain,
   Disc3,
   Filter,
   Gauge,
   Lightbulb,
   PlugZap,
+  Repeat,
   Sparkles,
+  Thermometer,
   Wrench,
 } from "lucide-react";
 
@@ -53,12 +56,15 @@ export function ProductVisual({
 
 type ProductVisualType =
   | "battery"
+  | "belt"
   | "brake"
-  | "electric"
+  | "cooling"
+  | "electrical"
   | "filter"
   | "fluid"
   | "light"
   | "shock"
+  | "spark"
   | "tool"
   | "wiper";
 
@@ -70,7 +76,17 @@ function getProductVisualType(value: string): ProductVisualType {
 
   if (normalized.includes("filtro")) return "filter";
   if (normalized.includes("freno") || normalized.includes("pastilla")) return "brake";
-  if (normalized.includes("bujia") || normalized.includes("electrico")) return "electric";
+  if (normalized.includes("bujia")) return "spark";
+  if (normalized.includes("electrico") || normalized.includes("sensor")) return "electrical";
+  if (normalized.includes("correa") || normalized.includes("tensor")) return "belt";
+  if (
+    normalized.includes("enfriamiento") ||
+    normalized.includes("radiador") ||
+    normalized.includes("refrigerante") ||
+    normalized.includes("termostato")
+  ) {
+    return "cooling";
+  }
   if (normalized.includes("foco") || normalized.includes("bombillo") || normalized.includes("luz"))
     return "light";
   if (normalized.includes("escobilla") || normalized.includes("limpiaparabrisas")) return "wiper";
@@ -81,7 +97,10 @@ function getProductVisualType(value: string): ProductVisualType {
   const fallbackTypes: ProductVisualType[] = [
     "filter",
     "brake",
-    "electric",
+    "spark",
+    "electrical",
+    "belt",
+    "cooling",
     "shock",
     "battery",
     "tool",
@@ -97,7 +116,10 @@ function renderProductIcon(type: ProductVisualType, size: ProductVisualProps["si
 
   if (type === "filter") return <Filter className={className} strokeWidth={1.75} />;
   if (type === "brake") return <Disc3 className={className} strokeWidth={1.75} />;
-  if (type === "electric") return <PlugZap className={className} strokeWidth={1.75} />;
+  if (type === "spark") return <PlugZap className={className} strokeWidth={1.75} />;
+  if (type === "electrical") return <CircuitBoard className={className} strokeWidth={1.75} />;
+  if (type === "belt") return <Repeat className={className} strokeWidth={1.75} />;
+  if (type === "cooling") return <Thermometer className={className} strokeWidth={1.75} />;
   if (type === "battery") return <BatteryCharging className={className} strokeWidth={1.75} />;
   if (type === "shock") return <Gauge className={className} strokeWidth={1.75} />;
   if (type === "fluid") return <Sparkles className={className} strokeWidth={1.75} />;
