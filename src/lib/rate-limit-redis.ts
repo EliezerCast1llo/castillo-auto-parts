@@ -44,19 +44,36 @@ export function createAdminLoginRateLimiter(): AsyncRateLimiter {
 /**
  * Factory principal. Selecciona backend Redis o en memoria según entorno.
  *
- * En producción real, UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son
- * obligatorios. El runner E2E marca E2E_ISOLATED_DATABASE=true para permitir
- * un limiter en memoria hermético aunque Next build use NODE_ENV=production.
+ * En producción, UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son
+ * obligatorios por defecto. El motivo es el modelo serverless: en Vercel cada
+ * request puede caer en una instancia distinta, así que un contador en memoria
+ * no limita nada y daría una falsa sensación de protección.
+ *
+ * Dos escapes explícitos, ambos con nombre honesto:
+ *
+ * - E2E_ISOLATED_DATABASE=true: el runner E2E, que necesita un limiter
+ *   hermético aunque el build use NODE_ENV=production.
+ * - ALLOW_IN_MEMORY_RATE_LIMIT=true: despliegues de un solo proceso de larga
+ *   vida (un contenedor en Railway, Fly o similar). Ahí el contador en memoria
+ *   sí limita de verdad, porque todas las peticiones pasan por el mismo
+ *   proceso. No usar con más de una instancia: cada una llevaría su cuenta.
  */
 export function createAsyncRateLimiter(options: RateLimitOptions): AsyncRateLimiter {
   const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
   const isIsolatedE2E = process.env.E2E_ISOLATED_DATABASE === "true";
+  const allowsInMemory = process.env.ALLOW_IN_MEMORY_RATE_LIMIT === "true";
 
-  if (process.env.NODE_ENV === "production" && !isIsolatedE2E && (!redisUrl || !redisToken)) {
+  if (
+    process.env.NODE_ENV === "production" &&
+    !isIsolatedE2E &&
+    !allowsInMemory &&
+    (!redisUrl || !redisToken)
+  ) {
     throw new Error(
       "UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son obligatorios en producción. " +
-        "Crea una base de datos en upstash.com y añade las variables en Vercel.",
+        "Crea una base de datos en upstash.com y añade las variables. " +
+        "En un despliegue de un solo proceso puedes usar ALLOW_IN_MEMORY_RATE_LIMIT=true.",
     );
   }
 
