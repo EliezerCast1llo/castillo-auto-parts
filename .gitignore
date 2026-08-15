@@ -10,8 +10,9 @@ build/
 dist/
 
 # env
-.env
-.env.*
+# El patrón lleva * y no solo .* porque macOS crea duplicados con espacio
+# (".env 2") al sincronizar carpetas, y esos no los cubría ".env.*".
+.env*
 !.env.example
 
 # logs
