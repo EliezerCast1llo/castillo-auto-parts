@@ -21,7 +21,15 @@ hay que configurar comandos a mano:
 | Antes de desplegar | `npm run db:migrate:deploy` |
 | Arranque | `npm run start` |
 
-Next escucha en la variable `PORT`, que Railway inyecta sola.
+Next escucha en la variable `PORT`, que Railway inyecta sola — en la práctica,
+`8080`.
+
+> **El puerto del dominio tiene que coincidir con ese, no con 3000.** Al generar
+> el dominio público, Railway pregunta a qué puerto enrutar. Si se pone `3000`
+> —el de desarrollo local— el sitio devuelve **502 Bad Gateway** aunque los logs
+> muestren `Ready in …ms`: la app está viva en 8080 y el enrutador toca en 3000.
+> Lo más robusto es fijar `PORT=8080` como variable del servicio y poner ese
+> mismo puerto en el dominio, para no depender del valor que Railway elija.
 
 ## 2. Variables
 
@@ -121,16 +129,57 @@ Sin ella, los productos con foto caen al marcador gris.
 
 Las migraciones corren solas antes de cada despliegue. La siembra es manual y se
 lanza **desde tu máquina** contra la base de Railway, para no depender de
-dependencias de desarrollo en el contenedor:
+dependencias de desarrollo en el contenedor.
+
+### La base es privada por defecto
+
+`DATABASE_URL` apunta a `postgres.railway.internal`, un nombre que solo resuelve
+dentro de la red de Railway. Desde fuera no existe, así que
+`railway run npm run db:seed` falla con `Can't reach database server`. Hay que
+abrir un acceso público temporal:
+
+1. Servicio **Postgres** → `Settings` → `Networking` → activar **Public Access**.
+   Railway crea un proxy TCP y genera `DATABASE_PUBLIC_URL`.
+2. Copiar ese valor desde la pestaña `Variables` del mismo servicio.
+
+### Sembrar
 
 ```bash
-railway link          # elegir proyecto y servicio
-railway run npm run db:seed
+DATABASE_URL="<DATABASE_PUBLIC_URL>" \
+DIRECT_DATABASE_URL="<DATABASE_PUBLIC_URL>" \
+npm run db:seed
 ```
+
+No hace falta `railway run`: al declarar la variable en la misma línea gana sobre
+la del `.env` local, porque Prisma carga ese archivo pero no pisa lo que ya está
+en el entorno.
+
+**Verifica en el sitio desplegado, no en local.** Con una URL equivocada el
+comando podría sembrar tu base local y reportar éxito igualmente.
+
+Si falla con «tabla no existe», las migraciones no llegaron a correr: lanza
+`DATABASE_URL="<DATABASE_PUBLIC_URL>" npm run db:migrate:deploy` y repite.
 
 El seed hace upsert, así que repetirlo es inofensivo.
 
-## 4. Comprobaciones tras el primer despliegue
+### Cerrar el acceso
+
+El proxy TCP genera cargos por tráfico de salida. Terminada la siembra se puede
+desactivar **Public Access** desde el mismo menú: la app no se ve afectada porque
+usa la red interna.
+
+## 4. Si sale 502 Bad Gateway
+
+El contenedor está vivo pero el enrutador no lo encuentra. Revisa los logs con
+`railway logs`:
+
+- Si aparece `Ready in …ms` y una línea `Network: http://…:8080`, el proceso está
+  sano y el problema es el **puerto del dominio**: corrígelo a `8080` en
+  `Settings → Networking` del servicio de la app.
+- Si en cambio hay una excepción y reinicios repetidos, falta alguna variable.
+  El mensaje suele nombrarla.
+
+## 5. Comprobaciones tras el primer despliegue
 
 - La home carga y los carruseles avanzan.
 - **Iniciar sesión** en `/admin/login` con el admin semilla. Es la prueba que
