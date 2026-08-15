@@ -21,7 +21,15 @@ hay que configurar comandos a mano:
 | Antes de desplegar | `npm run db:migrate:deploy` |
 | Arranque | `npm run start` |
 
-Next escucha en la variable `PORT`, que Railway inyecta sola.
+Next escucha en la variable `PORT`, que Railway inyecta sola — en la práctica,
+`8080`.
+
+> **El puerto del dominio tiene que coincidir con ese, no con 3000.** Al generar
+> el dominio público, Railway pregunta a qué puerto enrutar. Si se pone `3000`
+> —el de desarrollo local— el sitio devuelve **502 Bad Gateway** aunque los logs
+> muestren `Ready in …ms`: la app está viva en 8080 y el enrutador toca en 3000.
+> Lo más robusto es fijar `PORT=8080` como variable del servicio y poner ese
+> mismo puerto en el dominio, para no depender del valor que Railway elija.
 
 ## 2. Variables
 
@@ -160,7 +168,18 @@ El proxy TCP genera cargos por tráfico de salida. Terminada la siembra se puede
 desactivar **Public Access** desde el mismo menú: la app no se ve afectada porque
 usa la red interna.
 
-## 4. Comprobaciones tras el primer despliegue
+## 4. Si sale 502 Bad Gateway
+
+El contenedor está vivo pero el enrutador no lo encuentra. Revisa los logs con
+`railway logs`:
+
+- Si aparece `Ready in …ms` y una línea `Network: http://…:8080`, el proceso está
+  sano y el problema es el **puerto del dominio**: corrígelo a `8080` en
+  `Settings → Networking` del servicio de la app.
+- Si en cambio hay una excepción y reinicios repetidos, falta alguna variable.
+  El mensaje suele nombrarla.
+
+## 5. Comprobaciones tras el primer despliegue
 
 - La home carga y los carruseles avanzan.
 - **Iniciar sesión** en `/admin/login` con el admin semilla. Es la prueba que
