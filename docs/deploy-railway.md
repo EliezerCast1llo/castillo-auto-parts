@@ -121,14 +121,44 @@ Sin ella, los productos con foto caen al marcador gris.
 
 Las migraciones corren solas antes de cada despliegue. La siembra es manual y se
 lanza **desde tu máquina** contra la base de Railway, para no depender de
-dependencias de desarrollo en el contenedor:
+dependencias de desarrollo en el contenedor.
+
+### La base es privada por defecto
+
+`DATABASE_URL` apunta a `postgres.railway.internal`, un nombre que solo resuelve
+dentro de la red de Railway. Desde fuera no existe, así que
+`railway run npm run db:seed` falla con `Can't reach database server`. Hay que
+abrir un acceso público temporal:
+
+1. Servicio **Postgres** → `Settings` → `Networking` → activar **Public Access**.
+   Railway crea un proxy TCP y genera `DATABASE_PUBLIC_URL`.
+2. Copiar ese valor desde la pestaña `Variables` del mismo servicio.
+
+### Sembrar
 
 ```bash
-railway link          # elegir proyecto y servicio
-railway run npm run db:seed
+DATABASE_URL="<DATABASE_PUBLIC_URL>" \
+DIRECT_DATABASE_URL="<DATABASE_PUBLIC_URL>" \
+npm run db:seed
 ```
 
+No hace falta `railway run`: al declarar la variable en la misma línea gana sobre
+la del `.env` local, porque Prisma carga ese archivo pero no pisa lo que ya está
+en el entorno.
+
+**Verifica en el sitio desplegado, no en local.** Con una URL equivocada el
+comando podría sembrar tu base local y reportar éxito igualmente.
+
+Si falla con «tabla no existe», las migraciones no llegaron a correr: lanza
+`DATABASE_URL="<DATABASE_PUBLIC_URL>" npm run db:migrate:deploy` y repite.
+
 El seed hace upsert, así que repetirlo es inofensivo.
+
+### Cerrar el acceso
+
+El proxy TCP genera cargos por tráfico de salida. Terminada la siembra se puede
+desactivar **Public Access** desde el mismo menú: la app no se ve afectada porque
+usa la red interna.
 
 ## 4. Comprobaciones tras el primer despliegue
 
