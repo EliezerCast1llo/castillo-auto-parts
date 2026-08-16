@@ -118,10 +118,10 @@ test("customer can view empty orders list", async ({ page }) => {
   const email = uniqueEmail("orders");
   await registerUser(page, email);
 
-  await page.getByRole("link", { name: "Mis órdenes" }).click();
+  await page.getByRole("link", { name: "Mis pedidos" }).click();
   await expect(page).toHaveURL(/\/account\/orders/);
-  await expect(page.getByRole("heading", { name: "Mis órdenes" })).toBeVisible();
-  await expect(page.getByText("No tienes órdenes todavía")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Mis pedidos" })).toBeVisible();
+  await expect(page.getByText("Todavía no tienes pedidos")).toBeVisible();
 });
 
 test("customer can save an address after reviewing it", async ({ page }) => {
@@ -161,7 +161,7 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
   // Add a product to cart
   await page.goto("/catalog");
   await page.getByRole("button", { name: "Agregar" }).first().click();
-  await expect(page.getByText("Agregado al carrito")).toBeVisible();
+  await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
   await expect(page).toHaveURL(/\/catalog$/);
   await page.getByRole("link", { name: /Ver carrito, 1 producto/ }).click();
 
@@ -182,9 +182,9 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
 
   // Order should appear in user account
   await page.goto("/account/orders");
-  await expect(page.getByRole("heading", { name: "Mis órdenes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Mis pedidos" })).toBeVisible();
   // Order list should NOT be empty anymore
-  await expect(page.getByText("No tienes órdenes todavía")).not.toBeVisible();
+  await expect(page.getByText("Todavía no tienes pedidos")).not.toBeVisible();
 });
 
 test("login shows error with wrong credentials", async ({ page }) => {
