@@ -66,7 +66,7 @@ export async function CategoryProductRails({
               className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
               href={`/catalog?category=${encodeURIComponent(rail.category)}`}
             >
-              Ver todo en {rail.category}
+              Explorar {rail.category}
               {typeof options.categoryCounts[rail.category] === "number"
                 ? ` (${options.categoryCounts[rail.category]})`
                 : ""}
@@ -109,8 +109,8 @@ function EmptyCatalogNotice({
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">
             {status === "unavailable"
-              ? "No pudimos cargar inventario real. No mostramos datos de prueba cuando la base de datos no responde."
-              : "En cuanto se publique inventario aparecerá aquí, agrupado por categoría."}
+              ? "No pudimos cargar el catálogo en este momento. Intenta nuevamente en unos minutos."
+              : "Todavía no hay repuestos publicados en esta categoría."}
           </p>
         </div>
       </div>

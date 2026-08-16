@@ -22,7 +22,7 @@ import { db } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Mis órdenes | Castillo Auto Parts",
+  title: "Mis pedidos | Castillo Auto Parts",
   description: "Historial de compras en Castillo Auto Parts.",
   robots: { index: false, follow: false },
 };
@@ -53,7 +53,7 @@ export default async function AccountOrdersPage() {
             </Link>
 
             <h1 className="mt-4 text-3xl font-black tracking-tight text-ca-navy-950 sm:text-4xl">
-              Mis órdenes
+              Mis pedidos
             </h1>
             <p className="mt-2 max-w-2xl text-base font-medium text-ca-text-secondary">
               Consulta el estado de tus pedidos y el historial de compras.
@@ -95,7 +95,7 @@ function EmptyOrders() {
         description="Cuando compres un repuesto, podrás consultar aquí el estado, fecha estimada y detalle de entrega."
         icon={<PackageSearch className="h-7 w-7" strokeWidth={1.8} />}
         showWhatsApp
-        title="No tienes órdenes todavía"
+        title="Todavía no tienes pedidos"
       />
     </div>
   );

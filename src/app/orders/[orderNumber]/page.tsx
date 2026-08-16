@@ -133,8 +133,8 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               </div>
               <p className="mt-2 text-muted-foreground">
                 {isPaymentProcessing
-                  ? "Estamos esperando la confirmación segura del proveedor. Esta orden aún no está lista para preparación."
-                  : "El pago fue confirmado y la orden está lista para preparación."}
+                  ? "Estamos esperando la confirmación del proveedor. Este pedido aún no está listo para preparación."
+                  : "El pago fue confirmado y el pedido está listo para preparación."}
               </p>
             </div>
 

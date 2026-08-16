@@ -48,7 +48,7 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
  ref={triggerRef}
  >
  <SlidersHorizontal className="h-4 w-4" strokeWidth={1.9} />
- Filtros
+ Filtrar catálogo
  {activeFilterCount > 0 ? (
  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ca-navy-950 px-1.5 text-[11px] font-black text-white">
  {activeFilterCount}
@@ -80,7 +80,7 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
  {/* Handle */}
  <div className="flex items-center justify-between border-b border-ca-border px-5 py-4">
  <p className="text-base font-black text-ca-navy-950">
- Filtros
+ Filtrar catálogo
  {activeFilterCount > 0 ? (
  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ca-navy-950 px-1.5 text-[11px] font-black text-white">
  {activeFilterCount}
@@ -110,7 +110,7 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
  onClick={() => setOpen(false)}
  className="inline-flex h-12 w-full items-center justify-center rounded-ca-control bg-ca-navy-950 text-sm font-black text-white"
  >
- Ver resultados
+ Ver repuestos
  </button>
  </div>
  </div>
