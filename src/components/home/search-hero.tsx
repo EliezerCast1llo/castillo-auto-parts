@@ -8,15 +8,15 @@ import { VehicleSelector } from "@/components/home/vehicle-selector";
 const heroSignals = [
   {
     icon: ShieldCheck,
-    label: "Compatibilidad verificada",
+    label: "Busca por vehículo",
   },
   {
     icon: PackageSearch,
-    label: "Stock en tiempo real",
+    label: "Disponibilidad visible",
   },
   {
     icon: MapPin,
-    label: "Entrega en El Salvador",
+    label: "Entrega local",
   },
 ];
 
@@ -61,8 +61,8 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
                 </span>
               </h1>
               <p className="animate-fade-up delay-400 mt-5 max-w-xl text-base leading-7 text-white/75">
-                Catálogo automotriz para El Salvador con stock visible,
-                compatibilidad clara y compra rápida como invitado.
+                Busca por vehículo, categoría, marca o número de parte. Si no estás seguro,
+                te ayudamos a revisar la compatibilidad antes de comprar.
               </p>
 
               <div className="animate-fade-up delay-500 mt-8 grid gap-3 sm:grid-cols-3 lg:max-w-2xl">
@@ -104,7 +104,7 @@ export function HeroSupportLink() {
   return (
     <Link className="inline-flex items-center gap-2 text-sm font-bold text-ca-navy-900" href="/catalog">
       <Truck className="h-4 w-4" />
-      Ver zonas de entrega
+      Conoce las opciones de entrega
       <CheckCircle2 className="h-4 w-4 text-success" />
     </Link>
   );

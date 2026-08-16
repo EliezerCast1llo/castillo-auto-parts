@@ -24,7 +24,7 @@ export function MyVehicleBanner({ vehicleLabel }: { vehicleLabel: string }) {
       <p className="flex items-center gap-2 text-sm font-bold text-ca-navy-950">
         <Car className="h-4 w-4 shrink-0 text-ca-blue-700" />
         <span>
-          Mostrando repuestos para tu vehículo:{" "}
+        Filtrando repuestos para tu vehículo:{" "}
           <span className="font-black">{vehicleLabel}</span>
         </span>
       </p>
@@ -37,7 +37,7 @@ export function MyVehicleBanner({ vehicleLabel }: { vehicleLabel: string }) {
         type="button"
       >
         <X className="h-3.5 w-3.5" />
-        Quitar
+        Quitar filtro
       </button>
     </div>
   );

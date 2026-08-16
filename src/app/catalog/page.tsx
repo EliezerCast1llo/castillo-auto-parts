@@ -44,8 +44,8 @@ export async function generateMetadata({
     : "Catálogo de repuestos | Castillo Auto Parts";
 
   const description = parts.length
-    ? `Repuestos automotrices ${parts.join(", ")} disponibles en El Salvador. Stock visible, compatibilidad clara.`
-    : "Catálogo completo de repuestos automotrices para El Salvador. Filtra por vehículo, marca o categoría.";
+    ? `Repuestos automotrices: ${parts.join(", ")}. Busca opciones por vehículo, marca o categoría.`
+    : "Explora repuestos automotrices y filtra por vehículo, marca, categoría o número de parte.";
 
   return {
     title,
@@ -223,7 +223,7 @@ function CatalogUnavailableState() {
       <p className="text-sm font-black uppercase tracking-widest text-red-500">No disponible</p>
       <h2 className="mt-1 text-xl font-black text-ca-navy-950">Catálogo temporalmente no disponible</h2>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">
-        Intenta nuevamente en unos minutos. No mostramos productos de prueba cuando la base de datos no responde.
+        No pudimos cargar el catálogo en este momento. Intenta nuevamente en unos minutos.
       </p>
     </div>
   );
@@ -235,12 +235,12 @@ function getCatalogSummary(filters: ReturnType<typeof parseCatalogFilters>, tota
   }
 
   if (filters.query) {
-    return `Resultados para "${filters.query}" con filtros de vehículo, marca y disponibilidad cuando aplican.`;
+    return `Resultados para "${filters.query}" con filtros de vehículo, marca y disponibilidad.`;
   }
 
   if (filters.categories.length > 0) {
-    return `Productos filtrados por ${filters.categories[0]} con stock y precio visibles.`;
+    return `Productos filtrados por ${filters.categories[0]} con disponibilidad y precio visibles.`;
   }
 
-  return "Explora repuestos con stock visible, precio final con IVA incluido y filtros rápidos.";
+  return "Explora repuestos por vehículo, marca, categoría o número de parte. Los precios incluyen IVA.";
 }
