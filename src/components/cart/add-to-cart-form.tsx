@@ -12,13 +12,13 @@ const STATUS_MESSAGES: Record<
   NonNullable<AddCartItemInlineState>["status"],
   { message: string; tone: "success" | "error" }
 > = {
-  added: { message: "Repuesto agregado al carrito", tone: "success" },
+  added: { message: "Agregado al carrito", tone: "success" },
   quantity_adjusted: {
-    message: "Agregado; ajustamos la cantidad a la disponibilidad actual",
+    message: "Agregado — cantidad ajustada al stock disponible",
     tone: "success",
   },
-  unavailable: { message: "Este repuesto no está disponible por ahora", tone: "error" },
-  invalid: { message: "No pudimos agregar el repuesto al carrito", tone: "error" },
+  unavailable: { message: "Producto no disponible por ahora", tone: "error" },
+  invalid: { message: "No se pudo agregar al carrito", tone: "error" },
 };
 
 type AddToCartFormProps = {
@@ -41,8 +41,8 @@ export function AddToCartForm({
   sku,
   available,
   children,
-  label = "Agregar al carrito",
-  unavailableLabel = "No disponible por ahora",
+  label = "Agregar",
+  unavailableLabel = "No disponible",
   className,
   buttonClassName,
   buttonSize = "md",

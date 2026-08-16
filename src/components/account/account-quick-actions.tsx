@@ -18,7 +18,7 @@ export function AccountQuickActions({
         description="Consulta el estado e historial de tus compras."
         href="/account/orders"
         icon={<ClipboardList className="h-6 w-6" strokeWidth={1.8} />}
-        label="Mis pedidos"
+        label="Mis órdenes"
       />
       <QuickActionCard
         count={formatAddressesCount(addressesCount)}
@@ -74,8 +74,8 @@ function QuickActionCard({
 
 function formatOrdersCount(value: number | undefined) {
   if (typeof value !== "number") return undefined;
-  if (value === 1) return "1 pedido";
-  return `${value} pedidos`;
+  if (value === 1) return "1 orden";
+  return `${value} órdenes`;
 }
 
 function formatAddressesCount(value: number | undefined) {

@@ -205,8 +205,8 @@ function CheckoutReadiness({ hasBlockingIssues }: { hasBlockingIssues: boolean }
       label: hasBlockingIssues ? "Disponibilidad pendiente" : "Disponibilidad confirmada",
       ok: !hasBlockingIssues,
     },
-    { icon: <CreditCard className="h-4 w-4" />, label: "Pago disponible en checkout", ok: true },
-    { icon: <Truck className="h-4 w-4" />, label: "Elige cómo recibir tu pedido", ok: true },
+    { icon: <CreditCard className="h-4 w-4" />, label: "Pago seguro en línea", ok: true },
+    { icon: <Truck className="h-4 w-4" />, label: "Método de entrega en checkout", ok: true },
   ];
 
   return (

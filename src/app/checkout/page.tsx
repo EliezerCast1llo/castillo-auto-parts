@@ -212,7 +212,7 @@ function CheckoutForm({
             type="radio"
             value="online_card"
           />
-          Tarjeta en línea
+          Tarjeta en línea (pago seguro)
         </label>
       </section>
 
@@ -311,7 +311,7 @@ function formatDeliveryZoneSummary(zones: DeliveryZoneOption[]) {
 function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
-    db_unavailable: "No pudimos crear el pedido. Intenta de nuevo.",
+    db_unavailable: "No pudimos crear la orden. Intenta de nuevo.",
     invalid: "Revisa los datos del formulario.",
     payment_unavailable: "No pudimos iniciar el pago. Intenta nuevamente.",
   };

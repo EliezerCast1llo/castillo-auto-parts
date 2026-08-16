@@ -40,7 +40,7 @@ export function CategoryQuickLinks({
               >
                 <span className="px-4 pb-3 pt-3.5">
                   <span className="block font-display text-sm font-extrabold uppercase tracking-[0.04em] text-ca-navy-950">
-                    Explorar {category}
+                    Ver todo en {category}
                   </span>
                   {typeof options.categoryCounts[category] === "number" ? (
                     <span className="mt-0.5 block text-xs text-ca-text-secondary">

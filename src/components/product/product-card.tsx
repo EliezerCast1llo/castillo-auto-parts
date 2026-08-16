@@ -20,7 +20,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-white transition-colors hover:border-ca-navy-950/30">
       <Link
-        aria-label={`Ver detalles del repuesto ${product.name}`}
+        aria-label={`Ver detalle de ${product.name}`}
         className="relative flex h-40 items-center justify-center border-b border-ca-border bg-white p-3"
         href={href}
       >
@@ -57,7 +57,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         <p className="mt-1 text-xs text-ca-text-secondary">SKU {product.sku}</p>
 
         <p className="mt-2 line-clamp-2 min-h-8 text-xs leading-snug text-ca-text-secondary">
-          <span className="font-bold text-ca-navy-950">Vehículo compatible: </span>
+          <span className="font-bold text-ca-navy-950">Compatible: </span>
           {product.compatibility}
         </p>
 

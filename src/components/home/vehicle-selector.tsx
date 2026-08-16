@@ -52,7 +52,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
               Encuentra repuestos para tu vehículo
             </p>
             <p className="mt-1 text-xs leading-5 text-ca-text-secondary">
-              Selecciona los datos de tu vehículo para encontrar opciones compatibles.
+              Filtra por compatibilidad exacta.
             </p>
           </div>
         </div>

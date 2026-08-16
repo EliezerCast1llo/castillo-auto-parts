@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
 
   return {
     title: `Repuestos para ${make} | Castillo Auto Parts`,
-    description: `Explora repuestos automotrices para vehículos ${make}. Filtra por categoría y revisa los vehículos compatibles.`,
+    description: `Repuestos automotrices compatibles con vehículos ${make} en El Salvador. Filtros, frenos, bujías y más con stock visible y compatibilidad verificada.`,
     alternates: { canonical: `/vehiculos/${vehicleMakeSlug(make)}` },
   };
 }
@@ -92,7 +92,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
                 </h1>
                 <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
                   {totalCount} {totalCount === 1 ? "repuesto compatible" : "repuestos compatibles"} con
-                  vehículos {make}. Precio con IVA y disponibilidad visible.
+                  vehículos {make}. Precio con IVA y stock visibles.
                 </p>
               </div>
             </div>

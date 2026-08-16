@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Mi cuenta | Castillo Auto Parts",
-  description: "Gestiona tu perfil, revisa tus pedidos y tus direcciones guardadas.",
+  description: "Gestiona tu perfil, revisa tus órdenes y tus direcciones guardadas.",
   robots: { index: false, follow: false },
 };
 

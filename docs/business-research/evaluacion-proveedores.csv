@@ -1,6 +1,0 @@
-proveedor,tipo,url,antiguedad_verificable,marcas_catalogo,precio_mayorista,MOQ,reposicion,disponibilidad,credito,garantia,devoluciones,facturacion,envio,compatibilidad,dependencia,score,estado,fecha_consulta,nota
-Econoparts,distribuidor,https://www.econoparts.com/?page_id=1518,ND,"Valvoline; Atlas; KYB; NGK; Gates; Bosch; WIX",ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,pendiente,2026-08-02,"Señales públicas de mayoreo y centro de distribución; falta cotización"
-Super Repuestos,distribuidor,https://ecomm-dev-sv.superrepuestos.com/nuestra-historia,50+ años declarados,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,pendiente,2026-08-02,"Red y tienda visibles; falta validar condiciones"
-Asavehi,importador-distribuidor,https://asavehi.com/,20-30 años declarados,"Honda y varias",ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,pendiente,2026-08-02,"Cotización y garantía visibles; faltan documentos"
-MasutaSV,filtración,https://masutasv.com/,ND,"filtros y líneas",ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,pendiente,2026-08-02,"Proveedor local declarado; validar trazabilidad"
-Latinoparts,especiales,https://latinoparts.com/nosotros-latino-parts/,ND,"carrocería; eléctrico; dirección; suspensión; motor",ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,ND,pendiente,2026-08-02,"Útil para bajo pedido; no inventario sin cotización"

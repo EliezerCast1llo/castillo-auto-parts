@@ -21,7 +21,7 @@ export function StockBadge({ status }: { status: CatalogProduct["stockStatus"] }
 
   return (
     <span
-      aria-label={`Disponibilidad del repuesto: ${status}`}
+      aria-label={`Disponibilidad: ${status}`}
       className={`inline-flex items-center gap-1 text-xs font-bold ${className}`}
     >
       <Icon aria-hidden className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />

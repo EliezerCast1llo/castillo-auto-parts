@@ -53,12 +53,12 @@ export function AccountOrderCard({ order }: AccountOrderCardProps) {
   const tracking = getOrderTrackingState(order);
   const productCount = getOrderProductCount(order);
   const hasMultipleProducts = order.items.length > 1 || productCount > 1;
-  const supportMessage = `Hola, necesito ayuda con mi pedido ${order.orderNumber}.`;
+  const supportMessage = `Hola, necesito ayuda con mi orden ${order.orderNumber}.`;
 
   return (
     <article className="grid gap-4 rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)] lg:grid-cols-[230px_minmax(0,1fr)_190px] lg:gap-0 lg:p-0">
       <section className="lg:border-r lg:border-ca-border lg:p-5">
-        <p className="text-xs font-bold text-ca-text-secondary">Pedido</p>
+        <p className="text-xs font-bold text-ca-text-secondary">Orden</p>
         <h2 className="mt-1 break-words text-xl font-black leading-tight text-ca-navy-950">
           {order.orderNumber}
         </h2>
@@ -328,7 +328,7 @@ function OrderAction({
   return (
     <button
       className={getActionClassName(primary)}
-      title={`Ver detalles del pedido ${orderNumber}`}
+      title={`Detalle de la orden ${orderNumber} pendiente de ruta segura`}
       type="button"
     >
       <span>{action}</span>

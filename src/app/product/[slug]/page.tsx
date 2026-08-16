@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
   const description =
     product.description ||
-    `${product.name} de ${product.brand} · ${product.compatibility}. Consulta disponibilidad y opciones de entrega.`;
+    `${product.name} ${product.brand} · ${product.compatibility}. Repuestos con stock visible en El Salvador.`;
 
   return {
     title: `${product.name} | Castillo Auto Parts`,
@@ -104,7 +104,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             {product.compatibleVehicles.length > 0 ? (
               <div className="rounded-ca-surface border border-ca-border bg-white p-5">
-                <h2 className="text-base font-black text-ca-navy-950">Vehículos compatibles</h2>
+                <h2 className="text-base font-black text-ca-navy-950">Compatibilidad verificada</h2>
                 <div className="mt-3 empty:hidden">
                   <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
                 </div>
@@ -157,7 +157,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <InfoItem label="Marca" value={product.brand} />
               <InfoItem label="N.º parte" value={product.partNumber} />
               <InfoItem label="SKU" value={product.sku} />
-              <InfoItem label="Disponibilidad" value={`${product.stockQuantity} ud.`} />
+              <InfoItem label="Stock" value={`${product.stockQuantity} ud.`} />
             </dl>
 
             {/* Precio */}
@@ -170,9 +170,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
                 <div>
-                  <p className="text-sm font-black text-ca-navy-950">Revisa la compatibilidad antes de comprar</p>
+                  <p className="text-sm font-black text-ca-navy-950">Compatibilidad antes de comprar</p>
                   <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
-                    Revisa los vehículos compatibles o consulta con un asesor. Puedes enviarnos los datos de tu vehículo, una foto o el número de parte si lo tienes.
+                    Revisa la lista compatible o consulta con un asesor usando el SKU para evitar errores de instalación.
                   </p>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="mt-4 flex items-start gap-3 rounded-ca-control bg-ca-background p-4 text-sm">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
               <div>
-                <p className="font-bold text-ca-navy-950">Retiro en bodega o entrega local</p>
+                <p className="font-bold text-ca-navy-950">Retiro en bodega o envío local</p>
                 <p className="mt-1 text-ca-text-secondary">
                   Entrega en San Salvador y Santa Tecla. Tarifa confirmada al pagar.
                 </p>
