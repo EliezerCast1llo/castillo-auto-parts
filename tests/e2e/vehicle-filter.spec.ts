@@ -68,7 +68,7 @@ test("vehicle selection persists as cookie and pre-applies on catalog", async ({
 
   // Visita limpia al catálogo: el filtro se pre-aplica desde la cookie
   await page.goto("/catalog");
-  await expect(page.getByText("Mostrando repuestos para tu vehículo")).toBeVisible();
+  await expect(page.getByText("Filtrando repuestos para tu vehículo")).toBeVisible();
 
   // El badge de compatibilidad aparece en las cards
   await expect(page.getByText(/Compatible con tu Toyota Corolla/).first()).toBeVisible();
@@ -80,7 +80,7 @@ test("vehicle selection persists as cookie and pre-applies on catalog", async ({
   // bastaría para pasar con el filtro todavía aplicado.
   await page.getByRole("button", { name: "Quitar" }).click();
 
-  await expect(page.getByText("Mostrando repuestos para tu vehículo")).toBeHidden();
+  await expect(page.getByText("Filtrando repuestos para tu vehículo")).toBeHidden();
   await expect(page.getByText(/Compatible con tu Toyota Corolla/)).toHaveCount(0);
   await expect.poll(() => catalogTotal(page)).toBeGreaterThan(filteredTotal);
 });

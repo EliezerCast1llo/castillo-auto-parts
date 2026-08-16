@@ -42,7 +42,7 @@ export async function SiteFooter() {
           <div className="mt-4 space-y-2 text-sm font-semibold text-white/80">
             <p className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-ca-gold-400" />
-              Compatibilidad verificada
+              Revisa la compatibilidad
             </p>
             <p className="flex items-center gap-2">
               <Truck className="h-4 w-4 text-ca-gold-400" />

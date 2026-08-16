@@ -4,15 +4,10 @@ import {
   Camera,
   Car,
   ChevronDown,
-  Clock,
   Gauge,
-  Hash,
   MapPin,
   PackageCheck,
   RotateCcw,
-  ShieldCheck,
-  Truck,
-  type LucideIcon,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -23,9 +18,9 @@ import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Ayuda y contacto | Castillo Auto Parts",
+  title: "Ayuda para comprar repuestos | Castillo Auto Parts",
   description:
-    "Ayuda para comprar repuestos automotrices, validar compatibilidad, retiro en bodega y entregas locales en El Salvador.",
+    "Te ayudamos a encontrar el repuesto compatible con tu vehículo y a elegir cómo recibirlo en San Salvador o Santa Tecla.",
 };
 
 /**
@@ -34,43 +29,31 @@ export const metadata: Metadata = {
  * menos ida y vuelta hace falta para confirmar compatibilidad.
  */
 const requestChecklist = [
-  {
-    icon: Car,
-    title: "Marca, modelo y año",
-    detail: "Los tres datos base para filtrar compatibilidad.",
-  },
-  {
-    icon: Gauge,
-    title: "Motor o versión",
-    detail: "Si lo tienes a mano, descarta piezas parecidas.",
-  },
-  {
-    icon: Hash,
-    title: "Número de parte o SKU",
-    detail: "El camino más rápido y exacto para ubicarla.",
-  },
-  {
-    icon: Camera,
-    title: "Foto de la pieza",
-    detail: "Sirve cuando no sabes cómo se llama el repuesto.",
-  },
+  { icon: Car, text: "Marca, modelo y año del vehículo." },
+  { icon: Gauge, text: "Motor o versión, si los conoces." },
+  { icon: Camera, text: "Foto del repuesto o número de parte." },
 ];
 
-const trustCards = [
+const deliveryOptions = [
+  { icon: MapPin, text: "Entregas locales en San Salvador y Santa Tecla." },
+  { icon: PackageCheck, text: "Retiro en bodega disponible sin costo." },
+];
+
+const processSteps = [
   {
-    icon: ShieldCheck,
-    title: "Compatibilidad primero",
-    detail: "Validamos los datos del vehículo antes de que compres una pieza incorrecta.",
+    number: "01",
+    title: "Cuéntanos qué vehículo tienes",
+    description: "Comparte la marca, el modelo, el año y cualquier dato que conozcas.",
   },
   {
-    icon: PackageCheck,
-    title: "Retiro en bodega",
-    detail: "Sin costo dentro del horario operativo. La dirección aparece en checkout.",
+    number: "02",
+    title: "Verificamos el repuesto",
+    description: "Revisamos compatibilidad y disponibilidad antes de que compres.",
   },
   {
-    icon: Truck,
-    title: "Entrega local",
-    detail: "San Salvador y Santa Tecla. La tarifa se calcula según el municipio.",
+    number: "03",
+    title: "Elige cómo recibirlo",
+    description: "Selecciona retiro en bodega o entrega local cuando esté disponible.",
   },
 ];
 
@@ -78,27 +61,27 @@ const faqs = [
   {
     question: "¿Cómo sé si un repuesto es compatible con mi vehículo?",
     answer:
-      "Puedes buscar por marca, modelo y año en el catálogo. En la página del producto revisa la sección de compatibilidad y, si tienes duda, envíanos el SKU por WhatsApp para validarlo antes de comprar.",
+      "Busca por marca, modelo y año en el catálogo. En la página del repuesto revisa los vehículos compatibles y, si tienes duda, escríbenos por WhatsApp antes de comprar.",
   },
   {
     question: "¿Puedo retirar mi pedido en bodega?",
     answer:
-      "Sí. El retiro en bodega es gratis dentro del horario operativo configurado. La dirección exacta se muestra en checkout cuando eliges retiro.",
+      "Sí. El retiro en bodega no tiene costo. Al elegir esta opción en el proceso de compra verás la dirección, el horario y las indicaciones para recoger tu pedido.",
   },
   {
     question: "¿Hacen entregas a domicilio?",
     answer:
-      "El MVP cubre entregas locales por zona, empezando por San Salvador y Santa Tecla. La tarifa se calcula según el municipio seleccionado.",
+      "Tenemos entregas locales en San Salvador y Santa Tecla. La tarifa se calcula según el municipio que selecciones durante el proceso de compra.",
   },
   {
     question: "¿Los precios incluyen IVA?",
     answer:
-      "Sí. Los precios visibles del producto ya incluyen IVA. En checkout verás productos, envío y total estimado sin desglose adicional de IVA.",
+      "Sí. Los precios de los repuestos ya incluyen el 13 % de IVA. En el proceso de compra verás el subtotal, el costo de entrega cuando corresponda y el total estimado.",
   },
   {
     question: "¿Qué pasa si no encuentro el repuesto?",
     answer:
-      "Puedes escribirnos por WhatsApp con marca, modelo, año, motor si lo tienes y una foto o número de parte. Te ayudaremos a ubicar una opción compatible.",
+      "Escríbenos por WhatsApp con la marca, el modelo y el año de tu vehículo. También puedes enviarnos el motor, una foto, el nombre del repuesto o un número de parte.",
   },
 ];
 
@@ -110,29 +93,33 @@ export default function HelpPage() {
       <HelpHero />
 
       <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-        {/* La banda de servicio monta sobre el hero: cierra el bloque navy en
-            lugar de dejar un corte plano entre las dos superficies. */}
-        <section className="relative z-10 -mt-16 grid gap-4 md:grid-cols-3">
-          {trustCards.map((item) => (
-            <article
+        {/* Las opciones de entrega montan sobre el hero: cierran el bloque navy
+            en lugar de dejar un corte plano entre las dos superficies. */}
+        <section
+          aria-label="Opciones de entrega"
+          className="relative z-10 -mt-16 grid gap-4 md:grid-cols-2"
+        >
+          {deliveryOptions.map((option) => (
+            <div
               className={cn(
-                cardVariants({ padding: "lg" }),
-                "transition-colors hover:border-ca-navy-950/30",
+                cardVariants({ padding: "md" }),
+                "flex items-center gap-3 transition-colors hover:border-ca-navy-950/30",
               )}
-              key={item.title}
+              key={option.text}
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-ca-control bg-ca-background text-ca-blue-700">
-                <item.icon className="h-5 w-5" strokeWidth={1.9} />
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-background text-ca-blue-700">
+                <option.icon className="h-5 w-5" strokeWidth={1.8} />
               </span>
-              <h2 className="mt-4 text-base font-bold text-ca-navy-950">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-ca-text-secondary">{item.detail}</p>
-            </article>
+              <p className="text-sm font-bold leading-5 text-ca-navy-950">{option.text}</p>
+            </div>
           ))}
         </section>
 
+        <ProcessSection />
+
         <FaqSection />
 
-        <OperationNotes />
+        <PolicyNote />
 
         <ClosingCta />
       </div>
@@ -162,18 +149,18 @@ function HelpHero() {
           <div>
             <p className="ca-section-label animate-fade-up">
               <span className="h-px w-6 bg-ca-gold-400" />
-              Ayuda y contacto
+              Ayuda para comprar
             </p>
 
             <h1 className="animate-fade-up delay-100 mt-4 max-w-xl font-display text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl">
-              Te ayudamos a encontrar{" "}
-              <span className="ca-gold-shimmer">el repuesto correcto</span>
+              Encuentra <span className="ca-gold-shimmer">el repuesto correcto</span> para tu
+              vehículo
             </h1>
 
             <p className="animate-fade-up delay-200 mt-5 max-w-xl text-base leading-7 text-white/75">
-              Si no estás seguro de la compatibilidad, escríbenos con los datos de tu
-              vehículo y el SKU del producto. La meta es que compres una pieza útil, no
-              una pieza que tengas que devolver.
+              ¿No estás seguro de cuál necesitas? Envíanos los datos de tu vehículo, una foto
+              o el número de parte. Te ayudaremos a revisar la compatibilidad antes de
+              comprar.
             </p>
 
             <div className="animate-fade-up delay-300 mt-8 flex flex-col gap-3 sm:flex-row">
@@ -182,19 +169,8 @@ function HelpHero() {
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-ca-control border border-white/20 bg-white/10 px-5 text-sm font-black text-white transition hover:border-white/35 hover:bg-white/[0.18]"
                 href="/catalog"
               >
-                Ver catálogo
+                Explorar catálogo
               </Link>
-            </div>
-
-            <div className="animate-fade-up delay-400 mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/10 pt-6 text-sm font-semibold text-white/78">
-              <span className="inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
-                San Salvador y Santa Tecla
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <PackageCheck className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
-                Retiro en bodega sin costo
-              </span>
             </div>
           </div>
 
@@ -204,34 +180,79 @@ function HelpHero() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_-10%,rgba(18,103,197,0.28),transparent_22rem)]" />
 
             <div className="relative">
-              <h2 className="text-lg font-bold">Escríbenos con estos datos</h2>
-              <p className="mt-2 text-sm leading-6 text-white/70">
-                Entre más completo llegue el mensaje, más rápido confirmamos si la pieza
-                sirve para tu vehículo.
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-ca-gold-400">
+                Empieza tu consulta
               </p>
+              <h2 className="mt-2 text-lg font-bold leading-tight">
+                Para ayudarte, envíanos estos datos
+              </h2>
 
               <ol className="mt-6 space-y-3">
                 {requestChecklist.map((item, index) => (
                   <li
                     className="flex items-start gap-3 rounded-ca-control border border-white/[0.07] bg-white/[0.04] p-3 transition hover:border-ca-gold-400/30 hover:bg-white/[0.07]"
-                    key={item.title}
+                    key={item.text}
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ca-control border border-ca-gold-400/20 bg-ca-gold-400/10 text-ca-gold-400">
                       <item.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
                     </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold leading-5">
-                        <span className="mr-2 text-ca-gold-400">{index + 1}.</span>
-                        {item.title}
-                      </p>
-                      <p className="mt-1 text-sm leading-5 text-white/70">{item.detail}</p>
-                    </div>
+                    <p className="pt-1.5 text-sm font-bold leading-5">
+                      <span className="mr-2 text-ca-gold-400">{index + 1}.</span>
+                      {item.text}
+                    </p>
                   </li>
                 ))}
               </ol>
+
+              <p className="mt-6 border-t border-white/15 pt-5 text-sm leading-6 text-white/75">
+                No necesitas conocer el nombre exacto del repuesto para consultarnos.
+              </p>
             </div>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Compra asistida
+// ---------------------------------------------------------------------------
+
+function ProcessSection() {
+  return (
+    <section className="mt-14">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="ca-section-label">
+            <span className="h-px w-6 bg-ca-gold-400" />
+            Compra asistida
+          </p>
+          <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight text-ca-navy-950 sm:text-[28px]">
+            Así te ayudamos a encontrarlo
+          </h2>
+        </div>
+        <p className="max-w-sm text-sm leading-6 text-ca-text-secondary">
+          Acompañamiento claro desde la consulta hasta la entrega.
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        {processSteps.map((step) => (
+          <article
+            className={cn(
+              cardVariants({ padding: "lg" }),
+              "transition-colors hover:border-ca-navy-950/30",
+            )}
+            key={step.number}
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-ca-control bg-ca-background text-sm font-black tracking-[0.08em] text-ca-blue-700">
+              {step.number}
+            </span>
+            <h3 className="mt-4 text-base font-bold text-ca-navy-950">{step.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-ca-text-secondary">{step.description}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -245,12 +266,8 @@ function FaqSection() {
   return (
     <section className="mt-14 grid gap-8 lg:grid-cols-[320px_1fr] lg:gap-10">
       <div className="lg:sticky lg:top-28 lg:self-start">
-        <p className="ca-section-label">
-          <span className="h-px w-6 bg-ca-gold-400" />
+        <h2 className="text-2xl font-black leading-tight tracking-tight text-ca-navy-950 sm:text-[28px]">
           Preguntas frecuentes
-        </p>
-        <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight text-ca-navy-950 sm:text-[28px]">
-          Lo que preguntan antes de comprar
         </h2>
         <p className="mt-3 text-sm leading-6 text-ca-text-secondary">
           Compatibilidad, retiro, entregas e IVA. Si tu caso no está aquí, escríbenos y lo
@@ -296,7 +313,7 @@ function FaqSection() {
           <div>
             <p className="text-sm font-bold text-ca-navy-950">¿Tu pregunta no está aquí?</p>
             <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
-              Mándanos marca, modelo y año y te respondemos con opciones compatibles.
+              Escríbenos con los datos de tu vehículo y te ayudamos a encontrarlo.
             </p>
           </div>
           <WhatsAppCTA
@@ -312,48 +329,29 @@ function FaqSection() {
 }
 
 // ---------------------------------------------------------------------------
-// Notas operativas
+// Nota de políticas
 // ---------------------------------------------------------------------------
 
 /**
- * Horario y políticas siguen sin definirse. Se muestran como notas y no como
- * beneficios: la página no debe prometer condiciones que todavía no están
+ * Las condiciones comerciales siguen sin definirse. Se muestran como nota y no
+ * como beneficio: la página no debe prometer condiciones que todavía no están
  * aprobadas para producción.
  */
-function OperationNotes() {
+function PolicyNote() {
   return (
-    <section className="mt-12 grid gap-4 md:grid-cols-2">
-      <NoteCard
-        icon={Clock}
-        title="Horario de atención"
-        detail="Pendiente de definir la operación final. Antes de producción se confirmará el horario de bodega y de soporte."
-      />
-      <NoteCard
-        icon={RotateCcw}
-        title="Políticas comerciales"
-        detail="Garantía, cambios y devoluciones quedan como políticas operativas a confirmar. Esta página evita prometer condiciones no aprobadas todavía."
-      />
-    </section>
-  );
-}
-
-type NoteCardProps = {
-  icon: LucideIcon;
-  title: string;
-  detail: string;
-};
-
-function NoteCard({ icon: Icon, title, detail }: NoteCardProps) {
-  return (
-    <article className={cn(cardVariants({ padding: "lg" }), "flex items-start gap-4")}>
+    <section className={cn(cardVariants({ padding: "lg" }), "mt-12 flex items-start gap-4")}>
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-background text-ca-text-secondary">
-        <Icon className="h-5 w-5" strokeWidth={1.9} />
+        <RotateCcw className="h-5 w-5" strokeWidth={1.9} />
       </span>
       <div>
-        <h2 className="text-base font-bold text-ca-navy-950">{title}</h2>
-        <p className="mt-1.5 text-sm leading-6 text-ca-text-secondary">{detail}</p>
+        <h2 className="text-base font-bold text-ca-navy-950">Políticas comerciales</h2>
+        <p className="mt-1.5 max-w-3xl text-sm leading-6 text-ca-text-secondary">
+          Para conocer las condiciones aplicables a tu compra, consúltanos antes de confirmar
+          el pedido. No publicamos promesas sobre garantías, cambios o devoluciones que aún no
+          estén definidas.
+        </p>
       </div>
-    </article>
+    </section>
   );
 }
 

@@ -12,13 +12,13 @@ const STATUS_MESSAGES: Record<
   NonNullable<AddCartItemInlineState>["status"],
   { message: string; tone: "success" | "error" }
 > = {
-  added: { message: "Agregado al carrito", tone: "success" },
+  added: { message: "Repuesto agregado al carrito", tone: "success" },
   quantity_adjusted: {
-    message: "Agregado — cantidad ajustada al stock disponible",
+    message: "Agregado; ajustamos la cantidad a la disponibilidad actual",
     tone: "success",
   },
-  unavailable: { message: "Producto no disponible por ahora", tone: "error" },
-  invalid: { message: "No se pudo agregar al carrito", tone: "error" },
+  unavailable: { message: "Este repuesto no está disponible por ahora", tone: "error" },
+  invalid: { message: "No pudimos agregar el repuesto al carrito", tone: "error" },
 };
 
 type AddToCartFormProps = {
@@ -27,6 +27,7 @@ type AddToCartFormProps = {
   /** Controles extra dentro del form (p.ej. QuantityStepper). Si no hay, se envía quantity=1. */
   children?: ReactNode;
   label?: string;
+  buttonAriaLabel?: string;
   unavailableLabel?: string;
   className?: string;
   buttonClassName?: string;
@@ -41,8 +42,9 @@ export function AddToCartForm({
   sku,
   available,
   children,
-  label = "Agregar",
-  unavailableLabel = "No disponible",
+  label = "Agregar al carrito",
+  buttonAriaLabel,
+  unavailableLabel = "No disponible por ahora",
   className,
   buttonClassName,
   buttonSize = "md",
@@ -70,6 +72,7 @@ export function AddToCartForm({
       <input name="sku" type="hidden" value={sku} />
       {children ?? <input name="quantity" type="hidden" value="1" />}
       <Button
+        aria-label={available ? buttonAriaLabel : undefined}
         type="submit"
         size={buttonSize}
         disabled={!available || pending}

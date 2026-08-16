@@ -17,14 +17,14 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
   return (
     <section className="border-t border-ca-border pt-4">
       <label className="block">
-        <FilterHeading>Buscar</FilterHeading>
+        <FilterHeading>Buscar repuesto</FilterHeading>
         <div className="mt-2 flex h-10 items-center gap-2 rounded-ca-control border border-ca-border bg-white px-2.5 transition focus-within:border-ca-blue-700">
           <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" />
           <input
             className="w-full bg-transparent text-sm text-ca-navy-950 outline-none placeholder:text-ca-text-secondary"
             defaultValue={filters.query}
             name="q"
-            placeholder="Nombre, SKU o parte"
+            placeholder="Nombre, SKU o número de parte"
             type="search"
           />
         </div>
@@ -68,7 +68,7 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
       <div className="mt-4 grid gap-2 border-t border-ca-border pt-4">
         {/* Los filtros se aplican al cambiar; el botón es el camino sin JS. */}
         <button className="inline-flex h-10 items-center justify-center rounded-ca-control border border-ca-navy-950 bg-white px-4 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-navy-950 hover:text-white">
-          Buscar
+          Aplicar filtros
         </button>
         {activeFilterCount > 0 ? (
           <Link

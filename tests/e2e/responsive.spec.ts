@@ -87,8 +87,8 @@ for (const viewport of viewports) {
 
 async function addProductToCart(page: Page, slug: string) {
   await page.goto(`/product/${slug}`);
-  await page.getByRole("button", { name: "Agregar al carrito" }).click();
-  await expect(page.getByText("Agregado al carrito")).toBeVisible();
+  await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
+  await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
   await page.goto("/cart");
 }
 
