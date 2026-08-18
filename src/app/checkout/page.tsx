@@ -4,6 +4,7 @@ import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { getGuestCart } from "@/lib/cart";
+import { createCheckoutIdempotencyKey } from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
@@ -82,6 +83,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
                 deliveryZones={fulfillmentOptions.deliveryZones}
+                idempotencyKey={createCheckoutIdempotencyKey()}
                 pickupLocation={fulfillmentOptions.pickupLocation}
                 savedAddresses={savedAddresses}
                 subtotalCents={cart.subtotalCents}
@@ -159,12 +161,14 @@ type SavedAddress = {
 
 function CheckoutForm({
   deliveryZones,
+  idempotencyKey,
   pickupLocation,
   savedAddresses,
   subtotalCents,
   userDefaults,
 }: {
   deliveryZones: DeliveryZoneOption[];
+  idempotencyKey: string;
   pickupLocation: PickupLocationOption;
   savedAddresses: SavedAddress[];
   subtotalCents: number;
@@ -174,6 +178,7 @@ function CheckoutForm({
 
   return (
     <form action={createGuestOrder} className="space-y-4">
+      <input name="idempotencyKey" type="hidden" value={idempotencyKey} />
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">Tus datos</h2>
         {isGuest ? (

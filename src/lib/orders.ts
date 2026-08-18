@@ -2,7 +2,7 @@ import {
   InventoryStatus,
   OrderStatus,
   PaymentStatus as PrismaPaymentStatus,
-  type Prisma,
+  Prisma,
 } from "@prisma/client";
 import { clearGuestCart, getGuestCart } from "./cart";
 import { logError } from "./logger";
@@ -60,6 +60,7 @@ const PAYMENT_RESERVATION_TTL_MS = 20 * 60 * 1000;
 export async function createGuestCheckoutFromCart(
   formData: FormData,
   userId?: string,
+  idempotencyKey?: string,
 ): Promise<CreateGuestOrderResult> {
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
@@ -67,6 +68,20 @@ export async function createGuestCheckoutFromCart(
   const cart = await getGuestCart();
   if (cart.lines.length === 0) return { status: "empty_cart" };
   if (cart.hasBlockingIssues) return { status: "stock_issue" };
+
+  // Idempotencia: si este submit ya creó una orden viva (mismo hidden key),
+  // devolver su checkout en vez de crear otra orden + otra reserva de stock.
+  let effectiveIdempotencyKey = idempotencyKey;
+  if (idempotencyKey) {
+    const existing = await findOrderByIdempotencyKey(idempotencyKey);
+    if (existing) {
+      const replay = replayResultForOrder(existing);
+      if (replay) return replay;
+      // Orden previa muerta (expirada/cancelada/fallida): no se puede reusar la
+      // key (@unique). Se crea una orden nueva sin key para evitar colisión.
+      effectiveIdempotencyKey = undefined;
+    }
+  }
 
   try {
     const deliveryZones = await getActiveDeliveryZones();
@@ -169,6 +184,7 @@ export async function createGuestCheckoutFromCart(
           accessTokenHash: hashOrderAccessToken(accessToken),
           addressId,
           currency: "USD",
+          idempotencyKey: effectiveIdempotencyKey ?? null,
           userId: userId ?? null,
           customerEmail: parsed.data.customerEmail,
           customerName: parsed.data.customerName,
@@ -264,9 +280,62 @@ export async function createGuestCheckoutFromCart(
       return { status: error.code };
     }
 
+    // Carrera concurrente: dos submits en paralelo con la misma key. El ganador
+    // creó la orden; el @unique rechaza al perdedor con P2002. Devolver el
+    // checkout del ganador si ya está listo; si no, pedir reintento.
+    if (
+      idempotencyKey &&
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      const existing = await findOrderByIdempotencyKey(idempotencyKey);
+      const replay = existing ? replayResultForOrder(existing) : null;
+      if (replay) return replay;
+      return { status: "payment_unavailable" };
+    }
+
     logError({ context: "createGuestCheckoutFromCart" }, error);
     return { status: "db_unavailable" };
   }
+}
+
+export type IdempotentOrderLookup = {
+  orderNumber: string;
+  status: OrderStatus;
+  reservationExpiresAt: Date | null;
+  payment: { checkoutUrl: string | null } | null;
+};
+
+function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOrderLookup | null> {
+  return db.order.findUnique({
+    where: { idempotencyKey },
+    select: {
+      orderNumber: true,
+      status: true,
+      reservationExpiresAt: true,
+      payment: { select: { checkoutUrl: true } },
+    },
+  });
+}
+
+// Devuelve el resultado "created" reutilizable solo si la orden previa sigue viva
+// (en proceso de pago, reserva no expirada) y ya tiene checkout listo.
+export function replayResultForOrder(order: IdempotentOrderLookup): CreateGuestOrderResult | null {
+  const isActive =
+    order.status === OrderStatus.PAYMENT_PROCESSING &&
+    order.reservationExpiresAt !== null &&
+    order.reservationExpiresAt.getTime() > Date.now();
+
+  if (!isActive || !order.payment?.checkoutUrl) return null;
+
+  // accessToken solo se usa en el primer submit para armar el redirect del proveedor;
+  // en un replay el checkoutUrl ya está persistido, así que no se necesita el token.
+  return {
+    accessToken: "",
+    checkoutUrl: order.payment.checkoutUrl,
+    orderNumber: order.orderNumber,
+    status: "created",
+  };
 }
 
 async function recordCreatedPayment(paymentId: string, payment: CreatePaymentResult) {
