@@ -35,9 +35,13 @@ por-IP protege el endpoint y responde con `Retry-After` correcto.
 - **Fail-open de Redis eliminado**: ante caída de Redis en caliente, `check` y
   `registerFailure` caen a un limiter en memoria en vez de dejar pasar todo.
   Cubierto por test unitario (`rate-limit-redis.test.ts`).
-- **Endpoints antes sin límite, ahora con rate limit por IP**:
-  - `POST /api/webhooks/wompi` — 120/min, antes de verificar firma.
-  - `POST /api/admin/upload-image`, `DELETE /api/admin/delete-image` — 30/min, antes de auth.
+- **Endpoints antes sin límite, ahora protegidos**:
+  - `POST /api/webhooks/wompi` — **sin rate limit por IP a propósito**: el
+    x-forwarded-for es spoofeable y limitar por IP permitiría bloquear los webhooks
+    reales de Wompi. La protección es la verificación HMAC (401), que rechaza floods
+    inválidos barato y antes de tocar la DB.
+  - `POST /api/admin/upload-image`, `DELETE /api/admin/delete-image` — 30/min por
+    **usuario admin** (tras autenticar; no por IP, para no poder dejar a un admin fuera).
 - **CSP** configurable con `CSP_ENFORCE` (default report-only).
 - **Secretos**: `GUEST_CART_SECRET` ya no reusa `ADMIN_ACCESS_SECRET` en producción.
 

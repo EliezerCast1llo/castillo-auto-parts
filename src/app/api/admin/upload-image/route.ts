@@ -24,7 +24,6 @@ import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { enforceRateLimit } from "@/lib/api-rate-limit";
 import { db } from "@/lib/db";
 import { createAdminImageRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
-import { getClientIp } from "@/lib/request-ip";
 import {
   buildR2Key,
   hasValidImageMagicBytes,
@@ -37,18 +36,20 @@ import {
 let _uploadRateLimiter: AsyncRateLimiter | undefined;
 
 export async function POST(request: NextRequest) {
-  // 0. Rate limit por IP antes de auth: evita floods de upload pre-autenticación.
-  const limiter = (_uploadRateLimiter ??= createAdminImageRateLimiter());
-  const limited = await enforceRateLimit(
-    limiter,
-    `admin-upload:ip:${getClientIp(request.headers)}`,
-    "Demasiadas solicitudes de subida. Intenta en un momento.",
-  );
-  if (limited) return limited;
-
   // 1. Autenticación y autorización admin (solo ADMIN y MARKETING)
   const auth = await getAdminUserForHandler("ADMIN", "MARKETING");
   if ("response" in auth) return auth.response;
+
+  // 2. Rate limit por usuario admin (no por IP: el x-forwarded-for es spoofeable y
+  //    permitiría dejar a un admin fuera de subir imágenes con 30 requests). Tras
+  //    auth, la key es el id del admin: no se puede falsificar ni afecta a otros.
+  const limiter = (_uploadRateLimiter ??= createAdminImageRateLimiter());
+  const limited = await enforceRateLimit(
+    limiter,
+    `admin-upload:user:${auth.user.id}`,
+    "Demasiadas solicitudes de subida. Intenta en un momento.",
+  );
+  if (limited) return limited;
 
   // 2. Leer multipart form
   let formData: FormData;

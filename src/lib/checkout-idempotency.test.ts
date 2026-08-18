@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createCheckoutIdempotencyKey,
+  deriveScopedIdempotencyKey,
   normalizeCheckoutIdempotencyKey,
 } from "./checkout-idempotency";
 
@@ -39,5 +40,29 @@ describe("normalizeCheckoutIdempotencyKey", () => {
     expect(normalizeCheckoutIdempotencyKey(undefined)).toBeUndefined();
     expect(normalizeCheckoutIdempotencyKey(123)).toBeUndefined();
     expect(normalizeCheckoutIdempotencyKey(new File([], "x"))).toBeUndefined();
+  });
+});
+
+describe("deriveScopedIdempotencyKey", () => {
+  it("es determinística para la misma key + huella (dedup concurrente)", () => {
+    expect(deriveScopedIdempotencyKey("base", "SKU-A:2")).toBe(
+      deriveScopedIdempotencyKey("base", "SKU-A:2"),
+    );
+  });
+
+  it("difiere si cambia la huella del carrito", () => {
+    expect(deriveScopedIdempotencyKey("base", "SKU-A:2")).not.toBe(
+      deriveScopedIdempotencyKey("base", "SKU-A:3"),
+    );
+  });
+
+  it("difiere si cambia la key base", () => {
+    expect(deriveScopedIdempotencyKey("base1", "SKU-A:2")).not.toBe(
+      deriveScopedIdempotencyKey("base2", "SKU-A:2"),
+    );
+  });
+
+  it("produce 64 hex (mismo formato que la key normal)", () => {
+    expect(deriveScopedIdempotencyKey("base", "SKU-A:2")).toMatch(/^[a-f0-9]{64}$/);
   });
 });

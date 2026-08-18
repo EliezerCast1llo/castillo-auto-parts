@@ -24,6 +24,7 @@ import {
   type DeliveryZoneOption,
 } from "./fulfillment";
 import { buildAbsoluteAppUrl } from "./email/templates";
+import { deriveScopedIdempotencyKey } from "./checkout-idempotency";
 import {
   InventoryReservationError,
   reserveInventory,
@@ -72,6 +73,7 @@ export async function createGuestCheckoutFromCart(
   // que un re-submit tras una compra (carrito ya vacío) reproduzca el checkout en
   // vez de fallar como empty_cart, SIN pisar un carrito reconstruido.
   let effectiveIdempotencyKey = idempotencyKey;
+  let deadKeyToRelease: string | undefined;
   if (idempotencyKey) {
     const existing = await findOrderByIdempotencyKey(idempotencyKey);
     if (existing) {
@@ -86,29 +88,32 @@ export async function createGuestCheckoutFromCart(
       const sameIntent = cart.lines.length === 0 || cartMatchesOrder(cart, existing.items);
 
       if (identityMismatch || !sameIntent) {
-        // Ignorar la key: se honra el carrito actual como submit nuevo.
-        effectiveIdempotencyKey = undefined;
+        // La key original no aplica. En vez de descartarla (key null no colisiona →
+        // dos submits concurrentes duplicarían), se deriva una key estable de
+        // (key + carrito): submits idénticos siguen deduplicando.
+        effectiveIdempotencyKey = deriveScopedIdempotencyKey(idempotencyKey, cartFingerprint(cart));
       } else {
-        const state = idempotencyStateForOrder(existing);
-        const checkoutUrl = existing.payment?.checkoutUrl;
-        if (state === "replay" && checkoutUrl) {
+        const replay = replayResultForOrder(existing);
+        if (replay) {
           await clearGuestCartSafely();
-          return { checkoutUrl, orderNumber: existing.orderNumber, status: "created" };
+          return replay;
         }
-        if (state !== "dead") {
+        if (idempotencyStateForOrder(existing) !== "dead") {
           // Carrera concurrente: el ganador aún no persiste checkoutUrl. No es un
           // error terminal; el cliente reintenta.
           return { status: "duplicate_in_progress" };
         }
-        // Orden muerta (expirada/cancelada/fallida): liberar la key para crear una
-        // nueva conservando idempotencia en reintentos posteriores.
-        await releaseIdempotencyKey(idempotencyKey);
+        // Orden muerta (expirada/cancelada/fallida): liberar su key para reusarla,
+        // pero solo tras pasar los guards (no anularla si el request aborta).
+        deadKeyToRelease = idempotencyKey;
       }
     }
   }
 
   if (cart.lines.length === 0) return { status: "empty_cart" };
   if (cart.hasBlockingIssues) return { status: "stock_issue" };
+
+  if (deadKeyToRelease) await releaseIdempotencyKey(deadKeyToRelease);
 
   try {
     const deliveryZones = await getActiveDeliveryZones();
@@ -307,16 +312,16 @@ export async function createGuestCheckoutFromCart(
     // creó la orden; el @unique de idempotencyKey rechaza al perdedor con P2002.
     // Solo tratar así cuando el conflicto es de idempotencyKey (no otro índice).
     if (
-      idempotencyKey &&
+      effectiveIdempotencyKey &&
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002" &&
       isIdempotencyKeyConflict(error)
     ) {
-      const existing = await findOrderByIdempotencyKey(idempotencyKey);
-      const checkoutUrl = existing?.payment?.checkoutUrl;
-      if (existing && idempotencyStateForOrder(existing) === "replay" && checkoutUrl) {
+      const existing = await findOrderByIdempotencyKey(effectiveIdempotencyKey);
+      const replay = existing ? replayResultForOrder(existing) : null;
+      if (replay) {
         await clearGuestCartSafely();
-        return { checkoutUrl, orderNumber: existing.orderNumber, status: "created" };
+        return replay;
       }
       // Ganador aún sin checkoutUrl persistido: reintento, no error terminal.
       return { status: "duplicate_in_progress" };
@@ -363,6 +368,15 @@ export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["
     if (orderQuantities.get(line.product.sku) !== line.quantity) return false;
   }
   return true;
+}
+
+// Huella determinística del carrito (SKUs+cantidades ordenados). Igual para dos
+// carritos con el mismo contenido, base para derivar una key de idempotencia estable.
+export function cartFingerprint(cart: GuestCart): string {
+  return cart.lines
+    .map((line) => `${line.product.sku}:${line.quantity}`)
+    .sort()
+    .join(",");
 }
 
 async function releaseIdempotencyKey(idempotencyKey: string) {

@@ -25,24 +25,24 @@ import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { enforceRateLimit } from "@/lib/api-rate-limit";
 import { db } from "@/lib/db";
 import { createAdminImageRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
-import { getClientIp } from "@/lib/request-ip";
 import { extractR2Key, deleteFromR2 } from "@/lib/r2";
 
 let _deleteRateLimiter: AsyncRateLimiter | undefined;
 
 export async function DELETE(request: NextRequest) {
-  // 0. Rate limit por IP antes de auth: evita floods de delete pre-autenticación.
-  const limiter = (_deleteRateLimiter ??= createAdminImageRateLimiter());
-  const limited = await enforceRateLimit(
-    limiter,
-    `admin-delete:ip:${getClientIp(request.headers)}`,
-    "Demasiadas solicitudes. Intenta en un momento.",
-  );
-  if (limited) return limited;
-
   // 1. Autenticación y autorización admin (solo ADMIN y MARKETING)
   const auth = await getAdminUserForHandler("ADMIN", "MARKETING");
   if ("response" in auth) return auth.response;
+
+  // 2. Rate limit por usuario admin (no por IP spoofeable, que dejaría fuera a un
+  //    admin). Tras auth, la key es su id: no falsificable, no afecta a otros.
+  const limiter = (_deleteRateLimiter ??= createAdminImageRateLimiter());
+  const limited = await enforceRateLimit(
+    limiter,
+    `admin-delete:user:${auth.user.id}`,
+    "Demasiadas solicitudes. Intenta en un momento.",
+  );
+  if (limited) return limited;
 
   // 2. Leer body
   let body: unknown;

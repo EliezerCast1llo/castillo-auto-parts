@@ -2,6 +2,7 @@ import { OrderStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import type { GuestCart } from "./cart";
 import {
+  cartFingerprint,
   cartMatchesOrder,
   idempotencyStateForOrder,
   replayResultForOrder,
@@ -94,5 +95,19 @@ describe("cartMatchesOrder", () => {
 
   it("un carrito vacío no coincide con una orden con items", () => {
     expect(cartMatchesOrder(cart([]), [{ skuSnapshot: "SKU-A", quantity: 2 }])).toBe(false);
+  });
+});
+
+describe("cartFingerprint", () => {
+  it("es igual para el mismo contenido en distinto orden", () => {
+    const a = cartFingerprint(cart([{ sku: "SKU-A", quantity: 2 }, { sku: "SKU-B", quantity: 1 }]));
+    const b = cartFingerprint(cart([{ sku: "SKU-B", quantity: 1 }, { sku: "SKU-A", quantity: 2 }]));
+    expect(a).toBe(b);
+  });
+
+  it("difiere si cambia una cantidad", () => {
+    expect(cartFingerprint(cart([{ sku: "SKU-A", quantity: 2 }]))).not.toBe(
+      cartFingerprint(cart([{ sku: "SKU-A", quantity: 3 }])),
+    );
   });
 });
