@@ -27,7 +27,14 @@ type AddToCartFormProps = {
   /** Controles extra dentro del form (p.ej. QuantityStepper). Si no hay, se envía quantity=1. */
   children?: ReactNode;
   label?: string;
-  buttonAriaLabel?: string;
+  /**
+   * Nombre del producto, solo como contexto para lectores de pantalla. El
+   * nombre accesible lo compone este componente como `${label}: ${productName}`
+   * para que siempre empiece por el texto visible del botón; construirlo en
+   * cada card llevaba a nombres tipo "Agregar X al carrito", que no contienen
+   * el texto visible en orden y rompen `label-content-name-mismatch`.
+   */
+  productName?: string;
   unavailableLabel?: string;
   className?: string;
   buttonClassName?: string;
@@ -43,12 +50,16 @@ export function AddToCartForm({
   available,
   children,
   label = "Agregar al carrito",
-  buttonAriaLabel,
+  productName,
   unavailableLabel = "No disponible por ahora",
   className,
   buttonClassName,
   buttonSize = "md",
 }: AddToCartFormProps) {
+  // El texto visible va primero y literal; el producto queda como sufijo.
+  const accessibleName =
+    available && productName ? `${label}: ${productName}` : undefined;
+
   const [state, formAction, pending] = useActionState(addCartItemInline, null);
   const lastHandledAtRef = useRef<number | null>(null);
   const router = useRouter();
@@ -72,7 +83,7 @@ export function AddToCartForm({
       <input name="sku" type="hidden" value={sku} />
       {children ?? <input name="quantity" type="hidden" value="1" />}
       <Button
-        aria-label={available ? buttonAriaLabel : undefined}
+        aria-label={accessibleName}
         type="submit"
         size={buttonSize}
         disabled={!available || pending}

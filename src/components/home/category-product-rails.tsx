@@ -57,7 +57,7 @@ export async function CategoryProductRails({
   return (
     <>
       {visible.map((rail) => (
-        <section className="space-y-3" key={rail.category}>
+        <section className="ca-defer-offscreen space-y-3" key={rail.category}>
           <div className="flex items-baseline justify-between gap-4 border-b border-ca-border pb-2">
             <h2 className="font-display text-lg font-extrabold text-ca-navy-950">
               {rail.category}

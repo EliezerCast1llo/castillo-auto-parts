@@ -4,9 +4,14 @@ import { ToastProvider } from "@/components/ui/toast";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
+// Barlow Condensed es estatica: cada peso declarado es un .woff2 aparte que
+// next/font ademas precarga. Solo se usa en 800 (.ca-section-label, rieles,
+// selector de vehiculo) y 900 (h1 del hero, logo, titulos de error), asi que
+// declarar 400/600/700 anadia tres descargas y tres <link rel=preload> que
+// competian con la imagen LCP del hero sin pintar un solo caracter.
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800", "900"],
+  weight: ["800", "900"],
   variable: "--font-display",
 });
 
