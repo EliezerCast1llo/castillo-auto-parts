@@ -10,6 +10,11 @@ type RateLimitBucket = {
   resetAt: number;
 };
 
+// Cota dura del número de buckets vivos. Impide que, durante una caída de Redis
+// (cuando este limiter en memoria recibe todo el tráfico) un atacante con
+// x-forwarded-for único por request haga crecer el Map sin límite hasta OOM.
+const MAX_BUCKETS = 10_000;
+
 export type RateLimitResult =
   | {
       allowed: true;
@@ -79,6 +84,10 @@ function getActiveBucket(
     return existingBucket;
   }
 
+  if (buckets.size >= MAX_BUCKETS) {
+    evictBuckets(buckets, nowMs);
+  }
+
   const bucket = {
     attempts: 0,
     lockedUntil: 0,
@@ -87,6 +96,25 @@ function getActiveBucket(
 
   buckets.set(key, bucket);
   return bucket;
+}
+
+// Poda para acotar memoria: primero borra buckets ya expirados (ventana vencida y
+// sin bloqueo activo); si aún se supera la cota, desaloja los más antiguos por
+// orden de inserción (Map preserva ese orden) hasta bajar del límite.
+function evictBuckets(buckets: Map<string, RateLimitBucket>, nowMs: number) {
+  for (const [key, bucket] of buckets) {
+    if (bucket.resetAt <= nowMs && bucket.lockedUntil <= nowMs) {
+      buckets.delete(key);
+    }
+  }
+
+  if (buckets.size < MAX_BUCKETS) return;
+
+  const target = Math.floor(MAX_BUCKETS / 2);
+  for (const key of buckets.keys()) {
+    if (buckets.size <= target) break;
+    buckets.delete(key);
+  }
 }
 
 function deny(lockedUntil: number, nowMs: number): RateLimitResult {

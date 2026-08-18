@@ -4,7 +4,7 @@ import {
   PaymentStatus as PrismaPaymentStatus,
   Prisma,
 } from "@prisma/client";
-import { clearGuestCart, getGuestCart } from "./cart";
+import { clearGuestCart, getGuestCart, type GuestCart } from "./cart";
 import { logError } from "./logger";
 import {
   buildFormattedAddress,
@@ -66,19 +66,27 @@ export async function createGuestCheckoutFromCart(
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
 
-  // Idempotencia: se resuelve ANTES de los guards de carrito. Tras una orden
-  // exitosa el carrito queda vacío (clearGuestCart), así que un re-submit con la
-  // misma key debe devolver el checkout existente, no fallar como empty_cart.
+  const cart = await getGuestCart();
+
+  // Idempotencia: se resuelve tras leer el carrito pero ANTES de los guards, para
+  // que un re-submit tras una compra (carrito ya vacío) reproduzca el checkout en
+  // vez de fallar como empty_cart, SIN pisar un carrito reconstruido.
   let effectiveIdempotencyKey = idempotencyKey;
   if (idempotencyKey) {
     const existing = await findOrderByIdempotencyKey(idempotencyKey);
     if (existing) {
-      // Scope: si la orden es de otro usuario autenticado, ignorar la key
-      // (defensa en profundidad ante una key filtrada) y seguir como submit nuevo.
-      const belongsToOtherUser =
-        Boolean(userId) && Boolean(existing.userId) && existing.userId !== userId;
+      // Scope de identidad: una orden de un usuario autenticado solo la reproduce
+      // ese mismo usuario. Un invitado (userId undefined) nunca reproduce una orden
+      // con dueño. Evita que en una máquina compartida se filtre el checkout ajeno.
+      const identityMismatch = existing.userId !== null && existing.userId !== userId;
 
-      if (belongsToOtherUser) {
+      // Mismo intento solo si el carrito está vacío (volver atrás tras la compra) o
+      // coincide con los items de la orden (doble-click del mismo carrito). Si el
+      // carrito fue reconstruido con otros items, NO reproducir ni borrarlo.
+      const sameIntent = cart.lines.length === 0 || cartMatchesOrder(cart, existing.items);
+
+      if (identityMismatch || !sameIntent) {
+        // Ignorar la key: se honra el carrito actual como submit nuevo.
         effectiveIdempotencyKey = undefined;
       } else {
         const state = idempotencyStateForOrder(existing);
@@ -98,7 +106,6 @@ export async function createGuestCheckoutFromCart(
     }
   }
 
-  const cart = await getGuestCart();
   if (cart.lines.length === 0) return { status: "empty_cart" };
   if (cart.hasBlockingIssues) return { status: "stock_issue" };
 
@@ -323,6 +330,7 @@ export type IdempotentOrderLookup = {
   status: OrderStatus;
   userId: string | null;
   reservationExpiresAt: Date | null;
+  items: { skuSnapshot: string; quantity: number }[];
   payment: { checkoutUrl: string | null } | null;
 };
 
@@ -336,9 +344,23 @@ function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOr
       status: true,
       userId: true,
       reservationExpiresAt: true,
+      items: { select: { skuSnapshot: true, quantity: true } },
       payment: { select: { checkoutUrl: true } },
     },
   });
+}
+
+// Un carrito coincide con una orden si tiene exactamente los mismos SKUs y
+// cantidades. Discrimina el doble-click del mismo carrito (reproducir) de un
+// carrito reconstruido con otros items (crear orden nueva, no pisar el carrito).
+export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["items"]): boolean {
+  if (cart.lines.length !== items.length) return false;
+
+  const orderQuantities = new Map(items.map((item) => [item.skuSnapshot, item.quantity]));
+  for (const line of cart.lines) {
+    if (orderQuantities.get(line.product.sku) !== line.quantity) return false;
+  }
+  return true;
 }
 
 async function releaseIdempotencyKey(idempotencyKey: string) {

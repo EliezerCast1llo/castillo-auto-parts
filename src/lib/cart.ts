@@ -120,9 +120,11 @@ export async function clearGuestCart() {
 
 async function readGuestCartItems(): Promise<StoredCartItem[]> {
   const cookieStore = await cookies();
-  return parseSignedStoredCart(cookieStore.get(GUEST_CART_COOKIE)?.value, getGuestCartCookieSecret(), {
-    allowUnsignedFallback: process.env.NODE_ENV !== "production",
-  });
+  return parseSignedStoredCart(
+    cookieStore.get(GUEST_CART_COOKIE)?.value,
+    getGuestCartVerificationSecrets(),
+    { allowUnsignedFallback: process.env.NODE_ENV !== "production" },
+  );
 }
 
 async function writeGuestCartItems(items: StoredCartItem[]) {
@@ -146,21 +148,50 @@ async function writeGuestCartItems(items: StoredCartItem[]) {
 }
 
 function serializeGuestCartCookie(items: StoredCartItem[]) {
-  return serializeSignedStoredCart(items, getGuestCartCookieSecret());
+  return serializeSignedStoredCart(items, getGuestCartSigningSecret());
 }
 
-function getGuestCartCookieSecret() {
-  const secret = process.env.GUEST_CART_SECRET?.trim();
-  if (secret) return secret;
+let warnedSecretReuse = false;
 
-  if (process.env.NODE_ENV !== "production") {
-    // Solo dev: fallback ergonómico para no bloquear el arranque local.
-    return process.env.ADMIN_ACCESS_SECRET?.trim() || "dev-only-guest-cart-secret";
+// Secreto con el que se FIRMAN los cookies nuevos. Prefiere el dedicado; si no
+// existe usa ADMIN_ACCESS_SECRET (compatibilidad con deploys previos) y avisa una
+// vez. Así no se rompe producción y se puede migrar a GUEST_CART_SECRET sin corte.
+function getGuestCartSigningSecret() {
+  const dedicated = process.env.GUEST_CART_SECRET?.trim();
+  if (dedicated) return dedicated;
+
+  const adminSecret = process.env.ADMIN_ACCESS_SECRET?.trim();
+  if (adminSecret) {
+    if (process.env.NODE_ENV === "production" && !warnedSecretReuse) {
+      warnedSecretReuse = true;
+      console.warn(
+        "[cart] GUEST_CART_SECRET no está definido; se usa ADMIN_ACCESS_SECRET. " +
+          "Define un GUEST_CART_SECRET propio para no reusar secretos.",
+      );
+    }
+    return adminSecret;
   }
 
-  // Producción: exigir un secreto propio. No reusar ADMIN_ACCESS_SECRET —
-  // comprometer uno no debe comprometer las firmas del otro.
-  throw new Error("Missing GUEST_CART_SECRET.");
+  if (process.env.NODE_ENV !== "production") {
+    return "dev-only-guest-cart-secret";
+  }
+
+  throw new Error("Missing GUEST_CART_SECRET or ADMIN_ACCESS_SECRET.");
+}
+
+// Secretos aceptados al VERIFICAR firmas. Incluye ambos para que rotar de
+// ADMIN_ACCESS_SECRET a GUEST_CART_SECRET no invalide los carritos en vuelo.
+function getGuestCartVerificationSecrets(): string[] {
+  const candidates = [
+    process.env.GUEST_CART_SECRET?.trim(),
+    process.env.ADMIN_ACCESS_SECRET?.trim(),
+  ].filter((value): value is string => Boolean(value));
+
+  if (candidates.length === 0 && process.env.NODE_ENV !== "production") {
+    return ["dev-only-guest-cart-secret"];
+  }
+
+  return [...new Set(candidates)];
 }
 
 async function findProductBySku(sku: string) {

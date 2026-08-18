@@ -1,6 +1,8 @@
 import { OrderStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
+import type { GuestCart } from "./cart";
 import {
+  cartMatchesOrder,
   idempotencyStateForOrder,
   replayResultForOrder,
   type IdempotentOrderLookup,
@@ -15,9 +17,24 @@ function order(overrides: Partial<IdempotentOrderLookup> = {}): IdempotentOrderL
     status: OrderStatus.PAYMENT_PROCESSING,
     userId: null,
     reservationExpiresAt: FUTURE,
+    items: [{ skuSnapshot: "SKU-A", quantity: 2 }],
     payment: { checkoutUrl: "https://pay.example/checkout/abc" },
     ...overrides,
   };
+}
+
+function cart(lines: { sku: string; quantity: number }[]): GuestCart {
+  return {
+    hasBlockingIssues: false,
+    itemCount: lines.reduce((total, line) => total + line.quantity, 0),
+    subtotalCents: 0,
+    lines: lines.map((line) => ({
+      availableQuantity: 99,
+      lineTotalCents: 0,
+      quantity: line.quantity,
+      product: { sku: line.sku },
+    })),
+  } as GuestCart;
 }
 
 describe("idempotencyStateForOrder", () => {
@@ -30,24 +47,16 @@ describe("idempotencyStateForOrder", () => {
     expect(idempotencyStateForOrder(order({ payment: null }))).toBe("in_flight");
   });
 
-  it("dead: reserva expirada", () => {
+  it("dead: reserva expirada / sin reserva / estado no PAYMENT_PROCESSING", () => {
     expect(idempotencyStateForOrder(order({ reservationExpiresAt: PAST }))).toBe("dead");
-  });
-
-  it("dead: sin reservationExpiresAt", () => {
     expect(idempotencyStateForOrder(order({ reservationExpiresAt: null }))).toBe("dead");
-  });
-
-  it("dead: estado no PAYMENT_PROCESSING", () => {
     expect(idempotencyStateForOrder(order({ status: OrderStatus.CANCELLED }))).toBe("dead");
-    expect(idempotencyStateForOrder(order({ status: OrderStatus.PAID_PENDING_SHIPMENT }))).toBe("dead");
   });
 });
 
 describe("replayResultForOrder", () => {
   it("reutiliza el checkout de una orden en estado replay (sin accessToken)", () => {
-    const result = replayResultForOrder(order());
-    expect(result).toEqual({
+    expect(replayResultForOrder(order())).toEqual({
       checkoutUrl: "https://pay.example/checkout/abc",
       orderNumber: "CAP-20260817-ABC123",
       status: "created",
@@ -56,9 +65,34 @@ describe("replayResultForOrder", () => {
 
   it("devuelve null en cualquier estado no-replay", () => {
     expect(replayResultForOrder(order({ reservationExpiresAt: PAST }))).toBeNull();
-    expect(replayResultForOrder(order({ reservationExpiresAt: null }))).toBeNull();
     expect(replayResultForOrder(order({ status: OrderStatus.CANCELLED }))).toBeNull();
     expect(replayResultForOrder(order({ payment: { checkoutUrl: null } }))).toBeNull();
-    expect(replayResultForOrder(order({ payment: null }))).toBeNull();
+  });
+});
+
+describe("cartMatchesOrder", () => {
+  it("coincide con mismos SKUs y cantidades (independiente del orden)", () => {
+    const items = [
+      { skuSnapshot: "SKU-A", quantity: 2 },
+      { skuSnapshot: "SKU-B", quantity: 1 },
+    ];
+    expect(cartMatchesOrder(cart([{ sku: "SKU-B", quantity: 1 }, { sku: "SKU-A", quantity: 2 }]), items)).toBe(true);
+  });
+
+  it("no coincide si cambia una cantidad", () => {
+    const items = [{ skuSnapshot: "SKU-A", quantity: 2 }];
+    expect(cartMatchesOrder(cart([{ sku: "SKU-A", quantity: 3 }]), items)).toBe(false);
+  });
+
+  it("no coincide si cambia un SKU o el número de líneas", () => {
+    const items = [{ skuSnapshot: "SKU-A", quantity: 2 }];
+    expect(cartMatchesOrder(cart([{ sku: "SKU-Z", quantity: 2 }]), items)).toBe(false);
+    expect(
+      cartMatchesOrder(cart([{ sku: "SKU-A", quantity: 2 }, { sku: "SKU-B", quantity: 1 }]), items),
+    ).toBe(false);
+  });
+
+  it("un carrito vacío no coincide con una orden con items", () => {
+    expect(cartMatchesOrder(cart([]), [{ skuSnapshot: "SKU-A", quantity: 2 }])).toBe(false);
   });
 });

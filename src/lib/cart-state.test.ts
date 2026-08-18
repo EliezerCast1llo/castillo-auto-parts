@@ -74,6 +74,19 @@ describe("cart state", () => {
     expect(parseSignedStoredCart(`${signedCart}tampered`, secret)).toEqual([]);
   });
 
+  it("verifica contra varios secretos para permitir rotación sin vaciar carritos", () => {
+    const oldSecret = "admin-access-secret";
+    const newSecret = "guest-cart-secret";
+    const signedWithOld = serializeSignedStoredCart([{ sku: "A-1", quantity: 2 }], oldSecret);
+
+    // Firmado con el viejo, se acepta mientras el viejo siga en la lista de verificación.
+    expect(parseSignedStoredCart(signedWithOld, [newSecret, oldSecret])).toEqual([
+      { sku: "A-1", quantity: 2 },
+    ]);
+    // Si el viejo ya no está entre los aceptados, la firma vieja se rechaza.
+    expect(parseSignedStoredCart(signedWithOld, [newSecret])).toEqual([]);
+  });
+
   it("only accepts unsigned legacy payloads when fallback is enabled", () => {
     const legacyCart = '[{"sku":"A-1","quantity":2}]';
 

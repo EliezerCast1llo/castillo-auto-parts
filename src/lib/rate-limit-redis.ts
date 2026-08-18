@@ -306,8 +306,11 @@ function buildRedisRateLimiter(
           remainingAttempts: options.maxAttempts - attempts,
         };
       } catch (error) {
-        // Redis caído: contar el fallo en el limiter en memoria para que el
-        // bloqueo se acumule de verdad durante la caída (mejor que un 60s fijo).
+        // Redis caído: contar el fallo en el limiter en memoria. Es por-proceso
+        // (en multi-instancia el límite se multiplica por instancia) pero se
+        // prefiere a un fail-closed que bloquearía TODO login ante cualquier
+        // parpadeo de Redis (auto-DoS). En el deploy single-instance de Railway el
+        // conteo en memoria es efectivo al 100%. El Map está acotado (MAX_BUCKETS).
         console.error("[rate-limit-redis] registerFailure failed, falling back to in-memory:", error);
         return memoryFallback.registerFailure(key);
       }
