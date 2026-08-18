@@ -141,18 +141,6 @@ export function createSearchRateLimiter(): AsyncRateLimiter {
   });
 }
 
-/**
- * Webhooks de pago: 120 solicitudes/min por IP. Holgado para tolerar los
- * reintentos legítimos del proveedor, pero frena un flood de firmas inválidas.
- */
-export function createWebhookRateLimiter(): AsyncRateLimiter {
-  return createAsyncRateLimiter({
-    maxAttempts: 120,
-    windowMs: 60 * 1000,
-    lockoutMs: 60 * 1000,
-  });
-}
-
 /** Uploads/deletes de imágenes admin: 30 solicitudes/min por IP. */
 export function createAdminImageRateLimiter(): AsyncRateLimiter {
   return createAsyncRateLimiter({

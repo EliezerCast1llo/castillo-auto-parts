@@ -90,11 +90,12 @@ export async function createGuestCheckoutFromCart(
         effectiveIdempotencyKey = undefined;
       } else {
         const state = idempotencyStateForOrder(existing);
-        if (state === "replay") {
+        const checkoutUrl = existing.payment?.checkoutUrl;
+        if (state === "replay" && checkoutUrl) {
           await clearGuestCartSafely();
-          return replayResultForOrder(existing)!;
+          return { checkoutUrl, orderNumber: existing.orderNumber, status: "created" };
         }
-        if (state === "in_flight") {
+        if (state !== "dead") {
           // Carrera concurrente: el ganador aún no persiste checkoutUrl. No es un
           // error terminal; el cliente reintenta.
           return { status: "duplicate_in_progress" };
@@ -312,9 +313,10 @@ export async function createGuestCheckoutFromCart(
       isIdempotencyKeyConflict(error)
     ) {
       const existing = await findOrderByIdempotencyKey(idempotencyKey);
-      if (existing && idempotencyStateForOrder(existing) === "replay") {
+      const checkoutUrl = existing?.payment?.checkoutUrl;
+      if (existing && idempotencyStateForOrder(existing) === "replay" && checkoutUrl) {
         await clearGuestCartSafely();
-        return replayResultForOrder(existing)!;
+        return { checkoutUrl, orderNumber: existing.orderNumber, status: "created" };
       }
       // Ganador aún sin checkoutUrl persistido: reintento, no error terminal.
       return { status: "duplicate_in_progress" };

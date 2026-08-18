@@ -179,19 +179,28 @@ function getGuestCartSigningSecret() {
   throw new Error("Missing GUEST_CART_SECRET or ADMIN_ACCESS_SECRET.");
 }
 
-// Secretos aceptados al VERIFICAR firmas. Incluye ambos para que rotar de
-// ADMIN_ACCESS_SECRET a GUEST_CART_SECRET no invalide los carritos en vuelo.
+// Secretos aceptados al VERIFICAR firmas.
+// - Si no hay GUEST_CART_SECRET (deploy previo), se acepta ADMIN_ACCESS_SECRET.
+// - Una vez seteado GUEST_CART_SECRET, se acepta ADMIN solo si se pide explícito
+//   con GUEST_CART_ACCEPT_ADMIN_SECRET=true (ventana de migración). Al quitar el
+//   flag se cierra el fallback y ADMIN deja de poder firmar carritos.
 function getGuestCartVerificationSecrets(): string[] {
-  const candidates = [
-    process.env.GUEST_CART_SECRET?.trim(),
-    process.env.ADMIN_ACCESS_SECRET?.trim(),
-  ].filter((value): value is string => Boolean(value));
+  const guestSecret = process.env.GUEST_CART_SECRET?.trim();
+  const adminSecret = process.env.ADMIN_ACCESS_SECRET?.trim();
 
-  if (candidates.length === 0 && process.env.NODE_ENV !== "production") {
-    return ["dev-only-guest-cart-secret"];
-  }
+  const secrets: string[] = [];
+  if (guestSecret) secrets.push(guestSecret);
+  const acceptAdmin =
+    adminSecret && (!guestSecret || process.env.GUEST_CART_ACCEPT_ADMIN_SECRET === "true");
+  if (acceptAdmin) secrets.push(adminSecret);
 
-  return [...new Set(candidates)];
+  if (secrets.length > 0) return [...new Set(secrets)];
+
+  if (process.env.NODE_ENV !== "production") return ["dev-only-guest-cart-secret"];
+
+  // Fail-loud: sin ningún secreto en prod es misconfiguración. No devolver [] en
+  // silencio (leería TODO carrito firmado como vacío, sin error ni log).
+  throw new Error("Missing GUEST_CART_SECRET or ADMIN_ACCESS_SECRET.");
 }
 
 async function findProductBySku(sku: string) {

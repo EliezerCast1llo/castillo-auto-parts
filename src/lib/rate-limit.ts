@@ -98,21 +98,25 @@ function getActiveBucket(
   return bucket;
 }
 
-// Poda para acotar memoria: primero borra buckets ya expirados (ventana vencida y
-// sin bloqueo activo); si aún se supera la cota, desaloja los más antiguos por
-// orden de inserción (Map preserva ese orden) hasta bajar del límite.
+// Poda para acotar memoria. Baja siempre hasta un target con holgura (la mitad de
+// la cota) para no re-escanear en cada inserción posterior.
 function evictBuckets(buckets: Map<string, RateLimitBucket>, nowMs: number) {
+  const target = Math.floor(MAX_BUCKETS / 2);
+
+  // 1) Borra buckets totalmente expirados (ventana vencida y sin bloqueo activo).
   for (const [key, bucket] of buckets) {
     if (bucket.resetAt <= nowMs && bucket.lockedUntil <= nowMs) {
       buckets.delete(key);
     }
   }
 
-  if (buckets.size < MAX_BUCKETS) return;
+  if (buckets.size <= target) return;
 
-  const target = Math.floor(MAX_BUCKETS / 2);
-  for (const key of buckets.keys()) {
+  // 2) Aún por encima del target: desaloja los más antiguos, pero NUNCA un bucket
+  //    con bloqueo activo (si no, un flood de keys únicas borraría lockouts reales).
+  for (const [key, bucket] of buckets) {
     if (buckets.size <= target) break;
+    if (bucket.lockedUntil > nowMs) continue;
     buckets.delete(key);
   }
 }

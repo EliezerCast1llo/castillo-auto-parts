@@ -80,7 +80,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
 
-            {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
+            {/* Tras duplicate_in_progress NO se re-renderiza el formulario: reenviar
+                generaría una key nueva y podría crear una orden duplicada. Se muestra
+                solo el aviso hasta que el pedido en curso termine. */}
+            {status !== "duplicate_in_progress" &&
+              (cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
                 deliveryZones={fulfillmentOptions.deliveryZones}
                 idempotencyKey={createCheckoutIdempotencyKey()}
@@ -91,7 +95,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               />
             ) : (
               <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
-            )}
+            ))}
           </div>
 
           {/* Resumen — sticky en desktop, visible debajo en mobile */}

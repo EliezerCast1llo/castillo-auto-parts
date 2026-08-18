@@ -60,6 +60,27 @@ describe("rate limiter", () => {
     expect(limiter.check("ip-nueva", 1_000)).toMatchObject({ allowed: true });
   });
 
+  it("no borra un lockout activo al desalojar por flood de keys únicas", () => {
+    const limiter = createRateLimiter({
+      lockoutMs: 60_000,
+      maxAttempts: 2,
+      windowMs: 60_000,
+    });
+
+    // "victim" queda bloqueada (y es la key más antigua, primera candidata a desalojo).
+    limiter.registerFailure("victim", 1_000);
+    limiter.registerFailure("victim", 1_000);
+    expect(limiter.check("victim", 1_000)).toMatchObject({ allowed: false });
+
+    // Flood de keys únicas que dispara evicción varias veces.
+    for (let i = 0; i < 12_000; i++) {
+      limiter.registerFailure(`flood-${i}`, 1_000);
+    }
+
+    // El lockout activo sobrevive: no se puede borrar bloqueando con basura.
+    expect(limiter.check("victim", 1_000)).toMatchObject({ allowed: false });
+  });
+
   it("desaloja buckets expirados cuando se llena la cota", () => {
     const limiter = createRateLimiter({
       lockoutMs: 1_000,

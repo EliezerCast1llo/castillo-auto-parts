@@ -128,14 +128,6 @@ describe("fallback in-memory cuando Redis falla en caliente", () => {
 });
 
 describe("factories de rate limit para endpoints públicos/admin", () => {
-  it("createWebhookRateLimiter devuelve un AsyncRateLimiter", async () => {
-    const { createWebhookRateLimiter } = await import("./rate-limit-redis");
-    const limiter = createWebhookRateLimiter();
-    expect(limiter.check).toBeTypeOf("function");
-    expect(limiter.registerFailure).toBeTypeOf("function");
-    expect(limiter.reset).toBeTypeOf("function");
-  });
-
   it("createAdminImageRateLimiter devuelve un AsyncRateLimiter", async () => {
     const { createAdminImageRateLimiter } = await import("./rate-limit-redis");
     const limiter = createAdminImageRateLimiter();
