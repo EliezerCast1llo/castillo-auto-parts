@@ -1,12 +1,27 @@
 import { NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/api-rate-limit";
 import { processPaymentWebhookEvent } from "@/lib/payment-events";
 import {
   getPaymentProvider,
   getWompiConfig,
   InvalidWompiWebhookSignatureError,
 } from "@/lib/payments";
+import { createWebhookRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
+import { getClientIp } from "@/lib/request-ip";
+
+let _webhookRateLimiter: AsyncRateLimiter | undefined;
 
 export async function POST(request: Request) {
+  // Rate limit por IP antes de verificar firma: frena un flood de webhooks
+  // falsos sin gastar CPU en la verificación HMAC de cada uno.
+  const limiter = (_webhookRateLimiter ??= createWebhookRateLimiter());
+  const limited = await enforceRateLimit(
+    limiter,
+    `webhook:wompi:ip:${getClientIp(request.headers)}`,
+    "Demasiadas solicitudes.",
+  );
+  if (limited) return limited;
+
   try {
     const config = getWompiConfig();
     const provider = getPaymentProvider("wompi");

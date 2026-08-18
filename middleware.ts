@@ -200,7 +200,14 @@ function getSafeNextPath(pathname: string): string {
 }
 
 function withCspHeaders(response: NextResponse, csp: string, nonce: string) {
-  response.headers.set("Content-Security-Policy-Report-Only", csp);
+  // Por defecto report-only (no rompe nada). Poner CSP_ENFORCE=true para emitir
+  // el header que bloquea de verdad, una vez validado que no hay violaciones
+  // legítimas en los reportes.
+  const headerName =
+    process.env.CSP_ENFORCE === "true"
+      ? "Content-Security-Policy"
+      : "Content-Security-Policy-Report-Only";
+  response.headers.set(headerName, csp);
   response.headers.set("x-nonce", nonce);
   return response;
 }

@@ -141,6 +141,27 @@ export function createSearchRateLimiter(): AsyncRateLimiter {
   });
 }
 
+/**
+ * Webhooks de pago: 120 solicitudes/min por IP. Holgado para tolerar los
+ * reintentos legítimos del proveedor, pero frena un flood de firmas inválidas.
+ */
+export function createWebhookRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 120,
+    windowMs: 60 * 1000,
+    lockoutMs: 60 * 1000,
+  });
+}
+
+/** Uploads/deletes de imágenes admin: 30 solicitudes/min por IP. */
+export function createAdminImageRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 30,
+    windowMs: 60 * 1000,
+    lockoutMs: 60 * 1000,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Implementación Redis via Upstash REST API (fetch nativo, sin dependencias)
 // ---------------------------------------------------------------------------
@@ -162,6 +183,11 @@ function buildRedisRateLimiter(
 ): AsyncRateLimiter {
   const windowSeconds = Math.ceil(options.windowMs / 1000);
   const lockoutSeconds = Math.ceil(options.lockoutMs / 1000);
+
+  // Fallback en memoria para cuando Redis falla en caliente. Es por-proceso (no
+  // coordina entre instancias) pero limita de verdad, a diferencia de un fail-open
+  // que deja pasar todo. En Railway single-instance protege por completo.
+  const memoryFallback = createRateLimiter(options);
 
   async function redisCommand<T>(command: unknown[]): Promise<T> {
     const response = await fetch(redisUrl, {
@@ -233,10 +259,9 @@ function buildRedisRateLimiter(
           remainingAttempts: Math.max(options.maxAttempts - attempts, 0),
         };
       } catch (error) {
-        // Si Redis no está disponible, permitir el intento (fail open en check,
-        // fail seguro en registerFailure donde el log de error es suficiente).
-        console.error("[rate-limit-redis] check failed, failing open:", error);
-        return { allowed: true, remainingAttempts: options.maxAttempts };
+        // Redis caído: delegar al limiter en memoria en vez de dejar pasar todo.
+        console.error("[rate-limit-redis] check failed, falling back to in-memory:", error);
+        return memoryFallback.check(key);
       }
     },
 
@@ -281,13 +306,15 @@ function buildRedisRateLimiter(
           remainingAttempts: options.maxAttempts - attempts,
         };
       } catch (error) {
-        // Si Redis falla durante un intento fallido, bloqueamos conservadoramente.
-        console.error("[rate-limit-redis] registerFailure failed, failing closed:", error);
-        return { allowed: false, retryAfterSeconds: 60 };
+        // Redis caído: contar el fallo en el limiter en memoria para que el
+        // bloqueo se acumule de verdad durante la caída (mejor que un 60s fijo).
+        console.error("[rate-limit-redis] registerFailure failed, falling back to in-memory:", error);
+        return memoryFallback.registerFailure(key);
       }
     },
 
     async reset(key) {
+      memoryFallback.reset(key);
       try {
         await redisCommand(["DEL", `${key}:count`, `${key}:locked`]);
       } catch (error) {

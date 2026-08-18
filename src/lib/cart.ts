@@ -150,14 +150,17 @@ function serializeGuestCartCookie(items: StoredCartItem[]) {
 }
 
 function getGuestCartCookieSecret() {
-  const secret = process.env.GUEST_CART_SECRET?.trim() || process.env.ADMIN_ACCESS_SECRET?.trim();
+  const secret = process.env.GUEST_CART_SECRET?.trim();
   if (secret) return secret;
 
   if (process.env.NODE_ENV !== "production") {
-    return "dev-only-guest-cart-secret";
+    // Solo dev: fallback ergonómico para no bloquear el arranque local.
+    return process.env.ADMIN_ACCESS_SECRET?.trim() || "dev-only-guest-cart-secret";
   }
 
-  throw new Error("Missing GUEST_CART_SECRET or ADMIN_ACCESS_SECRET.");
+  // Producción: exigir un secreto propio. No reusar ADMIN_ACCESS_SECRET —
+  // comprometer uno no debe comprometer las firmas del otro.
+  throw new Error("Missing GUEST_CART_SECRET.");
 }
 
 async function findProductBySku(sku: string) {
