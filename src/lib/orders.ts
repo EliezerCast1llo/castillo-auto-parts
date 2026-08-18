@@ -38,11 +38,12 @@ import {
 } from "./payments";
 
 export type CreateGuestOrderResult =
-  | { accessToken: string; checkoutUrl: string; orderNumber: string; status: "created" }
+  | { accessToken?: string; checkoutUrl: string; orderNumber: string; status: "created" }
   | {
       status:
         | "coverage_unavailable"
         | "db_unavailable"
+        | "duplicate_in_progress"
         | "empty_cart"
         | "invalid"
         | "payment_unavailable"
@@ -65,23 +66,41 @@ export async function createGuestCheckoutFromCart(
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
 
-  const cart = await getGuestCart();
-  if (cart.lines.length === 0) return { status: "empty_cart" };
-  if (cart.hasBlockingIssues) return { status: "stock_issue" };
-
-  // Idempotencia: si este submit ya creó una orden viva (mismo hidden key),
-  // devolver su checkout en vez de crear otra orden + otra reserva de stock.
+  // Idempotencia: se resuelve ANTES de los guards de carrito. Tras una orden
+  // exitosa el carrito queda vacío (clearGuestCart), así que un re-submit con la
+  // misma key debe devolver el checkout existente, no fallar como empty_cart.
   let effectiveIdempotencyKey = idempotencyKey;
   if (idempotencyKey) {
     const existing = await findOrderByIdempotencyKey(idempotencyKey);
     if (existing) {
-      const replay = replayResultForOrder(existing);
-      if (replay) return replay;
-      // Orden previa muerta (expirada/cancelada/fallida): no se puede reusar la
-      // key (@unique). Se crea una orden nueva sin key para evitar colisión.
-      effectiveIdempotencyKey = undefined;
+      // Scope: si la orden es de otro usuario autenticado, ignorar la key
+      // (defensa en profundidad ante una key filtrada) y seguir como submit nuevo.
+      const belongsToOtherUser =
+        Boolean(userId) && Boolean(existing.userId) && existing.userId !== userId;
+
+      if (belongsToOtherUser) {
+        effectiveIdempotencyKey = undefined;
+      } else {
+        const state = idempotencyStateForOrder(existing);
+        if (state === "replay") {
+          await clearGuestCartSafely();
+          return replayResultForOrder(existing)!;
+        }
+        if (state === "in_flight") {
+          // Carrera concurrente: el ganador aún no persiste checkoutUrl. No es un
+          // error terminal; el cliente reintenta.
+          return { status: "duplicate_in_progress" };
+        }
+        // Orden muerta (expirada/cancelada/fallida): liberar la key para crear una
+        // nueva conservando idempotencia en reintentos posteriores.
+        await releaseIdempotencyKey(idempotencyKey);
+      }
     }
   }
+
+  const cart = await getGuestCart();
+  if (cart.lines.length === 0) return { status: "empty_cart" };
+  if (cart.hasBlockingIssues) return { status: "stock_issue" };
 
   try {
     const deliveryZones = await getActiveDeliveryZones();
@@ -263,11 +282,7 @@ export async function createGuestCheckoutFromCart(
 
     await recordCreatedPayment(order.paymentId, payment);
 
-    try {
-      await clearGuestCart();
-    } catch (error) {
-      logError({ context: "clearGuestCartAfterPendingOrder" }, error);
-    }
+    await clearGuestCartSafely();
 
     return {
       accessToken: order.accessToken,
@@ -281,17 +296,21 @@ export async function createGuestCheckoutFromCart(
     }
 
     // Carrera concurrente: dos submits en paralelo con la misma key. El ganador
-    // creó la orden; el @unique rechaza al perdedor con P2002. Devolver el
-    // checkout del ganador si ya está listo; si no, pedir reintento.
+    // creó la orden; el @unique de idempotencyKey rechaza al perdedor con P2002.
+    // Solo tratar así cuando el conflicto es de idempotencyKey (no otro índice).
     if (
       idempotencyKey &&
       error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
+      error.code === "P2002" &&
+      isIdempotencyKeyConflict(error)
     ) {
       const existing = await findOrderByIdempotencyKey(idempotencyKey);
-      const replay = existing ? replayResultForOrder(existing) : null;
-      if (replay) return replay;
-      return { status: "payment_unavailable" };
+      if (existing && idempotencyStateForOrder(existing) === "replay") {
+        await clearGuestCartSafely();
+        return replayResultForOrder(existing)!;
+      }
+      // Ganador aún sin checkoutUrl persistido: reintento, no error terminal.
+      return { status: "duplicate_in_progress" };
     }
 
     logError({ context: "createGuestCheckoutFromCart" }, error);
@@ -302,9 +321,12 @@ export async function createGuestCheckoutFromCart(
 export type IdempotentOrderLookup = {
   orderNumber: string;
   status: OrderStatus;
+  userId: string | null;
   reservationExpiresAt: Date | null;
   payment: { checkoutUrl: string | null } | null;
 };
+
+export type IdempotencyState = "replay" | "in_flight" | "dead";
 
 function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOrderLookup | null> {
   return db.order.findUnique({
@@ -312,27 +334,58 @@ function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOr
     select: {
       orderNumber: true,
       status: true,
+      userId: true,
       reservationExpiresAt: true,
       payment: { select: { checkoutUrl: true } },
     },
   });
 }
 
-// Devuelve el resultado "created" reutilizable solo si la orden previa sigue viva
-// (en proceso de pago, reserva no expirada) y ya tiene checkout listo.
-export function replayResultForOrder(order: IdempotentOrderLookup): CreateGuestOrderResult | null {
+async function releaseIdempotencyKey(idempotencyKey: string) {
+  // Libera la key de una orden muerta para que un nuevo intento pueda reusarla
+  // sin colisionar con el @unique. updateMany es idempotente ante concurrencia.
+  await db.order.updateMany({
+    where: { idempotencyKey },
+    data: { idempotencyKey: null },
+  });
+}
+
+async function clearGuestCartSafely() {
+  try {
+    await clearGuestCart();
+  } catch (error) {
+    logError({ context: "clearGuestCartAfterPendingOrder" }, error);
+  }
+}
+
+function isIdempotencyKeyConflict(error: Prisma.PrismaClientKnownRequestError): boolean {
+  const target = error.meta?.target;
+  if (Array.isArray(target)) return target.includes("idempotencyKey");
+  return typeof target === "string" && target.includes("idempotencyKey");
+}
+
+// Estado de una orden previa hallada por idempotencyKey:
+// - replay: viva y con checkout listo → reutilizar su checkoutUrl.
+// - in_flight: viva pero el pago aún no persiste checkoutUrl (carrera concurrente).
+// - dead: expirada/cancelada/fallida → la key puede liberarse.
+export function idempotencyStateForOrder(order: IdempotentOrderLookup): IdempotencyState {
   const isActive =
     order.status === OrderStatus.PAYMENT_PROCESSING &&
     order.reservationExpiresAt !== null &&
     order.reservationExpiresAt.getTime() > Date.now();
 
-  if (!isActive || !order.payment?.checkoutUrl) return null;
+  if (!isActive) return "dead";
+  return order.payment?.checkoutUrl ? "replay" : "in_flight";
+}
 
-  // accessToken solo se usa en el primer submit para armar el redirect del proveedor;
-  // en un replay el checkoutUrl ya está persistido, así que no se necesita el token.
+// Devuelve el resultado "created" reutilizable solo si la orden está en estado replay.
+export function replayResultForOrder(order: IdempotentOrderLookup): CreateGuestOrderResult | null {
+  if (idempotencyStateForOrder(order) !== "replay") return null;
+
+  // En un replay el checkoutUrl ya está persistido; el accessToken (plano) solo
+  // existe en el primer submit para armar el redirect del proveedor, no se necesita.
   return {
-    accessToken: "",
-    checkoutUrl: order.payment.checkoutUrl,
+    checkoutUrl: order.payment!.checkoutUrl!,
     orderNumber: order.orderNumber,
     status: "created",
   };

@@ -317,6 +317,7 @@ function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
     db_unavailable: "No pudimos crear el pedido. Intenta de nuevo.",
+    duplicate_in_progress: "Tu pedido se está procesando. Espera unos segundos y no reenvíes el formulario.",
     invalid: "Revisa los datos del formulario.",
     payment_unavailable: "No pudimos iniciar el pago. Intenta nuevamente.",
   };
