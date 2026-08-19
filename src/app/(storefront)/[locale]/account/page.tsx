@@ -1,6 +1,5 @@
-import { Link } from "@/lib/i18n/navigation";
+import { Link, redirect } from "@/lib/i18n/navigation";
 import { Home } from "lucide-react";
-import { redirect } from "next/navigation";
 import { AccountOverviewHeader } from "@/components/account/account-overview-header";
 import { AccountPasswordForm } from "@/components/account/account-password-form";
 import { AccountProfileForm } from "@/components/account/account-profile-form";
@@ -12,6 +11,8 @@ import { db } from "@/lib/db";
 import { firstValue } from "@/lib/url-utils";
 import { changePasswordAction, logoutCustomer, updateProfileAction } from "./actions";
 
+import { resolveRouteLocale } from "@/lib/i18n/params";
+
 export const dynamic = "force-dynamic";
 
 export const metadata = {
@@ -21,12 +22,19 @@ export const metadata = {
 };
 
 type AccountPageProps = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function AccountPage({ searchParams }: AccountPageProps) {
+export default async function AccountPage({
+  params: routeParams,
+  searchParams,
+}: AccountPageProps) {
+  const locale = await resolveRouteLocale(routeParams);
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login?next=/account");
+  if (!session?.user?.id) {
+    return redirect({ href: { pathname: "/auth/login", query: { next: "/account" } }, locale });
+  }
 
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado);
@@ -52,7 +60,9 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     },
   });
 
-  if (!user) redirect("/auth/login?next=/account");
+  if (!user) {
+    return redirect({ href: { pathname: "/auth/login", query: { next: "/account" } }, locale });
+  }
 
   const hasPassword = Boolean(user.passwordHash);
 

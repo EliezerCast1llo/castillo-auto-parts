@@ -25,13 +25,19 @@ import {
 } from "@/data/catalog-filters";
 import { getCatalogFacets, getFilteredCatalogProducts } from "@/data/products";
 
+import { localizedAlternates } from "@/lib/i18n/metadata";
+import { resolveRouteLocale } from "@/lib/i18n/params";
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
+  params: routeParams,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<CatalogSearchParams>;
 }): Promise<Metadata> {
+  const locale = await resolveRouteLocale(routeParams);
   const params = searchParams ? await searchParams : {};
   const filters = parseCatalogFilters(params);
 
@@ -52,9 +58,10 @@ export async function generateMetadata({
   return {
     title,
     description,
-    // Canonical siempre al catálogo limpio: las combinaciones de filtros por
-    // query param no deben competir entre sí como contenido duplicado.
-    alternates: { canonical: "/catalog" },
+    // Canonical siempre al catálogo limpio del idioma actual: las combinaciones
+    // de filtros por query param no deben competir entre sí como contenido
+    // duplicado.
+    alternates: localizedAlternates("/catalog", locale),
   };
 }
 

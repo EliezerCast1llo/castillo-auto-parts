@@ -15,10 +15,13 @@ import {
 import { getCatalogFacets, getFilteredCatalogProducts } from "@/data/products";
 import { findMakeBySlug, vehicleMakeSlug } from "@/data/vehicle-catalog";
 
+import { localizedAlternates } from "@/lib/i18n/metadata";
+import { resolveRouteLocale } from "@/lib/i18n/params";
+
 export const dynamic = "force-dynamic";
 
 type VehicleMakePageProps = {
-  params: Promise<{ make: string }>;
+  params: Promise<{ locale: string; make: string }>;
   searchParams?: Promise<CatalogSearchParams>;
 };
 
@@ -29,6 +32,7 @@ async function resolveMake(slug: string) {
 
 export async function generateMetadata({ params }: VehicleMakePageProps): Promise<Metadata> {
   const { make: slug } = await params;
+  const locale = await resolveRouteLocale(params);
   const make = await resolveMake(slug);
 
   if (!make) return { title: "Marca no encontrada | Castillo Auto Parts" };
@@ -36,7 +40,7 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
   return {
     title: `Repuestos para ${make} | Castillo Auto Parts`,
     description: `Explora repuestos automotrices para vehículos ${make}. Filtra por categoría y revisa los vehículos compatibles.`,
-    alternates: { canonical: `/vehiculos/${vehicleMakeSlug(make)}` },
+    alternates: localizedAlternates(`/vehiculos/${vehicleMakeSlug(make)}`, locale),
   };
 }
 

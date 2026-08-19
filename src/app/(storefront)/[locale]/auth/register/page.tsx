@@ -1,10 +1,11 @@
-import { redirect } from "next/navigation";
 import { UserPlus } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { RegisterForm } from "@/components/auth/register-form";
 import { auth } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { firstValue } from "@/lib/url-utils";
+import { asLocaleHref, redirect } from "@/lib/i18n/navigation";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -17,12 +18,13 @@ type RegisterPageProps = {
 };
 
 export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+  const locale = await getLocale();
   const session = await auth();
   const params = searchParams ? await searchParams : {};
   const nextPath = getSafeCustomerNextPath(firstValue(params.next));
   const errorMessage = getErrorMessage(firstValue(params.estado));
 
-  if (session?.user) redirect(nextPath);
+  if (session?.user) redirect({ href: asLocaleHref(nextPath), locale });
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">

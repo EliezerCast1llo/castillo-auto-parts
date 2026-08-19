@@ -6,14 +6,24 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { SiteFooter } from "@/components/site-footer";
 import { getCatalogFacets, getFeaturedCatalogProductsResult } from "@/data/products";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/structured-data";
+import type { Metadata } from "next";
+
+import { localizedAlternates } from "@/lib/i18n/metadata";
+import { resolveRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  alternates: { canonical: "/" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const locale = await resolveRouteLocale(params);
+  return { alternates: localizedAlternates("/", locale) };
+}
 
-export default async function Home() {
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveRouteLocale(params);
   const [filterOptions, featuredResult] = await Promise.all([
     getCatalogFacets(),
     getFeaturedCatalogProductsResult(),
@@ -22,7 +32,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <JsonLd data={buildOrganizationJsonLd()} />
-      <JsonLd data={buildWebSiteJsonLd()} />
+      <JsonLd data={buildWebSiteJsonLd(locale)} />
       <SiteHeader variant="hero" />
       <SearchHero filterOptions={filterOptions} />
 

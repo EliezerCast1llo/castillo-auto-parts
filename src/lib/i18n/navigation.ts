@@ -11,3 +11,19 @@ import { routing } from "./routing";
  */
 export const { Link, redirect, permanentRedirect, usePathname, useRouter, getPathname } =
   createNavigation(routing);
+
+/**
+ * Destino aceptado por el `Link` y el `redirect` con idioma.
+ */
+export type LocaleHref = Parameters<typeof getPathname>[0]["href"];
+
+/**
+ * Convierte una ruta validada en runtime al tipo de href.
+ *
+ * El destino post-login sale del query param `?next=`: lo controla el usuario y
+ * se valida por prefijo en `getSafeCustomerNextPath`, no por tipo. El cast vive
+ * acá, con su justificación, en vez de repetido en cada punto de uso.
+ */
+export function asLocaleHref(path: string): LocaleHref {
+  return path as LocaleHref;
+}

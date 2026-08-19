@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { EN } from "./helpers";
 
 test("legacy unprefixed URLs redirect permanently to Spanish", async ({ request }) => {
   for (const path of ["/catalog", "/ayuda", "/cart", "/vehiculos/toyota"]) {
@@ -83,6 +84,57 @@ test("the admin panel stays outside the locale prefix", async ({ request }) => {
   // idiomas, asi que `/es/admin/...` no es una ruta valida.
   const prefixed = await request.get("/es/admin/login", { maxRedirects: 0 });
   expect(prefixed.status()).toBe(404);
+});
+
+test("the matcher excludes whole segments, not prefixes", async ({ request }) => {
+  // Sin frontera de segmento, `api` excluiria tambien `/apiario` y esa ruta se
+  // saltaria el middleware entero: sin CSP y sin ruteo de idioma.
+  for (const path of ["/apiario", "/iconos", "/opengraph-images"]) {
+    const response = await request.get(path, { maxRedirects: 0 });
+
+    expect(response.status(), `${path} debe pasar por el middleware`).toBe(308);
+    expect(response.headers().location).toBe(`/es${path}`);
+  }
+
+  // Y los que si son endpoints o assets se siguen saltando.
+  const api = await request.get("/api/search?q=toyota", { maxRedirects: 0 });
+  expect(api.status()).not.toBe(308);
+});
+
+test("a signed-out visitor browsing in English stays in English", async ({ page }) => {
+  // El redirect legacy oculta esta clase de bug: nada da 404, solo se pierde el
+  // idioma. Por eso el guard se prueba navegando en ingles.
+  await page.goto(EN("/account"));
+
+  await expect(page).toHaveURL(/\/en\/auth\/login/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+
+  await page.goto(EN("/account/orders"));
+  await expect(page).toHaveURL(/\/en\/auth\/login/);
+
+  await page.goto(EN("/account/addresses"));
+  await expect(page).toHaveURL(/\/en\/auth\/login/);
+});
+
+test("the canonical of each language points at its own URL", async ({ page }) => {
+  for (const [locale, path] of [
+    ["es", "/es/catalog"],
+    ["en", "/en/catalog"],
+  ] as const) {
+    await page.goto(path);
+
+    // Un canonical sin prefijo haria que ambos idiomas declararan la misma URL,
+    // y Google leeria el ingles como duplicado de una que ni responde 200.
+    const canonical = await page
+      .locator('link[rel="canonical"]')
+      .getAttribute("href");
+    expect(canonical, `canonical de ${locale}`).toContain(`/${locale}/catalog`);
+
+    // Next mergea metadata superficialmente: declarar `alternates` en la pagina
+    // borra los `languages` del layout si no se re-declaran.
+    await expect(page.locator('link[rel="alternate"][hreflang="es"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+  }
 });
 
 test("alternate links point search engines at the other language", async ({ request }) => {

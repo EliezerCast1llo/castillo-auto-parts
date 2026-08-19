@@ -269,6 +269,11 @@ export const config = {
   matcher: [
     // `/` debe seguir matcheando: es donde se negocia el idioma.
     // `/admin` también: es donde se verifica la sesión.
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|opengraph-image|icon|apple-icon|manifest.webmanifest|\\.well-known|.*\\.(?:avif|css|gif|ico|jpg|jpeg|js|map|png|svg|webp)$).*)",
+    //
+    // Cada prefijo cierra con `(?:/|$)` para que sea un segmento completo. Sin
+    // esa frontera `api` también excluiría `/apiario` y `icon` excluiría
+    // `/iconos`, y esas rutas se saltarían el middleware entero: sin CSP y sin
+    // ruteo de idioma.
+    "/((?!(?:api|_next/static|_next/image|opengraph-image|icon|apple-icon|\\.well-known)(?:/|$)|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$|manifest\\.webmanifest$|.*\\.(?:avif|css|gif|ico|jpg|jpeg|js|map|png|svg|webp)$).*)",
   ],
 };

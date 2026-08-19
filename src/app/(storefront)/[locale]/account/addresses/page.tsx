@@ -1,6 +1,5 @@
-import { Link } from "@/lib/i18n/navigation";
+import { Link, redirect } from "@/lib/i18n/navigation";
 import { ArrowLeft, MapPin, Trash2 } from "lucide-react";
-import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { AddAddressModal } from "@/components/account/add-address-modal";
 import { auth } from "@/lib/auth";
@@ -9,10 +8,13 @@ import { getFulfillmentOptions } from "@/lib/fulfillment";
 import { firstValue } from "@/lib/url-utils";
 import { deleteAddress } from "@/lib/actions/account-addresses";
 
+import { resolveRouteLocale } from "@/lib/i18n/params";
+
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Mis direcciones | Castillo Auto Parts" };
 
 type Props = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
@@ -23,9 +25,15 @@ const statusMessages: Record<string, { msg: string; ok: boolean }> = {
   invalid_department: { msg: "Selecciona un departamento válido.", ok: false },
 };
 
-export default async function AccountAddressesPage({ searchParams }: Props) {
+export default async function AccountAddressesPage({
+  params: routeParams,
+  searchParams,
+}: Props) {
+  const locale = await resolveRouteLocale(routeParams);
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login?next=/account/addresses");
+  if (!session?.user?.id) {
+    return redirect({ href: { pathname: "/auth/login", query: { next: "/account/addresses" } }, locale });
+  }
 
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado) ?? "";

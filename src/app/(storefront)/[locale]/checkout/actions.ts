@@ -27,14 +27,14 @@ export async function createGuestOrder(formData: FormData) {
     }
   }
 
-  const result = await createGuestCheckoutFromCart(formData, userId, idempotencyKey);
+  const locale = await getLocale();
+  const result = await createGuestCheckoutFromCart(formData, userId, idempotencyKey, locale);
 
   if (result.status === "created") {
     // URL del proveedor de pagos: absoluta y ajena al ruteo de idiomas.
     redirect(result.checkoutUrl);
   }
 
-  const locale = await getLocale();
 
   if (result.status === "empty_cart" || result.status === "stock_issue") {
     localeRedirect({ href: `/cart?estado=${result.status}`, locale });

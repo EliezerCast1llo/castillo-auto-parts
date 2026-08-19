@@ -1,11 +1,11 @@
-import { Link } from "@/lib/i18n/navigation";
-import { redirect } from "next/navigation";
+import { Link, asLocaleHref, redirect } from "@/lib/i18n/navigation";
 import { LogIn } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { firstValue } from "@/lib/url-utils";
 import { loginWithCredentials, loginWithGoogle } from "./actions";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -18,12 +18,13 @@ type LoginPageProps = {
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const locale = await getLocale();
   const session = await auth();
   const params = searchParams ? await searchParams : {};
   const nextPath = getSafeCustomerNextPath(firstValue(params.next));
   const errorMessage = getErrorMessage(firstValue(params.estado));
 
-  if (session?.user) redirect(nextPath);
+  if (session?.user) redirect({ href: asLocaleHref(nextPath), locale });
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">

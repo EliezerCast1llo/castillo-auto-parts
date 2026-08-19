@@ -1,4 +1,4 @@
-import { Link } from "@/lib/i18n/navigation";
+import { Link, redirect } from "@/lib/i18n/navigation";
 import {
   ArrowLeft,
   CalendarDays,
@@ -7,7 +7,6 @@ import {
   PackageSearch,
   Phone,
 } from "lucide-react";
-import { redirect } from "next/navigation";
 import {
   AccountOrderCard,
   accountOrderCardInclude,
@@ -19,6 +18,8 @@ import { auth } from "@/lib/auth";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { db } from "@/lib/db";
 
+import { resolveRouteLocale } from "@/lib/i18n/params";
+
 export const dynamic = "force-dynamic";
 
 export const metadata = {
@@ -27,9 +28,16 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AccountOrdersPage() {
+export default async function AccountOrdersPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const locale = await resolveRouteLocale(params);
   const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login?next=/account/orders");
+  if (!session?.user?.id) {
+    return redirect({ href: { pathname: "/auth/login", query: { next: "/account/orders" } }, locale });
+  }
 
   const orders = await db.order.findMany({
     where: { userId: session.user.id },
