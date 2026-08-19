@@ -92,7 +92,7 @@ export default async function StorefrontLayout({
 
   setRequestLocale(locale);
 
-  const messages = await loadMessages(locale);
+  const messages = loadMessages(locale);
 
   return (
     <html lang={locale}>
