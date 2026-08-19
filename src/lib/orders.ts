@@ -88,10 +88,10 @@ export async function createGuestCheckoutFromCart(
       // con dueño. Evita que en una máquina compartida se filtre el checkout ajeno.
       const identityMismatch = existing.userId !== null && existing.userId !== userId;
 
-      // Mismo intento solo si el carrito está vacío (volver atrás tras la compra) o
-      // la huella del intento coincide (mismos items + misma dirección + entrega).
-      // Si cambió algo material, NO reproducir (no se paga con la dirección vieja).
-      const sameIntent = cart.lines.length === 0 || existing.intentHash === intentHash;
+      // Mismo intento: carrito vacío, o huella coincide, o (orden legacy sin
+      // intentHash) los items coinciden como red. Evita duplicar en la ventana del
+      // deploy contra órdenes previas a la migración.
+      const sameIntent = isSameCheckoutIntent(cart, intentHash, existing);
 
       if (identityMismatch || !sameIntent) {
         // La key original no aplica. En vez de descartarla (key null no colisiona →
@@ -352,6 +352,7 @@ export type IdempotentOrderLookup = {
   userId: string | null;
   reservationExpiresAt: Date | null;
   intentHash: string | null;
+  items: { skuSnapshot: string; quantity: number }[];
   payment: { checkoutUrl: string | null } | null;
 };
 
@@ -366,6 +367,7 @@ function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOr
       userId: true,
       reservationExpiresAt: true,
       intentHash: true,
+      items: { select: { skuSnapshot: true, quantity: true } },
       payment: { select: { checkoutUrl: true } },
     },
   });
@@ -379,13 +381,42 @@ export function cartFingerprint(cart: GuestCart): string {
     .join(",");
 }
 
-// Huella del intento completo: items + método de entrega + dirección + coords.
-// Dos submits con los mismos items pero distinta dirección producen huellas
-// distintas → no se reproduce una orden con la dirección vieja.
+// Red para órdenes legacy (creadas antes de la migración de intentHash): tienen
+// intentHash NULL y no pueden compararse por hash, así que se comparan por items.
+export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["items"]): boolean {
+  if (cart.lines.length !== items.length) return false;
+
+  const orderQuantities = new Map(items.map((item) => [item.skuSnapshot, item.quantity]));
+  for (const line of cart.lines) {
+    if (orderQuantities.get(line.product.sku) !== line.quantity) return false;
+  }
+  return true;
+}
+
+// ¿El submit actual es el mismo intento que la orden hallada?
+// - carrito vacío → sí (volver atrás tras la compra).
+// - con intentHash → igualdad de hash (items + entrega + dirección + cliente).
+// - legacy (intentHash NULL) → red: comparar items.
+export function isSameCheckoutIntent(
+  cart: GuestCart,
+  currentIntentHash: string,
+  existing: IdempotentOrderLookup,
+): boolean {
+  if (cart.lines.length === 0) return true;
+  if (existing.intentHash !== null) return existing.intentHash === currentIntentHash;
+  return cartMatchesOrder(cart, existing.items);
+}
+
+// Huella del intento completo: items + entrega + dirección + coords + datos del
+// cliente. Un email/teléfono con typo corregido cambia la huella → no se reproduce
+// la orden vieja (la confirmación no se manda al dato equivocado).
 export function buildIntentFingerprint(cart: GuestCart, input: CheckoutInput): string {
   return [
     cartFingerprint(cart),
     `fm:${input.fulfillmentMethod}`,
+    `em:${input.customerEmail}`,
+    `nm:${input.customerName}`,
+    `ph:${input.customerPhone}`,
     `a1:${input.addressLine1 ?? ""}`,
     `a2:${input.addressLine2 ?? ""}`,
     `ci:${input.city ?? ""}`,

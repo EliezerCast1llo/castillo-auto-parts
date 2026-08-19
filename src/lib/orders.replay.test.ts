@@ -5,7 +5,9 @@ import type { CheckoutInput } from "./checkout";
 import {
   buildIntentFingerprint,
   cartFingerprint,
+  cartMatchesOrder,
   idempotencyStateForOrder,
+  isSameCheckoutIntent,
   replayResultForOrder,
   type IdempotentOrderLookup,
 } from "./orders";
@@ -20,6 +22,7 @@ function order(overrides: Partial<IdempotentOrderLookup> = {}): IdempotentOrderL
     userId: null,
     reservationExpiresAt: FUTURE,
     intentHash: "hash-abc",
+    items: [{ skuSnapshot: "SKU-A", quantity: 2 }],
     payment: { checkoutUrl: "https://pay.example/checkout/abc" },
     ...overrides,
   };
@@ -97,30 +100,62 @@ describe("cartFingerprint", () => {
   });
 });
 
+describe("cartMatchesOrder", () => {
+  const items = [{ skuSnapshot: "SKU-A", quantity: 2 }];
+  it("coincide con mismos SKUs y cantidades", () => {
+    expect(cartMatchesOrder(cart([{ sku: "SKU-A", quantity: 2 }]), items)).toBe(true);
+  });
+  it("no coincide si cambia cantidad, SKU o número de líneas", () => {
+    expect(cartMatchesOrder(cart([{ sku: "SKU-A", quantity: 3 }]), items)).toBe(false);
+    expect(cartMatchesOrder(cart([{ sku: "SKU-Z", quantity: 2 }]), items)).toBe(false);
+    expect(
+      cartMatchesOrder(cart([{ sku: "SKU-A", quantity: 2 }, { sku: "SKU-B", quantity: 1 }]), items),
+    ).toBe(false);
+  });
+});
+
+describe("isSameCheckoutIntent", () => {
+  const c = cart([{ sku: "SKU-A", quantity: 2 }]);
+
+  it("carrito vacío siempre es el mismo intento (volver atrás tras la compra)", () => {
+    expect(isSameCheckoutIntent(cart([]), "cualquier", order({ intentHash: "otra" }))).toBe(true);
+  });
+
+  it("con intentHash: compara por igualdad de hash", () => {
+    expect(isSameCheckoutIntent(c, "hash-abc", order({ intentHash: "hash-abc" }))).toBe(true);
+    expect(isSameCheckoutIntent(c, "hash-abc", order({ intentHash: "hash-xyz" }))).toBe(false);
+  });
+
+  it("orden legacy (intentHash NULL): cae a comparar items (red anti-duplicado)", () => {
+    const legacy = order({ intentHash: null, items: [{ skuSnapshot: "SKU-A", quantity: 2 }] });
+    expect(isSameCheckoutIntent(c, "hash-actual", legacy)).toBe(true);
+    const legacyOtherItems = order({ intentHash: null, items: [{ skuSnapshot: "SKU-Z", quantity: 2 }] });
+    expect(isSameCheckoutIntent(c, "hash-actual", legacyOtherItems)).toBe(false);
+  });
+});
+
 describe("buildIntentFingerprint", () => {
   const baseCart = cart([{ sku: "SKU-A", quantity: 1 }]);
 
   it("es estable para el mismo intento", () => {
-    const a = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
-    const b = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
-    expect(a).toBe(b);
+    expect(buildIntentFingerprint(baseCart, input())).toBe(buildIntentFingerprint(baseCart, input()));
   });
 
-  it("difiere si cambia la dirección (mismos items)", () => {
-    const a = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
-    const b = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 2" }));
-    expect(a).not.toBe(b);
+  it("difiere si cambia la dirección, entrega o coords", () => {
+    const base = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
+    expect(base).not.toBe(buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 2" })));
+    expect(buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "PICKUP" }))).not.toBe(
+      buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "LOCAL_DELIVERY" })),
+    );
+    expect(buildIntentFingerprint(baseCart, input({ latitude: 13.7 }))).not.toBe(
+      buildIntentFingerprint(baseCart, input({ latitude: 13.8 })),
+    );
   });
 
-  it("difiere si cambia el método de entrega", () => {
-    const a = buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "PICKUP" }));
-    const b = buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "LOCAL_DELIVERY" }));
-    expect(a).not.toBe(b);
-  });
-
-  it("difiere si cambian las coordenadas", () => {
-    const a = buildIntentFingerprint(baseCart, input({ latitude: 13.7, longitude: -89.2 }));
-    const b = buildIntentFingerprint(baseCart, input({ latitude: 13.8, longitude: -89.2 }));
-    expect(a).not.toBe(b);
+  it("difiere si cambian email, nombre o teléfono del cliente", () => {
+    const base = buildIntentFingerprint(baseCart, input());
+    expect(base).not.toBe(buildIntentFingerprint(baseCart, input({ customerEmail: "typo@b.com" })));
+    expect(base).not.toBe(buildIntentFingerprint(baseCart, input({ customerName: "Otro" })));
+    expect(base).not.toBe(buildIntentFingerprint(baseCart, input({ customerPhone: "77779999" })));
   });
 });
