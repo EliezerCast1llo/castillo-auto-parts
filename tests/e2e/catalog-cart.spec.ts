@@ -32,7 +32,7 @@ test("canonical stock URLs are served without redirecting", async ({ page }) => 
 });
 
 test("the availability filter shows Spanish labels but submits identifiers", async ({ page }) => {
-  await page.goto("/catalog");
+  await page.goto(ES("/catalog"));
 
   // El label es texto para el cliente; el value del checkbox es el
   // identificador de dominio. Confundirlos rompe una de las dos cosas.
