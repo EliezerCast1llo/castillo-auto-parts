@@ -72,11 +72,11 @@ describe("message catalogs", () => {
 });
 
 describe("loadMessages", () => {
-  it("returns the Spanish catalog for es", async () => {
-    await expect(loadMessages("es")).resolves.toBe(es);
+  it("returns the Spanish catalog for es", () => {
+    expect(loadMessages("es")).toBe(es);
   });
 
-  it("returns the English catalog for en", async () => {
-    await expect(loadMessages("en")).resolves.toBe(en);
+  it("returns the English catalog for en", () => {
+    expect(loadMessages("en")).toBe(en);
   });
 });

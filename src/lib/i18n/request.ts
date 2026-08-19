@@ -18,8 +18,8 @@ import { LOCALE_COOKIE } from "./routing";
  *    confirmación.
  * 2. `requestLocale` — el segmento `[locale]` que matcheó el middleware. Está
  *    marcado `@deprecated` a favor de `next/root-params`, pero root-params
- *    todavía está detrás de `experimental.rootParams` en Next 16.2.6, así que
- *    no es migrable aún.
+ *    sigue detrás del flag `experimental.rootParams`, así que no es migrable
+ *    hasta que se estabilice.
  * 3. La cookie de idioma — red de seguridad para server actions, route handlers
  *    y cualquier render fuera de `[locale]`, donde `requestLocale` viene
  *    `undefined`. Sin esto, esos caminos caerían siempre a español en vez de
@@ -31,7 +31,7 @@ export default getRequestConfig(async ({ locale: explicitLocale, requestLocale }
 
   return {
     locale,
-    messages: await loadMessages(locale),
+    messages: loadMessages(locale),
     // El negocio está en El Salvador. Sin esto next-intl advierte y cae a la
     // zona horaria del servidor, que en producción es UTC.
     timeZone: APP_TIME_ZONE,

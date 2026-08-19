@@ -28,6 +28,15 @@ describe("routing", () => {
     });
   });
 
+  it("marks the locale cookie Secure in production like every other cookie", () => {
+    // next-intl hace merge con sus defaults, pero esos defaults son solo `name`
+    // y `sameSite`: si no se declara acá, la cookie viaja sin Secure.
+    expect(routing.localeCookie).toHaveProperty("secure");
+    expect((routing.localeCookie as { secure: boolean }).secure).toBe(
+      process.env.NODE_ENV === "production",
+    );
+  });
+
   it("emits alternate links so search engines find the other language", () => {
     expect(routing.alternateLinks).toBe(true);
   });

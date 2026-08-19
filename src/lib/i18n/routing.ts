@@ -28,6 +28,10 @@ export const routing = defineRouting({
     maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
     sameSite: "lax",
     path: "/",
+    // next-intl hace merge con sus defaults, pero esos defaults son solo `name`
+    // y `sameSite`: nunca escribe `secure`. Sin esto sería la única cookie del
+    // repo que viaja sin Secure en producción.
+    secure: process.env.NODE_ENV === "production",
   },
   // Emite el header `Link: <...>; rel="alternate"; hreflang="..."`.
   alternateLinks: true,
