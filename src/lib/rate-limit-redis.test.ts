@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe("createAsyncRateLimiter — validación de producción", () => {
@@ -99,5 +100,37 @@ describe("factories de rate limit para auth de clientes", () => {
 
     const result = await limiter.check("reset-key");
     expect(result.allowed).toBe(true);
+  });
+});
+
+describe("fallback in-memory cuando Redis falla en caliente", () => {
+  it("NO hace fail-open: bloquea tras maxAttempts aunque Redis lance en cada comando", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://example.upstash.io");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "token-abc123");
+    // Redis siempre falla: cada fetch rechaza.
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("redis down")));
+
+    const { createAsyncRateLimiter } = await import("./rate-limit-redis");
+    const limiter = createAsyncRateLimiter({ maxAttempts: 3, windowMs: 60_000, lockoutMs: 60_000 });
+
+    // Con Redis caído, un fail-open dejaría allowed=true siempre. El fallback en
+    // memoria debe acumular fallos y bloquear al alcanzar maxAttempts.
+    const key = "redis-down:ip:1.2.3.4";
+    expect((await limiter.check(key)).allowed).toBe(true);
+    await limiter.registerFailure(key);
+    await limiter.registerFailure(key);
+    await limiter.registerFailure(key);
+
+    const blocked = await limiter.check(key);
+    expect(blocked.allowed).toBe(false);
+  });
+});
+
+describe("factories de rate limit para endpoints públicos/admin", () => {
+  it("createAdminImageRateLimiter devuelve un AsyncRateLimiter", async () => {
+    const { createAdminImageRateLimiter } = await import("./rate-limit-redis");
+    const limiter = createAdminImageRateLimiter();
+    expect(limiter.check).toBeTypeOf("function");
   });
 });

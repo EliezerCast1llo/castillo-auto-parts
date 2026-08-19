@@ -2,12 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { normalizeCheckoutIdempotencyKey } from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { createGuestCheckoutFromCart } from "@/lib/orders";
 
 export async function createGuestOrder(formData: FormData) {
   const session = await auth();
   const userId = session?.user?.id;
+  const idempotencyKey = normalizeCheckoutIdempotencyKey(formData.get("idempotencyKey"));
 
   // Para usuarios autenticados, usamos sus datos del perfil directamente
   // para no depender de hidden inputs ni requerir que tengan teléfono cargado.
@@ -23,7 +25,7 @@ export async function createGuestOrder(formData: FormData) {
     }
   }
 
-  const result = await createGuestCheckoutFromCart(formData, userId);
+  const result = await createGuestCheckoutFromCart(formData, userId, idempotencyKey);
 
   if (result.status === "created") {
     redirect(result.checkoutUrl);

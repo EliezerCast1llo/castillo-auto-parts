@@ -269,6 +269,7 @@ model Address {
 model Order {
   id                   String        @id @default(cuid())
   orderNumber          String        @unique
+  idempotencyKey       String?       @unique
   accessTokenHash      String?
   emailAccessTokenHash String?
   userId               String?

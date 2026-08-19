@@ -19,6 +19,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { searchCatalogProducts } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { createSearchRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
+import { getClientIp } from "@/lib/request-ip";
 
 const MAX_RESULTS = 6;
 const MIN_QUERY_LENGTH = 2;
@@ -93,7 +94,5 @@ export async function GET(request: NextRequest) {
 }
 
 function getSearchRateLimitKey(request: NextRequest) {
-  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  return `search:ip:${forwardedFor || realIp || "local"}`;
+  return `search:ip:${getClientIp(request.headers)}`;
 }

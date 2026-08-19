@@ -4,6 +4,7 @@ import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { getGuestCart } from "@/lib/cart";
+import { createCheckoutIdempotencyKey } from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
@@ -79,9 +80,14 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
 
-            {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
+            {/* Tras duplicate_in_progress NO se re-renderiza el formulario: reenviar
+                generaría una key nueva y podría crear una orden duplicada. Se muestra
+                solo el aviso hasta que el pedido en curso termine. */}
+            {status !== "duplicate_in_progress" &&
+              (cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
                 deliveryZones={fulfillmentOptions.deliveryZones}
+                idempotencyKey={createCheckoutIdempotencyKey()}
                 pickupLocation={fulfillmentOptions.pickupLocation}
                 savedAddresses={savedAddresses}
                 subtotalCents={cart.subtotalCents}
@@ -89,7 +95,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               />
             ) : (
               <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
-            )}
+            ))}
           </div>
 
           {/* Resumen — sticky en desktop, visible debajo en mobile */}
@@ -159,12 +165,14 @@ type SavedAddress = {
 
 function CheckoutForm({
   deliveryZones,
+  idempotencyKey,
   pickupLocation,
   savedAddresses,
   subtotalCents,
   userDefaults,
 }: {
   deliveryZones: DeliveryZoneOption[];
+  idempotencyKey: string;
   pickupLocation: PickupLocationOption;
   savedAddresses: SavedAddress[];
   subtotalCents: number;
@@ -174,6 +182,7 @@ function CheckoutForm({
 
   return (
     <form action={createGuestOrder} className="space-y-4">
+      <input name="idempotencyKey" type="hidden" value={idempotencyKey} />
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">Tus datos</h2>
         {isGuest ? (
@@ -312,6 +321,8 @@ function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
     db_unavailable: "No pudimos crear el pedido. Intenta de nuevo.",
+    duplicate_in_progress:
+      "Tu pedido se está procesando. Si ya iniciaste el pago, revisa tu correo para completarlo; no reenvíes el formulario. Si no continúa, vuelve al carrito.",
     invalid: "Revisa los datos del formulario.",
     payment_unavailable: "No pudimos iniciar el pago. Intenta nuevamente.",
   };

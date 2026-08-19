@@ -120,9 +120,11 @@ export async function clearGuestCart() {
 
 async function readGuestCartItems(): Promise<StoredCartItem[]> {
   const cookieStore = await cookies();
-  return parseSignedStoredCart(cookieStore.get(GUEST_CART_COOKIE)?.value, getGuestCartCookieSecret(), {
-    allowUnsignedFallback: process.env.NODE_ENV !== "production",
-  });
+  return parseSignedStoredCart(
+    cookieStore.get(GUEST_CART_COOKIE)?.value,
+    getGuestCartVerificationSecrets(),
+    { allowUnsignedFallback: process.env.NODE_ENV !== "production" },
+  );
 }
 
 async function writeGuestCartItems(items: StoredCartItem[]) {
@@ -146,17 +148,58 @@ async function writeGuestCartItems(items: StoredCartItem[]) {
 }
 
 function serializeGuestCartCookie(items: StoredCartItem[]) {
-  return serializeSignedStoredCart(items, getGuestCartCookieSecret());
+  return serializeSignedStoredCart(items, getGuestCartSigningSecret());
 }
 
-function getGuestCartCookieSecret() {
-  const secret = process.env.GUEST_CART_SECRET?.trim() || process.env.ADMIN_ACCESS_SECRET?.trim();
-  if (secret) return secret;
+let warnedSecretReuse = false;
+
+// Secreto con el que se FIRMAN los cookies nuevos. Prefiere el dedicado; si no
+// existe usa ADMIN_ACCESS_SECRET (compatibilidad con deploys previos) y avisa una
+// vez. Así no se rompe producción y se puede migrar a GUEST_CART_SECRET sin corte.
+function getGuestCartSigningSecret() {
+  const dedicated = process.env.GUEST_CART_SECRET?.trim();
+  if (dedicated) return dedicated;
+
+  const adminSecret = process.env.ADMIN_ACCESS_SECRET?.trim();
+  if (adminSecret) {
+    if (process.env.NODE_ENV === "production" && !warnedSecretReuse) {
+      warnedSecretReuse = true;
+      console.warn(
+        "[cart] GUEST_CART_SECRET no está definido; se usa ADMIN_ACCESS_SECRET. " +
+          "Define un GUEST_CART_SECRET propio para no reusar secretos.",
+      );
+    }
+    return adminSecret;
+  }
 
   if (process.env.NODE_ENV !== "production") {
     return "dev-only-guest-cart-secret";
   }
 
+  throw new Error("Missing GUEST_CART_SECRET or ADMIN_ACCESS_SECRET.");
+}
+
+// Secretos aceptados al VERIFICAR firmas.
+// - Si no hay GUEST_CART_SECRET (deploy previo), se acepta ADMIN_ACCESS_SECRET.
+// - Una vez seteado GUEST_CART_SECRET, se acepta ADMIN solo si se pide explícito
+//   con GUEST_CART_ACCEPT_ADMIN_SECRET=true (ventana de migración). Al quitar el
+//   flag se cierra el fallback y ADMIN deja de poder firmar carritos.
+function getGuestCartVerificationSecrets(): string[] {
+  const guestSecret = process.env.GUEST_CART_SECRET?.trim();
+  const adminSecret = process.env.ADMIN_ACCESS_SECRET?.trim();
+
+  const secrets: string[] = [];
+  if (guestSecret) secrets.push(guestSecret);
+  const acceptAdmin =
+    adminSecret && (!guestSecret || process.env.GUEST_CART_ACCEPT_ADMIN_SECRET === "true");
+  if (acceptAdmin) secrets.push(adminSecret);
+
+  if (secrets.length > 0) return [...new Set(secrets)];
+
+  if (process.env.NODE_ENV !== "production") return ["dev-only-guest-cart-secret"];
+
+  // Fail-loud: sin ningún secreto en prod es misconfiguración. No devolver [] en
+  // silencio (leería TODO carrito firmado como vacío, sin error ni log).
   throw new Error("Missing GUEST_CART_SECRET or ADMIN_ACCESS_SECRET.");
 }
 
