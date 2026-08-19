@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { CheckCircle2, MapPin, PackageSearch, ShieldCheck, Truck } from "lucide-react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";

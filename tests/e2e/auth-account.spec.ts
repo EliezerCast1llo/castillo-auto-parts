@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { ES } from "./helpers";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -33,7 +34,7 @@ function testIpFor(value: string) {
 }
 
 async function registerUser(page: Page, email: string, password = "TestPassword123!") {
-  await page.goto("/auth/register");
+  await page.goto(ES("/auth/register"));
   await page.getByLabel("Nombre completo").fill("Cliente Test E2E");
   await page.getByLabel("Correo electrónico").fill(email);
 
@@ -48,7 +49,7 @@ async function registerUser(page: Page, email: string, password = "TestPassword1
 }
 
 async function loginUser(page: Page, email: string, password = "TestPassword123!") {
-  await page.goto("/auth/login");
+  await page.goto(ES("/auth/login"));
   await page.getByLabel("Correo electrónico").fill(email);
   await page.getByLabel("Contraseña").fill(password);
   await page.getByRole("button", { name: "Entrar" }).click();
@@ -62,7 +63,7 @@ async function loginUser(page: Page, email: string, password = "TestPassword123!
 test("customer can register with email and password", async ({ page }) => {
   const email = uniqueEmail("register");
 
-  await page.goto("/auth/register");
+  await page.goto(ES("/auth/register"));
   await page.getByLabel("Nombre completo").fill("Cliente Registro");
   await page.getByLabel("Correo electrónico").fill(email);
   await page.getByLabel("Contraseña").first().fill("TestPassword123!");
@@ -84,7 +85,7 @@ test("customer can log in and log out", async ({ page }) => {
 
   // Log out
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL(ES("/"));
 
   // Log in again
   await loginUser(page, email);
@@ -128,7 +129,7 @@ test("customer can save an address after reviewing it", async ({ page }) => {
   const email = uniqueEmail("address");
   await registerUser(page, email);
 
-  await page.goto("/account/addresses");
+  await page.goto(ES("/account/addresses"));
   await expect(page.getByRole("heading", { name: "Mis direcciones" })).toBeVisible();
   await page.getByRole("button", { name: "Nueva dirección" }).first().click();
 
@@ -159,7 +160,7 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
   await registerUser(page, email);
 
   // Add a product to cart
-  await page.goto("/catalog");
+  await page.goto(ES("/catalog"));
   await page.getByRole("button", { name: "Agregar" }).first().click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
   await expect(page).toHaveURL(/\/catalog$/);
@@ -181,14 +182,14 @@ test("customer registers, adds to cart, and completes pickup checkout", async ({
   await expect(page.getByText("Orden creada")).toBeVisible();
 
   // Order should appear in user account
-  await page.goto("/account/orders");
+  await page.goto(ES("/account/orders"));
   await expect(page.getByRole("heading", { name: "Mis pedidos" })).toBeVisible();
   // Order list should NOT be empty anymore
   await expect(page.getByText("Todavía no tienes pedidos")).not.toBeVisible();
 });
 
 test("login shows error with wrong credentials", async ({ page }) => {
-  await page.goto("/auth/login");
+  await page.goto(ES("/auth/login"));
   await page.getByLabel("Correo electrónico").fill("noexiste@e2e.com");
   await page.getByLabel("Contraseña").fill("wrongpassword");
   await page.getByRole("button", { name: "Entrar" }).click();
@@ -203,7 +204,7 @@ test("login rate limit blocks repeated wrong credentials", async ({ page }, test
   });
 
   for (let attempt = 1; attempt <= 10; attempt += 1) {
-    await page.goto("/auth/login");
+    await page.goto(ES("/auth/login"));
     await page.getByLabel("Correo electrónico").fill("rate-limit@e2e.castilloautoparts.com");
     await page.getByLabel("Contraseña").fill(`wrong-password-${attempt}`);
     await page.getByRole("button", { name: "Entrar" }).click();
@@ -219,10 +220,10 @@ test("register shows error with duplicate email", async ({ page }) => {
 
   // Log out y esperar que el redirect a "/" complete antes de continuar
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL(ES("/"));
 
   // Try to register again with same email
-  await page.goto("/auth/register");
+  await page.goto(ES("/auth/register"));
   await page.getByLabel("Nombre completo").fill("Otro nombre");
   await page.getByLabel("Correo electrónico").fill(email);
   await page.getByLabel("Contraseña").first().fill("TestPassword123!");
@@ -233,6 +234,6 @@ test("register shows error with duplicate email", async ({ page }) => {
 });
 
 test("protected /account route redirects to login", async ({ page }) => {
-  await page.goto("/account");
+  await page.goto(ES("/account"));
   await expect(page).toHaveURL(/\/auth\/login/);
 });

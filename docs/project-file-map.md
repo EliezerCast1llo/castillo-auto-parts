@@ -9,7 +9,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | Archivo | Responsabilidad |
 | --- | --- |
 | `README.md` | Entrada rapida del proyecto, setup local y documentos clave. |
-| `middleware.ts` | Edge Middleware que protege `/admin/**`. Verifica HMAC-SHA256 con Web Crypto API. |
+| `middleware.ts` | Edge Middleware: CSP con nonce, ruteo de idiomas y proteccion de `/admin/**` con HMAC-SHA256 via Web Crypto API. |
 | `package.json` | Scripts, dependencias y seed Prisma. |
 | `next.config.ts` | Configuracion Next.js y headers de seguridad base. |
 | `playwright.config.ts` | Configuracion E2E y servidor local para Playwright. |
@@ -87,7 +87,9 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 
 | Ruta de archivo | Responsabilidad |
 | --- | --- |
-| `src/app/layout.tsx` | Layout raiz, metadata y estilos globales. |
+| `src/app/(storefront)/[locale]/layout.tsx` | Root layout del storefront: `<html lang>`, fuentes, provider de next-intl y metadata con hreflang. |
+| `src/app/(admin)/layout.tsx` | Root layout del panel admin, sin prefijo de idioma y fijado a espanol. |
+| `src/app/not-found.tsx` | 404 global fuera de los route groups; importa `globals.css` porque Next lo monta con un layout builtin. |
 | `src/app/page.tsx` | Home. No debe tener filtros avanzados; esos viven en catalogo. |
 | `src/app/catalog/page.tsx` | Catalogo, query params, filtros y estados vacios. |
 | `src/app/product/[slug]/page.tsx` | Detalle de producto, compatibilidad y agregar al carrito. |
@@ -187,6 +189,10 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/i18n/intl-locale.ts` | Mapeo a BCP-47, moneda y zona horaria de la app. |
 | `src/lib/i18n/formats.ts` | Formatos compartidos de fecha y numero. |
 | `src/lib/i18n/messages/*` | Catalogos por idioma, un JSON por namespace. |
+| `src/lib/i18n/legacy-redirects.ts` | Traduce URLs viejas sin prefijo a su equivalente en espanol; guarda contra loop. |
+| `src/lib/i18n/middleware-composition.ts` | Re-emite la respuesta de next-intl preservando los headers forwardeados (nonce de CSP). |
+| `src/lib/i18n/revalidate.ts` | `revalidatePath` para rutas bajo `[locale]`. |
+| `src/lib/actions/*` | Server actions compartidas por componentes, fuera del arbol de rutas. |
 
 ## Datos
 

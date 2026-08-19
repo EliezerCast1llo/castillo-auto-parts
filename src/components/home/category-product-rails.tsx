@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { ArrowRight, PackageSearch } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { ScrollCarousel } from "@/components/ui/scroll-carousel";

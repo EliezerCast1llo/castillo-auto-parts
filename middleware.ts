@@ -1,21 +1,37 @@
 /**
- * Next.js Edge Middleware — protección de rutas /admin/**
+ * Next.js Edge Middleware — CSP, ruteo de idiomas y protección de /admin/**
  *
  * Corre en Edge Runtime (sin Node.js APIs). Usa Web Crypto API para
  * verificar el HMAC-SHA256 del token de sesión admin v2.
  *
  * Token v2: `v2.{issuedAt}.{userId}.{role}.{displayNameB64}.{signature}`
  *
- * Dos niveles de protección:
- *   1. ¿Está autenticado? → si no, redirige al login.
- *   2. ¿Tiene el rol correcto para esta ruta? → si no, redirige a su home.
+ * Orden de trabajo:
+ *   1. Un nonce y una CSP por request, inyectados en los headers de la request.
+ *   2. `/admin/**` se salta el ruteo de idiomas y pasa por la verificación de
+ *      sesión y de rol.
+ *   3. Las URLs viejas sin prefijo redirigen permanentemente a su equivalente
+ *      en español.
+ *   4. El resto lo resuelve next-intl, cuya respuesta se re-emite para no
+ *      perder los headers forwardeados.
  *
  * La verificación Node.js completa ocurre en cada page/action via
  * `requireAdminRole()` (defensa en profundidad).
  */
 
+import createIntlMiddleware from "next-intl/middleware";
 import { type NextRequest, NextResponse } from "next/server";
 import { buildContentSecurityPolicy } from "@/lib/content-security-policy";
+import { isBypassedPath, resolveLegacyRedirect } from "@/lib/i18n/legacy-redirects";
+import {
+  isRedirectResponse,
+  markAsLocaleNegotiated,
+  reissueIntlResponse,
+} from "@/lib/i18n/middleware-composition";
+import { routing } from "@/lib/i18n/routing";
+
+/** Se construye una sola vez por instancia del runtime. */
+const handleI18nRouting = createIntlMiddleware(routing);
 
 const ADMIN_SESSION_COOKIE = "castillo_admin_session";
 const ADMIN_SESSION_VERSION = "v2";
@@ -61,12 +77,43 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
 
-  if (pathname.startsWith("/admin/login")) {
+  // 1. El panel admin no lleva prefijo de idioma.
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    return withCspHeaders(await handleAdmin(request, requestHeaders), csp, nonce);
+  }
+
+  // 2. Endpoints y assets: ni idioma ni auth.
+  if (isBypassedPath(pathname)) {
     return withCspHeaders(NextResponse.next({ request: { headers: requestHeaders } }), csp, nonce);
   }
 
-  if (!pathname.startsWith("/admin")) {
-    return withCspHeaders(NextResponse.next({ request: { headers: requestHeaders } }), csp, nonce);
+  // 3. URLs viejas sin prefijo → permanente al equivalente en español.
+  const legacyTarget = resolveLegacyRedirect(request.nextUrl);
+  if (legacyTarget) {
+    return withCspHeaders(NextResponse.redirect(legacyTarget, 308), csp, nonce);
+  }
+
+  // 4. Ruteo de idiomas.
+  const intlResponse = handleI18nRouting(request);
+
+  // Un redirect no renderiza HTML: no hace falta forwardear nada. Sí hace falta
+  // declarar que el destino depende del idioma negociado.
+  if (isRedirectResponse(intlResponse)) {
+    return withCspHeaders(markAsLocaleNegotiated(intlResponse), csp, nonce);
+  }
+
+  return withCspHeaders(reissueIntlResponse(intlResponse, request, requestHeaders), csp, nonce);
+}
+
+/**
+ * Verificación de sesión y rol del panel admin. Es la lógica que ya existía,
+ * extraída para que el flujo principal se lea de corrido.
+ */
+async function handleAdmin(request: NextRequest, requestHeaders: Headers) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/admin/login")) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
@@ -77,17 +124,17 @@ export async function middleware(request: NextRequest) {
   if (!payload) {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("next", getSafeNextPath(pathname));
-    return withCspHeaders(NextResponse.redirect(loginUrl), csp, nonce);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Verificar permisos de rol para la ruta actual
   const allowed = isRoleAllowedForPath(payload.role, pathname);
   if (!allowed) {
     const homeUrl = new URL(ROLE_HOME[payload.role] ?? "/admin/orders", request.url);
-    return withCspHeaders(NextResponse.redirect(homeUrl), csp, nonce);
+    return NextResponse.redirect(homeUrl);
   }
 
-  return withCspHeaders(NextResponse.next({ request: { headers: requestHeaders } }), csp, nonce);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 function isRoleAllowedForPath(role: string, pathname: string): boolean {
@@ -220,6 +267,13 @@ function createNonce() {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:avif|css|gif|ico|jpg|jpeg|js|map|png|svg|webp)$).*)",
+    // `/` debe seguir matcheando: es donde se negocia el idioma.
+    // `/admin` también: es donde se verifica la sesión.
+    //
+    // Cada prefijo cierra con `(?:/|$)` para que sea un segmento completo. Sin
+    // esa frontera `api` también excluiría `/apiario` y `icon` excluiría
+    // `/iconos`, y esas rutas se saltarían el middleware entero: sin CSP y sin
+    // ruteo de idioma.
+    "/((?!(?:api|_next/static|_next/image|opengraph-image|icon|apple-icon|\\.well-known)(?:/|$)|favicon\\.ico$|robots\\.txt$|sitemap\\.xml$|manifest\\.webmanifest$|.*\\.(?:avif|css|gif|ico|jpg|jpeg|js|map|png|svg|webp)$).*)",
   ],
 };

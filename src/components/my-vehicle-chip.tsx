@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { Car } from "lucide-react";
 import { formatMyVehicle } from "@/lib/my-vehicle";
 import { useMyVehicle } from "@/components/use-my-vehicle";

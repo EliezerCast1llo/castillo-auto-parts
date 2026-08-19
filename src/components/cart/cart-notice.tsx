@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { AlertCircle, CheckCircle2, Info, X } from "lucide-react";
 
 type NoticeVariant = "success" | "error" | "info" | "warning";

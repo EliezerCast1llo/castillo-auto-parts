@@ -344,11 +344,6 @@ export async function getCatalogProductBySlug(slug: string): Promise<CatalogProd
   }
 }
 
-export async function getCatalogProductSlugs() {
-  const entries = await getCatalogSitemapEntries();
-  return entries.map(({ slug }) => ({ slug }));
-}
-
 export type CatalogSitemapEntry = {
   slug: string;
   lastModified: Date | string;

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import { ProductVisual } from "@/components/product/product-visual";
 import { ScrollCarousel } from "@/components/ui/scroll-carousel";

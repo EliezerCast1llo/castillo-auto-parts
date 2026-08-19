@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import type { ReactNode } from "react";
 import { buildMyVehicleClearCookie, buildMyVehicleSetCookie } from "@/lib/my-vehicle";
 

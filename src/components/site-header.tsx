@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle, ShoppingCart, Truck, User, UserRound, Wrench } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";

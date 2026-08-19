@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { SearchX } from "lucide-react";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";

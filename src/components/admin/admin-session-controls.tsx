@@ -1,5 +1,5 @@
 import { LogOut } from "lucide-react";
-import { logoutAdmin } from "@/app/admin/login/actions";
+import { logoutAdmin } from "@/lib/actions/admin-login";
 
 export function AdminSessionControls() {
   return (

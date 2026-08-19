@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { ChevronRight, ClipboardList, MapPin } from "lucide-react";
 
 type AccountQuickActionsProps = {

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { X } from "lucide-react";
 import type { CatalogFilters, CatalogSort } from "@/data/catalog-filters";
 import { formatStockStatus } from "@/lib/stock-status";
