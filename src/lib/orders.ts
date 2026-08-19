@@ -24,7 +24,7 @@ import {
   type DeliveryZoneOption,
 } from "./fulfillment";
 import { buildAbsoluteAppUrl } from "./email/templates";
-import { deriveScopedIdempotencyKey } from "./checkout-idempotency";
+import { deriveScopedIdempotencyKey, hashCheckoutIntent } from "./checkout-idempotency";
 import {
   InventoryReservationError,
   reserveInventory,
@@ -63,11 +63,17 @@ export async function createGuestCheckoutFromCart(
   formData: FormData,
   userId?: string,
   idempotencyKey?: string,
+  retrying = false,
 ): Promise<CreateGuestOrderResult> {
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
 
   const cart = await getGuestCart();
+
+  // Huella del intento completo: items + método de entrega + dirección/coords. Dos
+  // submits con los mismos items pero DISTINTA dirección son intentos distintos.
+  const intentFingerprint = buildIntentFingerprint(cart, parsed.data);
+  const intentHash = hashCheckoutIntent(intentFingerprint);
 
   // Idempotencia: se resuelve tras leer el carrito pero ANTES de los guards, para
   // que un re-submit tras una compra (carrito ya vacío) reproduzca el checkout en
@@ -83,15 +89,15 @@ export async function createGuestCheckoutFromCart(
       const identityMismatch = existing.userId !== null && existing.userId !== userId;
 
       // Mismo intento solo si el carrito está vacío (volver atrás tras la compra) o
-      // coincide con los items de la orden (doble-click del mismo carrito). Si el
-      // carrito fue reconstruido con otros items, NO reproducir ni borrarlo.
-      const sameIntent = cart.lines.length === 0 || cartMatchesOrder(cart, existing.items);
+      // la huella del intento coincide (mismos items + misma dirección + entrega).
+      // Si cambió algo material, NO reproducir (no se paga con la dirección vieja).
+      const sameIntent = cart.lines.length === 0 || existing.intentHash === intentHash;
 
       if (identityMismatch || !sameIntent) {
         // La key original no aplica. En vez de descartarla (key null no colisiona →
         // dos submits concurrentes duplicarían), se deriva una key estable de
-        // (key + carrito): submits idénticos siguen deduplicando.
-        effectiveIdempotencyKey = deriveScopedIdempotencyKey(idempotencyKey, cartFingerprint(cart));
+        // (key + huella del intento): submits idénticos siguen deduplicando.
+        effectiveIdempotencyKey = deriveScopedIdempotencyKey(idempotencyKey, intentFingerprint);
       } else {
         const replay = replayResultForOrder(existing);
         if (replay) {
@@ -217,6 +223,7 @@ export async function createGuestCheckoutFromCart(
           addressId,
           currency: "USD",
           idempotencyKey: effectiveIdempotencyKey ?? null,
+          intentHash,
           userId: userId ?? null,
           customerEmail: parsed.data.customerEmail,
           customerName: parsed.data.customerName,
@@ -323,6 +330,13 @@ export async function createGuestCheckoutFromCart(
         await clearGuestCartSafely();
         return replay;
       }
+      // La colisión es contra una orden MUERTA (expirada/cancelada): su key quedó
+      // ocupando el índice único. Liberarla y reintentar UNA vez para no dejar al
+      // cliente en un bucle permanente de duplicate_in_progress con stock reservado.
+      if (existing && idempotencyStateForOrder(existing) === "dead" && !retrying) {
+        await releaseIdempotencyKey(effectiveIdempotencyKey);
+        return createGuestCheckoutFromCart(formData, userId, idempotencyKey, true);
+      }
       // Ganador aún sin checkoutUrl persistido: reintento, no error terminal.
       return { status: "duplicate_in_progress" };
     }
@@ -337,7 +351,7 @@ export type IdempotentOrderLookup = {
   status: OrderStatus;
   userId: string | null;
   reservationExpiresAt: Date | null;
-  items: { skuSnapshot: string; quantity: number }[];
+  intentHash: string | null;
   payment: { checkoutUrl: string | null } | null;
 };
 
@@ -351,32 +365,37 @@ function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOr
       status: true,
       userId: true,
       reservationExpiresAt: true,
-      items: { select: { skuSnapshot: true, quantity: true } },
+      intentHash: true,
       payment: { select: { checkoutUrl: true } },
     },
   });
 }
 
-// Un carrito coincide con una orden si tiene exactamente los mismos SKUs y
-// cantidades. Discrimina el doble-click del mismo carrito (reproducir) de un
-// carrito reconstruido con otros items (crear orden nueva, no pisar el carrito).
-export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["items"]): boolean {
-  if (cart.lines.length !== items.length) return false;
-
-  const orderQuantities = new Map(items.map((item) => [item.skuSnapshot, item.quantity]));
-  for (const line of cart.lines) {
-    if (orderQuantities.get(line.product.sku) !== line.quantity) return false;
-  }
-  return true;
-}
-
-// Huella determinística del carrito (SKUs+cantidades ordenados). Igual para dos
-// carritos con el mismo contenido, base para derivar una key de idempotencia estable.
+// Huella determinística de los items del carrito (SKUs+cantidades ordenados).
 export function cartFingerprint(cart: GuestCart): string {
   return cart.lines
     .map((line) => `${line.product.sku}:${line.quantity}`)
     .sort()
     .join(",");
+}
+
+// Huella del intento completo: items + método de entrega + dirección + coords.
+// Dos submits con los mismos items pero distinta dirección producen huellas
+// distintas → no se reproduce una orden con la dirección vieja.
+export function buildIntentFingerprint(cart: GuestCart, input: CheckoutInput): string {
+  return [
+    cartFingerprint(cart),
+    `fm:${input.fulfillmentMethod}`,
+    `a1:${input.addressLine1 ?? ""}`,
+    `a2:${input.addressLine2 ?? ""}`,
+    `ci:${input.city ?? ""}`,
+    `de:${input.department ?? ""}`,
+    `dz:${input.deliveryZoneSlug ?? ""}`,
+    `lat:${input.latitude ?? ""}`,
+    `lng:${input.longitude ?? ""}`,
+    `fa:${input.formattedAddress ?? ""}`,
+    `pl:${input.placeId ?? ""}`,
+  ].join("|");
 }
 
 async function releaseIdempotencyKey(idempotencyKey: string) {

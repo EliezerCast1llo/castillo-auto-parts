@@ -1,9 +1,10 @@
 import { OrderStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import type { GuestCart } from "./cart";
+import type { CheckoutInput } from "./checkout";
 import {
+  buildIntentFingerprint,
   cartFingerprint,
-  cartMatchesOrder,
   idempotencyStateForOrder,
   replayResultForOrder,
   type IdempotentOrderLookup,
@@ -18,7 +19,7 @@ function order(overrides: Partial<IdempotentOrderLookup> = {}): IdempotentOrderL
     status: OrderStatus.PAYMENT_PROCESSING,
     userId: null,
     reservationExpiresAt: FUTURE,
-    items: [{ skuSnapshot: "SKU-A", quantity: 2 }],
+    intentHash: "hash-abc",
     payment: { checkoutUrl: "https://pay.example/checkout/abc" },
     ...overrides,
   };
@@ -36,6 +37,17 @@ function cart(lines: { sku: string; quantity: number }[]): GuestCart {
       product: { sku: line.sku },
     })),
   } as GuestCart;
+}
+
+function input(overrides: Partial<CheckoutInput> = {}): CheckoutInput {
+  return {
+    customerEmail: "a@b.com",
+    customerName: "Cliente",
+    customerPhone: "77770000",
+    fulfillmentMethod: "PICKUP",
+    paymentMethod: "online_card",
+    ...overrides,
+  } as CheckoutInput;
 }
 
 describe("idempotencyStateForOrder", () => {
@@ -71,33 +83,6 @@ describe("replayResultForOrder", () => {
   });
 });
 
-describe("cartMatchesOrder", () => {
-  it("coincide con mismos SKUs y cantidades (independiente del orden)", () => {
-    const items = [
-      { skuSnapshot: "SKU-A", quantity: 2 },
-      { skuSnapshot: "SKU-B", quantity: 1 },
-    ];
-    expect(cartMatchesOrder(cart([{ sku: "SKU-B", quantity: 1 }, { sku: "SKU-A", quantity: 2 }]), items)).toBe(true);
-  });
-
-  it("no coincide si cambia una cantidad", () => {
-    const items = [{ skuSnapshot: "SKU-A", quantity: 2 }];
-    expect(cartMatchesOrder(cart([{ sku: "SKU-A", quantity: 3 }]), items)).toBe(false);
-  });
-
-  it("no coincide si cambia un SKU o el número de líneas", () => {
-    const items = [{ skuSnapshot: "SKU-A", quantity: 2 }];
-    expect(cartMatchesOrder(cart([{ sku: "SKU-Z", quantity: 2 }]), items)).toBe(false);
-    expect(
-      cartMatchesOrder(cart([{ sku: "SKU-A", quantity: 2 }, { sku: "SKU-B", quantity: 1 }]), items),
-    ).toBe(false);
-  });
-
-  it("un carrito vacío no coincide con una orden con items", () => {
-    expect(cartMatchesOrder(cart([]), [{ skuSnapshot: "SKU-A", quantity: 2 }])).toBe(false);
-  });
-});
-
 describe("cartFingerprint", () => {
   it("es igual para el mismo contenido en distinto orden", () => {
     const a = cartFingerprint(cart([{ sku: "SKU-A", quantity: 2 }, { sku: "SKU-B", quantity: 1 }]));
@@ -109,5 +94,33 @@ describe("cartFingerprint", () => {
     expect(cartFingerprint(cart([{ sku: "SKU-A", quantity: 2 }]))).not.toBe(
       cartFingerprint(cart([{ sku: "SKU-A", quantity: 3 }])),
     );
+  });
+});
+
+describe("buildIntentFingerprint", () => {
+  const baseCart = cart([{ sku: "SKU-A", quantity: 1 }]);
+
+  it("es estable para el mismo intento", () => {
+    const a = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
+    const b = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
+    expect(a).toBe(b);
+  });
+
+  it("difiere si cambia la dirección (mismos items)", () => {
+    const a = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
+    const b = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 2" }));
+    expect(a).not.toBe(b);
+  });
+
+  it("difiere si cambia el método de entrega", () => {
+    const a = buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "PICKUP" }));
+    const b = buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "LOCAL_DELIVERY" }));
+    expect(a).not.toBe(b);
+  });
+
+  it("difiere si cambian las coordenadas", () => {
+    const a = buildIntentFingerprint(baseCart, input({ latitude: 13.7, longitude: -89.2 }));
+    const b = buildIntentFingerprint(baseCart, input({ latitude: 13.8, longitude: -89.2 }));
+    expect(a).not.toBe(b);
   });
 });

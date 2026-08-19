@@ -23,3 +23,10 @@ export function normalizeCheckoutIdempotencyKey(value: unknown): string | undefi
 export function deriveScopedIdempotencyKey(baseKey: string, fingerprint: string): string {
   return createHash("sha256").update(`${baseKey}:${fingerprint}`).digest("hex");
 }
+
+// Hash de la huella del intento (items + entrega + dirección). Se guarda en la
+// orden para decidir si un re-submit es "el mismo intento" (reproducir) o cambió
+// algo material como la dirección (crear orden nueva, no pagar con la vieja).
+export function hashCheckoutIntent(fingerprint: string): string {
+  return createHash("sha256").update(fingerprint).digest("hex");
+}
