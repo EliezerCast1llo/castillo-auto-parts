@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defaultLocale, locales } from "./config";
 import { toIntlLocale, APP_CURRENCY, APP_TIME_ZONE } from "./intl-locale";
-import { LOCALE_COOKIE, routing } from "./routing";
+import { LOCALE_COOKIE, pathnames, routing } from "./routing";
 
 describe("routing", () => {
   it("exposes both locales with Spanish as the default", () => {
@@ -54,5 +54,49 @@ describe("intl locale", () => {
     // idioma cambia el formato, no la moneda ni la hora.
     expect(APP_CURRENCY).toBe("USD");
     expect(APP_TIME_ZONE).toBe("America/El_Salvador");
+  });
+});
+
+describe("localized pathnames", () => {
+  it("declares every locale for the routes whose spelling changes", () => {
+    for (const [key, value] of Object.entries(pathnames)) {
+      if (typeof value === "string") continue;
+
+      for (const locale of locales) {
+        expect(value[locale], `${key} is missing the ${locale} spelling`).toBeTruthy();
+      }
+    }
+  });
+
+  it("keeps the dynamic segments in every spelling", () => {
+    for (const [key, value] of Object.entries(pathnames)) {
+      const segments = key.match(/\[[^\]]+\]/g) ?? [];
+      if (segments.length === 0) continue;
+
+      const spellings = typeof value === "string" ? [value] : Object.values(value);
+      for (const spelling of spellings) {
+        for (const segment of segments) {
+          expect(spelling, `${key} lost ${segment} in "${spelling}"`).toContain(segment);
+        }
+      }
+    }
+  });
+
+  it("does not produce two routes with the same public URL in one locale", () => {
+    for (const locale of locales) {
+      const urls = Object.values(pathnames).map((value) =>
+        typeof value === "string" ? value : value[locale],
+      );
+
+      expect(new Set(urls).size, `duplicate public URL in ${locale}`).toBe(urls.length);
+    }
+  });
+
+  it("localizes the two routes that shipped with Spanish names", () => {
+    expect(pathnames["/help"]).toEqual({ es: "/ayuda", en: "/help" });
+    expect(pathnames["/vehicles/[make]"]).toEqual({
+      es: "/vehiculos/[make]",
+      en: "/vehicles/[make]",
+    });
   });
 });

@@ -36,7 +36,7 @@ export function CategoryQuickLinks({
             >
               <Link
                 className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-white transition-colors hover:border-ca-navy-950/30"
-                href={`/catalog?category=${encodeURIComponent(category)}`}
+                href={{ pathname: "/catalog", query: { category } }}
               >
                 <span className="px-4 pb-3 pt-3.5">
                   <span className="block font-display text-sm font-extrabold uppercase tracking-[0.04em] text-ca-navy-950">

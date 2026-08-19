@@ -250,7 +250,7 @@ function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
         <Link
           className="transition hover:text-ca-navy-950"
-          href={`/catalog?category=${encodeURIComponent(product.category)}`}
+          href={{ pathname: "/catalog", query: { category: product.category } }}
         >
           {product.category}
         </Link>

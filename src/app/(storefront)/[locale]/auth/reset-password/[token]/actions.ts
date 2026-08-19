@@ -19,28 +19,37 @@ export async function applyPasswordResetAction(formData: FormData) {
   if (!token) redirect({ href: "/auth/forgot-password", locale });
 
   if (password.length < 8) {
-    redirect({ href: `/auth/reset-password/${token}?estado=weak_password`, locale });
+    redirect({
+      href: { pathname: "/auth/reset-password/[token]", params: { token }, query: { estado: "weak_password" } },
+      locale,
+    });
   }
 
   if (password !== passwordConfirm) {
-    redirect({ href: `/auth/reset-password/${token}?estado=password_mismatch`, locale });
+    redirect({
+      href: { pathname: "/auth/reset-password/[token]", params: { token }, query: { estado: "password_mismatch" } },
+      locale,
+    });
   }
 
   const key = await getResetPasswordRateLimitKey();
   const limitCheck = await resetPasswordRateLimiter.check(key);
   if (!limitCheck.allowed) {
-    redirect({ href: `/auth/reset-password/${token}?estado=rate_limited`, locale });
+    redirect({
+      href: { pathname: "/auth/reset-password/[token]", params: { token }, query: { estado: "rate_limited" } },
+      locale,
+    });
   }
 
   const ok = await applyPasswordReset(token, password);
 
   if (!ok) {
     await resetPasswordRateLimiter.registerFailure(key);
-    redirect({ href: "/auth/forgot-password?estado=expired", locale });
+    redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "expired" } }, locale });
   }
 
   await resetPasswordRateLimiter.reset(key);
-  redirect({ href: "/auth/login?estado=password_reset", locale });
+  redirect({ href: { pathname: "/auth/login", query: { estado: "password_reset" } }, locale });
 }
 
 async function getResetPasswordRateLimitKey() {

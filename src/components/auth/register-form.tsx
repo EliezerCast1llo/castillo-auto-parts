@@ -194,7 +194,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       <p className="text-center text-sm text-ca-text-secondary">
         ¿Ya tienes cuenta?{" "}
         <Link
-          href={`/auth/login?next=${encodeURIComponent(nextPath)}`}
+          href={{ pathname: "/auth/login", query: { next: nextPath } }}
           className="font-bold text-ca-blue-700 hover:underline"
         >
           Iniciar sesión

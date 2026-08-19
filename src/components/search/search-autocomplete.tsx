@@ -117,7 +117,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
       setIsOpen(false);
       setIsLoading(false);
       setQuery(result.name);
-      router.push(`/product/${result.slug}`);
+      router.push({ pathname: "/product/[slug]", params: { slug: result.slug } });
     },
     [router],
   );

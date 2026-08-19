@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getCatalogFacets, getCatalogSitemapEntries } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
 import { defaultLocale, locales } from "@/lib/i18n/config";
+import { getPathname, type LocaleHref } from "@/lib/i18n/navigation";
 import { SITE_URL } from "@/lib/site";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
@@ -10,11 +11,15 @@ type SitemapEntry = MetadataRoute.Sitemap[number];
  * Expande una ruta del storefront a una entrada por idioma, cada una con sus
  * `alternates` para que el buscador entienda que son la misma página.
  *
+ * Las URLs salen de `getPathname`, no de concatenar strings: con los pathnames
+ * localizados la grafía cambia por idioma (`/es/ayuda` vs `/en/help`) y armarla
+ * a mano acá seria una segunda fuente de verdad destinada a divergir.
+ *
  * `x-default` apunta al español: es el idioma principal del negocio y el
  * destino de los redirects permanentes desde las URLs viejas.
  */
-function localizedEntries(path: string, entry: Omit<SitemapEntry, "url">): MetadataRoute.Sitemap {
-  const urlFor = (locale: string) => `${SITE_URL}/${locale}${path}`;
+function localizedEntries(href: LocaleHref, entry: Omit<SitemapEntry, "url">): MetadataRoute.Sitemap {
+  const urlFor = (locale: (typeof locales)[number]) => `${SITE_URL}${getPathname({ href, locale })}`;
 
   const languages = Object.fromEntries(locales.map((locale) => [locale, urlFor(locale)]));
 
@@ -30,7 +35,7 @@ function localizedEntries(path: string, entry: Omit<SitemapEntry, "url">): Metad
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Páginas estáticas
   const staticPages: MetadataRoute.Sitemap = [
-    ...localizedEntries("", {
+    ...localizedEntries("/", {
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
@@ -40,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.9,
     }),
-    ...localizedEntries("/ayuda", {
+    ...localizedEntries("/help", {
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,
@@ -52,7 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const entries = await getCatalogSitemapEntries();
     productPages = entries.flatMap(({ slug, lastModified }) =>
-      localizedEntries(`/product/${slug}`, {
+      localizedEntries({ pathname: "/product/[slug]", params: { slug } }, {
         lastModified,
         changeFrequency: "weekly" as const,
         priority: 0.8,
@@ -67,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const facets = await getCatalogFacets();
     vehiclePages = facets.vehicleMakes.flatMap((make) =>
-      localizedEntries(`/vehiculos/${vehicleMakeSlug(make)}`, {
+      localizedEntries({ pathname: "/vehicles/[make]", params: { make: vehicleMakeSlug(make) } }, {
         lastModified: new Date(),
         changeFrequency: "weekly" as const,
         priority: 0.8,

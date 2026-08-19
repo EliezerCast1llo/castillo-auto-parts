@@ -147,7 +147,7 @@ function CartLineItem({ line }: { line: CartLine }) {
         <Link
           aria-label={`Ver detalle de ${line.product.name}`}
           className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-ca-background"
-          href={`/product/${line.product.slug}`}
+          href={{ pathname: "/product/[slug]", params: { slug: line.product.slug } }}
         >
           <ProductVisual seed={line.product.sku} size="thumb" />
         </Link>
@@ -161,7 +161,7 @@ function CartLineItem({ line }: { line: CartLine }) {
               </p>
               <Link
                 className="mt-0.5 block font-black leading-snug text-ca-navy-950 transition hover:text-ca-blue-700 sm:text-lg"
-                href={`/product/${line.product.slug}`}
+                href={{ pathname: "/product/[slug]", params: { slug: line.product.slug } }}
               >
                 {line.product.name}
               </Link>

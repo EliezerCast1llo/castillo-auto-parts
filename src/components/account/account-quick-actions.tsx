@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { ChevronRight, ClipboardList, MapPin } from "lucide-react";
+import type { LocaleHref } from "@/lib/i18n/navigation";
 
 type AccountQuickActionsProps = {
   addressesCount?: number;
@@ -40,7 +41,7 @@ function QuickActionCard({
 }: {
   count?: string;
   description: string;
-  href: string;
+  href: LocaleHref;
   icon: ReactNode;
   label: string;
 }) {

@@ -1,8 +1,10 @@
 "use client";
 
 import { ArrowUpDown } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { usePathname, useRouter } from "@/lib/i18n/navigation";
+// Router plano a proposito: este control no cambia de ruta, solo reescribe la
+// query de la URL actual, que ya viene con su prefijo de idioma. Pasar por el
+// router con idioma obligaria a re-declarar la ruta y sus params sin ganar nada.
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { catalogSortOptions, type CatalogSort } from "@/data/catalog-filters";
 
 type SortDropdownProps = {

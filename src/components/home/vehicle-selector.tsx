@@ -39,8 +39,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
             });
           }
 
-          const query = params.toString();
-          router.push(query ? `/catalog?${query}` : "/catalog");
+          router.push({ pathname: "/catalog", query: Object.fromEntries(params) });
         }}
       >
         <div className="flex items-center gap-4 self-stretch border-ca-border lg:border-r lg:pr-5">

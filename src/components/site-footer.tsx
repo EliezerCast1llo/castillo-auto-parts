@@ -4,6 +4,7 @@ import { getCatalogFacets } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
 import { DEFAULT_SUPPORT_MESSAGE, SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import type { LocaleHref } from "@/lib/i18n/navigation";
 
 /**
  * Footer global de la tienda. Async: obtiene marcas de vehículo reales
@@ -67,7 +68,7 @@ export async function SiteFooter() {
         <FooterColumn title="Repuestos por vehículo">
           {vehicleMakes.length > 0 ? (
             vehicleMakes.map((make) => (
-              <FooterLink href={`/vehiculos/${vehicleMakeSlug(make)}`} key={make}>
+              <FooterLink href={{ pathname: "/vehicles/[make]", params: { make: vehicleMakeSlug(make) } }} key={make}>
                 Repuestos {make}
               </FooterLink>
             ))
@@ -81,7 +82,7 @@ export async function SiteFooter() {
         {partBrands.length > 0 ? (
           <FooterColumn title="Marcas de repuesto">
             {partBrands.map((brand) => (
-              <FooterLink href={`/catalog?brand=${encodeURIComponent(brand)}`} key={brand}>
+              <FooterLink href={{ pathname: "/catalog", query: { brand } }} key={brand}>
                 {brand}
               </FooterLink>
             ))}
@@ -90,7 +91,7 @@ export async function SiteFooter() {
 
         {/* Soporte */}
         <FooterColumn title="Soporte">
-          <FooterLink href="/ayuda">Centro de ayuda</FooterLink>
+          <FooterLink href="/help">Centro de ayuda</FooterLink>
           {SUPPORT_WHATSAPP_NUMBER ? (
             <a
               className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"
@@ -125,7 +126,7 @@ function FooterColumn({ children, title }: { children: React.ReactNode; title: s
   );
 }
 
-function FooterLink({ children, href }: { children: React.ReactNode; href: string }) {
+function FooterLink({ children, href }: { children: React.ReactNode; href: LocaleHref }) {
   return (
     <Link
       className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"

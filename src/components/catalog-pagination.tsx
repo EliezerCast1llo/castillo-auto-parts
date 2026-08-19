@@ -17,15 +17,22 @@
  *   - Las páginas anteriores/siguientes más lejanas se truncan con "…".
  */
 
-import { Link } from "@/lib/i18n/navigation";
+import { Link, type LocaleHref } from "@/lib/i18n/navigation";
 import type { CatalogSearchParams } from "@/data/catalog-filters";
+
+/** Query serializable que acepta el `Link` con idioma. */
+type LinkQuery = Record<string, string | string[]>;
 
 type CatalogPaginationProps = {
   currentPage: number;
   totalPages: number;
   searchParams: CatalogSearchParams;
-  /** Ruta base de los enlaces; por defecto el catálogo. */
-  basePath?: string;
+  /**
+   * Destino base de los enlaces; por defecto el catálogo. Con los pathnames
+   * localizados ya no alcanza un string: la ruta de vehículos es dinámica y hay
+   * que pasarla como `{ pathname, params }`.
+   */
+  basePath?: Extract<LocaleHref, { pathname: unknown }> | "/catalog";
 };
 
 export function CatalogPagination({
@@ -36,22 +43,18 @@ export function CatalogPagination({
 }: CatalogPaginationProps) {
   if (totalPages <= 1) return null;
 
-  const buildHref = (page: number) => {
-    const params = new URLSearchParams();
+  const buildHref = (page: number): LocaleHref => {
+    const query: LinkQuery = {};
 
     for (const [key, value] of Object.entries(searchParams)) {
       if (key === "page") continue; // se reemplaza abajo
-      if (Array.isArray(value)) {
-        for (const v of value) params.append(key, v);
-      } else if (value !== undefined) {
-        params.set(key, value);
-      }
+      if (value !== undefined) query[key] = value;
     }
 
-    if (page > 1) params.set("page", String(page));
+    if (page > 1) query.page = String(page);
 
-    const qs = params.toString();
-    return qs ? `${basePath}?${qs}` : basePath;
+    const base = typeof basePath === "string" ? { pathname: basePath } : basePath;
+    return { ...base, query } as LocaleHref;
   };
 
   const pageNumbers = buildPageNumbers(currentPage, totalPages);

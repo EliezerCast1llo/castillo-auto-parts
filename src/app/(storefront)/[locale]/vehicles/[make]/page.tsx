@@ -102,7 +102,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
             </div>
             <Link
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
-              href={`/catalog?vehicleMake=${encodeURIComponent(make)}`}
+              href={{ pathname: "/catalog", query: { vehicleMake: make } }}
             >
               <SlidersHorizontal className="h-4 w-4" />
               Filtrar por modelo y año
@@ -129,7 +129,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
                 ))}
               </div>
               <CatalogPagination
-                basePath={`/vehiculos/${vehicleMakeSlug(make)}`}
+                basePath={{ pathname: "/vehicles/[make]", params: { make: vehicleMakeSlug(make) } }}
                 currentPage={currentPage}
                 totalPages={totalPages}
                 searchParams={resolvedParams}

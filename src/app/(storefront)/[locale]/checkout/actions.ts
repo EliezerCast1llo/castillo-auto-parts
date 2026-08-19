@@ -37,8 +37,8 @@ export async function createGuestOrder(formData: FormData) {
 
 
   if (result.status === "empty_cart" || result.status === "stock_issue") {
-    localeRedirect({ href: `/cart?estado=${result.status}`, locale });
+    localeRedirect({ href: { pathname: "/cart", query: { estado: result.status } }, locale });
   }
 
-  localeRedirect({ href: `/checkout?estado=${result.status}`, locale });
+  localeRedirect({ href: { pathname: "/checkout", query: { estado: result.status } }, locale });
 }

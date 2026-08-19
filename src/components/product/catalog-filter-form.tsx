@@ -56,8 +56,7 @@ export function CatalogFilterForm({ children }: CatalogFilterFormProps) {
             : buildMyVehicleClearCookie();
         }
 
-        const query = params.toString();
-        router.push(query ? `/catalog?${query}` : "/catalog", { scroll: false });
+        router.push({ pathname: "/catalog", query: Object.fromEntries(params) }, { scroll: false });
       }}
     >
       {children}

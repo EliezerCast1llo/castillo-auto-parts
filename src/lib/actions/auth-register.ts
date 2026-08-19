@@ -3,7 +3,7 @@
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
-import { getPathname, redirect } from "@/lib/i18n/navigation";
+import { asLocaleHref, getPathname, redirect } from "@/lib/i18n/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { formString } from "@/lib/form-utils";
@@ -25,33 +25,51 @@ export async function registerAction(formData: FormData) {
 
   // Validaciones de formato (no cuentan como intento)
   if (!name || !email || !password) {
-    redirect({ href: `/auth/register?estado=missing_fields&next=${encodeURIComponent(nextPath)}`, locale });
+    redirect({
+      href: { pathname: "/auth/register", query: { estado: "missing_fields", next: nextPath } },
+      locale,
+    });
   }
 
   if (password.length < 8) {
-    redirect({ href: `/auth/register?estado=weak_password&next=${encodeURIComponent(nextPath)}`, locale });
+    redirect({
+      href: { pathname: "/auth/register", query: { estado: "weak_password", next: nextPath } },
+      locale,
+    });
   }
 
   if (password !== passwordConfirm) {
-    redirect({ href: `/auth/register?estado=password_mismatch&next=${encodeURIComponent(nextPath)}`, locale });
+    redirect({
+      href: { pathname: "/auth/register", query: { estado: "password_mismatch", next: nextPath } },
+      locale,
+    });
   }
 
   const key = await getRegisterRateLimitKey();
   const limitCheck = await registerRateLimiter.check(key);
   if (!limitCheck.allowed) {
-    redirect({ href: `/auth/register?estado=rate_limited&next=${encodeURIComponent(nextPath)}`, locale });
+    redirect({
+      href: { pathname: "/auth/register", query: { estado: "rate_limited", next: nextPath } },
+      locale,
+    });
   }
 
   const result = await registerCustomer({ name, email, password, phone });
 
   if (result.status === "email_exists") {
     await registerRateLimiter.registerFailure(key);
-    redirect({ href: `/auth/register?estado=email_exists&next=${encodeURIComponent(nextPath)}`, locale });
+    redirect({
+      href: { pathname: "/auth/register", query: { estado: "email_exists", next: nextPath } },
+      locale,
+    });
   }
 
   if (result.status !== "ok") {
     await registerRateLimiter.registerFailure(key);
-    redirect({ href: `/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`, locale });
+    redirect({
+      href: { pathname: "/auth/register", query: { estado: "error", next: nextPath } },
+      locale,
+    });
   }
 
   // Cuenta también registros exitosos para evitar creación masiva de cuentas
@@ -64,11 +82,14 @@ export async function registerAction(formData: FormData) {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: getPathname({ href: nextPath, locale }),
+      redirectTo: getPathname({ href: asLocaleHref(nextPath), locale }),
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect({ href: `/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`, locale });
+      redirect({
+      href: { pathname: "/auth/register", query: { estado: "error", next: nextPath } },
+      locale,
+    });
     }
     throw error;
   }

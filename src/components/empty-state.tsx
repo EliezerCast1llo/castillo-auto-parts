@@ -1,10 +1,11 @@
+import type { LocaleHref } from "@/lib/i18n/navigation";
 import { Link } from "@/lib/i18n/navigation";
 import { SearchX } from "lucide-react";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 
 type EmptyStateProps = {
-  actionHref?: string;
+  actionHref?: LocaleHref;
   actionLabel?: string;
   description?: string;
   /** Icono del estado vacío; por defecto SearchX. */
@@ -39,7 +40,7 @@ export function EmptyState({
             {suggestions.map((suggestion) => (
               <Link
                 className="rounded-full border border-ca-border bg-ca-background px-3 py-1.5 text-xs font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-white"
-                href={`/catalog?q=${encodeURIComponent(suggestion)}`}
+                href={{ pathname: "/catalog", query: { q: suggestion } }}
                 key={suggestion}
               >
                 {suggestion}

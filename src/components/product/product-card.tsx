@@ -15,7 +15,7 @@ import { StockBadge } from "./stock-badge";
  */
 export function ProductCard({ product }: { product: CatalogProduct }) {
   const isAvailable = isPurchasableStockStatus(product.stockStatus);
-  const href = `/product/${product.slug}`;
+  const href = { pathname: "/product/[slug]", params: { slug: product.slug } } as const;
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-white transition-colors hover:border-ca-navy-950/30">

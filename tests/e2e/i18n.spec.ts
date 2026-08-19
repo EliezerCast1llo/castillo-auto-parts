@@ -75,6 +75,35 @@ test("both languages render the storefront", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
 });
 
+test("each language serves its own spelling of the localized routes", async ({ page }) => {
+  await page.goto("/es/ayuda");
+  await expect(page.locator("html")).toHaveAttribute("lang", "es");
+
+  await page.goto("/en/help");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+
+  await page.goto("/es/vehiculos/toyota");
+  await expect(page.locator("html")).toHaveAttribute("lang", "es");
+
+  await page.goto("/en/vehicles/toyota");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+});
+
+test("the spelling of the other language redirects instead of 404ing", async ({ request }) => {
+  // `/es/help` no es una URL valida en espanol, pero en vez de romper next-intl
+  // reconoce la ruta interna y manda a la grafia correcta.
+  const spanishWithEnglishSpelling = await request.get("/es/help", { maxRedirects: 0 });
+  expect(spanishWithEnglishSpelling.status()).toBe(307);
+  expect(spanishWithEnglishSpelling.headers().location).toContain("/es/ayuda");
+
+  const englishWithSpanishSpelling = await request.get("/en/ayuda", { maxRedirects: 0 });
+  expect(englishWithSpanishSpelling.status()).toBe(307);
+  expect(englishWithSpanishSpelling.headers().location).toContain("/en/help");
+
+  const dynamicRoute = await request.get("/es/vehicles/toyota", { maxRedirects: 0 });
+  expect(dynamicRoute.headers().location).toContain("/es/vehiculos/toyota");
+});
+
 test("the admin panel stays outside the locale prefix", async ({ request }) => {
   const unprefixed = await request.get("/admin/login", { maxRedirects: 0 });
   expect(unprefixed.status()).toBe(200);

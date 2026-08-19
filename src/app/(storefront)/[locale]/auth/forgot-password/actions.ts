@@ -17,7 +17,7 @@ export async function requestPasswordReset(formData: FormData) {
   const email = formString(formData, "email").trim().toLowerCase();
 
   if (!email) {
-    redirect({ href: "/auth/forgot-password?estado=missing_email", locale });
+    redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "missing_email" } }, locale });
   }
 
   // Rate limit por IP y por email objetivo (previene email bombing)
@@ -30,7 +30,7 @@ export async function requestPasswordReset(formData: FormData) {
   ]);
 
   if (!ipCheck.allowed || !emailCheck.allowed) {
-    redirect({ href: "/auth/forgot-password?estado=rate_limited", locale });
+    redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "rate_limited" } }, locale });
   }
 
   // Registrar el intento en ambas claves independientemente del resultado
@@ -41,7 +41,7 @@ export async function requestPasswordReset(formData: FormData) {
   ]);
 
   if (!ipAttempt.allowed || !emailAttempt.allowed) {
-    redirect({ href: "/auth/forgot-password?estado=rate_limited", locale });
+    redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "rate_limited" } }, locale });
   }
 
   // Siempre mostrar éxito para no revelar si el email existe
@@ -68,7 +68,7 @@ export async function requestPasswordReset(formData: FormData) {
     }
   }
 
-  redirect({ href: "/auth/forgot-password?estado=sent", locale });
+  redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "sent" } }, locale });
 }
 
 async function getForgotPasswordIpKey() {
