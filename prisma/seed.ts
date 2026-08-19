@@ -1,4 +1,5 @@
 import { InventoryStatus, PrismaClient } from "@prisma/client";
+import type { StockStatus } from "../src/lib/stock-status";
 import { mockProducts } from "../src/data/mock-products";
 import { hashPassword } from "../src/lib/admin-credentials";
 
@@ -15,9 +16,13 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-function toInventoryStatus(status: string) {
-  if (status === "Disponible") return InventoryStatus.IN_STOCK;
-  if (status === "Últimas unidades") return InventoryStatus.LOW_STOCK;
+/**
+ * El estado de la app tiene tres valores y el enum de Prisma cuatro; PREORDER
+ * no se siembra, así que el resto cae en OUT_OF_STOCK.
+ */
+function toInventoryStatus(status: StockStatus) {
+  if (status === "IN_STOCK") return InventoryStatus.IN_STOCK;
+  if (status === "LOW_STOCK") return InventoryStatus.LOW_STOCK;
   return InventoryStatus.OUT_OF_STOCK;
 }
 

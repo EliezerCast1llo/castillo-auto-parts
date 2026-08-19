@@ -14,6 +14,39 @@ test("catalog search filters products", async ({ page }) => {
   await expect(page.getByText("Filtro de aceite para Toyota 1.8L")).toBeVisible();
 });
 
+test("legacy Spanish stock URLs redirect to the canonical identifier", async ({ page }) => {
+  // `/catalog?stock=Últimas unidades` viajó en la navegación del sitio, así que
+  // sigue circulando en historiales, bookmarks y buscadores.
+  await page.goto("/catalog?stock=Últimas unidades");
+
+  await expect(page).toHaveURL(/\/catalog\?stock=LOW_STOCK$/);
+  await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
+});
+
+test("canonical stock URLs are served without redirecting", async ({ page }) => {
+  await page.goto("/catalog?stock=IN_STOCK");
+
+  await expect(page).toHaveURL(/\/catalog\?stock=IN_STOCK$/);
+  await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
+});
+
+test("the availability filter shows Spanish labels but submits identifiers", async ({ page }) => {
+  await page.goto("/catalog");
+
+  // El label es texto para el cliente; el value del checkbox es el
+  // identificador de dominio. Confundirlos rompe una de las dos cosas.
+  const availability = page.getByRole("group", { name: "Disponibilidad" });
+  await expect(availability.getByText("Disponible", { exact: true })).toBeVisible();
+  await expect(availability.getByText("IN_STOCK")).toHaveCount(0);
+
+  await availability.getByRole("checkbox", { name: "Disponible", exact: true }).check();
+  await expect(page).toHaveURL(/\/catalog\?.*stock=IN_STOCK/);
+
+  // Y el chip del filtro activo tambien se muestra traducido.
+  await expect(page.getByText("Disponibilidad: Disponible")).toBeVisible();
+  await expect(page.getByText("Disponibilidad: IN_STOCK")).toHaveCount(0);
+});
+
 test("customer can add an available product to the guest cart", async ({ page }) => {
   await page.goto("/catalog");
 

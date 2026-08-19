@@ -614,8 +614,8 @@ export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
     const hasData = facets.brands.length > 0 || facets.categories.length > 0;
 
     if (hasData || !shouldUseMockCatalogFallback()) {
-      // quantity=1: a nivel de faceta solo interesa el mapeo del enum al label
-      // de UI (IN_STOCK → "Disponible"), no la cantidad real por producto.
+      // quantity=1: a nivel de faceta solo interesa el mapeo del enum de
+      // Prisma al estado de la app, no la cantidad real por producto.
       const stockStatusSet = new Set(
         facets.stockStatuses.map((status) => toStockStatus(status, 1)),
       );
@@ -656,7 +656,7 @@ export async function getRelatedCatalogProducts(product: CatalogProduct) {
 }
 
 export function isPurchasableStockStatus(status: CatalogProduct["stockStatus"]) {
-  return status !== "No disponible";
+  return status !== "OUT_OF_STOCK";
 }
 
 function mapDbProduct(product: DbProduct): CatalogProduct {
@@ -767,11 +767,12 @@ function toStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
+/** PREORDER se presenta al cliente igual que OUT_OF_STOCK. */
 function toStockStatus(status: string | undefined, quantity: number): CatalogProduct["stockStatus"] {
-  if (status === "PREORDER" || status === "OUT_OF_STOCK") return "No disponible";
-  if (status === "LOW_STOCK") return "Últimas unidades";
-  if (quantity > 0) return "Disponible";
-  return "No disponible";
+  if (status === "PREORDER" || status === "OUT_OF_STOCK") return "OUT_OF_STOCK";
+  if (status === "LOW_STOCK") return "LOW_STOCK";
+  if (quantity > 0) return "IN_STOCK";
+  return "OUT_OF_STOCK";
 }
 
 function getFallbackProductBySlug(slug: string) {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import type { CatalogFilters, CatalogSort } from "@/data/catalog-filters";
+import { formatStockStatus } from "@/lib/stock-status";
 
 type FilterChip = {
   href: string;
@@ -119,7 +120,7 @@ function getActiveFilterChips(filters: CatalogFilters, sort: CatalogSort): Filte
 
   filters.stockStatuses.forEach((status) => {
     chips.push({
-      label: `Disponibilidad: ${status}`,
+      label: `Disponibilidad: ${formatStockStatus(status)}`,
       href: buildCatalogHref(filters, sort, {
         stockStatuses: filters.stockStatuses.filter((item) => item !== status),
       }),

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filters";
+import { formatStockStatus } from "@/lib/stock-status";
 
 type ProductFiltersProps = {
   activeFilterCount: number;
@@ -59,8 +60,9 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
           <FilterOption
             key={status}
             defaultChecked={filters.stockStatuses.includes(status)}
-            label={status}
+            label={formatStockStatus(status)}
             name="stock"
+            value={status}
           />
         ))}
       </FilterGroup>
@@ -106,11 +108,18 @@ function FilterOption({
   defaultChecked,
   label,
   name,
+  value,
 }: {
   count?: number;
   defaultChecked: boolean;
+  /** Texto visible. */
   label: string;
   name: string;
+  /**
+   * Valor que viaja en el form. Se separa del label porque el estado de stock
+   * se envía como identificador (`LOW_STOCK`) pero se muestra traducido.
+   */
+  value?: string;
 }) {
   return (
     <label className="flex min-h-8 cursor-pointer items-center gap-2 text-sm text-ca-text-primary transition hover:text-ca-blue-700">
@@ -119,7 +128,7 @@ function FilterOption({
         defaultChecked={defaultChecked}
         name={name}
         type="checkbox"
-        value={label}
+        value={value ?? label}
       />
       <span className="flex-1">{label}</span>
       {typeof count === "number" ? (

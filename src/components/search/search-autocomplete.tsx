@@ -18,6 +18,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SearchResponse, SearchResult } from "@/app/api/search/route";
+import { formatStockStatus, type StockStatus } from "@/lib/stock-status";
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -338,12 +339,14 @@ function SearchDropdownItems({
   );
 }
 
-function StockDot({ status }: { status: string }) {
-  if (status === "Disponible") {
-    return <span className="mt-0.5 block text-xs font-bold text-ca-success">{status}</span>;
+function StockDot({ status }: { status: StockStatus }) {
+  const label = formatStockStatus(status);
+
+  if (status === "IN_STOCK") {
+    return <span className="mt-0.5 block text-xs font-bold text-ca-success">{label}</span>;
   }
-  if (status === "Últimas unidades") {
-    return <span className="mt-0.5 block text-xs font-bold text-amber-600">{status}</span>;
+  if (status === "LOW_STOCK") {
+    return <span className="mt-0.5 block text-xs font-bold text-amber-600">{label}</span>;
   }
-  return <span className="mt-0.5 block text-xs font-bold text-red-500">{status}</span>;
+  return <span className="mt-0.5 block text-xs font-bold text-red-500">{label}</span>;
 }

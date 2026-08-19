@@ -8,9 +8,9 @@ import { withContext, type Thing, type WithContext } from "@/components/seo/sche
  */
 
 const STOCK_STATUS_TO_SCHEMA: Record<CatalogProduct["stockStatus"], string> = {
-  Disponible: "https://schema.org/InStock",
-  "Últimas unidades": "https://schema.org/LimitedAvailability",
-  "No disponible": "https://schema.org/OutOfStock",
+  IN_STOCK: "https://schema.org/InStock",
+  LOW_STOCK: "https://schema.org/LimitedAvailability",
+  OUT_OF_STOCK: "https://schema.org/OutOfStock",
 };
 
 export function buildProductJsonLd(product: CatalogProduct): WithContext<Thing> {
