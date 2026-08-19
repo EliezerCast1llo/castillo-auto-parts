@@ -48,11 +48,17 @@ export async function generateMetadata({ params }: ProductPageProps) {
   return {
     title: `${product.name} | Castillo Auto Parts`,
     description,
-    alternates: localizedAlternates(`/product/${product.slug}`, locale),
+    alternates: localizedAlternates(
+      { pathname: "/product/[slug]", params: { slug: product.slug } },
+      locale,
+    ),
     openGraph: {
       title: product.name,
       description,
-      url: getPathname({ href: `/product/${product.slug}`, locale }),
+      url: getPathname({
+        href: { pathname: "/product/[slug]", params: { slug: product.slug } },
+        locale,
+      }),
       type: "website",
     },
   };

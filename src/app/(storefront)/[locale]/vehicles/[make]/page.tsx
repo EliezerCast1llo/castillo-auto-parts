@@ -40,7 +40,10 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
   return {
     title: `Repuestos para ${make} | Castillo Auto Parts`,
     description: `Explora repuestos automotrices para vehículos ${make}. Filtra por categoría y revisa los vehículos compatibles.`,
-    alternates: localizedAlternates(`/vehiculos/${vehicleMakeSlug(make)}`, locale),
+    alternates: localizedAlternates(
+      { pathname: "/vehicles/[make]", params: { make: vehicleMakeSlug(make) } },
+      locale,
+    ),
   };
 }
 
