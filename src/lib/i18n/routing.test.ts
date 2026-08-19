@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defaultLocale, locales } from "./config";
 import { toIntlLocale, APP_CURRENCY, APP_TIME_ZONE } from "./intl-locale";
+import { LOCALIZE_PATH_ROUTES } from "./path";
 import { LOCALE_COOKIE, pathnames, routing } from "./routing";
 
 describe("routing", () => {
@@ -98,5 +99,22 @@ describe("localized pathnames", () => {
       es: "/vehiculos/[make]",
       en: "/vehicles/[make]",
     });
+  });
+});
+
+describe("localizePath constraint", () => {
+  it("keeps the routes that localizePath handles identical in every language", () => {
+    // `localizePath` solo antepone el prefijo: no consulta la tabla. Si alguna
+    // de estas rutas se localiza, el JSON-LD y la URL de retorno del pago
+    // empezarian a emitir la grafia equivocada sin que nada falle.
+    for (const route of LOCALIZE_PATH_ROUTES) {
+      expect(typeof pathnames[route], `${route} está localizada`).toBe("string");
+    }
+  });
+
+  it("covers a route that localizePath must not be used for", () => {
+    // Contraprueba: /help sí cambia de grafía, así que no puede pasar por el
+    // helper. Si esto deja de ser cierto, el test de arriba pierde sentido.
+    expect(typeof pathnames["/help"]).not.toBe("string");
   });
 });
