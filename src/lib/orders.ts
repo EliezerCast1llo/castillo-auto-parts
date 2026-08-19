@@ -24,7 +24,7 @@ import {
   type DeliveryZoneOption,
 } from "./fulfillment";
 import { buildAbsoluteAppUrl } from "./email/templates";
-import { deriveScopedIdempotencyKey } from "./checkout-idempotency";
+import { deriveScopedIdempotencyKey, hashCheckoutIntent } from "./checkout-idempotency";
 import {
   InventoryReservationError,
   reserveInventory,
@@ -63,11 +63,17 @@ export async function createGuestCheckoutFromCart(
   formData: FormData,
   userId?: string,
   idempotencyKey?: string,
+  retrying = false,
 ): Promise<CreateGuestOrderResult> {
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
 
   const cart = await getGuestCart();
+
+  // Huella del intento completo: items + método de entrega + dirección/coords. Dos
+  // submits con los mismos items pero DISTINTA dirección son intentos distintos.
+  const intentFingerprint = buildIntentFingerprint(cart, parsed.data);
+  const intentHash = hashCheckoutIntent(intentFingerprint);
 
   // Idempotencia: se resuelve tras leer el carrito pero ANTES de los guards, para
   // que un re-submit tras una compra (carrito ya vacío) reproduzca el checkout en
@@ -82,16 +88,16 @@ export async function createGuestCheckoutFromCart(
       // con dueño. Evita que en una máquina compartida se filtre el checkout ajeno.
       const identityMismatch = existing.userId !== null && existing.userId !== userId;
 
-      // Mismo intento solo si el carrito está vacío (volver atrás tras la compra) o
-      // coincide con los items de la orden (doble-click del mismo carrito). Si el
-      // carrito fue reconstruido con otros items, NO reproducir ni borrarlo.
-      const sameIntent = cart.lines.length === 0 || cartMatchesOrder(cart, existing.items);
+      // Mismo intento: carrito vacío, o huella coincide, o (orden legacy sin
+      // intentHash) los items coinciden como red. Evita duplicar en la ventana del
+      // deploy contra órdenes previas a la migración.
+      const sameIntent = isSameCheckoutIntent(cart, intentHash, existing);
 
       if (identityMismatch || !sameIntent) {
         // La key original no aplica. En vez de descartarla (key null no colisiona →
         // dos submits concurrentes duplicarían), se deriva una key estable de
-        // (key + carrito): submits idénticos siguen deduplicando.
-        effectiveIdempotencyKey = deriveScopedIdempotencyKey(idempotencyKey, cartFingerprint(cart));
+        // (key + huella del intento): submits idénticos siguen deduplicando.
+        effectiveIdempotencyKey = deriveScopedIdempotencyKey(idempotencyKey, intentFingerprint);
       } else {
         const replay = replayResultForOrder(existing);
         if (replay) {
@@ -217,6 +223,7 @@ export async function createGuestCheckoutFromCart(
           addressId,
           currency: "USD",
           idempotencyKey: effectiveIdempotencyKey ?? null,
+          intentHash,
           userId: userId ?? null,
           customerEmail: parsed.data.customerEmail,
           customerName: parsed.data.customerName,
@@ -318,10 +325,18 @@ export async function createGuestCheckoutFromCart(
       isIdempotencyKeyConflict(error)
     ) {
       const existing = await findOrderByIdempotencyKey(effectiveIdempotencyKey);
-      const replay = existing ? replayResultForOrder(existing) : null;
-      if (replay) {
+      const recovery = resolveP2002Recovery(existing, retrying);
+
+      if (recovery.kind === "replay") {
         await clearGuestCartSafely();
-        return replay;
+        return recovery.result;
+      }
+      if (recovery.kind === "release_and_retry") {
+        // La colisión es contra una orden MUERTA (expirada/cancelada): su key quedó
+        // ocupando el índice único. Liberarla y reintentar UNA vez para no dejar al
+        // cliente en un bucle permanente de duplicate_in_progress con stock reservado.
+        await releaseIdempotencyKey(effectiveIdempotencyKey);
+        return createGuestCheckoutFromCart(formData, userId, idempotencyKey, true);
       }
       // Ganador aún sin checkoutUrl persistido: reintento, no error terminal.
       return { status: "duplicate_in_progress" };
@@ -337,6 +352,7 @@ export type IdempotentOrderLookup = {
   status: OrderStatus;
   userId: string | null;
   reservationExpiresAt: Date | null;
+  intentHash: string | null;
   items: { skuSnapshot: string; quantity: number }[];
   payment: { checkoutUrl: string | null } | null;
 };
@@ -351,15 +367,23 @@ function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOr
       status: true,
       userId: true,
       reservationExpiresAt: true,
+      intentHash: true,
       items: { select: { skuSnapshot: true, quantity: true } },
       payment: { select: { checkoutUrl: true } },
     },
   });
 }
 
-// Un carrito coincide con una orden si tiene exactamente los mismos SKUs y
-// cantidades. Discrimina el doble-click del mismo carrito (reproducir) de un
-// carrito reconstruido con otros items (crear orden nueva, no pisar el carrito).
+// Huella determinística de los items del carrito (SKUs+cantidades ordenados).
+export function cartFingerprint(cart: GuestCart): string {
+  return cart.lines
+    .map((line) => `${line.product.sku}:${line.quantity}`)
+    .sort()
+    .join(",");
+}
+
+// Red para órdenes legacy (creadas antes de la migración de intentHash): tienen
+// intentHash NULL y no pueden compararse por hash, así que se comparan por items.
 export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["items"]): boolean {
   if (cart.lines.length !== items.length) return false;
 
@@ -370,13 +394,65 @@ export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["
   return true;
 }
 
-// Huella determinística del carrito (SKUs+cantidades ordenados). Igual para dos
-// carritos con el mismo contenido, base para derivar una key de idempotencia estable.
-export function cartFingerprint(cart: GuestCart): string {
-  return cart.lines
-    .map((line) => `${line.product.sku}:${line.quantity}`)
-    .sort()
-    .join(",");
+// ¿El submit actual es el mismo intento que la orden hallada?
+// - carrito vacío → sí (volver atrás tras la compra).
+// - con intentHash → igualdad de hash (items + entrega + dirección + cliente).
+// - legacy (intentHash NULL) → red: comparar items.
+export function isSameCheckoutIntent(
+  cart: GuestCart,
+  currentIntentHash: string,
+  existing: IdempotentOrderLookup,
+): boolean {
+  if (cart.lines.length === 0) return true;
+  if (existing.intentHash !== null) return existing.intentHash === currentIntentHash;
+  return cartMatchesOrder(cart, existing.items);
+}
+
+// Huella del intento completo: items + entrega + dirección + coords + datos del
+// cliente. Un email/teléfono con typo corregido cambia la huella → no se reproduce
+// la orden vieja (la confirmación no se manda al dato equivocado).
+export function buildIntentFingerprint(cart: GuestCart, input: CheckoutInput): string {
+  return [
+    cartFingerprint(cart),
+    `fm:${input.fulfillmentMethod}`,
+    `em:${input.customerEmail}`,
+    `nm:${input.customerName}`,
+    `ph:${input.customerPhone}`,
+    `a1:${input.addressLine1 ?? ""}`,
+    `a2:${input.addressLine2 ?? ""}`,
+    `ci:${input.city ?? ""}`,
+    `de:${input.department ?? ""}`,
+    `dz:${input.deliveryZoneSlug ?? ""}`,
+    `lat:${input.latitude ?? ""}`,
+    `lng:${input.longitude ?? ""}`,
+    `fa:${input.formattedAddress ?? ""}`,
+    `pl:${input.placeId ?? ""}`,
+  ].join("|");
+}
+
+export type P2002Recovery =
+  | { kind: "replay"; result: CreateGuestOrderResult }
+  | { kind: "release_and_retry" }
+  | { kind: "retry_signal" };
+
+// Decide cómo recuperarse de un P2002 de idempotencyKey (colisión al insertar):
+// - orden viva con checkout → replay (devolver su checkout).
+// - orden MUERTA y aún no reintentamos → liberar la key y reintentar una vez
+//   (rompe el bucle permanente de duplicate_in_progress). El flag `retrying` corta
+//   la recursión: una segunda colisión ya no reintenta.
+// - resto (in_flight, o ya reintentado) → señal de reintento (duplicate_in_progress).
+export function resolveP2002Recovery(
+  existing: IdempotentOrderLookup | null,
+  retrying: boolean,
+): P2002Recovery {
+  if (existing) {
+    const replay = replayResultForOrder(existing);
+    if (replay) return { kind: "replay", result: replay };
+    if (idempotencyStateForOrder(existing) === "dead" && !retrying) {
+      return { kind: "release_and_retry" };
+    }
+  }
+  return { kind: "retry_signal" };
 }
 
 async function releaseIdempotencyKey(idempotencyKey: string) {
