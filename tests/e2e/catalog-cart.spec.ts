@@ -14,6 +14,22 @@ test("catalog search filters products", async ({ page }) => {
   await expect(page.getByText("Filtro de aceite para Toyota 1.8L")).toBeVisible();
 });
 
+test("legacy Spanish stock URLs redirect to the canonical identifier", async ({ page }) => {
+  // `/catalog?stock=Últimas unidades` viajó en la navegación del sitio, así que
+  // sigue circulando en historiales, bookmarks y buscadores.
+  await page.goto("/catalog?stock=Últimas unidades");
+
+  await expect(page).toHaveURL(/\/catalog\?stock=LOW_STOCK$/);
+  await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
+});
+
+test("canonical stock URLs are served without redirecting", async ({ page }) => {
+  await page.goto("/catalog?stock=IN_STOCK");
+
+  await expect(page).toHaveURL(/\/catalog\?stock=IN_STOCK$/);
+  await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
+});
+
 test("customer can add an available product to the guest cart", async ({ page }) => {
   await page.goto("/catalog");
 

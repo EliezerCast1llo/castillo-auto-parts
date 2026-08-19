@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildCanonicalCatalogQuery,
   buildPrismaWhere,
   countActiveCatalogFilters,
   filterCatalogProducts,
@@ -21,7 +22,57 @@ describe("catalog filters", () => {
 
     expect(filters.categories).toEqual(["Filtros", "Frenos"]);
     expect(filters.query).toBe("toyota");
-    expect(filters.stockStatuses).toEqual(["Disponible"]);
+    expect(filters.stockStatuses).toEqual(["IN_STOCK"]);
+  });
+
+  it("parses the canonical stock identifiers", () => {
+    const filters = parseCatalogFilters({ stock: ["IN_STOCK", "LOW_STOCK"] });
+    expect(filters.stockStatuses).toEqual(["IN_STOCK", "LOW_STOCK"]);
+  });
+
+  it("still accepts the Spanish stock values shipped in old catalog URLs", () => {
+    // `/catalog?stock=Últimas unidades` viajó en la navegación del sitio, así
+    // que sigue en historiales, bookmarks y probablemente en el índice.
+    expect(parseCatalogFilters({ stock: "Últimas unidades" }).stockStatuses).toEqual(["LOW_STOCK"]);
+    expect(parseCatalogFilters({ stock: "No disponible" }).stockStatuses).toEqual(["OUT_OF_STOCK"]);
+    expect(parseCatalogFilters({ stock: "ultimas unidades" }).stockStatuses).toEqual(["LOW_STOCK"]);
+  });
+
+  it("drops unknown stock values instead of failing", () => {
+    expect(parseCatalogFilters({ stock: "agotado" }).stockStatuses).toEqual([]);
+  });
+
+  it("deduplicates when a legacy and a canonical value resolve to the same status", () => {
+    const filters = parseCatalogFilters({ stock: ["LOW_STOCK", "Últimas unidades"] });
+    expect(filters.stockStatuses).toEqual(["LOW_STOCK"]);
+  });
+
+  it("builds a canonical query only when a legacy stock value is present", () => {
+    expect(buildCanonicalCatalogQuery({ stock: "Últimas unidades" })).toBe("stock=LOW_STOCK");
+    expect(buildCanonicalCatalogQuery({ stock: "LOW_STOCK" })).toBeNull();
+    expect(buildCanonicalCatalogQuery({ brand: "Bosch" })).toBeNull();
+    expect(buildCanonicalCatalogQuery({})).toBeNull();
+  });
+
+  it("keeps the other params when canonicalizing a legacy stock value", () => {
+    const query = buildCanonicalCatalogQuery({
+      brand: ["Bosch", "NGK"],
+      q: "toyota",
+      stock: "Disponible",
+    });
+
+    const params = new URLSearchParams(query ?? "");
+    expect(params.getAll("brand")).toEqual(["Bosch", "NGK"]);
+    expect(params.get("q")).toBe("toyota");
+    expect(params.getAll("stock")).toEqual(["IN_STOCK"]);
+  });
+
+  it("does not loop: the canonical result never triggers another redirect", () => {
+    const query = buildCanonicalCatalogQuery({ stock: "No disponible" });
+    expect(query).toBe("stock=OUT_OF_STOCK");
+
+    const asParams = Object.fromEntries(new URLSearchParams(query ?? ""));
+    expect(buildCanonicalCatalogQuery(asParams)).toBeNull();
   });
 
   it("parses catalog sort safely", () => {
@@ -173,10 +224,10 @@ describe("buildPrismaWhere", () => {
     expect(brandCondition?.brand?.in).toEqual(["WIX", "NGK"]);
   });
 
-  it("filtra por stockStatus Disponible → IN_STOCK", () => {
+  it("filtra por stockStatus IN_STOCK → IN_STOCK", () => {
     const where = buildPrismaWhere({
       ...getEmptyCatalogFilters(),
-      stockStatuses: ["Disponible"],
+      stockStatuses: ["IN_STOCK"],
     });
 
     const conditions = where.AND as Array<{ inventoryStocks?: unknown }>;
@@ -187,10 +238,10 @@ describe("buildPrismaWhere", () => {
     });
   });
 
-  it("filtra por stockStatus No disponible → OUT_OF_STOCK y PREORDER", () => {
+  it("filtra por stockStatus OUT_OF_STOCK → OUT_OF_STOCK y PREORDER", () => {
     const where = buildPrismaWhere({
       ...getEmptyCatalogFilters(),
-      stockStatuses: ["No disponible"],
+      stockStatuses: ["OUT_OF_STOCK"],
     });
 
     const conditions = where.AND as Array<{ inventoryStocks?: unknown }>;
@@ -254,15 +305,15 @@ describe("buildPrismaWhere", () => {
 // ---------------------------------------------------------------------------
 
 describe("stockStatusToPrismaStatuses", () => {
-  it("convierte Disponible → IN_STOCK", () => {
-    expect(stockStatusToPrismaStatuses("Disponible")).toEqual(["IN_STOCK"]);
+  it("convierte IN_STOCK → IN_STOCK", () => {
+    expect(stockStatusToPrismaStatuses("IN_STOCK")).toEqual(["IN_STOCK"]);
   });
 
-  it("convierte Últimas unidades → LOW_STOCK", () => {
-    expect(stockStatusToPrismaStatuses("Últimas unidades")).toEqual(["LOW_STOCK"]);
+  it("convierte LOW_STOCK → LOW_STOCK", () => {
+    expect(stockStatusToPrismaStatuses("LOW_STOCK")).toEqual(["LOW_STOCK"]);
   });
 
-  it("convierte No disponible → OUT_OF_STOCK y PREORDER", () => {
-    expect(stockStatusToPrismaStatuses("No disponible")).toEqual(["OUT_OF_STOCK", "PREORDER"]);
+  it("convierte OUT_OF_STOCK → OUT_OF_STOCK y PREORDER", () => {
+    expect(stockStatusToPrismaStatuses("OUT_OF_STOCK")).toEqual(["OUT_OF_STOCK", "PREORDER"]);
   });
 });

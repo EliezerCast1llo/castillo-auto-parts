@@ -2,6 +2,6 @@
 export const siteNavItems = [
   { label: "Catálogo", href: "/catalog" },
   { label: "Marcas", href: "/catalog?brand=Bosch" },
-  { label: "Ofertas", href: "/catalog?stock=Últimas unidades" },
+  { label: "Ofertas", href: "/catalog?stock=LOW_STOCK" },
   { label: "Ayuda", href: "/ayuda" },
 ];

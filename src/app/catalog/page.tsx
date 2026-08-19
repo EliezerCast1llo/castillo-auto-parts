@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { permanentRedirect } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { SortDropdown } from "@/components/catalog/sort-dropdown";
@@ -16,6 +17,7 @@ import { SiteHeader } from "@/components/site-header";
 import { formatMyVehicle } from "@/lib/my-vehicle";
 import { getMyVehicle } from "@/lib/my-vehicle-server";
 import {
+  buildCanonicalCatalogQuery,
   countActiveCatalogFilters,
   parseCatalogFilters,
   parseCatalogSort,
@@ -62,6 +64,15 @@ type CatalogPageProps = {
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
+
+  // Las URLs viejas traían el estado de stock en español
+  // (`?stock=Últimas unidades`). Se siguen entendiendo, pero se redirige al
+  // identificador canónico para que los links compartidos se auto-curen.
+  const canonicalQuery = buildCanonicalCatalogQuery(resolvedParams);
+  if (canonicalQuery !== null) {
+    permanentRedirect(canonicalQuery ? `/catalog?${canonicalQuery}` : "/catalog");
+  }
+
   const filters = parseCatalogFilters(resolvedParams);
   const sort = parseCatalogSort(resolvedParams);
   const page = Math.max(1, Number(resolvedParams.page ?? 1) || 1);

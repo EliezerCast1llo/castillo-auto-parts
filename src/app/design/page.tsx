@@ -35,7 +35,7 @@ const sampleFilters: CatalogFilters = {
   query: "Toyota Corolla",
   categories: ["Filtros"],
   brands: [sampleProduct.brand],
-  stockStatuses: ["Disponible"],
+  stockStatuses: ["IN_STOCK"],
   vehicleMake: "Toyota",
   vehicleModel: "Corolla",
   vehicleYear: "2018",
@@ -214,9 +214,9 @@ function ComponentFoundation() {
             Acción secundaria
           </button>
           <div className="flex flex-wrap gap-2">
-            <StockBadge status="Disponible" />
-            <StockBadge status="Últimas unidades" />
-            <StockBadge status="No disponible" />
+            <StockBadge status="IN_STOCK" />
+            <StockBadge status="LOW_STOCK" />
+            <StockBadge status="OUT_OF_STOCK" />
           </div>
         </div>
       </div>

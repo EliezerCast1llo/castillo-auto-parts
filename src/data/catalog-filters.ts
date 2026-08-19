@@ -1,4 +1,10 @@
 import type { InventoryStatus, Prisma } from "@prisma/client";
+import {
+  isLegacyStockStatusParam,
+  parseStockStatusParam,
+  stockStatuses,
+  type StockStatus,
+} from "@/lib/stock-status";
 import type { CatalogProduct } from "./products";
 
 export type CatalogSearchParams = Record<string, string | string[] | undefined>;
@@ -42,22 +48,44 @@ export const catalogSortOptions: { label: string; value: CatalogSort }[] = [
   { label: "Más nuevos", value: "newest" },
 ];
 
-export const stockStatusOrder: CatalogProduct["stockStatus"][] = [
-  "Disponible",
-  "Últimas unidades",
-  "No disponible",
-];
+/** Orden de presentación de los filtros de stock. */
+export const stockStatusOrder: readonly StockStatus[] = stockStatuses;
 
 export function parseCatalogFilters(searchParams: CatalogSearchParams): CatalogFilters {
   return {
     query: firstValue(searchParams.q),
     categories: valuesFor(searchParams.category),
     brands: valuesFor(searchParams.brand),
-    stockStatuses: valuesFor(searchParams.stock).filter(isCatalogStockStatus),
+    stockStatuses: parseStockStatusParams(searchParams.stock),
     vehicleMake: firstValue(searchParams.vehicleMake),
     vehicleModel: firstValue(searchParams.vehicleModel),
     vehicleYear: firstValue(searchParams.vehicleYear),
   };
+}
+
+/**
+ * Si el query param `stock` trae valores en español legacy, devuelve el query
+ * string canónico para redirigir; `null` cuando no hay nada que migrar.
+ *
+ * El `null` es la guarda contra el loop: después del redirect los valores ya son
+ * identificadores canónicos, así que la segunda pasada no vuelve a disparar.
+ */
+export function buildCanonicalCatalogQuery(searchParams: CatalogSearchParams): string | null {
+  const rawStock = valuesFor(searchParams.stock);
+  if (!rawStock.some(isLegacyStockStatusParam)) return null;
+
+  const canonical = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (key === "stock" || value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) {
+      canonical.append(key, item);
+    }
+  }
+  for (const status of parseStockStatusParams(searchParams.stock)) {
+    canonical.append("stock", status);
+  }
+
+  return canonical.toString();
 }
 
 export function parseCatalogSort(searchParams: CatalogSearchParams): CatalogSort {
@@ -81,13 +109,13 @@ export function filterCatalogProducts(products: CatalogProduct[], filters: Catal
   const query = normalize(filters.query);
   const categories = normalizedSet(filters.categories);
   const brands = normalizedSet(filters.brands);
-  const stockStatuses = normalizedSet(filters.stockStatuses);
+  const selectedStatuses = new Set<StockStatus>(filters.stockStatuses);
 
   return products.filter((product) => {
     if (query && !productMatchesQuery(product, query)) return false;
     if (categories.size > 0 && !categories.has(normalize(product.category))) return false;
     if (brands.size > 0 && !brands.has(normalize(product.brand))) return false;
-    if (stockStatuses.size > 0 && !stockStatuses.has(normalize(product.stockStatus))) return false;
+    if (selectedStatuses.size > 0 && !selectedStatuses.has(product.stockStatus)) return false;
     if (!productMatchesVehicle(product, filters)) return false;
 
     return true;
@@ -181,7 +209,7 @@ function sortYearSets(record: Record<string, Set<string>>): Record<string, strin
  *   memoria vía filterCatalogProducts cuando se necesita (mock/autocomplete).
  * - categories: filtra por nombre de categoría (OR entre múltiples).
  * - brands: filtra por marca (OR entre múltiples).
- * - stockStatuses: traduce los labels de UI a InventoryStatus de Prisma.
+ * - stockStatuses: traduce el estado de la app a InventoryStatus de Prisma.
  * - vehicle: filtra por VehicleCompatibility con make, model y año.
  *
  * Nota: los filtros de stockStatus requieren JOIN con inventoryStocks.
@@ -218,7 +246,7 @@ export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereIn
     });
   }
 
-  // Estado de stock: traduce labels de UI a InventoryStatus de Prisma
+  // Estado de stock: traduce el estado de la app a InventoryStatus de Prisma
   if (filters.stockStatuses.length > 0) {
     const prismaStatuses: InventoryStatus[] = filters.stockStatuses.flatMap(stockStatusToPrismaStatuses);
     if (prismaStatuses.length > 0) {
@@ -253,14 +281,13 @@ export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereIn
 /**
  * Traduce un stockStatus de UI a los InventoryStatus equivalentes de Prisma.
  *
- * "Disponible"       → IN_STOCK
- * "Últimas unidades" → LOW_STOCK
- * "No disponible"    → OUT_OF_STOCK, PREORDER
+ * El estado de la app tiene tres valores; el enum de Prisma tiene cuatro:
+ * PREORDER se presenta al cliente como "sin stock".
  */
-export function stockStatusToPrismaStatuses(status: CatalogProduct["stockStatus"]): InventoryStatus[] {
-  if (status === "Disponible") return ["IN_STOCK"];
-  if (status === "Últimas unidades") return ["LOW_STOCK"];
-  if (status === "No disponible") return ["OUT_OF_STOCK", "PREORDER"];
+export function stockStatusToPrismaStatuses(status: StockStatus): InventoryStatus[] {
+  if (status === "IN_STOCK") return ["IN_STOCK"];
+  if (status === "LOW_STOCK") return ["LOW_STOCK"];
+  if (status === "OUT_OF_STOCK") return ["OUT_OF_STOCK", "PREORDER"];
   return [];
 }
 
@@ -332,8 +359,16 @@ function normalizedSet(values: string[]) {
   return new Set(values.map(normalize));
 }
 
-function isCatalogStockStatus(value: string): value is CatalogProduct["stockStatus"] {
-  return stockStatusOrder.some((status) => status === value);
+/**
+ * Lee el query param `stock`, aceptando tanto los identificadores canónicos
+ * como los valores en español que la app publicó antes del refactor.
+ */
+function parseStockStatusParams(value: string | string[] | undefined): StockStatus[] {
+  const parsed = valuesFor(value)
+    .map(parseStockStatusParam)
+    .filter((status): status is StockStatus => status !== null);
+
+  return [...new Set(parsed)];
 }
 
 function isCatalogSort(value: string): value is CatalogSort {

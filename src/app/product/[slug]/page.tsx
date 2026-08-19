@@ -65,7 +65,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   const relatedProducts = await getRelatedCatalogProducts(product);
-  const isAvailable = product.stockStatus !== "No disponible";
+  const isAvailable = product.stockStatus !== "OUT_OF_STOCK";
   const supportMessage = `Hola, necesito validar compatibilidad del repuesto ${product.name} (SKU ${product.sku}, parte ${product.partNumber}).`;
 
   const breadcrumbs: BreadcrumbEntry[] = [

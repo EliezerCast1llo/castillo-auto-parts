@@ -176,6 +176,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/app/api/admin/delete-image/route.ts` | DELETE handler admin: borra ProductImage de DB y objeto de R2. |
 | `src/components/search/search-autocomplete.tsx` | Client Component de busqueda con debounce, dropdown y navegacion por teclado. |
 | `src/lib/stock-alerts.ts` | Parseo/deduplicacion de avisos de stock. |
+| `src/lib/stock-status.ts` | Identificador de estado de stock (`IN_STOCK`/`LOW_STOCK`/`OUT_OF_STOCK`), etiquetas y parseo con back-compat de los valores en espanol de las URLs viejas. |
 | `src/lib/payments/*` | Contrato y proveedor mock de pagos. |
 | `src/lib/email/*` | Contrato, provider console, plantillas y logs. |
 | `src/lib/invoices/provider.ts` | Contrato futuro para DTE. |

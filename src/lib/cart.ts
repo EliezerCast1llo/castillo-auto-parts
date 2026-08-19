@@ -40,7 +40,7 @@ export async function getGuestCart(): Promise<GuestCart> {
     if (!product) return [];
 
     const availableQuantity =
-      product.stockStatus === "No disponible" ? 0 : Math.max(product.stockQuantity, 0);
+      product.stockStatus === "OUT_OF_STOCK" ? 0 : Math.max(product.stockQuantity, 0);
     const issue = getLineIssue(item.quantity, availableQuantity);
 
     return [
@@ -73,7 +73,7 @@ export async function addGuestCartItem(sku: string, quantity: number) {
   }
 
   const product = await findProductBySku(sku);
-  if (!product || product.stockStatus === "No disponible" || product.stockQuantity <= 0) {
+  if (!product || product.stockStatus === "OUT_OF_STOCK" || product.stockQuantity <= 0) {
     return "unavailable" as const;
   }
 
@@ -93,7 +93,7 @@ export async function updateGuestCartItem(sku: string, quantity: number) {
   }
 
   const product = await findProductBySku(sku);
-  if (!product || product.stockStatus === "No disponible" || product.stockQuantity <= 0) {
+  if (!product || product.stockStatus === "OUT_OF_STOCK" || product.stockQuantity <= 0) {
     await removeGuestCartItem(sku);
     return "unavailable" as const;
   }

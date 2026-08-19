@@ -20,6 +20,7 @@ import { searchCatalogProducts } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { createSearchRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 import { getClientIp } from "@/lib/request-ip";
+import type { StockStatus } from "@/lib/stock-status";
 
 const MAX_RESULTS = 6;
 const MIN_QUERY_LENGTH = 2;
@@ -32,7 +33,7 @@ export type SearchResult = {
   sku: string;
   category: string;
   formattedPrice: string;
-  stockStatus: string;
+  stockStatus: StockStatus;
 };
 
 export type SearchResponse = {

@@ -34,7 +34,7 @@ const mockProducts = {
       priceCents: 1500,
       sku: "FLT-001",
       slug: "filtro-aceite-toyota",
-      stockStatus: "Disponible",
+      stockStatus: "IN_STOCK",
     },
     {
       category: "Frenos",
@@ -42,7 +42,7 @@ const mockProducts = {
       priceCents: 4500,
       sku: "FRN-042",
       slug: "pastillas-freno-honda",
-      stockStatus: "Últimas unidades",
+      stockStatus: "LOW_STOCK",
     },
   ],
   source: "database",
