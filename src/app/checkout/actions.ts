@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import {
   CHECKOUT_RETRY_KEY_COOKIE,
+  CHECKOUT_RETRY_KEY_MAX_AGE_SECONDS,
   normalizeCheckoutIdempotencyKey,
+  shouldPreserveRetryKey,
 } from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { createGuestCheckoutFromCart } from "@/lib/orders";
@@ -32,25 +34,27 @@ export async function createGuestOrder(formData: FormData) {
   const result = await createGuestCheckoutFromCart(formData, userId, idempotencyKey);
   const cookieStore = await cookies();
 
-  if (result.status === "created") {
-    // Éxito: la key ya cumplió su rol, se limpia para que el próximo checkout use una nueva.
+  // La cookie de reintento se conserva SOLO en duplicate_in_progress. En cualquier
+  // otro desenlace (created, errores terminales, carrito vacío) se limpia, para que
+  // una key vieja no quede colgada y el próximo checkout la adopte por error.
+  if (shouldPreserveRetryKey(result.status, Boolean(idempotencyKey)) && idempotencyKey) {
+    cookieStore.set(CHECKOUT_RETRY_KEY_COOKIE, idempotencyKey, {
+      httpOnly: true,
+      maxAge: CHECKOUT_RETRY_KEY_MAX_AGE_SECONDS,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  } else {
     cookieStore.delete(CHECKOUT_RETRY_KEY_COOKIE);
+  }
+
+  if (result.status === "created") {
     redirect(result.checkoutUrl);
   }
 
   if (result.status === "empty_cart" || result.status === "stock_issue") {
     redirect(`/cart?estado=${result.status}`);
-  }
-
-  if (result.status === "duplicate_in_progress" && idempotencyKey) {
-    // Preserva la key para que el reintento la reuse (reproduce, no duplica).
-    cookieStore.set(CHECKOUT_RETRY_KEY_COOKIE, idempotencyKey, {
-      httpOnly: true,
-      maxAge: 120,
-      path: "/",
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
   }
 
   redirect(`/checkout?estado=${result.status}`);

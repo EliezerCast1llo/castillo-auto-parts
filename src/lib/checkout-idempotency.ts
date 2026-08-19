@@ -6,10 +6,15 @@ import { createHash, randomBytes } from "node:crypto";
 const IDEMPOTENCY_KEY_BYTES = 32;
 const IDEMPOTENCY_KEY_PATTERN = /^[a-f0-9]{64}$/;
 
-// Cookie httpOnly, corta, que preserva la idempotencyKey del submit que quedó en
+// Cookie httpOnly que preserva la idempotencyKey del submit que quedó en
 // duplicate_in_progress. Permite reintentar reusando la MISMA key (reproduce en
 // vez de duplicar) sin dejar al cliente en una página sin salida.
 export const CHECKOUT_RETRY_KEY_COOKIE = "castillo_checkout_retry_key";
+
+// TTL de la cookie de reintento: debe cubrir toda la vida de la reserva de la
+// orden en curso (20 min), no una espera asumida de segundos. Si expira antes, el
+// reintento acuñaría una key nueva y crearía una segunda orden con su reserva.
+export const CHECKOUT_RETRY_KEY_MAX_AGE_SECONDS = 20 * 60;
 
 export function createCheckoutIdempotencyKey() {
   return randomBytes(IDEMPOTENCY_KEY_BYTES).toString("hex");
@@ -34,4 +39,16 @@ export function deriveScopedIdempotencyKey(baseKey: string, fingerprint: string)
 // algo material como la dirección (crear orden nueva, no pagar con la vieja).
 export function hashCheckoutIntent(fingerprint: string): string {
   return createHash("sha256").update(fingerprint).digest("hex");
+}
+
+// La cookie de reintento SOLO se conserva en duplicate_in_progress (y si hubo key).
+// En cualquier otro desenlace se limpia, para que una key vieja no quede colgada.
+export function shouldPreserveRetryKey(status: string, hasKey: boolean): boolean {
+  return status === "duplicate_in_progress" && hasKey;
+}
+
+// La página solo adopta la key de reintento cuando venimos de un
+// duplicate_in_progress; fuera de ese flujo se ignora aunque la cookie exista.
+export function shouldAdoptRetryKey(status: string | undefined): boolean {
+  return status === "duplicate_in_progress";
 }

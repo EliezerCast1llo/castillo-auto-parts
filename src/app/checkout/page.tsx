@@ -9,6 +9,7 @@ import {
   CHECKOUT_RETRY_KEY_COOKIE,
   createCheckoutIdempotencyKey,
   normalizeCheckoutIdempotencyKey,
+  shouldAdoptRetryKey,
 } from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
@@ -38,13 +39,13 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
 
-  // Si venimos de un duplicate_in_progress, la action dejó la key original en un
-  // cookie: se reutiliza para que el reintento reproduzca la orden en curso en vez
-  // de crear una nueva (evita el dead-end y el duplicado).
+  // La key de reintento solo se adopta cuando venimos de un duplicate_in_progress.
+  // Fuera de ese flujo se ignora aunque la cookie exista (una key vieja colgada no
+  // debe reproducir una orden que no corresponde al checkout actual).
   const cookieStore = await cookies();
-  const retryKey = normalizeCheckoutIdempotencyKey(
-    cookieStore.get(CHECKOUT_RETRY_KEY_COOKIE)?.value,
-  );
+  const retryKey = shouldAdoptRetryKey(status)
+    ? normalizeCheckoutIdempotencyKey(cookieStore.get(CHECKOUT_RETRY_KEY_COOKIE)?.value)
+    : undefined;
   const idempotencyKey = retryKey ?? createCheckoutIdempotencyKey();
 
   let userDefaults: { name: string; email: string; phone: string } | null = null;
