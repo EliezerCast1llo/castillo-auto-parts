@@ -1,10 +1,15 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin, PackageCheck } from "lucide-react";
 import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { getGuestCart } from "@/lib/cart";
-import { createCheckoutIdempotencyKey } from "@/lib/checkout-idempotency";
+import {
+  CHECKOUT_RETRY_KEY_COOKIE,
+  createCheckoutIdempotencyKey,
+  normalizeCheckoutIdempotencyKey,
+} from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
@@ -32,6 +37,15 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
+
+  // Si venimos de un duplicate_in_progress, la action dejó la key original en un
+  // cookie: se reutiliza para que el reintento reproduzca la orden en curso en vez
+  // de crear una nueva (evita el dead-end y el duplicado).
+  const cookieStore = await cookies();
+  const retryKey = normalizeCheckoutIdempotencyKey(
+    cookieStore.get(CHECKOUT_RETRY_KEY_COOKIE)?.value,
+  );
+  const idempotencyKey = retryKey ?? createCheckoutIdempotencyKey();
 
   let userDefaults: { name: string; email: string; phone: string } | null = null;
   let savedAddresses: { id: string; formattedAddress: string; addressLine1: string; addressLine2: string | null; city: string; department: string; deliveryNotes: string | null; latitude: string | null; longitude: string | null }[] = [];
@@ -80,14 +94,14 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
 
-            {/* Tras duplicate_in_progress NO se re-renderiza el formulario: reenviar
-                generaría una key nueva y podría crear una orden duplicada. Se muestra
-                solo el aviso hasta que el pedido en curso termine. */}
-            {status !== "duplicate_in_progress" &&
+            {/* En duplicate_in_progress se oculta el form SOLO si no hay retryKey.
+                Con retryKey el reintento reusa la misma key (reproduce, no duplica),
+                así que es seguro mostrar el formulario de nuevo. */}
+            {(status !== "duplicate_in_progress" || Boolean(retryKey)) &&
               (cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
                 deliveryZones={fulfillmentOptions.deliveryZones}
-                idempotencyKey={createCheckoutIdempotencyKey()}
+                idempotencyKey={idempotencyKey}
                 pickupLocation={fulfillmentOptions.pickupLocation}
                 savedAddresses={savedAddresses}
                 subtotalCents={cart.subtotalCents}
@@ -322,7 +336,7 @@ function getStatusMessage(status: string) {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
     db_unavailable: "No pudimos crear el pedido. Intenta de nuevo.",
     duplicate_in_progress:
-      "Tu pedido se está procesando. Si ya iniciaste el pago, revisa tu correo para completarlo; no reenvíes el formulario. Si no continúa, vuelve al carrito.",
+      "Tu pedido se está procesando. Espera unos segundos y vuelve a confirmar: se retomará el mismo pedido, no se duplica.",
     invalid: "Revisa los datos del formulario.",
     payment_unavailable: "No pudimos iniciar el pago. Intenta nuevamente.",
   };

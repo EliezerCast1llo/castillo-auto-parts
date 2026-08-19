@@ -6,6 +6,11 @@ import { createHash, randomBytes } from "node:crypto";
 const IDEMPOTENCY_KEY_BYTES = 32;
 const IDEMPOTENCY_KEY_PATTERN = /^[a-f0-9]{64}$/;
 
+// Cookie httpOnly, corta, que preserva la idempotencyKey del submit que quedó en
+// duplicate_in_progress. Permite reintentar reusando la MISMA key (reproduce en
+// vez de duplicar) sin dejar al cliente en una página sin salida.
+export const CHECKOUT_RETRY_KEY_COOKIE = "castillo_checkout_retry_key";
+
 export function createCheckoutIdempotencyKey() {
   return randomBytes(IDEMPOTENCY_KEY_BYTES).toString("hex");
 }
