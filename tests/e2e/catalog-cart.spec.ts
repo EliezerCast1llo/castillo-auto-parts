@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { ES } from "./helpers";
 import { InventoryStatus, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -8,7 +9,7 @@ test.afterAll(async () => {
 });
 
 test("catalog search filters products", async ({ page }) => {
-  await page.goto("/catalog?q=toyota");
+  await page.goto(ES("/catalog?q=toyota"));
 
   await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
   await expect(page.getByText("Filtro de aceite para Toyota 1.8L")).toBeVisible();
@@ -17,14 +18,14 @@ test("catalog search filters products", async ({ page }) => {
 test("legacy Spanish stock URLs redirect to the canonical identifier", async ({ page }) => {
   // `/catalog?stock=Últimas unidades` viajó en la navegación del sitio, así que
   // sigue circulando en historiales, bookmarks y buscadores.
-  await page.goto("/catalog?stock=Últimas unidades");
+  await page.goto(ES("/catalog?stock=Últimas unidades"));
 
   await expect(page).toHaveURL(/\/catalog\?stock=LOW_STOCK$/);
   await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
 });
 
 test("canonical stock URLs are served without redirecting", async ({ page }) => {
-  await page.goto("/catalog?stock=IN_STOCK");
+  await page.goto(ES("/catalog?stock=IN_STOCK"));
 
   await expect(page).toHaveURL(/\/catalog\?stock=IN_STOCK$/);
   await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
@@ -48,7 +49,7 @@ test("the availability filter shows Spanish labels but submits identifiers", asy
 });
 
 test("customer can add an available product to the guest cart", async ({ page }) => {
-  await page.goto("/catalog");
+  await page.goto(ES("/catalog"));
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
 
@@ -65,7 +66,7 @@ test("customer can add an available product to the guest cart", async ({ page })
 });
 
 test("local delivery checkout exposes delivery zone and map fields", async ({ page }) => {
-  await page.goto("/catalog");
+  await page.goto(ES("/catalog"));
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
@@ -181,7 +182,7 @@ test("guest can request a stock alert when cart item becomes unavailable", async
 
   await addProductToCart(page, "filtro-aceite-toyota-18l");
   await makeProductUnavailable(sku);
-  await page.goto("/cart");
+  await page.goto(ES("/cart"));
 
   await expect(page.getByText("Este producto ya no está disponible.")).toBeVisible();
   await page.getByPlaceholder("Email para aviso").fill(alertEmail);
@@ -205,10 +206,10 @@ test("guest can request a stock alert when cart item becomes unavailable", async
 });
 
 async function addProductToCart(page: Page, slug: string) {
-  await page.goto(`/product/${slug}`);
+  await page.goto(ES(`/product/${slug}`));
   await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
-  await page.goto("/cart");
+  await page.goto(ES("/cart"));
 }
 
 async function fillCustomerFields(

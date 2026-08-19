@@ -1,14 +1,17 @@
 "use server";
 
 import { getLocale } from "next-intl/server";
-import { redirect } from "@/lib/i18n/navigation";
+import { getPathname, redirect } from "@/lib/i18n/navigation";
 import { signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formString } from "@/lib/form-utils";
 import { getCustomerSession, updateCustomerPassword } from "@/lib/auth-user";
 
 export async function logoutCustomer() {
-  await signOut({ redirectTo: "/" });
+  // `signOut` redirige por su cuenta, fuera de next-intl: hay que darle la home
+  // del idioma actual o el usuario cae en `/` sin prefijo.
+  const locale = await getLocale();
+  await signOut({ redirectTo: getPathname({ href: "/", locale }) });
 }
 
 export async function updateProfileAction(formData: FormData) {

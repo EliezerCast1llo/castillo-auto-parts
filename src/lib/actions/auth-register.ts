@@ -3,7 +3,7 @@
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
-import { redirect } from "@/lib/i18n/navigation";
+import { getPathname, redirect } from "@/lib/i18n/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { formString } from "@/lib/form-utils";
@@ -61,7 +61,11 @@ export async function registerAction(formData: FormData) {
 
   // Login automático post-registro
   try {
-    await signIn("credentials", { email, password, redirectTo: nextPath });
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: getPathname({ href: nextPath, locale }),
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       redirect({ href: `/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`, locale });

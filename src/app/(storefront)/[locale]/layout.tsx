@@ -3,7 +3,7 @@ import { Barlow_Condensed, Outfit } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { ToastProvider } from "@/components/ui/toast";
-import { defaultLocale, locales } from "@/lib/i18n/config";
+import { defaultLocale, locales, type Locale } from "@/lib/i18n/config";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "../../globals.css";
 
@@ -18,32 +18,57 @@ const outfit = Outfit({
   variable: "--font-sans",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: SITE_NAME,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: SITE_DESCRIPTION,
-  openGraph: {
-    type: "website",
-    locale: "es_SV",
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true },
-  },
+/** Etiquetas OpenGraph por idioma. */
+const OG_LOCALES: Record<Locale, string> = {
+  es: "es_SV",
+  en: "en_US",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: requestedLocale } = await params;
+  const locale = hasLocale(locales, requestedLocale) ? requestedLocale : defaultLocale;
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: SITE_NAME,
+      template: `%s | ${SITE_NAME}`,
+    },
+    description: SITE_DESCRIPTION,
+    // Canonical al idioma actual, con hreflang hacia el otro: le dice al
+    // buscador que son la misma pagina en dos idiomas y no contenido duplicado.
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        ...Object.fromEntries(locales.map((item) => [item, `/${item}`])),
+        "x-default": `/${defaultLocale}`,
+      },
+    },
+    openGraph: {
+      type: "website",
+      locale: OG_LOCALES[locale],
+      alternateLocale: locales.filter((item) => item !== locale).map((item) => OG_LOCALES[item]),
+      url: `${SITE_URL}/${locale}`,
+      siteName: SITE_NAME,
+      title: SITE_NAME,
+      description: SITE_DESCRIPTION,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: SITE_NAME,
+      description: SITE_DESCRIPTION,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
+  };
+}
 
 /**
  * Root layout del storefront. El panel `/admin` tiene el suyo en `(admin)`.

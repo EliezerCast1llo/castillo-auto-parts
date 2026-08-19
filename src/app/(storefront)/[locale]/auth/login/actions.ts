@@ -3,7 +3,7 @@
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
-import { redirect } from "@/lib/i18n/navigation";
+import { getPathname, redirect } from "@/lib/i18n/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { formString } from "@/lib/form-utils";
@@ -26,7 +26,9 @@ export async function loginWithCredentials(formData: FormData) {
     await signIn("credentials", {
       email: formString(formData, "email"),
       password: formString(formData, "password"),
-      redirectTo: nextPath,
+      // next-auth emite su propio redirect, sin pasar por next-intl: si no se
+      // prefija acá, el usuario aterriza en una URL sin idioma.
+      redirectTo: getPathname({ href: nextPath, locale }),
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -35,7 +37,7 @@ export async function loginWithCredentials(formData: FormData) {
       redirect({ href: `/auth/login?estado=${estado}&next=${encodeURIComponent(nextPath)}`, locale });
     }
     await loginRateLimiter.reset(key);
-    throw error; // redirect({ href: , locale }) lanza un error especial que debe propagarse
+    throw error; // redirect() lanza un error especial que debe propagarse
   }
 }
 
@@ -43,7 +45,7 @@ export async function loginWithGoogle(formData: FormData) {
   const locale = await getLocale();
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
   try {
-    await signIn("google", { redirectTo: nextPath });
+    await signIn("google", { redirectTo: getPathname({ href: nextPath, locale }) });
   } catch (error) {
     if (error instanceof AuthError) {
       redirect({ href: `/auth/login?estado=oauth_error&next=${encodeURIComponent(nextPath)}`, locale });
