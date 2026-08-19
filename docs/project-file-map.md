@@ -181,6 +181,12 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/email/*` | Contrato, provider console, plantillas y logs. |
 | `src/lib/invoices/provider.ts` | Contrato futuro para DTE. |
 | `src/lib/i18n/config.ts` | Base de idiomas soportados. |
+| `src/lib/i18n/routing.ts` | Config de ruteo de next-intl y nombre de la cookie de idioma. |
+| `src/lib/i18n/navigation.ts` | Link/redirect/usePathname con prefijo de idioma. |
+| `src/lib/i18n/request.ts` | Config por request: resuelve idioma (explicito, segmento, cookie, default) y carga mensajes. |
+| `src/lib/i18n/intl-locale.ts` | Mapeo a BCP-47, moneda y zona horaria de la app. |
+| `src/lib/i18n/formats.ts` | Formatos compartidos de fecha y numero. |
+| `src/lib/i18n/messages/*` | Catalogos por idioma, un JSON por namespace. |
 
 ## Datos
 

@@ -186,11 +186,18 @@ export interface MapProvider {
 
 ## Internacionalizacion
 
+- Libreria: next-intl (decision cerrada). Peer valida Next 16 + React 19.
 - Idioma principal: espanol.
 - Idioma secundario: ingles.
 - Recomendacion inicial: centralizar textos de UI en archivos de mensajes.
 - El contenido de productos puede iniciar en espanol y tener campos opcionales para ingles.
 - Evitar textos hardcodeados en componentes cuando sean visibles al usuario.
+- Ruteo por prefijo: `/es` y `/en` siempre prefijados, asi que la URL es la
+  fuente de verdad del idioma. La cookie `castillo_locale` es solo la pista que
+  usa el middleware cuando la URL todavia no trae prefijo.
+- El panel `/admin` queda fuera del prefijo y solo en espanol.
+- `src/lib/i18n/intl-locale.ts` es la unica fuente de tags BCP-47: la moneda
+  (USD) y la zona horaria (America/El_Salvador) no cambian con el idioma.
 
 ## Facturacion electronica DTE
 
@@ -286,7 +293,6 @@ Documento operativo:
 - Hosting definitivo para webhooks si el proveedor requiere respuesta/tiempos especificos.
 - Tabla final de zonas/tarifas de San Salvador.
 - Google Maps vs alternativa de mapas.
-- Libreria i18n especifica.
 
 ## Referencias consultadas
 
