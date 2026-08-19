@@ -23,14 +23,15 @@ export function WhatsAppCTA({
  ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
  : "/ayuda";
  const isExternal = href.startsWith("https://");
- const ariaLabel = phone ? label : "Ir a ayuda y contacto";
+ // Sin aria-label: el texto visible es el nombre accesible. El override
+ // anterior ("Ir a ayuda y contacto") no contenia el texto visible ("Asesoria")
+ // y disparaba `label-content-name-mismatch` en el fallback sin numero.
 
  const baseClass = getVariantClassName(variant);
 
  if (isExternal) {
  return (
  <a
- aria-label={ariaLabel}
  className={`${baseClass} ${className}`}
  href={href}
  rel="noopener noreferrer"
@@ -43,7 +44,7 @@ export function WhatsAppCTA({
  }
 
  return (
- <Link aria-label={ariaLabel} className={`${baseClass} ${className}`} href={href}>
+ <Link className={`${baseClass} ${className}`} href={href}>
  <MessageCircle className={getIconClassName(variant)} strokeWidth={2} />
  <span>{variant === "inline" ? "Te ayudamos a encontrarlo" : label}</span>
  </Link>

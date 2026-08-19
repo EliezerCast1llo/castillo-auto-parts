@@ -70,7 +70,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
           <ProductPrice cents={product.priceCents} />
           <AddToCartForm
             available={isAvailable}
-            buttonAriaLabel={`Agregar ${product.name} al carrito`}
+            productName={product.name}
             buttonClassName="mt-2 w-full rounded-ca-control shadow-none hover:shadow-none"
             sku={product.sku}
           />

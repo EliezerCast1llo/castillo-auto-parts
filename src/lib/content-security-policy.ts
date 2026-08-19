@@ -32,10 +32,24 @@ export function buildContentSecurityPolicy({
     ["worker-src", ["'self'", "blob:"]],
   ];
 
-  if (environment.NODE_ENV === "production") {
-    directives.push(["upgrade-insecure-requests", []]);
-  }
+  // `upgrade-insecure-requests` se retiro por completo, no solo de aqui:
+  //
+  //   - En una politica report-only el navegador la ignora y ademas registra
+  //     un error en consola, asi que donde estaba no protegia nada.
+  //   - Emitirla en una politica aplicada aparte si funciona, pero Chrome
+  //     reporta entonces un ContentSecurityPolicyIssue en el panel Issues
+  //     (verificado: `inspector-issues` de Lighthouse pasaba a fallar 3/3).
+  //   - Es redundante en este sitio: en produccion se envia
+  //     `Strict-Transport-Security` con `includeSubDomains; preload`, que ya
+  //     impide cualquier peticion http:// al dominio, y todos los origenes de
+  //     terceros declarados abajo son https:// literales.
+  //
+  // Si en el futuro se pasa esta politica de report-only a aplicada, la
+  // directiva puede volver dentro de ella sin generar el issue.
+  return serializeDirectives(directives);
+}
 
+function serializeDirectives(directives: Array<[string, string[]]>) {
   return directives
     .map(([directive, values]) => [directive, ...values].join(" "))
     .join("; ");
