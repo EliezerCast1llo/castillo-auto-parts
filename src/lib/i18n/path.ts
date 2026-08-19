@@ -9,10 +9,11 @@ import type { Locale } from "./config";
  * testean en el entorno `node` de vitest, donde esa cadena de imports no
  * resuelve.
  *
- * **Solo es válido para rutas cuya grafía no cambia con el idioma.** Para las
- * que sí cambian hay que usar `getPathname`, que consulta la tabla de
- * pathnames. Un test de la configuración de ruteo fija esa condición para las
- * rutas que dependen de este helper.
+ * **Solo es válido para rutas cuya grafía no cambia con el idioma.** Hoy ninguna
+ * cambia: no hay tabla de pathnames. En cuanto se agregue una, las rutas que
+ * pasen por acá —los breadcrumbs y la URL de retorno del pago— tienen que
+ * seguir teniendo la misma grafía en todos los idiomas, o hay que moverlas a
+ * `getPathname`, que sí consulta la tabla.
  */
 export function localizePath(path: string, locale: Locale): string {
   if (path === "/") return `/${locale}`;
