@@ -325,15 +325,16 @@ export async function createGuestCheckoutFromCart(
       isIdempotencyKeyConflict(error)
     ) {
       const existing = await findOrderByIdempotencyKey(effectiveIdempotencyKey);
-      const replay = existing ? replayResultForOrder(existing) : null;
-      if (replay) {
+      const recovery = resolveP2002Recovery(existing, retrying);
+
+      if (recovery.kind === "replay") {
         await clearGuestCartSafely();
-        return replay;
+        return recovery.result;
       }
-      // La colisión es contra una orden MUERTA (expirada/cancelada): su key quedó
-      // ocupando el índice único. Liberarla y reintentar UNA vez para no dejar al
-      // cliente en un bucle permanente de duplicate_in_progress con stock reservado.
-      if (existing && idempotencyStateForOrder(existing) === "dead" && !retrying) {
+      if (recovery.kind === "release_and_retry") {
+        // La colisión es contra una orden MUERTA (expirada/cancelada): su key quedó
+        // ocupando el índice único. Liberarla y reintentar UNA vez para no dejar al
+        // cliente en un bucle permanente de duplicate_in_progress con stock reservado.
         await releaseIdempotencyKey(effectiveIdempotencyKey);
         return createGuestCheckoutFromCart(formData, userId, idempotencyKey, true);
       }
@@ -427,6 +428,31 @@ export function buildIntentFingerprint(cart: GuestCart, input: CheckoutInput): s
     `fa:${input.formattedAddress ?? ""}`,
     `pl:${input.placeId ?? ""}`,
   ].join("|");
+}
+
+export type P2002Recovery =
+  | { kind: "replay"; result: CreateGuestOrderResult }
+  | { kind: "release_and_retry" }
+  | { kind: "retry_signal" };
+
+// Decide cómo recuperarse de un P2002 de idempotencyKey (colisión al insertar):
+// - orden viva con checkout → replay (devolver su checkout).
+// - orden MUERTA y aún no reintentamos → liberar la key y reintentar una vez
+//   (rompe el bucle permanente de duplicate_in_progress). El flag `retrying` corta
+//   la recursión: una segunda colisión ya no reintenta.
+// - resto (in_flight, o ya reintentado) → señal de reintento (duplicate_in_progress).
+export function resolveP2002Recovery(
+  existing: IdempotentOrderLookup | null,
+  retrying: boolean,
+): P2002Recovery {
+  if (existing) {
+    const replay = replayResultForOrder(existing);
+    if (replay) return { kind: "replay", result: replay };
+    if (idempotencyStateForOrder(existing) === "dead" && !retrying) {
+      return { kind: "release_and_retry" };
+    }
+  }
+  return { kind: "retry_signal" };
 }
 
 async function releaseIdempotencyKey(idempotencyKey: string) {

@@ -9,6 +9,7 @@ import {
   idempotencyStateForOrder,
   isSameCheckoutIntent,
   replayResultForOrder,
+  resolveP2002Recovery,
   type IdempotentOrderLookup,
 } from "./orders";
 
@@ -131,6 +132,36 @@ describe("isSameCheckoutIntent", () => {
     expect(isSameCheckoutIntent(c, "hash-actual", legacy)).toBe(true);
     const legacyOtherItems = order({ intentHash: null, items: [{ skuSnapshot: "SKU-Z", quantity: 2 }] });
     expect(isSameCheckoutIntent(c, "hash-actual", legacyOtherItems)).toBe(false);
+  });
+});
+
+describe("resolveP2002Recovery", () => {
+  it("orden viva con checkout → replay con su resultado", () => {
+    const rec = resolveP2002Recovery(order(), false);
+    expect(rec.kind).toBe("replay");
+    expect(rec).toMatchObject({ result: { status: "created", orderNumber: "CAP-20260817-ABC123" } });
+  });
+
+  it("orden muerta y sin reintento previo → release_and_retry", () => {
+    expect(resolveP2002Recovery(order({ status: OrderStatus.CANCELLED }), false)).toEqual({
+      kind: "release_and_retry",
+    });
+  });
+
+  it("orden muerta pero YA reintentando → retry_signal (corta el loop)", () => {
+    expect(resolveP2002Recovery(order({ status: OrderStatus.CANCELLED }), true)).toEqual({
+      kind: "retry_signal",
+    });
+  });
+
+  it("orden in_flight (viva, sin checkoutUrl) → retry_signal", () => {
+    expect(resolveP2002Recovery(order({ payment: { checkoutUrl: null } }), false)).toEqual({
+      kind: "retry_signal",
+    });
+  });
+
+  it("sin orden hallada → retry_signal", () => {
+    expect(resolveP2002Recovery(null, false)).toEqual({ kind: "retry_signal" });
   });
 });
 
