@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getFulfillmentOptions } from "@/lib/fulfillment";
 import { firstValue } from "@/lib/url-utils";
-import { deleteAddress } from "./actions";
+import { deleteAddress } from "@/lib/actions/account-addresses";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Mis direcciones | Castillo Auto Parts" };

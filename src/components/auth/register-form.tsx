@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check, X } from "lucide-react";
-import { registerAction } from "@/app/auth/register/actions";
+import { registerAction } from "@/lib/actions/auth-register";
 
 type Props = {
   nextPath: string;

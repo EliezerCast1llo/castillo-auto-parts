@@ -18,7 +18,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { getGuestCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
-import { createStockAlert } from "./actions";
+import { createStockAlert } from "@/lib/actions/cart";
 
 export const metadata = {
   title: "Tu carrito | Castillo Auto Parts",

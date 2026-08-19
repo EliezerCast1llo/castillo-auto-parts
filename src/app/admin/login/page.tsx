@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { getAdminSecretConfig, getSafeAdminNextPath, isAdminAuthenticated } from "@/lib/admin-auth";
 import { firstValue } from "@/lib/url-utils";
-import { loginAdmin } from "./actions";
+import { loginAdmin } from "@/lib/actions/admin-login";
 
 export const dynamic = "force-dynamic";
 
