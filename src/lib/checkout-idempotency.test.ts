@@ -3,7 +3,6 @@ import {
   createCheckoutIdempotencyKey,
   deriveScopedIdempotencyKey,
   normalizeCheckoutIdempotencyKey,
-  shouldAdoptRetryKey,
   shouldPreserveRetryKey,
 } from "./checkout-idempotency";
 
@@ -83,12 +82,3 @@ describe("shouldPreserveRetryKey", () => {
   });
 });
 
-describe("shouldAdoptRetryKey", () => {
-  it("adopta la key con carrito no vacío (reintento seguro, key vieja inofensiva)", () => {
-    expect(shouldAdoptRetryKey(true)).toBe(true);
-  });
-
-  it("la ignora con carrito vacío (evita reproducir la orden vieja por el atajo sameIntent)", () => {
-    expect(shouldAdoptRetryKey(false)).toBe(false);
-  });
-});

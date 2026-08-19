@@ -9,7 +9,6 @@ import {
   CHECKOUT_RETRY_KEY_COOKIE,
   createCheckoutIdempotencyKey,
   normalizeCheckoutIdempotencyKey,
-  shouldAdoptRetryKey,
 } from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
@@ -46,9 +45,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   // no el query param: volver a /checkout sin ?estado con la orden en vuelo debe
   // reusar la key, no acuñar una nueva y duplicar.
   const cookieStore = await cookies();
-  const retryKey = shouldAdoptRetryKey(cart.lines.length > 0)
-    ? normalizeCheckoutIdempotencyKey(cookieStore.get(CHECKOUT_RETRY_KEY_COOKIE)?.value)
-    : undefined;
+  const retryKey =
+    cart.lines.length > 0
+      ? normalizeCheckoutIdempotencyKey(cookieStore.get(CHECKOUT_RETRY_KEY_COOKIE)?.value)
+      : undefined;
   const idempotencyKey = retryKey ?? createCheckoutIdempotencyKey();
 
   let userDefaults: { name: string; email: string; phone: string } | null = null;

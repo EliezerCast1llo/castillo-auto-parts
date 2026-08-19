@@ -43,14 +43,8 @@ export function hashCheckoutIntent(fingerprint: string): string {
 
 // La cookie de reintento SOLO se conserva en duplicate_in_progress (y si hubo key).
 // En cualquier otro desenlace se limpia, para que una key vieja no quede colgada.
+// (La decisión de ADOPTAR la key en la página se hace inline sobre el carrito no
+// vacío, no acá: era una función identidad sin lógica propia.)
 export function shouldPreserveRetryKey(status: string, hasKey: boolean): boolean {
   return status === "duplicate_in_progress" && hasKey;
-}
-
-// La página adopta la key de reintento SOLO con carrito no vacío. Con carrito lleno
-// una key vieja es inofensiva (isSameCheckoutIntent + key derivada la neutralizan);
-// con carrito vacío el atajo de sameIntent reproduciría la orden vieja, así que se
-// ignora. El discriminante es el carrito, no el query param de la URL.
-export function shouldAdoptRetryKey(cartHasItems: boolean): boolean {
-  return cartHasItems;
 }
