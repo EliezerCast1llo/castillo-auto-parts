@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle } from "lucide-react";
 import { DEFAULT_SUPPORT_MESSAGE } from "@/lib/contact";
 

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { MapPin, ShieldCheck, Truck, Wrench } from "lucide-react";
 import { getCatalogFacets } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";

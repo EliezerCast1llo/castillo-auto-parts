@@ -2,7 +2,8 @@
 
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
+import { redirect } from "@/lib/i18n/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { formString } from "@/lib/form-utils";
@@ -12,6 +13,7 @@ import { createRegisterRateLimiter, type AsyncRateLimiter } from "@/lib/rate-lim
 let _registerRateLimiter: AsyncRateLimiter | undefined;
 
 export async function registerAction(formData: FormData) {
+  const locale = await getLocale();
   const registerRateLimiter = (_registerRateLimiter ??= createRegisterRateLimiter());
   const name = formString(formData, "name").trim();
   const email = formString(formData, "email").trim().toLowerCase();
@@ -23,33 +25,33 @@ export async function registerAction(formData: FormData) {
 
   // Validaciones de formato (no cuentan como intento)
   if (!name || !email || !password) {
-    redirect(`/auth/register?estado=missing_fields&next=${encodeURIComponent(nextPath)}`);
+    redirect({ href: `/auth/register?estado=missing_fields&next=${encodeURIComponent(nextPath)}`, locale });
   }
 
   if (password.length < 8) {
-    redirect(`/auth/register?estado=weak_password&next=${encodeURIComponent(nextPath)}`);
+    redirect({ href: `/auth/register?estado=weak_password&next=${encodeURIComponent(nextPath)}`, locale });
   }
 
   if (password !== passwordConfirm) {
-    redirect(`/auth/register?estado=password_mismatch&next=${encodeURIComponent(nextPath)}`);
+    redirect({ href: `/auth/register?estado=password_mismatch&next=${encodeURIComponent(nextPath)}`, locale });
   }
 
   const key = await getRegisterRateLimitKey();
   const limitCheck = await registerRateLimiter.check(key);
   if (!limitCheck.allowed) {
-    redirect(`/auth/register?estado=rate_limited&next=${encodeURIComponent(nextPath)}`);
+    redirect({ href: `/auth/register?estado=rate_limited&next=${encodeURIComponent(nextPath)}`, locale });
   }
 
   const result = await registerCustomer({ name, email, password, phone });
 
   if (result.status === "email_exists") {
     await registerRateLimiter.registerFailure(key);
-    redirect(`/auth/register?estado=email_exists&next=${encodeURIComponent(nextPath)}`);
+    redirect({ href: `/auth/register?estado=email_exists&next=${encodeURIComponent(nextPath)}`, locale });
   }
 
   if (result.status !== "ok") {
     await registerRateLimiter.registerFailure(key);
-    redirect(`/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`);
+    redirect({ href: `/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`, locale });
   }
 
   // Cuenta también registros exitosos para evitar creación masiva de cuentas
@@ -62,7 +64,7 @@ export async function registerAction(formData: FormData) {
     await signIn("credentials", { email, password, redirectTo: nextPath });
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect(`/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`);
+      redirect({ href: `/auth/register?estado=error&next=${encodeURIComponent(nextPath)}`, locale });
     }
     throw error;
   }

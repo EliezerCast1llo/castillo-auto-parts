@@ -15,7 +15,7 @@
  */
 
 import { Search } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SearchResponse, SearchResult } from "@/app/api/search/route";
 import { formatStockStatus, type StockStatus } from "@/lib/stock-status";

@@ -1,8 +1,9 @@
 "use server";
 
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidateStorefrontPath } from "@/lib/i18n/revalidate";
+import { getLocale } from "next-intl/server";
+import { redirect } from "@/lib/i18n/navigation";
 import { addGuestCartItem, removeGuestCartItem, updateGuestCartItem } from "@/lib/cart";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { createStockAlertRequest } from "@/lib/stock-alerts";
@@ -14,19 +15,20 @@ const stockAlertRateLimiter = createRateLimiter({
 });
 
 export async function addCartItem(formData: FormData) {
+  const locale = await getLocale();
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 1);
   const shouldStayOnPage = formData.get("stayOnPage") === "true";
   const result = await addGuestCartItem(sku, quantity);
 
   if (shouldStayOnPage) {
-    revalidatePath("/");
-    revalidatePath("/catalog");
-    revalidatePath("/cart");
+    revalidateStorefrontPath("/");
+    revalidateStorefrontPath("/catalog");
+    revalidateStorefrontPath("/cart");
     return;
   }
 
-  redirect(`/cart?estado=${result}`);
+  redirect({ href: `/cart?estado=${result}`, locale });
 }
 
 export type AddCartItemInlineState = {
@@ -50,37 +52,40 @@ export async function addCartItemInline(
 
   // Refresca el contador del carrito en el header también cuando el cliente no
   // puede ejecutar router.refresh() (envío del form sin JS).
-  revalidatePath("/");
-  revalidatePath("/catalog");
-  revalidatePath("/cart");
+  revalidateStorefrontPath("/");
+  revalidateStorefrontPath("/catalog");
+  revalidateStorefrontPath("/cart");
 
   return { status, at: Date.now() };
 }
 
 export async function updateCartItem(formData: FormData) {
+  const locale = await getLocale();
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 0);
   const result = await updateGuestCartItem(sku, quantity);
 
-  redirect(`/cart?estado=${result}`);
+  redirect({ href: `/cart?estado=${result}`, locale });
 }
 
 export async function removeCartItem(formData: FormData) {
+  const locale = await getLocale();
   const sku = String(formData.get("sku") ?? "");
   await removeGuestCartItem(sku);
 
-  redirect("/cart?estado=removed");
+  redirect({ href: "/cart?estado=removed", locale });
 }
 
 export async function createStockAlert(formData: FormData) {
+  const locale = await getLocale();
   const rateLimit = stockAlertRateLimiter.registerFailure(await getStockAlertRateLimitKey());
   if (!rateLimit.allowed) {
-    redirect("/cart?estado=stock_alert_rate_limited");
+    redirect({ href: "/cart?estado=stock_alert_rate_limited", locale });
   }
 
   const result = await createStockAlertRequest(formData);
 
-  redirect(`/cart?estado=stock_alert_${result}`);
+  redirect({ href: `/cart?estado=stock_alert_${result}`, locale });
 }
 
 async function getStockAlertRateLimitKey() {

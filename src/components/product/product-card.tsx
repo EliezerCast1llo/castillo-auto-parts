@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { isPurchasableStockStatus, type CatalogProduct } from "@/data/products";
 import { MyVehicleCompatibility } from "./my-vehicle-compatibility";

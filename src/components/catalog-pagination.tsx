@@ -17,7 +17,7 @@
  *   - Las páginas anteriores/siguientes más lejanas se truncan con "…".
  */
 
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import type { CatalogSearchParams } from "@/data/catalog-filters";
 
 type CatalogPaginationProps = {

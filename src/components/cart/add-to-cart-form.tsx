@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { Loader2, ShoppingCart } from "lucide-react";
 import { addCartItemInline, type AddCartItemInlineState } from "@/lib/actions/cart";
 import { Button } from "@/components/ui/button";

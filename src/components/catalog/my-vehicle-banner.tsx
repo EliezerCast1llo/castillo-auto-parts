@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { Car, X } from "lucide-react";
 import { buildMyVehicleClearCookie } from "@/lib/my-vehicle";
 

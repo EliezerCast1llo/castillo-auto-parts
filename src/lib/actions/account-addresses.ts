@@ -1,6 +1,7 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
+import { redirect } from "@/lib/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -11,8 +12,9 @@ const SV_DEPARTMENTS = [
 ];
 
 export async function createAddress(formData: FormData) {
+  const locale = await getLocale();
   const session = await auth();
-  if (!session?.user) redirect("/auth/login");
+  if (!session?.user) return redirect({ href: "/auth/login", locale });
 
   const addressLine1 = String(formData.get("addressLine1") ?? "").trim();
   const addressLine2 = String(formData.get("addressLine2") ?? "").trim();
@@ -23,11 +25,11 @@ export async function createAddress(formData: FormData) {
   const longitudeRaw = String(formData.get("longitude") ?? "").trim();
 
   if (!addressLine1 || !city || !department) {
-    redirect("/account/addresses?estado=missing_fields");
+    redirect({ href: "/account/addresses?estado=missing_fields", locale });
   }
 
   if (!SV_DEPARTMENTS.includes(department)) {
-    redirect("/account/addresses?estado=invalid_department");
+    redirect({ href: "/account/addresses?estado=invalid_department", locale });
   }
 
   const latitude = latitudeRaw ? parseFloat(latitudeRaw) : undefined;
@@ -52,15 +54,16 @@ export async function createAddress(formData: FormData) {
     },
   });
 
-  redirect("/account/addresses?estado=created");
+  redirect({ href: "/account/addresses?estado=created", locale });
 }
 
 export async function deleteAddress(formData: FormData) {
+  const locale = await getLocale();
   const session = await auth();
-  if (!session?.user) redirect("/auth/login");
+  if (!session?.user) return redirect({ href: "/auth/login", locale });
 
   const id = String(formData.get("id") ?? "");
   await db.address.deleteMany({ where: { id, userId: session.user.id } });
 
-  redirect("/account/addresses?estado=deleted");
+  redirect({ href: "/account/addresses?estado=deleted", locale });
 }
