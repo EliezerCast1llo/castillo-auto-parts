@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildCookieConsentClearCookie,
   buildCookieConsentSetCookie,
   COOKIE_CONSENT_COOKIE,
   COOKIE_CONSENT_VERSION,
   hasAcceptedCurrentConsent,
   parseCookieConsent,
-  readCookieConsentFromDocument,
 } from "./cookie-consent";
 
 describe("cookie consent", () => {
@@ -14,11 +12,11 @@ describe("cookie consent", () => {
     expect(COOKIE_CONSENT_COOKIE).toBe("castillo_cookie_consent");
   });
 
-  it("round-trips the accepted version through document.cookie", () => {
-    const setCookie = buildCookieConsentSetCookie();
-    const [pair] = setCookie.split("; ");
+  it("writes the current version", () => {
+    const [pair] = buildCookieConsentSetCookie().split("; ");
 
-    expect(readCookieConsentFromDocument(pair)).toEqual({ version: COOKIE_CONSENT_VERSION });
+    expect(pair).toBe(`${COOKIE_CONSENT_COOKIE}=${COOKIE_CONSENT_VERSION}`);
+    expect(parseCookieConsent(pair.split("=")[1])).toEqual({ version: COOKIE_CONSENT_VERSION });
   });
 
   it("persists for a year, scoped to the whole site, without blocking JS access", () => {
@@ -31,15 +29,10 @@ describe("cookie consent", () => {
     expect(setCookie.toLowerCase()).not.toContain("httponly");
   });
 
-  it("expires the cookie when cleared", () => {
-    expect(buildCookieConsentClearCookie()).toContain("max-age=0");
-  });
-
   it("treats a missing or malformed cookie as not accepted", () => {
     expect(parseCookieConsent(undefined)).toBeNull();
     expect(parseCookieConsent("")).toBeNull();
     expect(parseCookieConsent("   ")).toBeNull();
-    expect(readCookieConsentFromDocument("otra=cosa")).toBeNull();
   });
 
   it("re-prompts when the stored version is not the current one", () => {
@@ -49,9 +42,4 @@ describe("cookie consent", () => {
     expect(hasAcceptedCurrentConsent(null)).toBe(false);
   });
 
-  it("ignores other cookies that share the prefix", () => {
-    const source = `castillo_locale=en; ${COOKIE_CONSENT_COOKIE}=${COOKIE_CONSENT_VERSION}; castillo_my_vehicle=x`;
-
-    expect(readCookieConsentFromDocument(source)).toEqual({ version: COOKIE_CONSENT_VERSION });
-  });
 });

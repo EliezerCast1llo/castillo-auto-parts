@@ -9,8 +9,9 @@
  * sin round-trip al servidor, y la lee el servidor para decidir si renderiza el
  * banner. No es una frontera de seguridad, así que tampoco va firmada.
  *
- * Helpers puros e isomorfos; la lectura server-side vive en
- * `cookie-consent-server.ts`. Mismo patrón que `my-vehicle.ts`.
+ * El banner escribe con `document.cookie` y el servidor lee con `next/headers`,
+ * así que no hace falta un lector cliente ni un limpiador: si algún día hacen
+ * falta, se agregan con su consumidor.
  */
 
 export const COOKIE_CONSENT_COOKIE = "castillo_cookie_consent";
@@ -43,17 +44,4 @@ export function hasAcceptedCurrentConsent(consent: CookieConsent | null): boolea
 
 export function buildCookieConsentSetCookie() {
   return `${COOKIE_CONSENT_COOKIE}=${encodeURIComponent(COOKIE_CONSENT_VERSION)}; path=/; max-age=${COOKIE_CONSENT_MAX_AGE_SECONDS}; samesite=lax`;
-}
-
-export function buildCookieConsentClearCookie() {
-  return `${COOKIE_CONSENT_COOKIE}=; path=/; max-age=0; samesite=lax`;
-}
-
-/** Lee la cookie desde document.cookie (solo cliente). */
-export function readCookieConsentFromDocument(cookieSource: string): CookieConsent | null {
-  const entry = cookieSource
-    .split("; ")
-    .find((item) => item.startsWith(`${COOKIE_CONSENT_COOKIE}=`));
-
-  return parseCookieConsent(entry?.slice(COOKIE_CONSENT_COOKIE.length + 1));
 }

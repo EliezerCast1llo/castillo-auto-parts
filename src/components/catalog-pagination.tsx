@@ -18,10 +18,8 @@
  */
 
 import { Link, type LocaleHref } from "@/lib/i18n/navigation";
+import type { LinkQuery } from "@/lib/url-utils";
 import type { CatalogSearchParams } from "@/data/catalog-filters";
-
-/** Query serializable que acepta el `Link` con idioma. */
-type LinkQuery = Record<string, string | string[]>;
 
 type CatalogPaginationProps = {
   currentPage: number;

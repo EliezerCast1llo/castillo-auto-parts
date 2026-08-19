@@ -48,6 +48,35 @@ test("the availability filter shows Spanish labels but submits identifiers", asy
   await expect(page.getByText("Disponibilidad: IN_STOCK")).toHaveCount(0);
 });
 
+test("multi-select filters keep every checked value", async ({ page }) => {
+  await page.goto(ES("/catalog"));
+
+  const categories = page.getByRole("group", { name: "Categoría" });
+  const boxes = categories.locator('input[name="category"]');
+  const first = (await boxes.nth(0).getAttribute("value"))!;
+  const second = (await boxes.nth(1).getAttribute("value"))!;
+
+  // El form navega en cada cambio, asi que hay que esperar cada navegacion
+  // antes de tocar el siguiente checkbox: si no, el segundo click cae sobre un
+  // DOM que se esta reemplazando.
+  // Se localiza por el atributo `value`: el nombre accesible incluye el conteo
+  // de resultados ("Baterías (5)"), que cambia con los filtros activos.
+  await categories.locator(`input[value="${first}"]`).check();
+  await expect(page).toHaveURL(new RegExp(`category=${encodeURIComponent(first)}`));
+
+  await categories.locator(`input[value="${second}"]`).check();
+  await expect(page).toHaveURL(new RegExp(`category=${encodeURIComponent(second)}`));
+
+  // Aplanar la query con Object.fromEntries se queda solo con el ultimo valor
+  // de cada clave repetida: marcar dos categorias filtraria por una sola.
+  expect(new URL(page.url()).searchParams.getAll("category")).toEqual([first, second]);
+
+  // Y quitar un filtro no debe descartar el otro.
+  await page.getByRole("link", { name: `Quitar filtro Categoría: ${first}` }).click();
+  await expect(page).not.toHaveURL(new RegExp(`category=${encodeURIComponent(first)}`));
+  expect(new URL(page.url()).searchParams.getAll("category")).toEqual([second]);
+});
+
 test("customer can add an available product to the guest cart", async ({ page }) => {
   await page.goto(ES("/catalog"));
 

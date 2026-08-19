@@ -3,6 +3,7 @@
 import { useRouter } from "@/lib/i18n/navigation";
 import type { ReactNode } from "react";
 import { buildMyVehicleClearCookie, buildMyVehicleSetCookie } from "@/lib/my-vehicle";
+import { toLinkQuery } from "@/lib/url-utils";
 
 type CatalogFilterFormProps = {
   children: ReactNode;
@@ -56,7 +57,7 @@ export function CatalogFilterForm({ children }: CatalogFilterFormProps) {
             : buildMyVehicleClearCookie();
         }
 
-        router.push({ pathname: "/catalog", query: Object.fromEntries(params) }, { scroll: false });
+        router.push({ pathname: "/catalog", query: toLinkQuery(params) }, { scroll: false });
       }}
     >
       {children}

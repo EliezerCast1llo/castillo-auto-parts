@@ -87,9 +87,9 @@ export async function registerAction(formData: FormData) {
   } catch (error) {
     if (error instanceof AuthError) {
       redirect({
-      href: { pathname: "/auth/register", query: { estado: "error", next: nextPath } },
-      locale,
-    });
+        href: { pathname: "/auth/register", query: { estado: "error", next: nextPath } },
+        locale,
+      });
     }
     throw error;
   }

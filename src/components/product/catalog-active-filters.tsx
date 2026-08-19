@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import type { CatalogFilters, CatalogSort } from "@/data/catalog-filters";
 import type { LocaleHref } from "@/lib/i18n/navigation";
 import { formatStockStatus } from "@/lib/stock-status";
+import { toLinkQuery } from "@/lib/url-utils";
 
 type FilterChip = {
   href: LocaleHref;
@@ -161,7 +162,7 @@ function buildCatalogHref(
   appendParam(params, "vehicleYear", next.vehicleYear);
   if (sort !== "relevance") appendParam(params, "sort", sort);
 
-  return { pathname: "/catalog", query: Object.fromEntries(params) } as const;
+  return { pathname: "/catalog", query: toLinkQuery(params) } as const;
 }
 
 function appendParam(params: URLSearchParams, key: string, value: string) {

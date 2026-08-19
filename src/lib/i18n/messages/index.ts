@@ -21,15 +21,14 @@ export function loadMessages(locale: Locale) {
  * página. Los server components leen del contexto de servidor y no cuestan
  * nada, así que acá va solo lo que se usa desde `"use client"`.
  *
- * Al agregar un namespace nuevo a un componente de cliente, hay que sumarlo acá.
+ * El tipo se ata a las claves del catálogo en español: un namespace mal escrito
+ * o renombrado no compila, en vez de convertirse en un `MISSING_MESSAGE` en
+ * runtime lejos de la causa.
  */
-const CLIENT_NAMESPACES = ["Common", "Consent"] as const;
+const CLIENT_NAMESPACES = ["Common", "Consent"] as const satisfies readonly (keyof typeof es)[];
 
-export function pickClientMessages<T extends Record<string, unknown>>(messages: T) {
+export function pickClientMessages(messages: typeof es | typeof en) {
   return Object.fromEntries(
-    CLIENT_NAMESPACES.filter((namespace) => namespace in messages).map((namespace) => [
-      namespace,
-      messages[namespace],
-    ]),
+    CLIENT_NAMESPACES.map((namespace) => [namespace, messages[namespace]]),
   );
 }

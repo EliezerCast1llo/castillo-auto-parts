@@ -23,11 +23,12 @@ test("a first-time visitor sees the notice and can dismiss it for good", async (
 });
 
 test("the notice is server-rendered, so it never flashes for someone who accepted", async ({
+  baseURL,
   context,
   page,
 }) => {
   await context.addCookies([
-    { name: "castillo_cookie_consent", value: "v1", url: "http://localhost:3100" },
+    { name: "castillo_cookie_consent", value: "v1", url: baseURL! },
   ]);
 
   const response = await page.goto(ES("/catalog"));
@@ -35,9 +36,11 @@ test("the notice is server-rendered, so it never flashes for someone who accepte
 
   // Se busca el marcado del aviso, no su texto: las traducciones del namespace
   // viajan serializadas en el payload del provider aunque no se renderice nada,
-  // asi que buscar "Usamos cookies" daria un falso positivo.
-  expect(html).not.toContain('role="region"');
-  await expect(page.getByRole("region", { name: "Usamos cookies" })).toHaveCount(0);
+  // asi que buscar "Usamos cookies" daria un falso positivo. Y se busca su
+  // data-testid y no `role="region"` a secas, para no fallar el dia que la
+  // pagina gane otro landmark por razones ajenas al consentimiento.
+  expect(html).not.toContain('data-testid="cookie-consent"');
+  await expect(page.getByTestId("cookie-consent")).toHaveCount(0);
 });
 
 test("the notice speaks the language of the page", async ({ page }) => {
@@ -47,9 +50,9 @@ test("the notice speaks the language of the page", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Accept" })).toBeVisible();
 });
 
-test("a stale consent version asks again", async ({ context, page }) => {
+test("a stale consent version asks again", async ({ baseURL, context, page }) => {
   await context.addCookies([
-    { name: "castillo_cookie_consent", value: "v0", url: "http://localhost:3100" },
+    { name: "castillo_cookie_consent", value: "v0", url: baseURL! },
   ]);
 
   await page.goto(ES("/catalog"));

@@ -25,6 +25,7 @@ export function CookieConsentBanner() {
     <div
       aria-labelledby={headingId}
       className="fixed inset-x-0 bottom-0 z-50 border-t border-ca-border bg-white/97 backdrop-blur-md"
+      data-testid="cookie-consent"
       role="region"
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-6 lg:px-8">
