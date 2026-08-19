@@ -39,11 +39,14 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
 
-  // La key de reintento solo se adopta cuando venimos de un duplicate_in_progress.
-  // Fuera de ese flujo se ignora aunque la cookie exista (una key vieja colgada no
-  // debe reproducir una orden que no corresponde al checkout actual).
+  // La key de reintento se adopta cuando el carrito NO está vacío. Con carrito lleno
+  // una key vieja es inofensiva: isSameCheckoutIntent + la key derivada evitan pisar
+  // otra orden. El caso peligroso era el carrito VACÍO (el atajo de sameIntent
+  // reproduciría la orden vieja), y ahí sí se ignora. El discriminante es el carrito,
+  // no el query param: volver a /checkout sin ?estado con la orden en vuelo debe
+  // reusar la key, no acuñar una nueva y duplicar.
   const cookieStore = await cookies();
-  const retryKey = shouldAdoptRetryKey(status)
+  const retryKey = shouldAdoptRetryKey(cart.lines.length > 0)
     ? normalizeCheckoutIdempotencyKey(cookieStore.get(CHECKOUT_RETRY_KEY_COOKIE)?.value)
     : undefined;
   const idempotencyKey = retryKey ?? createCheckoutIdempotencyKey();
@@ -95,11 +98,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
 
-            {/* En duplicate_in_progress se oculta el form SOLO si no hay retryKey.
-                Con retryKey el reintento reusa la misma key (reproduce, no duplica),
-                así que es seguro mostrar el formulario de nuevo. */}
-            {(status !== "duplicate_in_progress" || Boolean(retryKey)) &&
-              (cart.lines.length > 0 && !cart.hasBlockingIssues ? (
+            {/* El form se muestra siempre que haya carrito utilizable. En
+                duplicate_in_progress el reintento reusa la key de la cookie
+                (reproduce, no duplica), así que no hace falta ocultarlo. */}
+            {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
                 deliveryZones={fulfillmentOptions.deliveryZones}
                 idempotencyKey={idempotencyKey}
@@ -110,7 +112,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               />
             ) : (
               <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
-            ))}
+            )}
           </div>
 
           {/* Resumen — sticky en desktop, visible debajo en mobile */}

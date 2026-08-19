@@ -84,14 +84,11 @@ describe("shouldPreserveRetryKey", () => {
 });
 
 describe("shouldAdoptRetryKey", () => {
-  it("adopta la key solo en duplicate_in_progress", () => {
-    expect(shouldAdoptRetryKey("duplicate_in_progress")).toBe(true);
+  it("adopta la key con carrito no vacío (reintento seguro, key vieja inofensiva)", () => {
+    expect(shouldAdoptRetryKey(true)).toBe(true);
   });
 
-  it("la ignora en cualquier otro estado o sin estado", () => {
-    expect(shouldAdoptRetryKey(undefined)).toBe(false);
-    expect(shouldAdoptRetryKey("created")).toBe(false);
-    expect(shouldAdoptRetryKey("payment_unavailable")).toBe(false);
-    expect(shouldAdoptRetryKey("")).toBe(false);
+  it("la ignora con carrito vacío (evita reproducir la orden vieja por el atajo sameIntent)", () => {
+    expect(shouldAdoptRetryKey(false)).toBe(false);
   });
 });

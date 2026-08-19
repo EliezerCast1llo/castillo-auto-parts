@@ -47,8 +47,10 @@ export function shouldPreserveRetryKey(status: string, hasKey: boolean): boolean
   return status === "duplicate_in_progress" && hasKey;
 }
 
-// La página solo adopta la key de reintento cuando venimos de un
-// duplicate_in_progress; fuera de ese flujo se ignora aunque la cookie exista.
-export function shouldAdoptRetryKey(status: string | undefined): boolean {
-  return status === "duplicate_in_progress";
+// La página adopta la key de reintento SOLO con carrito no vacío. Con carrito lleno
+// una key vieja es inofensiva (isSameCheckoutIntent + key derivada la neutralizan);
+// con carrito vacío el atajo de sameIntent reproduciría la orden vieja, así que se
+// ignora. El discriminante es el carrito, no el query param de la URL.
+export function shouldAdoptRetryKey(cartHasItems: boolean): boolean {
+  return cartHasItems;
 }
