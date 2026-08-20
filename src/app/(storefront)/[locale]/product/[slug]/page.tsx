@@ -22,6 +22,7 @@ import {
   getRelatedCatalogProducts,
   type CatalogProduct,
 } from "@/data/products";
+import { categorySlugOf } from "@/data/catalog-filters";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
@@ -78,7 +79,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const breadcrumbs: BreadcrumbEntry[] = [
     { name: "Inicio", path: "/" },
     { name: "Catálogo", path: "/catalog" },
-    { name: product.category, path: `/catalog?category=${encodeURIComponent(product.category)}` },
+    // El nombre se lee, el slug filtra. Con el nombre traducido en la URL, el
+    // breadcrumb del JSON-LD en inglés apuntaba a `?category=Brakes`, que no
+    // encuentra nada.
+    {
+      name: product.category,
+      path: `/catalog?category=${encodeURIComponent(categorySlugOf(product))}`,
+    },
     { name: product.name, path: `/product/${product.slug}` },
   ];
 
@@ -256,7 +263,7 @@ function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
         <Link
           className="transition hover:text-ca-navy-950"
-          href={{ pathname: "/catalog", query: { category: product.category } }}
+          href={{ pathname: "/catalog", query: { category: categorySlugOf(product) } }}
         >
           {product.category}
         </Link>

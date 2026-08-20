@@ -311,6 +311,25 @@ test("category facets are translated and still filter", async ({ page }) => {
   await expect(page.getByText("Categoría: Brakes")).toBeVisible();
 });
 
+test("the product breadcrumb links to the category by identifier", async ({ page }) => {
+  // Quinta vez que aparece el mismo colapso: el breadcrumb —el visible y el
+  // del JSON-LD— armaba `?category=` con el nombre de la categoria. En ingles
+  // eso apuntaba a `?category=Brakes`, que no encuentra nada.
+  await page.goto(EN("/product/pastillas-delanteras-nissan-sentra"));
+
+  const link = page.getByRole("link", { name: "Brakes", exact: true }).first();
+  await expect(link).toHaveAttribute("href", /category=frenos/);
+
+  // Y el JSON-LD emite el mismo identificador, no la grafia traducida.
+  const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents();
+  const breadcrumb = jsonLd.find((raw) => raw.includes("BreadcrumbList"))!;
+  expect(breadcrumb).toContain("category=frenos");
+  expect(breadcrumb).not.toContain("category=Brakes");
+
+  await link.click();
+  await expect(page.getByText(/^[1-9]\d* (productos?|products?)$/)).toBeVisible();
+});
+
 test("old category URLs redirect to the canonical slug", async ({ page }) => {
   // `/catalog?category=Frenos` viajo en la navegacion del sitio y quedo en
   // historiales y en el indice: tiene que seguir encontrando la categoria, y

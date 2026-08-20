@@ -3,11 +3,12 @@
 import { headers } from "next/headers";
 import { getActionLocale } from "@/lib/i18n/action-locale";
 import { redirect } from "@/lib/i18n/navigation";
-import { getEmailProvider, getTransactionalEmailFrom } from "@/lib/email";
+import { getEmailProvider } from "@/lib/email";
 import { logError } from "@/lib/logger";
 import { formString } from "@/lib/form-utils";
 import { createPasswordResetToken } from "@/lib/auth-user";
 import { createForgotPasswordRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
+import { buildAbsoluteAppUrl, buildPasswordResetEmail } from "@/lib/email/templates";
 
 let _forgotPasswordRateLimiter: AsyncRateLimiter | undefined;
 
@@ -48,21 +49,11 @@ export async function requestPasswordReset(formData: FormData) {
   const token = await createPasswordResetToken(email);
 
   if (token) {
-    const resetUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/auth/reset-password/${token}`;
+    const resetUrl = buildAbsoluteAppUrl(`/auth/reset-password/${token}`, locale);
 
     try {
       const provider = getEmailProvider();
-      await provider.sendEmail({
-        from: getTransactionalEmailFrom(),
-        to: email,
-        subject: "Restablecer contraseña — Castillo Auto Parts",
-        text: `Usa este enlace para restablecer tu contraseña (válido por 1 hora):\n\n${resetUrl}\n\nSi no solicitaste esto, ignora este mensaje.`,
-        html: `
-          <p>Usa el siguiente enlace para restablecer tu contraseña (válido por 1 hora):</p>
-          <p><a href="${resetUrl}">${resetUrl}</a></p>
-          <p>Si no solicitaste esto, ignora este mensaje.</p>
-        `,
-      });
+      await provider.sendEmail(buildPasswordResetEmail({ email, resetUrl, locale }));
     } catch (error) {
       logError({ context: "sendPasswordResetEmail" }, error);
     }
