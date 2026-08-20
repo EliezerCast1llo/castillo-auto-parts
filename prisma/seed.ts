@@ -66,6 +66,11 @@ const PRODUCT_EN: Record<string, { name: string; shortDescription?: string; desc
   },
   "escobilla-universal-22-pulgadas": {
     name: "Universal wiper blade, 22 inches",
+    // Con descripcion corta a proposito: es el unico camino por el que ese
+    // campo se ve en la tienda —sustituye a la compatibilidad cuando el
+    // producto no tiene vehiculos cargados— y sin una fila asi la traduccion
+    // se guardaba y no se mostraba en ningun lado sin que nada avisara.
+    shortDescription: "Universal by size",
     description: "Universal 22-inch wiper blade with a multi-adapter mount.",
   },
   "bateria-12v-65ah": {

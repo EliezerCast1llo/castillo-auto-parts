@@ -94,7 +94,7 @@ export default function DesignPreviewPage() {
             </aside>
             <section className="space-y-4">
               <CatalogToolbar />
-              <CatalogActiveFilters filters={sampleFilters} />
+              <CatalogActiveFilters filters={sampleFilters} options={filterOptions} />
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {mockProducts.slice(0, 6).map((product) => (
                   <ProductCard key={product.sku} product={product} />

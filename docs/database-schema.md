@@ -534,6 +534,21 @@ La clave `@@unique([productId, locale])` es la que usa el admin para el upsert.
 Cuando los tres campos quedan vacios la fila se borra: una traduccion sin
 contenido no aporta y ensucia el `include` de cada lectura del catalogo.
 
+Las cuatro columnas `locale` (las dos tablas de traduccion, `Order` y `User`)
+llevan un CHECK de formato `^[a-z]{2}$` que Prisma no puede declarar y vive en
+la migracion `20260820120000_locale_format_check`. Ataja la fila escrita por
+script con `"EN"` o `"en-US"`: el `where: { locale }` busca `"en"` exacto, asi
+que esa fila no se selecciona nunca y la traduccion se da por cargada sin
+estarlo. Verifica la forma y no la lista de idiomas soportados —esa vive en
+`src/lib/i18n/config.ts` y repetirla en SQL garantiza que una de las dos se
+desactualice.
+
+**`ProductCategory.slug` es el identificador del filtro del catalogo**, no su
+`name`. El nombre se traduce, asi que filtrar por el hacia imposible traducir la
+faceta: en cuanto el sidebar dijera "Brakes", `?category=Brakes` no encontraba
+nada. Las URLs con el nombre en espanol (`?category=Frenos`) se siguen
+entendiendo y redirigen 308 al slug.
+
 **Los slugs no se traducen.** `/en/product/pastillas-freno-toyota` conserva el
 slug en espanol. Traducirlos pediria una columna `slugEn`, una politica de
 colisiones y su propia tabla de redirects; queda fuera de alcance.

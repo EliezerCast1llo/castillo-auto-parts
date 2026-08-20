@@ -21,9 +21,45 @@ describe("catalog filters", () => {
       stock: "Disponible",
     });
 
-    expect(filters.categories).toEqual(["Filtros", "Frenos"]);
+    // Los nombres del param llegan al slug: es el identificador con el que se
+    // filtra, y las URLs viejas traían el nombre en español.
+    expect(filters.categories).toEqual(["filtros", "frenos"]);
     expect(filters.query).toBe("toyota");
     expect(filters.stockStatuses).toEqual(["IN_STOCK"]);
+  });
+
+  it("acepta el nombre de categoría en español que traían las URLs viejas", () => {
+    // `/catalog?category=Frenos` se publicó en la nav del sitio y quedó en
+    // historiales y en el índice. Tiene que seguir encontrando la categoría.
+    expect(parseCatalogFilters({ category: "Frenos" }).categories).toEqual(["frenos"]);
+    expect(parseCatalogFilters({ category: "Suspensión" }).categories).toEqual(["suspension"]);
+    expect(parseCatalogFilters({ category: "frenos" }).categories).toEqual(["frenos"]);
+  });
+
+  it("redirige al slug canónico solo cuando el param no lo es todavía", () => {
+    expect(buildCanonicalCatalogQuery({ category: "Frenos" })).toBe("category=frenos");
+    expect(buildCanonicalCatalogQuery({ category: "frenos" })).toBeNull();
+    // La guarda contra el loop: un param ya canónico no vuelve a redirigir.
+    expect(buildCanonicalCatalogQuery({ category: "frenos", stock: "IN_STOCK" })).toBeNull();
+  });
+
+  it("conserva el resto de los params al canonicalizar la categoría", () => {
+    const query = buildCanonicalCatalogQuery({ category: "Frenos", q: "toyota", page: "2" });
+    const params = new URLSearchParams(query ?? "");
+
+    expect(params.get("q")).toBe("toyota");
+    expect(params.get("page")).toBe("2");
+    expect(params.get("category")).toBe("frenos");
+  });
+
+  it("filtra en memoria por slug de categoría", () => {
+    const products = filterCatalogProducts(mockProducts, {
+      ...getEmptyCatalogFilters(),
+      categories: ["filtros"],
+    });
+
+    expect(products.length).toBeGreaterThan(0);
+    expect(products.every((product) => product.category === "Filtros")).toBe(true);
   });
 
   it("parses the canonical stock identifiers", () => {
@@ -147,7 +183,8 @@ describe("catalog filters", () => {
   it("builds catalog filter options from products", () => {
     const options = getCatalogFilterOptions(mockProducts);
 
-    expect(options.categories).toContain("Filtros");
+    expect(options.categories).toContain("filtros");
+    expect(options.categoryLabels.filtros).toBe("Filtros");
     expect(options.brands).toContain("WIX");
     expect(options.vehicleMakes).toContain("Toyota");
     expect(options.vehicleModelsByMake.Toyota).toContain("Corolla");
@@ -209,12 +246,14 @@ describe("buildPrismaWhere", () => {
   it("filtra por categoría con { in: [...] }", () => {
     const where = buildPrismaWhere({
       ...getEmptyCatalogFilters(),
-      categories: ["Filtros", "Frenos"],
+      categories: ["filtros", "frenos"],
     });
 
-    const conditions = where.AND as Array<{ category?: { name?: { in?: string[] } } }>;
+    // Por slug y no por nombre: el nombre se traduce, así que un filtro por
+    // nombre dejaría de encontrar nada en cuanto la faceta dijera "Brakes".
+    const conditions = where.AND as Array<{ category?: { slug?: { in?: string[] } } }>;
     const catCondition = conditions.find((c) => c.category !== undefined);
-    expect(catCondition?.category?.name?.in).toEqual(["Filtros", "Frenos"]);
+    expect(catCondition?.category?.slug?.in).toEqual(["filtros", "frenos"]);
   });
 
   it("filtra por marca con { in: [...] }", () => {

@@ -16,8 +16,10 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { formatMyVehicle } from "@/lib/my-vehicle";
 import { getMyVehicle } from "@/lib/my-vehicle-server";
+import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import {
   buildCanonicalCatalogQuery,
+  categoryLabelOf,
   countActiveCatalogFilters,
   parseCatalogFilters,
   parseCatalogSort,
@@ -26,6 +28,7 @@ import {
 import { getCatalogFacets, getFilteredCatalogProducts } from "@/data/products";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
+import { localizePath } from "@/lib/i18n/path";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
@@ -41,8 +44,13 @@ export async function generateMetadata({
   const params = searchParams ? await searchParams : {};
   const filters = parseCatalogFilters(params);
 
+  // Las facetas resuelven el nombre visible de la categoría: el filtro guarda
+  // el slug y el título tiene que decir "Frenos", no "frenos". La lectura no
+  // agrega costo, es la misma entrada de caché que consume la página.
+  const facets = await getCatalogFacets(locale);
+
   const parts: string[] = [];
-  if (filters.categories.length) parts.push(filters.categories[0]);
+  if (filters.categories.length) parts.push(categoryLabelOf(facets, filters.categories[0]));
   if (filters.brands.length) parts.push(filters.brands[0]);
   if (filters.vehicleMake) parts.push(filters.vehicleMake);
   if (filters.query) parts.push(`"${filters.query}"`);
@@ -74,12 +82,18 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
   const locale = await resolveAndPublishRouteLocale(routeParams);
   const resolvedParams = searchParams ? await searchParams : {};
 
-  // Las URLs viejas traían el estado de stock en español
-  // (`?stock=Últimas unidades`). Se siguen entendiendo, pero se redirige al
-  // identificador canónico para que los links compartidos se auto-curen.
+  // Las URLs viejas traían el estado de stock y la categoría en español
+  // (`?stock=Últimas unidades`, `?category=Frenos`). Se siguen entendiendo,
+  // pero se redirige al identificador canónico para que los links compartidos
+  // se auto-curen.
+  //
+  // El destino lleva el prefijo de idioma: `permanentRedirect` es el de
+  // `next/navigation` y no localiza nada, así que mandar "/catalog" pelado
+  // sacaba del idioma a quien navegaba en inglés.
   const canonicalQuery = buildCanonicalCatalogQuery(resolvedParams);
   if (canonicalQuery !== null) {
-    permanentRedirect(canonicalQuery ? `/catalog?${canonicalQuery}` : "/catalog");
+    const target = localizePath("/catalog", locale);
+    permanentRedirect(canonicalQuery ? `${target}?${canonicalQuery}` : target);
   }
 
   const filters = parseCatalogFilters(resolvedParams);
@@ -98,7 +112,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
 
   const [catalogResult, filterOptions] = await Promise.all([
     getFilteredCatalogProducts(filters, page, sort, locale),
-    getCatalogFacets(),
+    getCatalogFacets(locale),
   ]);
 
   const { products: filteredProducts, totalCount, totalPages, currentPage, status } = catalogResult;
@@ -135,7 +149,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
           </aside>
 
           <section className="min-w-0 space-y-5">
-            <CatalogBreadcrumb filters={filters} />
+            <CatalogBreadcrumb filters={filters} options={filterOptions} />
 
             {status === "unavailable" ? <CatalogUnavailableState /> : null}
 
@@ -145,7 +159,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
               <div>
                 <h1 className="text-xl font-black text-ca-navy-950">Catálogo de repuestos</h1>
                 <p className="mt-1 text-sm text-ca-text-secondary">
-                  {getCatalogSummary(filters, totalCount)}
+                  {getCatalogSummary(filters, totalCount, filterOptions)}
                 </p>
               </div>
               <div className="flex items-center gap-4">
@@ -167,6 +181,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
 
             <CatalogActiveFilters
               filters={filters}
+              options={filterOptions}
               hideVehicleChips={Boolean(vehicleFromCookie)}
               sort={sort}
             />
@@ -210,8 +225,19 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
   );
 }
 
-function CatalogBreadcrumb({ filters }: { filters: ReturnType<typeof parseCatalogFilters> }) {
-  const current = filters.categories[0] ?? (filters.query ? `Búsqueda: ${filters.query}` : "Catálogo");
+function CatalogBreadcrumb({
+  filters,
+  options,
+}: {
+  filters: ReturnType<typeof parseCatalogFilters>;
+  options: CatalogFilterOptions;
+}) {
+  const category = filters.categories[0];
+  const current = category
+    ? categoryLabelOf(options, category)
+    : filters.query
+      ? `Búsqueda: ${filters.query}`
+      : "Catálogo";
 
   return (
     <nav
@@ -249,7 +275,11 @@ function CatalogUnavailableState() {
   );
 }
 
-function getCatalogSummary(filters: ReturnType<typeof parseCatalogFilters>, totalCount: number) {
+function getCatalogSummary(
+  filters: ReturnType<typeof parseCatalogFilters>,
+  totalCount: number,
+  options: CatalogFilterOptions,
+) {
   if (totalCount === 0) {
     return "Ajusta la búsqueda o consulta con asesoría para ubicar el repuesto correcto.";
   }
@@ -259,7 +289,7 @@ function getCatalogSummary(filters: ReturnType<typeof parseCatalogFilters>, tota
   }
 
   if (filters.categories.length > 0) {
-    return `Productos filtrados por ${filters.categories[0]} con disponibilidad y precio visibles.`;
+    return `Productos filtrados por ${categoryLabelOf(options, filters.categories[0])} con disponibilidad y precio visibles.`;
   }
 
   return "Explora repuestos por vehículo, marca, categoría o número de parte. Los precios incluyen IVA.";

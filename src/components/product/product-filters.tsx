@@ -1,5 +1,6 @@
 import { Link } from "@/lib/i18n/navigation";
 import { Search } from "lucide-react";
+import { categoryLabelOf } from "@/data/catalog-filters";
 import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filters";
 import { formatStockStatus } from "@/lib/stock-status";
 
@@ -32,13 +33,14 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
       </label>
 
       <FilterGroup legend="Categoría">
-        {options.categories.map((category) => (
+        {options.categories.map((slug) => (
           <FilterOption
-            key={category}
-            count={options.categoryCounts[category]}
-            defaultChecked={filters.categories.includes(category)}
-            label={category}
+            key={slug}
+            count={options.categoryCounts[slug]}
+            defaultChecked={filters.categories.includes(slug)}
+            label={categoryLabelOf(options, slug)}
             name="category"
+            value={slug}
           />
         ))}
       </FilterGroup>

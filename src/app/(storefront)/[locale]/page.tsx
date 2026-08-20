@@ -25,7 +25,7 @@ export async function generateMetadata({
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveAndPublishRouteLocale(params);
   const [filterOptions, featuredResult] = await Promise.all([
-    getCatalogFacets(),
+    getCatalogFacets(locale),
     getFeaturedCatalogProductsResult(locale),
   ]);
 
@@ -42,7 +42,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             por marca vive en el footer, que ya es el índice del sitio. */}
         <div className="ca-container space-y-10 pb-14 pt-8 lg:pt-28">
           <CategoryQuickLinks options={filterOptions} />
-          <CategoryProductRails catalogStatus={featuredResult.status} options={filterOptions} />
+          <CategoryProductRails
+            catalogStatus={featuredResult.status}
+            locale={locale}
+            options={filterOptions}
+          />
         </div>
       </div>
       <SiteFooter />
