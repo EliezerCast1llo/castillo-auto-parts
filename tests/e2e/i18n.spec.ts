@@ -307,7 +307,7 @@ test("category facets are translated and still filter", async ({ page }) => {
   await page.goto(EN("/catalog?category=frenos"));
   // El contador sigue en espanol: ese copy es de fase 6. Lo que se verifica
   // aca es que haya resultados, no en que idioma se cuentan.
-  await expect(page.getByText(/^[1-9]\d* (productos?|products?)$/)).toBeVisible();
+  await expect(page.getByText(/^[1-9][\d.,]* (productos?|products?)$/)).toBeVisible();
   await expect(page.getByText("Categoría: Brakes")).toBeVisible();
 });
 
@@ -340,7 +340,7 @@ test("old category URLs redirect to the canonical slug", async ({ page }) => {
   // `next/navigation` y no localiza nada, asi que un "/catalog" pelado como
   // destino sacaba de /en a quien navegaba en ingles.
   await expect(page).toHaveURL(/\/es\/catalog\?category=frenos$/);
-  await expect(page.getByText(/^[1-9]\d* productos?$/)).toBeVisible();
+  await expect(page.getByText(/^[1-9][\d.,]* productos?$/)).toBeVisible();
 
   // En ingles el mismo nombre viejo tiene que curarse dentro de /en.
   await page.goto(EN("/catalog?category=Frenos"));
@@ -384,7 +384,7 @@ test("every empty-state shortcut leads to results, in both languages", async ({ 
   for (const locale of ["es", "en"] as const) {
     await page.goto(`/${locale}/catalog?q=zzzz-sin-resultados`);
 
-    const shortcuts = page.locator('a[href*="/catalog?q="]');
+    const shortcuts = page.getByTestId("empty-state-suggestion");
     const count = await shortcuts.count();
     expect(count).toBeGreaterThan(0);
 
@@ -396,10 +396,25 @@ test("every empty-state shortcut leads to results, in both languages", async ({ 
     for (const target of targets) {
       await page.goto(target);
       await expect(
-        page.getByText(/^[1-9]\d* (productos?|products?)$/),
+        page.getByText(/^[1-9][\d.,]* (productos?|products?)$/),
         `${target} deberia devolver resultados`,
       ).toBeVisible();
     }
+  }
+});
+
+test("a multi-word search finds products", async ({ page }) => {
+  // El espacio viaja como `+` en la query que serializa next-intl. Se prueban
+  // las dos codificaciones porque una falla silenciosa aca dejaria sin
+  // resultados a cualquiera que escriba mas de una palabra, que es lo normal.
+  for (const query of ["filtro+de+aceite", "filtro%20de%20aceite", "disco%20de%20freno"]) {
+    await page.goto(`/es/catalog?q=${query}`);
+    // El contador acepta los dos idiomas y separador de miles: lo que se
+    // verifica es que haya resultados, no como se escribe el numero.
+    await expect(
+      page.getByText(/^[1-9][\d.,]* (productos?|products?)$/),
+      `${query} deberia devolver resultados`,
+    ).toBeVisible();
   }
 });
 
