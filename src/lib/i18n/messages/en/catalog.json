@@ -1,0 +1,39 @@
+{
+  "title": "Parts catalog",
+  "metaTitle": "Parts catalog",
+  "metaTitleFiltered": "{filters} · Catalog",
+  "metaDescription": "Browse car parts and filter by vehicle, brand, category or part number.",
+  "metaDescriptionFiltered": "Car parts: {filters}. Find options by vehicle, brand or category.",
+  "productCount": "{count, plural, one {# product} other {# products}}",
+  "pageOf": "Page {current}/{total}",
+  "summary": {
+    "default": "Browse parts by vehicle, brand, category or part number. Prices include VAT.",
+    "empty": "Adjust your search or ask us for help finding the right part.",
+    "query": "Results for \"{query}\" with vehicle, brand and availability filters.",
+    "category": "Products filtered by {category}, with availability and price in view."
+  },
+  "breadcrumb": {
+    "ariaLabel": "Catalog breadcrumb",
+    "home": "Home",
+    "catalog": "Catalog",
+    "search": "Search: {query}"
+  },
+  "unavailable": {
+    "badge": "Unavailable",
+    "title": "The catalog is temporarily unavailable",
+    "description": "We could not load the catalog right now. Please try again in a few minutes."
+  },
+  "empty": {
+    "clearFilters": "Clear filters",
+    "noInventoryTitle": "No active products yet",
+    "noInventoryDescription": "The catalog is up, but no inventory has been published yet.",
+    "noMatchesTitle": "We found no parts matching those filters",
+    "noMatchesDescription": "Try removing a filter, searching by part number, or write to us and we will help you find the right part."
+  },
+  "suggestions": {
+    "shocks": "shock absorbers",
+    "brakePads": "brake pads",
+    "oilFilter": "oil filter",
+    "sparkPlugs": "spark plugs"
+  }
+}

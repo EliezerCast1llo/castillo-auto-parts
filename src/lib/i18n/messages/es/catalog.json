@@ -1,0 +1,39 @@
+{
+  "title": "Catálogo de repuestos",
+  "metaTitle": "Catálogo de repuestos",
+  "metaTitleFiltered": "{filters} · Catálogo",
+  "metaDescription": "Explora repuestos automotrices y filtra por vehículo, marca, categoría o número de parte.",
+  "metaDescriptionFiltered": "Repuestos automotrices: {filters}. Busca opciones por vehículo, marca o categoría.",
+  "productCount": "{count, plural, one {# producto} other {# productos}}",
+  "pageOf": "Pág. {current}/{total}",
+  "summary": {
+    "default": "Explora repuestos por vehículo, marca, categoría o número de parte. Los precios incluyen IVA.",
+    "empty": "Ajusta la búsqueda o consulta con asesoría para ubicar el repuesto correcto.",
+    "query": "Resultados para \"{query}\" con filtros de vehículo, marca y disponibilidad.",
+    "category": "Productos filtrados por {category} con disponibilidad y precio visibles."
+  },
+  "breadcrumb": {
+    "ariaLabel": "Ruta del catálogo",
+    "home": "Inicio",
+    "catalog": "Catálogo",
+    "search": "Búsqueda: {query}"
+  },
+  "unavailable": {
+    "badge": "No disponible",
+    "title": "Catálogo temporalmente no disponible",
+    "description": "No pudimos cargar el catálogo en este momento. Intenta nuevamente en unos minutos."
+  },
+  "empty": {
+    "clearFilters": "Limpiar filtros",
+    "noInventoryTitle": "Aún no hay productos activos",
+    "noInventoryDescription": "El catálogo está disponible pero todavía no hay inventario publicado.",
+    "noMatchesTitle": "No encontramos repuestos con esos filtros",
+    "noMatchesDescription": "Prueba quitar un filtro, buscar por número de parte o escríbenos y te ayudamos a ubicar el repuesto correcto."
+  },
+  "suggestions": {
+    "shocks": "amortiguadores",
+    "brakePads": "pastillas de freno",
+    "oilFilter": "filtro de aceite",
+    "sparkPlugs": "bujías"
+  }
+}

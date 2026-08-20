@@ -249,6 +249,20 @@ test("the same failed action keeps a Spanish visitor in Spanish", async ({ page 
   await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible();
 });
 
+test("the catalog copy and its plurals follow the language", async ({ page }) => {
+  await page.goto(ES("/catalog"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Catálogo de repuestos");
+  await expect(page.getByRole("navigation", { name: "Ruta del catálogo" })).toBeVisible();
+
+  await page.goto(EN("/catalog"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Parts catalog");
+  await expect(page.getByRole("navigation", { name: "Catalog breadcrumb" })).toBeVisible();
+
+  // El contador usa plurales ICU: se verifica que el idioma elija la forma, no
+  // que concatene un sufijo.
+  await expect(page.getByText(/^\d+ products?$/)).toBeVisible();
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";
