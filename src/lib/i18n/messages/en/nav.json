@@ -3,5 +3,9 @@
   "brands": "Brands",
   "deals": "Deals",
   "help": "Help",
-  "ariaLabel": "Main navigation"
+  "ariaLabel": "Main navigation",
+  "mobileLabel": "Mobile navigation",
+  "menu": "Navigation menu",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu"
 }

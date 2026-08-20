@@ -29,7 +29,7 @@ export function CookieConsentBanner() {
       // checkout, así que quien no había aceptado las cookies no podía pagar
       // sin descartarlo antes. Con `sticky` reserva su alto, sigue pegado al
       // borde inferior mientras se navega, y nunca se apoya sobre nada.
-      className="sticky inset-x-0 bottom-0 z-50 border-t border-ca-border bg-white/97 backdrop-blur-md"
+      className="sticky bottom-0 z-50 border-t border-ca-border bg-white/97 backdrop-blur-md"
       data-testid="cookie-consent"
       role="region"
     >

@@ -222,10 +222,14 @@ test("a failed action redirects back into the language the visitor was browsing"
   // la pagina de destino traduce el mensaje. Si la accion deduce mal el idioma,
   // el mensaje sale correcto pero en el idioma equivocado, porque el usuario ya
   // aterrizo en la URL equivocada.
+  // Se localiza por el `name` de los campos y no por su label: el formulario
+  // todavia no esta traducido, asi que buscarlo por su texto en espanol ataria
+  // la prueba al idioma que justamente esta probando —y la romperia el dia que
+  // la tajada de auth lo traduzca.
   await page.goto(EN("/auth/login"));
-  await page.getByLabel("Correo electrónico").fill("no-existe@e2e.castilloautoparts.com");
-  await page.getByLabel("Contraseña").fill("credenciales-invalidas");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.locator('input[name="email"]').fill("no-existe@e2e.castilloautoparts.com");
+  await page.locator('input[name="password"]').fill("credenciales-invalidas");
+  await page.locator('form:has(input[name="password"]) button[type="submit"]').first().click();
 
   await expect(page).toHaveURL(/\/en\/auth\/login\?.*estado=invalid/);
   await expect(page.getByText("Incorrect email or password.")).toBeVisible();
@@ -237,9 +241,9 @@ test("a failed action redirects back into the language the visitor was browsing"
 
 test("the same failed action keeps a Spanish visitor in Spanish", async ({ page }) => {
   await page.goto(ES("/auth/login"));
-  await page.getByLabel("Correo electrónico").fill("no-existe@e2e.castilloautoparts.com");
-  await page.getByLabel("Contraseña").fill("credenciales-invalidas");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.locator('input[name="email"]').fill("no-existe@e2e.castilloautoparts.com");
+  await page.locator('input[name="password"]').fill("credenciales-invalidas");
+  await page.locator('form:has(input[name="password"]) button[type="submit"]').first().click();
 
   await expect(page).toHaveURL(/\/es\/auth\/login\?.*estado=invalid/);
   await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible();

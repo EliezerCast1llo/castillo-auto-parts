@@ -47,7 +47,6 @@ export const metadata = {
 };
 
 export default function DesignPreviewPage() {
-
   // Esta página es solo para revisión visual en desarrollo.
   // En producción retorna 404 para no exponer internos del sistema de diseño.
   if (process.env.NODE_ENV === "production") {

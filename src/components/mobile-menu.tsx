@@ -83,14 +83,14 @@ export function MobileMenu({
             className="fixed inset-y-0 right-0 z-[100] flex w-72 max-w-[85vw] flex-col bg-white shadow-ca-hero"
             role="dialog"
             aria-modal
-            aria-label="Menú de navegación"
+            aria-label={t("menu")}
           >
             {/* Header del drawer */}
             <div className="flex items-center justify-between border-b border-ca-border px-5 py-4">
               <p className="text-sm font-black uppercase tracking-[0.12em] text-ca-navy-950">Menú</p>
               <button
                 type="button"
-                aria-label="Cerrar menú"
+                aria-label={t("closeMenu")}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-ca-background"
                 onClick={() => setOpen(false)}
                 ref={closeButtonRef}
@@ -100,7 +100,7 @@ export function MobileMenu({
             </div>
 
             {/* Links */}
-            <nav className="flex flex-col gap-1 p-4" aria-label="Navegación móvil">
+            <nav className="flex flex-col gap-1 p-4" aria-label={t("mobileLabel")}>
               {navLinks.map((link) => (
                 <Link
                   key={link.key}
@@ -167,7 +167,7 @@ export function MobileMenu({
     <>
       <button
         type="button"
-        aria-label={open ? "Cerrar menú" : "Abrir menú"}
+        aria-label={open ? t("closeMenu") : t("openMenu")}
         aria-expanded={open}
         className={toggleClass}
         onClick={() => setOpen(true)}
