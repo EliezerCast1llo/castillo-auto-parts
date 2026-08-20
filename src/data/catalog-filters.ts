@@ -5,6 +5,8 @@ import {
   stockStatuses,
   type StockStatus,
 } from "@/lib/stock-status";
+import { defaultLocale } from "@/lib/i18n/config";
+import { toIntlLocale } from "@/lib/i18n/intl-locale";
 import { slugifyValue } from "@/lib/slug";
 import type { CatalogProduct } from "./products";
 
@@ -149,8 +151,16 @@ export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilt
   return {
     // Ordenadas por la etiqueta que se lee, igual que las facetas de base: si
     // el fallback ordenara por slug, activarlo reacomodaría el sidebar.
+    //
+    // El tag va explícito aunque acá no haya idioma del que sacarlo: sin
+    // argumento, `localeCompare` usa el del runtime, y el del contenedor no
+    // tiene por qué ser el de la máquina donde se probó. El contenido del mock
+    // está en español, así que el criterio de ordenamiento también.
     categories: uniqueSorted(products.map(categorySlugOf)).sort((a, b) =>
-      (categoryLabels[a] ?? a).localeCompare(categoryLabels[b] ?? b),
+      (categoryLabels[a] ?? a).localeCompare(
+        categoryLabels[b] ?? b,
+        toIntlLocale(defaultLocale),
+      ),
     ),
     brands: uniqueSorted(products.map((product) => product.brand)),
     categoryLabels,
