@@ -1,3 +1,4 @@
+import Catalog from "./catalog.json";
 import Common from "./common.json";
 import Consent from "./consent.json";
 import Errors from "./errors.json";
@@ -13,6 +14,7 @@ import Status from "./status.json";
  * conflictos de merge.
  */
 const messages = {
+  Catalog,
   Common,
   Consent,
   Errors,

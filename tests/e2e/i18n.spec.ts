@@ -339,6 +339,51 @@ test("the English short description reaches the page", async ({ page }) => {
   await expect(page.getByText("Universal by size").first()).toBeVisible();
 });
 
+test("the catalog copy and its plurals follow the language", async ({ page }) => {
+  await page.goto(ES("/catalog"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Catálogo de repuestos");
+  await expect(page.getByRole("navigation", { name: "Ruta del catálogo" })).toBeVisible();
+
+  await page.goto(EN("/catalog"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Parts catalog");
+  await expect(page.getByRole("navigation", { name: "Catalog breadcrumb" })).toBeVisible();
+
+  // Para probar el plural hay que forzar la forma singular: `products?` habria
+  // pasado igual con la concatenacion vieja. Se filtra por un SKU exacto, que
+  // devuelve un solo producto.
+  await page.goto(EN("/catalog?q=MOCK-FIL-TOY-18"));
+  await expect(page.getByText("1 product", { exact: true })).toBeVisible();
+
+  await page.goto(ES("/catalog?q=MOCK-FIL-TOY-18"));
+  await expect(page.getByText("1 producto", { exact: true })).toBeVisible();
+});
+
+test("every empty-state shortcut leads to results, in both languages", async ({ page }) => {
+  // El label se traduce, la query no: es lo que se compara contra el contenido.
+  // Se recorren TODOS los atajos y no uno: cuando este test miraba solo el
+  // primero, tres de los cuatro devolvian cero resultados sin que nada avisara.
+  for (const locale of ["es", "en"] as const) {
+    await page.goto(`/${locale}/catalog?q=zzzz-sin-resultados`);
+
+    const shortcuts = page.locator('a[href*="/catalog?q="]');
+    const count = await shortcuts.count();
+    expect(count).toBeGreaterThan(0);
+
+    const targets: string[] = [];
+    for (let index = 0; index < count; index += 1) {
+      targets.push((await shortcuts.nth(index).getAttribute("href"))!);
+    }
+
+    for (const target of targets) {
+      await page.goto(target);
+      await expect(
+        page.getByText(/^[1-9]\d* (productos?|products?)$/),
+        `${target} deberia devolver resultados`,
+      ).toBeVisible();
+    }
+  }
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";
