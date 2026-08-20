@@ -307,7 +307,7 @@ test("category facets are translated and still filter", async ({ page }) => {
   await page.goto(EN("/catalog?category=frenos"));
   // El contador sigue en espanol: ese copy es de fase 6. Lo que se verifica
   // aca es que haya resultados, no en que idioma se cuentan.
-  await expect(page.getByText(/^[1-9]\d* (productos?|products?)$/)).toBeVisible();
+  await expect(page.getByText(/^[1-9][\d.,]* (productos?|products?)$/)).toBeVisible();
   await expect(page.getByText("Categoría: Brakes")).toBeVisible();
 });
 
@@ -321,7 +321,7 @@ test("old category URLs redirect to the canonical slug", async ({ page }) => {
   // `next/navigation` y no localiza nada, asi que un "/catalog" pelado como
   // destino sacaba de /en a quien navegaba en ingles.
   await expect(page).toHaveURL(/\/es\/catalog\?category=frenos$/);
-  await expect(page.getByText(/^[1-9]\d* productos?$/)).toBeVisible();
+  await expect(page.getByText(/^[1-9][\d.,]* productos?$/)).toBeVisible();
 
   // En ingles el mismo nombre viejo tiene que curarse dentro de /en.
   await page.goto(EN("/catalog?category=Frenos"));
