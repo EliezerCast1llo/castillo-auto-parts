@@ -24,18 +24,27 @@ function slugify(value: string) {
  * Traducciones al ingles de las categorias. Todas, porque son once y se ven en
  * los filtros de cada pagina del catalogo.
  */
+/**
+ * Traducciones de categoria, indexadas por **slug** y no por nombre.
+ *
+ * El slug es el identificador desde que el filtro del catalogo dejo de usar el
+ * nombre; el nombre es texto que se edita. Con el mapa indexado por nombre,
+ * renombrar "Bujias" a "Bujias y encendido" desactivaba su traduccion en
+ * silencio: la categoria quedaba en espanol dentro del catalogo en ingles, sin
+ * error y sin log.
+ */
 const CATEGORY_EN: Record<string, string> = {
-  Filtros: "Filters",
-  Frenos: "Brakes",
-  "Bujías": "Spark plugs",
-  Escobillas: "Wiper blades",
-  Focos: "Bulbs",
-  Fluidos: "Fluids",
-  "Suspensión": "Suspension",
-  "Baterías": "Batteries",
-  Correas: "Belts",
-  Enfriamiento: "Cooling",
-  "Eléctrico": "Electrical",
+  filtros: "Filters",
+  frenos: "Brakes",
+  bujias: "Spark plugs",
+  escobillas: "Wiper blades",
+  focos: "Bulbs",
+  fluidos: "Fluids",
+  suspension: "Suspension",
+  baterias: "Batteries",
+  correas: "Belts",
+  enfriamiento: "Cooling",
+  electrico: "Electrical",
 };
 
 /**
@@ -196,7 +205,7 @@ async function main() {
       },
     });
 
-    const categoryEn = CATEGORY_EN[category];
+    const categoryEn = CATEGORY_EN[slugify(category)];
     if (categoryEn) {
       const stored = await prisma.productCategory.findUniqueOrThrow({
         where: { slug: slugify(category) },
@@ -207,6 +216,23 @@ async function main() {
         create: { categoryId: stored.id, locale: "en", name: categoryEn },
       });
     }
+  }
+
+  // Los dos mapas de traduccion tienen el mismo agujero: la clave que no
+  // corresponde a nada no hace nada y no falla. La traduccion queda escrita en
+  // el archivo, nadie la aplica, y el catalogo en ingles muestra ese contenido
+  // en espanol como si no estuviera traducido. Paso con dos de las seis claves
+  // de PRODUCT_EN.
+  const categorySlugs = new Set(
+    mockProducts.map((product) => slugify(product.category)),
+  );
+  const unknownCategories = Object.keys(CATEGORY_EN).filter(
+    (slug) => !categorySlugs.has(slug),
+  );
+  if (unknownCategories.length > 0) {
+    throw new Error(
+      `CATEGORY_EN tiene claves que no son slugs de categoria: ${unknownCategories.join(", ")}`,
+    );
   }
 
   // Una clave de PRODUCT_EN que no corresponda a ningun producto no hace nada

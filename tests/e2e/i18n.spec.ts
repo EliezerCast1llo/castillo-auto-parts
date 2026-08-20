@@ -327,7 +327,7 @@ test("the product breadcrumb links to the category by identifier", async ({ page
   expect(breadcrumb).not.toContain("category=Brakes");
 
   await link.click();
-  await expect(page.getByText(/^[1-9]\d* (productos?|products?)$/)).toBeVisible();
+  await expect(page.getByText(/^[1-9][\d.,]* (productos?|products?)$/)).toBeVisible();
 });
 
 test("old category URLs redirect to the canonical slug", async ({ page }) => {

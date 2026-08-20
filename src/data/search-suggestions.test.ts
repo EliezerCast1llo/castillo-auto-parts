@@ -9,6 +9,14 @@ import { SEARCH_SUGGESTIONS } from "./search-suggestions";
  *
  * Los campos se leen de la constante que arma el `where` de Prisma en vez de
  * repetirlos, así que agregar o quitar uno mueve las dos cosas a la vez.
+ *
+ * Lo que la constante **no** ata es la semántica. Esta simulación vale mientras
+ * `buildPrismaWhere` siga usando `contains`; el día que la búsqueda pase a
+ * `tsvector` —el plan anotado en `docs/database-schema.md`— la base haría
+ * stemming y estas aserciones seguirían verdes afirmando el comportamiento
+ * viejo. Ahí el test no estaría equivocado, estaría de más: las sugerencias
+ * podrían volver al plural y esto lo impediría sin motivo. Revisar las dos
+ * cosas juntas en esa migración.
  */
 function matchesLikeTheDatabase(product: (typeof mockProducts)[number], query: string) {
   const needle = query.toLowerCase();
