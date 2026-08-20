@@ -4,7 +4,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { CookieConsentSlot } from "@/components/consent/cookie-consent-slot";
 import { ToastProvider } from "@/components/ui/toast";
-import { defaultLocale, locales, type Locale } from "@/lib/i18n/config";
+import { defaultLocale, isPublishedLocale, locales, type Locale } from "@/lib/i18n/config";
 import { loadMessages, pickClientMessages } from "@/lib/i18n/messages";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "../../globals.css";
@@ -33,6 +33,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: requestedLocale } = await params;
   const locale = hasLocale(locales, requestedLocale) ? requestedLocale : defaultLocale;
+  const indexable = isPublishedLocale(locale);
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -64,10 +65,12 @@ export async function generateMetadata({
       title: SITE_NAME,
       description: SITE_DESCRIPTION,
     },
+    // Un idioma sin copy propio se sirve pero no se ofrece a los buscadores:
+    // indexarlo publicaria el texto en español bajo otro `lang`.
     robots: {
-      index: true,
+      index: indexable,
       follow: true,
-      googleBot: { index: true, follow: true },
+      googleBot: { index: indexable, follow: true },
     },
   };
 }

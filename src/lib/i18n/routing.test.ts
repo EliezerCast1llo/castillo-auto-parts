@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultLocale, locales } from "./config";
+import { defaultLocale, isPublishedLocale, locales, publishedLocales } from "./config";
 import { toIntlLocale, APP_CURRENCY, APP_TIME_ZONE } from "./intl-locale";
 import { LOCALIZE_PATH_ROUTES } from "./path";
 import { LOCALE_COOKIE, pathnames, routing } from "./routing";
@@ -116,5 +116,24 @@ describe("localizePath constraint", () => {
     // Contraprueba: /help sí cambia de grafía, así que no puede pasar por el
     // helper. Si esto deja de ser cierto, el test de arriba pierde sentido.
     expect(typeof pathnames["/help"]).not.toBe("string");
+  });
+});
+
+describe("published locales", () => {
+  it("always publishes the default language", () => {
+    expect(publishedLocales).toContain(defaultLocale);
+    expect(isPublishedLocale(defaultLocale)).toBe(true);
+  });
+
+  it("only lists languages that exist", () => {
+    for (const locale of publishedLocales) {
+      expect(locales).toContain(locale);
+    }
+  });
+
+  it("does not publish a language whose copy is not translated yet", () => {
+    // Este test se cae cuando se agregue "en" a publishedLocales, que es
+    // justamente el momento de revisar que el catálogo esté completo.
+    expect(isPublishedLocale("en")).toBe(false);
   });
 });

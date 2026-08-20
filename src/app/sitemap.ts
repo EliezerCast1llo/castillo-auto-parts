@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCatalogFacets, getCatalogSitemapEntries } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
-import { defaultLocale, locales } from "@/lib/i18n/config";
+import { defaultLocale, locales, publishedLocales } from "@/lib/i18n/config";
 import { getPathname, type LocaleHref } from "@/lib/i18n/navigation";
 import { SITE_URL } from "@/lib/site";
 
@@ -21,9 +21,11 @@ type SitemapEntry = MetadataRoute.Sitemap[number];
 function localizedEntries(href: LocaleHref, entry: Omit<SitemapEntry, "url">): MetadataRoute.Sitemap {
   const urlFor = (locale: (typeof locales)[number]) => `${SITE_URL}${getPathname({ href, locale })}`;
 
+  // Los `hreflang` siguen listando todos los idiomas: le dicen al buscador que
+  // la versión existe. Lo que no se ofrece para indexar es la URL en sí.
   const languages = Object.fromEntries(locales.map((locale) => [locale, urlFor(locale)]));
 
-  return locales.map((locale) => ({
+  return publishedLocales.map((locale) => ({
     ...entry,
     url: urlFor(locale),
     alternates: {
