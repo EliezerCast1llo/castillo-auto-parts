@@ -1,10 +1,4 @@
 {
-  "notFound": {
-    "badge": "Error 404",
-    "title": "Página no encontrada",
-    "description": "El enlace puede estar vencido o el producto ya no está disponible. Revisa el catálogo para encontrar el repuesto que buscas.",
-    "goToCatalog": "Ir al catálogo"
-  },
   "unexpected": {
     "badge": "Algo salió mal",
     "title": "No pudimos cargar esta página",

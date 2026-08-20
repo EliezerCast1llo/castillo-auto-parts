@@ -2,7 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { asLocaleHref, getPathname, redirect } from "@/lib/i18n/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
@@ -13,7 +13,7 @@ import { createRegisterRateLimiter, type AsyncRateLimiter } from "@/lib/rate-lim
 let _registerRateLimiter: AsyncRateLimiter | undefined;
 
 export async function registerAction(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const registerRateLimiter = (_registerRateLimiter ??= createRegisterRateLimiter());
   const name = formString(formData, "name").trim();
   const email = formString(formData, "email").trim().toLowerCase();

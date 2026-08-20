@@ -3,7 +3,7 @@ import { KeyRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { firstValue } from "@/lib/url-utils";
 import { requestPasswordReset } from "./actions";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const metadata = {
   robots: { follow: false, index: false },
@@ -19,7 +19,7 @@ export default async function ForgotPasswordPage({
   params: routeParams,
   searchParams,
 }: ForgotPasswordPageProps) {
-  const locale = await resolveRouteLocale(routeParams);
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado);
   const sent = estado === "sent";

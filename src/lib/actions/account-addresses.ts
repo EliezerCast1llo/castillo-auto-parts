@@ -1,6 +1,6 @@
 "use server";
 
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { redirect } from "@/lib/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -12,7 +12,7 @@ const SV_DEPARTMENTS = [
 ];
 
 export async function createAddress(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const session = await auth();
   if (!session?.user) return redirect({ href: "/auth/login", locale });
 
@@ -58,7 +58,7 @@ export async function createAddress(formData: FormData) {
 }
 
 export async function deleteAddress(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const session = await auth();
   if (!session?.user) return redirect({ href: "/auth/login", locale });
 

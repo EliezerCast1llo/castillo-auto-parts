@@ -7,7 +7,7 @@ import { formatCurrency } from "@/lib/money";
 import { formatOrderStatus, formatShipmentMethod } from "@/lib/order-formatters";
 import { verifyOrderAccessToken } from "@/lib/order-access-token";
 import { firstValue } from "@/lib/url-utils";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: OrderPageProps) {
 }
 
 export default async function OrderPage({ params, searchParams }: OrderPageProps) {
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const { orderNumber } = await params;
   const paramsValue = searchParams ? await searchParams : {};
   const accessToken = firstValue(paramsValue.token);

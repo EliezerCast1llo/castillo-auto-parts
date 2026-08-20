@@ -5,7 +5,7 @@ import { verifyPasswordResetToken } from "@/lib/auth-user";
 import { firstValue } from "@/lib/url-utils";
 import { applyPasswordResetAction } from "./actions";
 import { getStatusMessage } from "@/lib/i18n/status";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ type ResetPasswordPageProps = {
 };
 
 export default async function ResetPasswordPage({ params, searchParams }: ResetPasswordPageProps) {
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const { token } = await params;
   const queryParams = searchParams ? await searchParams : {};
   const errorMessage = await getStatusMessage("auth", firstValue(queryParams.estado), locale);

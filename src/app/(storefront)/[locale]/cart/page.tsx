@@ -19,7 +19,7 @@ import { getGuestCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
 import { createStockAlert } from "@/lib/actions/cart";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const metadata = {
   title: "Tu carrito | Castillo Auto Parts",
@@ -35,7 +35,7 @@ type CartPageProps = {
 };
 
 export default async function CartPage({ params: routeParams, searchParams }: CartPageProps) {
-  const locale = await resolveRouteLocale(routeParams);
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const cart = await getGuestCart();
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado) ?? "";

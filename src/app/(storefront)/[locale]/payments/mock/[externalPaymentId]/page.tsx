@@ -6,7 +6,7 @@ import { formatCurrency } from "@/lib/money";
 import { isMockPaymentAvailable } from "@/lib/payments/mock-access";
 import { firstValue } from "@/lib/url-utils";
 import { confirmMockPayment } from "./actions";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ type MockPaymentPageProps = {
 };
 
 export default async function MockPaymentPage({ params, searchParams }: MockPaymentPageProps) {
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   if (!isMockPaymentAvailable()) notFound();
   const { externalPaymentId } = await params;
   const query = searchParams ? await searchParams : {};

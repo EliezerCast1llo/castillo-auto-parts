@@ -16,7 +16,7 @@ import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
 import { createGuestOrder } from "./actions";
 import { getStatusMessage } from "@/lib/i18n/status";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const metadata = {
   title: "Finalizar compra | Castillo Auto Parts",
@@ -32,7 +32,7 @@ type CheckoutPageProps = {
 };
 
 export default async function CheckoutPage({ params: routeParams, searchParams }: CheckoutPageProps) {
-  const locale = await resolveRouteLocale(routeParams);
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const [cart, fulfillmentOptions, session] = await Promise.all([
     getGuestCart(),
     getFulfillmentOptions(),

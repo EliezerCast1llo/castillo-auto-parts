@@ -26,7 +26,7 @@ import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { getPathname } from "@/lib/i18n/navigation";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ type ProductPageProps = {
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const product = await getCatalogProductBySlug(slug);
 
   if (!product) return { title: "Producto no encontrado | Castillo Auto Parts" };
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const product = await getCatalogProductBySlug(slug);
 
   if (!product) notFound();

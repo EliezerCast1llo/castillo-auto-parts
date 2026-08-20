@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { redirect } from "@/lib/i18n/navigation";
 import { formString } from "@/lib/form-utils";
 import { applyPasswordReset } from "@/lib/auth-user";
@@ -10,7 +10,7 @@ import { createResetPasswordRateLimiter, type AsyncRateLimiter } from "@/lib/rat
 let _resetPasswordRateLimiter: AsyncRateLimiter | undefined;
 
 export async function applyPasswordResetAction(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const resetPasswordRateLimiter = (_resetPasswordRateLimiter ??= createResetPasswordRateLimiter());
   const token = formString(formData, "token");
   const password = formString(formData, "password");

@@ -78,7 +78,7 @@ export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProp
           <div className="order-2 ml-auto flex shrink-0 items-center gap-2 sm:order-3 sm:ml-0">
             <MyVehicleChip />
 
-            <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
+            <nav aria-label={tNav("ariaLabel")} data-testid="site-nav" className="hidden items-center gap-1 lg:flex">
               {siteNavItems.map((item) => (
                 <Link
                   className="inline-flex h-10 items-center rounded-ca-control px-3 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
@@ -173,7 +173,7 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
         </Link>
 
         {/* Nav desktop */}
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Navegación principal">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label={tNav("ariaLabel")} data-testid="site-nav">
           {siteNavItems.map((item) => (
             <Link
               className="inline-flex items-center gap-1 text-sm font-bold text-white/88 transition hover:text-ca-gold-400"

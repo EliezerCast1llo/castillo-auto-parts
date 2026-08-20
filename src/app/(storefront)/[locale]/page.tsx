@@ -9,7 +9,7 @@ import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/structured-da
 import type { Metadata } from "next";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +18,12 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   return { alternates: localizedAlternates("/", locale) };
 }
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const [filterOptions, featuredResult] = await Promise.all([
     getCatalogFacets(),
     getFeaturedCatalogProductsResult(),

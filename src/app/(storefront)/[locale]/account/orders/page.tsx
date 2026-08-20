@@ -18,7 +18,7 @@ import { auth } from "@/lib/auth";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { db } from "@/lib/db";
 
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ export default async function AccountOrdersPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const session = await auth();
   if (!session?.user?.id) {
     return redirect({ href: { pathname: "/auth/login", query: { next: "/account/orders" } }, locale });

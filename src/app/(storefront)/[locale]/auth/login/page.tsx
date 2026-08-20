@@ -6,7 +6,7 @@ import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { firstValue } from "@/lib/url-utils";
 import { loginWithCredentials, loginWithGoogle } from "./actions";
 import { getStatusMessage } from "@/lib/i18n/status";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -20,7 +20,7 @@ type LoginPageProps = {
 };
 
 export default async function LoginPage({ params: routeParams, searchParams }: LoginPageProps) {
-  const locale = await resolveRouteLocale(routeParams);
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const session = await auth();
   const params = searchParams ? await searchParams : {};
   const nextPath = getSafeCustomerNextPath(firstValue(params.next));

@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { redirect as localeRedirect } from "@/lib/i18n/navigation";
 import { auth } from "@/lib/auth";
 import {
@@ -33,7 +33,7 @@ export async function createGuestOrder(formData: FormData) {
     }
   }
 
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const result = await createGuestCheckoutFromCart(formData, userId, idempotencyKey, false, locale);
   const cookieStore = await cookies();
 

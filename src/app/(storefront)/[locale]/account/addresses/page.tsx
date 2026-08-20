@@ -8,7 +8,7 @@ import { getFulfillmentOptions } from "@/lib/fulfillment";
 import { firstValue } from "@/lib/url-utils";
 import { deleteAddress } from "@/lib/actions/account-addresses";
 
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Mis direcciones | Castillo Auto Parts" };
@@ -29,7 +29,7 @@ export default async function AccountAddressesPage({
   params: routeParams,
   searchParams,
 }: Props) {
-  const locale = await resolveRouteLocale(routeParams);
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const session = await auth();
   if (!session?.user?.id) {
     return redirect({ href: { pathname: "/auth/login", query: { next: "/account/addresses" } }, locale });

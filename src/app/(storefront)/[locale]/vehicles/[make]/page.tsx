@@ -16,7 +16,7 @@ import { getCatalogFacets, getFilteredCatalogProducts } from "@/data/products";
 import { findMakeBySlug, vehicleMakeSlug } from "@/data/vehicle-catalog";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +32,7 @@ async function resolveMake(slug: string) {
 
 export async function generateMetadata({ params }: VehicleMakePageProps): Promise<Metadata> {
   const { make: slug } = await params;
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const make = await resolveMake(slug);
 
   if (!make) return { title: "Marca no encontrada | Castillo Auto Parts" };
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
 }
 
 export default async function VehicleMakePage({ params, searchParams }: VehicleMakePageProps) {
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const { make: slug } = await params;
   const make = await resolveMake(slug);
 

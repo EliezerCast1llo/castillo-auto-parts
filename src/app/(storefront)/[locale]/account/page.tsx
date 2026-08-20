@@ -11,7 +11,7 @@ import { db } from "@/lib/db";
 import { firstValue } from "@/lib/url-utils";
 import { changePasswordAction, logoutCustomer, updateProfileAction } from "./actions";
 
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getStatusMessage } from "@/lib/i18n/status";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export default async function AccountPage({
   params: routeParams,
   searchParams,
 }: AccountPageProps) {
-  const locale = await resolveRouteLocale(routeParams);
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const session = await auth();
   if (!session?.user?.id) {
     return redirect({ href: { pathname: "/auth/login", query: { next: "/account" } }, locale });

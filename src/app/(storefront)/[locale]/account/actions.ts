@@ -1,6 +1,6 @@
 "use server";
 
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { getPathname, redirect } from "@/lib/i18n/navigation";
 import { signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -10,12 +10,12 @@ import { getCustomerSession, updateCustomerPassword } from "@/lib/auth-user";
 export async function logoutCustomer() {
   // `signOut` redirige por su cuenta, fuera de next-intl: hay que darle la home
   // del idioma actual o el usuario cae en `/` sin prefijo.
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   await signOut({ redirectTo: getPathname({ href: "/", locale }) });
 }
 
 export async function updateProfileAction(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const session = await getCustomerSession();
   if (!session) return redirect({ href: "/auth/login", locale });
 
@@ -32,7 +32,7 @@ export async function updateProfileAction(formData: FormData) {
 }
 
 export async function changePasswordAction(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const session = await getCustomerSession();
   if (!session) return redirect({ href: "/auth/login", locale });
 
