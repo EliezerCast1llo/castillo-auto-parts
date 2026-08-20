@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { AlertCircle, CheckCircle2, Info, X } from "lucide-react";
 
 type NoticeVariant = "success" | "error" | "info" | "warning";
@@ -87,9 +87,11 @@ export function CartNotice({ status }: CartNoticeProps) {
     const removeTimer = setTimeout(() => {
       setVisible(false);
       // Limpiar ?estado= de la URL sin recargar
+      // Solo limpia `?estado=` de la URL actual; el pathname ya es el que
+      // corresponde al idioma, asi que se reusa tal cual.
       const url = new URL(window.location.href);
       url.searchParams.delete("estado");
-      router.replace(url.pathname + url.search, { scroll: false });
+      window.history.replaceState(null, "", url.pathname + url.search);
     }, AUTO_DISMISS_MS + 350);
 
     return () => {

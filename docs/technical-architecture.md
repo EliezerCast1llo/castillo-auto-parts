@@ -195,7 +195,19 @@ export interface MapProvider {
 - Ruteo por prefijo: `/es` y `/en` siempre prefijados, asi que la URL es la
   fuente de verdad del idioma. La cookie `castillo_locale` es solo la pista que
   usa el middleware cuando la URL todavia no trae prefijo.
-- El panel `/admin` queda fuera del prefijo y solo en espanol.
+- El panel `/admin` queda fuera del prefijo y solo en espanol. Aun asi monta
+  next-intl fijado a espanol porque reutiliza componentes del storefront que
+  navegan con el `Link` con prefijo.
+- `src/app` se divide en dos route groups con un root layout cada uno:
+  `(storefront)/[locale]` y `(admin)`. No hay `src/app/layout.tsx`.
+- El middleware compone en este orden: nonce y CSP, bypass de `/admin`, bypass
+  de endpoints y assets, redirect permanente de URLs viejas, y por ultimo el
+  ruteo de idiomas. La respuesta de next-intl se re-emite en los casos de
+  rewrite y passthrough para no perder los headers forwardeados, porque Next
+  lee la CSP de ahi para ponerle nonce a sus scripts.
+- Las URLs viejas sin prefijo redirigen con 308 a su equivalente en espanol. La
+  raiz es la excepcion: usa 307 con `Vary`, porque su destino depende de
+  `Accept-Language` y de la cookie, y un permanente se cachearia por URL.
 - `src/lib/i18n/intl-locale.ts` es la unica fuente de tags BCP-47: la moneda
   (USD) y la zona horaria (America/El_Salvador) no cambian con el idioma.
 

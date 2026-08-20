@@ -2,6 +2,7 @@
 
 import { Info, MapPin, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "@/lib/i18n/navigation";
 import { formatCurrency } from "@/lib/money";
 import type { FulfillmentMethod } from "@/lib/checkout";
 import type { DeliveryZoneOption, PickupLocationOption } from "@/lib/fulfillment";
@@ -345,9 +346,9 @@ function SavedAddressSelector({
 
       <p className="text-sm text-muted-foreground">
         ¿Quieres enviar a otra dirección?{" "}
-        <a className="font-semibold text-ca-navy-950 underline" href="/account/addresses">
+        <Link className="font-semibold text-ca-navy-950 underline" href="/account/addresses">
           Administra tus direcciones
-        </a>
+        </Link>
       </p>
     </div>
   );

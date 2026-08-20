@@ -1,5 +1,5 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
-import { addProductToCart, fillCustomerFields, getStockSnapshot, prisma } from "./helpers";
+import { addProductToCart, fillCustomerFields, getStockSnapshot, prisma, ES } from "./helpers";
 
 test.afterAll(async () => {
   await prisma.$disconnect();
@@ -28,7 +28,7 @@ test("double submit with the same idempotency key creates only one order", async
   const initialStock = await getStockSnapshot(sku);
 
   await addProductToCart(page, "bujia-iridio-honda-civic-15t");
-  await page.goto("/checkout");
+  await page.goto(ES("/checkout"));
   await fillCustomerFields(page, {
     email,
     name: "Cliente QA Idempotencia",
@@ -101,7 +101,7 @@ test("a single normal checkout creates exactly one order", async ({ page }) => {
   const initialStock = await getStockSnapshot(sku);
 
   await addProductToCart(page, "bujia-platino-toyota-corolla-18");
-  await page.goto("/checkout");
+  await page.goto(ES("/checkout"));
   await fillCustomerFields(page, {
     email,
     name: "Cliente QA Único",

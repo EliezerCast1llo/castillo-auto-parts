@@ -1,6 +1,8 @@
 import type { CatalogProduct } from "@/data/products";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { withContext, type Thing, type WithContext } from "@/components/seo/schema-types";
+import type { Locale } from "@/lib/i18n/config";
+import { localizePath } from "@/lib/i18n/path";
 
 /**
  * Builders de JSON-LD (schema.org). Puros y testeables: reciben datos del
@@ -13,7 +15,15 @@ const STOCK_STATUS_TO_SCHEMA: Record<CatalogProduct["stockStatus"], string> = {
   OUT_OF_STOCK: "https://schema.org/OutOfStock",
 };
 
-export function buildProductJsonLd(product: CatalogProduct): WithContext<Thing> {
+/**
+ * El `url` de schema.org tiene que coincidir con el canonical de la página. Si
+ * apunta a una URL que redirige, el dato deja de ser confiable para el
+ * buscador, así que lleva el prefijo de idioma igual que el canonical.
+ */
+export function buildProductJsonLd(
+  product: CatalogProduct,
+  locale: Locale,
+): WithContext<Thing> {
   return withContext({
     "@type": "Product",
     name: product.name,
@@ -24,7 +34,7 @@ export function buildProductJsonLd(product: CatalogProduct): WithContext<Thing> 
     brand: { "@type": "Brand", name: product.brand },
     category: product.category,
     description: product.description || product.compatibility,
-    url: `${SITE_URL}/product/${product.slug}`,
+    url: `${SITE_URL}${localizePath(`/product/${product.slug}`, locale)}`,
     ...(product.primaryImageUrl ? { image: product.primaryImageUrl } : {}),
     ...(product.vehicleCompatibilities.length > 0
       ? {
@@ -38,7 +48,7 @@ export function buildProductJsonLd(product: CatalogProduct): WithContext<Thing> 
       : {}),
     offers: {
       "@type": "Offer",
-      url: `${SITE_URL}/product/${product.slug}`,
+      url: `${SITE_URL}${localizePath(`/product/${product.slug}`, locale)}`,
       price: (product.priceCents / 100).toFixed(2),
       priceCurrency: "USD",
       availability: STOCK_STATUS_TO_SCHEMA[product.stockStatus],
@@ -50,14 +60,17 @@ export function buildProductJsonLd(product: CatalogProduct): WithContext<Thing> 
 
 export type BreadcrumbEntry = { name: string; path: string };
 
-export function buildBreadcrumbJsonLd(entries: BreadcrumbEntry[]): WithContext<Thing> {
+export function buildBreadcrumbJsonLd(
+  entries: BreadcrumbEntry[],
+  locale: Locale,
+): WithContext<Thing> {
   return withContext({
     "@type": "BreadcrumbList",
     itemListElement: entries.map((entry, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: entry.name,
-      item: `${SITE_URL}${entry.path}`,
+      item: `${SITE_URL}${localizePath(entry.path, locale)}`,
     })),
   });
 }
@@ -73,16 +86,16 @@ export function buildOrganizationJsonLd(): WithContext<Thing> {
   });
 }
 
-export function buildWebSiteJsonLd(): WithContext<Thing> {
+export function buildWebSiteJsonLd(locale: Locale): WithContext<Thing> {
   return withContext({
     "@type": "WebSite",
     name: SITE_NAME,
-    url: SITE_URL,
+    url: `${SITE_URL}${localizePath("/", locale)}`,
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/catalog?q={search_term_string}`,
+        urlTemplate: `${SITE_URL}${localizePath("/catalog", locale)}?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },

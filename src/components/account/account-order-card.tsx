@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import type { Prisma } from "@prisma/client";
 import {
   CalendarDays,

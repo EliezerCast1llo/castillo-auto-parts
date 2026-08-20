@@ -1,10 +1,12 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { X } from "lucide-react";
 import type { CatalogFilters, CatalogSort } from "@/data/catalog-filters";
+import type { LocaleHref } from "@/lib/i18n/navigation";
 import { formatStockStatus } from "@/lib/stock-status";
+import { toLinkQuery } from "@/lib/url-utils";
 
 type FilterChip = {
-  href: string;
+  href: LocaleHref;
   label: string;
 };
 
@@ -42,7 +44,7 @@ export function CatalogActiveFilters({
         </div>
         <Link
           className="inline-flex h-9 items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
-          href={sort === "relevance" ? "/catalog" : `/catalog?sort=${sort}`}
+          href={sort === "relevance" ? "/catalog" : { pathname: "/catalog", query: { sort } }}
         >
           Limpiar todo
         </Link>
@@ -51,7 +53,7 @@ export function CatalogActiveFilters({
       <div className="mt-3 flex flex-wrap gap-2">
         {chips.map((chip) => (
           <Link
-            key={`${chip.label}-${chip.href}`}
+            key={chip.label}
             aria-label={`Quitar filtro ${chip.label}`}
             className="inline-flex min-h-9 items-center gap-2 rounded-full border border-ca-navy-950/10 bg-ca-navy-950/5 px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950/25 hover:bg-ca-background"
             href={chip.href}
@@ -137,7 +139,11 @@ type FilterPatch = Partial<
   >
 >;
 
-function buildCatalogHref(filters: CatalogFilters, sort: CatalogSort, patch: FilterPatch) {
+function buildCatalogHref(
+  filters: CatalogFilters,
+  sort: CatalogSort,
+  patch: FilterPatch,
+): LocaleHref {
   const next: CatalogFilters = {
     ...filters,
     categories: [...filters.categories],
@@ -156,8 +162,7 @@ function buildCatalogHref(filters: CatalogFilters, sort: CatalogSort, patch: Fil
   appendParam(params, "vehicleYear", next.vehicleYear);
   if (sort !== "relevance") appendParam(params, "sort", sort);
 
-  const query = params.toString();
-  return query ? `/catalog?${query}` : "/catalog";
+  return { pathname: "/catalog", query: toLinkQuery(params) } as const;
 }
 
 function appendParam(params: URLSearchParams, key: string, value: string) {

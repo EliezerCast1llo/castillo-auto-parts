@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import type { ReactNode } from "react";
 import { buildMyVehicleClearCookie, buildMyVehicleSetCookie } from "@/lib/my-vehicle";
+import { toLinkQuery } from "@/lib/url-utils";
 
 type CatalogFilterFormProps = {
   children: ReactNode;
@@ -56,8 +57,7 @@ export function CatalogFilterForm({ children }: CatalogFilterFormProps) {
             : buildMyVehicleClearCookie();
         }
 
-        const query = params.toString();
-        router.push(query ? `/catalog?${query}` : "/catalog", { scroll: false });
+        router.push({ pathname: "/catalog", query: toLinkQuery(params) }, { scroll: false });
       }}
     >
       {children}

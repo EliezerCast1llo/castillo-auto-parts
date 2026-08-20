@@ -20,6 +20,7 @@ import type { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/admin-credentials";
 import { canSignInWithOAuthProfile } from "@/lib/oauth-profile";
+import { defaultLocale } from "@/lib/i18n/config";
 
 // Validación de secreto en producción. Auth.js v5 prefiere AUTH_SECRET;
 // NEXTAUTH_SECRET se mantiene como alias legado por compatibilidad.
@@ -115,8 +116,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 
+  // Config estática: next-auth resuelve estas rutas fuera de cualquier request
+  // con segmento de idioma, así que no puede conocer el locale del visitante.
+  // Se apunta al idioma principal para no depender del redirect legacy; quien
+  // navegue en inglés y caiga acá por un error de OAuth vera el login en
+  // español, que es la degradación aceptable mientras la config sea estática.
   pages: {
-    signIn: "/auth/login",
-    error: "/auth/login",
+    signIn: `/${defaultLocale}/auth/login`,
+    error: `/${defaultLocale}/auth/login`,
   },
 });

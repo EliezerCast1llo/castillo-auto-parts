@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle } from "lucide-react";
 import { DEFAULT_SUPPORT_MESSAGE } from "@/lib/contact";
 
@@ -19,20 +19,22 @@ export function WhatsAppCTA({
  phone,
  variant = "button",
 }: WhatsAppCtaProps) {
- const href = phone
+ // WhatsApp es un destino externo y no pasa por el ruteo de idiomas; el
+ // fallback si, y su ruta interna se llama `/help` aunque en espanol se sirva
+ // como `/ayuda`.
+ const whatsappUrl = phone
  ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
- : "/ayuda";
- const isExternal = href.startsWith("https://");
+ : null;
  const ariaLabel = phone ? label : "Ir a ayuda y contacto";
 
  const baseClass = getVariantClassName(variant);
 
- if (isExternal) {
+ if (whatsappUrl) {
  return (
  <a
  aria-label={ariaLabel}
  className={`${baseClass} ${className}`}
- href={href}
+ href={whatsappUrl}
  rel="noopener noreferrer"
  target="_blank"
  >
@@ -43,7 +45,7 @@ export function WhatsAppCTA({
  }
 
  return (
- <Link aria-label={ariaLabel} className={`${baseClass} ${className}`} href={href}>
+ <Link aria-label={ariaLabel} className={`${baseClass} ${className}`} href="/help">
  <MessageCircle className={getIconClassName(variant)} strokeWidth={2} />
  <span>{variant === "inline" ? "Te ayudamos a encontrarlo" : label}</span>
  </Link>

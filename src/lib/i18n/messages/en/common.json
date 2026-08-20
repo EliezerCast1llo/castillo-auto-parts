@@ -1,9 +1,4 @@
 {
   "retry": "Try again",
-  "backToHome": "Back to home",
-  "cancel": "Cancel",
-  "close": "Close",
-  "loading": "Loading…",
-  "save": "Save",
-  "search": "Search"
+  "backToHome": "Back to home"
 }

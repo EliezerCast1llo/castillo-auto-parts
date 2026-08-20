@@ -4,13 +4,22 @@ import { PrismaClient } from "@prisma/client";
 // Cliente Prisma compartido para specs e2e. Cada spec corre en su propio worker
 // (proceso), así que cada uno obtiene su propia instancia; hacer $disconnect en un
 // spec no afecta a otros.
+/**
+ * Prefijo de idioma del storefront.
+ *
+ * Los tests navegan a la URL prefijada a proposito, en vez de apoyarse en el
+ * redirect: asi ejercitan la misma URL que ve el usuario, evitan un salto extra
+ * en cada navegacion y las aserciones de `toHaveURL` no quedan ambiguas.
+ */
+export const ES = (path: string) => (path === "/" ? "/es" : `/es${path}`);
+export const EN = (path: string) => (path === "/" ? "/en" : `/en${path}`);
 export const prisma = new PrismaClient();
 
 export async function addProductToCart(page: Page, slug: string) {
-  await page.goto(`/product/${slug}`);
+  await page.goto(ES(`/product/${slug}`));
   await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
-  await page.goto("/cart");
+  await page.goto(ES("/cart"));
 }
 
 export async function fillCustomerFields(

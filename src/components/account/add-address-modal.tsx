@@ -3,7 +3,7 @@
 import { MapPin, Plus, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { createAddress } from "@/app/account/addresses/actions";
+import { createAddress } from "@/lib/actions/account-addresses";
 import { CheckoutLocationPicker, type LocationInfo } from "@/components/checkout/checkout-location-picker";
 import type { DeliveryZoneOption } from "@/lib/fulfillment";
 

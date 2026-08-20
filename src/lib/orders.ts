@@ -29,6 +29,8 @@ import {
   InventoryReservationError,
   reserveInventory,
 } from "./inventory-reservations";
+import { defaultLocale, type Locale } from "@/lib/i18n/config";
+import { localizePath } from "@/lib/i18n/path";
 import { buildOrderAccessHref, createOrderAccessToken, hashOrderAccessToken } from "./order-access-token";
 import { cancelPaymentProcessingOrder } from "./payment-reservations";
 import {
@@ -64,6 +66,13 @@ export async function createGuestCheckoutFromCart(
   userId?: string,
   idempotencyKey?: string,
   retrying = false,
+  /**
+   * Idioma al que vuelve el cliente después de pagar. Sin esto la URL de
+   * retorno saldría sin prefijo y funcionaría solo por el redirect legacy, que
+   * siempre lleva a español: quien pagó en inglés volvería a ver su orden en
+   * otro idioma.
+   */
+  locale: Locale = defaultLocale,
 ): Promise<CreateGuestOrderResult> {
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
@@ -287,7 +296,7 @@ export async function createGuestCheckoutFromCart(
         customerEmail: order.customerEmail,
         orderNumber: order.orderNumber,
         redirectUrl: buildAbsoluteAppUrl(
-          buildOrderAccessHref(order.orderNumber, order.accessToken),
+          localizePath(buildOrderAccessHref(order.orderNumber, order.accessToken), locale),
         ),
       });
     } catch {

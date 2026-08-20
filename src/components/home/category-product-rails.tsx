@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { ArrowRight, PackageSearch } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { ScrollCarousel } from "@/components/ui/scroll-carousel";
@@ -64,7 +64,7 @@ export async function CategoryProductRails({
             </h2>
             <Link
               className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
-              href={`/catalog?category=${encodeURIComponent(rail.category)}`}
+              href={{ pathname: "/catalog", query: { category: rail.category } }}
             >
               Explorar {rail.category}
               {typeof options.categoryCounts[rail.category] === "number"

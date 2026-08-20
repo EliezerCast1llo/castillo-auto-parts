@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { ES } from "./helpers";
 
 const viewports = [
   { height: 844, name: "mobile", width: 390 },
@@ -56,7 +57,7 @@ for (const viewport of viewports) {
         if (typeof customerPage.setup === "function") {
           await customerPage.setup(page);
         } else {
-          await page.goto(customerPage.path);
+          await page.goto(ES(customerPage.path));
         }
 
         await expect(
@@ -86,10 +87,10 @@ for (const viewport of viewports) {
 }
 
 async function addProductToCart(page: Page, slug: string) {
-  await page.goto(`/product/${slug}`);
+  await page.goto(ES(`/product/${slug}`));
   await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
-  await page.goto("/cart");
+  await page.goto(ES("/cart"));
 }
 
 async function signInAdmin(page: Page, nextPath: string) {
