@@ -7,7 +7,7 @@ import type { Locale } from "./config";
  * La cuenta separa éxito de error porque la UI los pinta distinto: el tono es
  * parte del dato, no del componente.
  */
-type StatusArea = "auth" | "account.success" | "account.error" | "checkout";
+type StatusArea = "auth" | "account.success" | "account.error" | "cart" | "checkout";
 
 /**
  * Traduce un código de `?estado=` al texto que ve el cliente.

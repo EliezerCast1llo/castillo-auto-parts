@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "title": "Checkout | Castillo Auto Parts",
+    "description": "Fill in your delivery and payment details to confirm your order."
+  },
+  "backToCart": "Back to cart",
+  "eyebrow": "Checkout",
+  "title": "Delivery and payment details",
+  "summary": {
+    "title": "Your order",
+    "subtotal": "Subtotal",
+    "shippingTitle": "Shipping",
+    "pickupFree": "Free pickup at {location}",
+    "pickupOrDelivery": "Free pickup at {location}; or delivery {zones}.",
+    "taxNotice": "Prices include 13% VAT."
+  },
+  "form": {
+    "yourData": "Your details",
+    "fullName": "Full name",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "noData": "Not provided",
+    "deliveryMethod": "Delivery method",
+    "payment": "Payment",
+    "card": "Card online",
+    "submit": "Confirm and pay"
+  },
+  "empty": {
+    "issuesTitle": "Adjust your cart first",
+    "issuesDescription": "Some products are unavailable. Review your cart before continuing.",
+    "issuesAction": "Back to cart",
+    "emptyTitle": "Your cart is empty",
+    "emptyDescription": "Add parts from the catalog to complete your purchase.",
+    "emptyAction": "View catalog"
+  },
+  "delivery": {
+    "pickup": "Pickup at the warehouse",
+    "localDelivery": "Local delivery",
+    "pickupCost": "Pickup cost: {amount}",
+    "warehouseMapTitle": "Warehouse location",
+    "address": "Address",
+    "addressLine2": "House, unit or landmark",
+    "city": "Municipality",
+    "selectCity": "Select a municipality",
+    "department": "Department",
+    "notes": "Delivery notes",
+    "notesPlaceholder": "Directions, preferred time or a landmark",
+    "viewAddressSummary": "Review address summary",
+    "savedAddress": "Saved address",
+    "otherAddressQuestion": "Want to ship somewhere else?",
+    "manageAddresses": "Manage your addresses",
+    "taxNotice": "Product prices already include VAT.",
+    "totalsProducts": "Products",
+    "totalsShipping": "Shipping",
+    "totalsEstimated": "Estimated total"
+  },
+  "addressModal": {
+    "title": "Delivery address",
+    "close": "Close",
+    "address": "Address",
+    "reference": "Landmark",
+    "city": "Municipality",
+    "department": "Department",
+    "notes": "Notes",
+    "wrongQuestion": "Something wrong?",
+    "edit": "Edit address"
+  },
+  "location": {
+    "loading": "Getting your location...",
+    "found": "Location captured. Check the fields and adjust if needed.",
+    "error": "We could not get your location. You can drag the pin manually.",
+    "idle": "Click the map or use the button to mark the delivery point.",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "useMyLocation": "Use my location"
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/lib/i18n/navigation";
 import { AlertCircle, CheckCircle2, Info, X } from "lucide-react";
 
@@ -49,30 +50,22 @@ function getVariant(status: string): NoticeVariant {
   return "success"; // added, removed, updated, etc.
 }
 
-const MESSAGES: Record<string, string> = {
-  added: "Producto agregado al carrito.",
-  empty_cart: "Agrega productos antes de continuar.",
-  invalid: "No pudimos procesar esa acción. Intenta de nuevo.",
-  quantity_adjusted: "Ajustamos la cantidad al stock disponible.",
-  removed: "Producto eliminado del carrito.",
-  stock_alert_created: "Listo. Te avisamos cuando haya disponibilidad.",
-  stock_alert_db_unavailable: "No pudimos guardar el aviso. Inténtalo más tarde.",
-  stock_alert_invalid: "Ingresa un email o teléfono válido.",
-  stock_alert_not_found: "No encontramos ese producto.",
-  stock_alert_rate_limited: "Demasiados intentos. Intenta en unos minutos.",
-  stock_issue: "Revisa disponibilidad antes de continuar.",
-  unavailable: "Este producto ya no está disponible.",
-  updated: "Carrito actualizado.",
-};
-
 const AUTO_DISMISS_MS = 4000;
 
 type CartNoticeProps = {
+  /**
+   * Texto ya traducido. Se resuelve en el servidor y llega como prop en vez de
+   * leerse acá: este componente es cliente por los temporizadores, y darle
+   * acceso al namespace `Status` obligaría a mandarlo al navegador en todas las
+   * páginas del sitio para usarlo solo en el carrito.
+   */
+  message: string;
+  /** El código crudo sigue haciendo falta: de él sale el tono del aviso. */
   status: string;
 };
 
-export function CartNotice({ status }: CartNoticeProps) {
-  const message = MESSAGES[status];
+export function CartNotice({ message, status }: CartNoticeProps) {
+  const t = useTranslations("Cart.notice");
   const [visible, setVisible] = useState(true);
   const [exiting, setExiting] = useState(false);
   const router = useRouter();
@@ -116,7 +109,7 @@ export function CartNotice({ status }: CartNoticeProps) {
       <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
       <span className="flex-1">{message}</span>
       <button
-        aria-label="Cerrar aviso"
+        aria-label={t("dismiss")}
         className="ml-1 rounded-md p-1 opacity-50 transition hover:opacity-100"
         onClick={() => setExiting(true)}
         type="button"
