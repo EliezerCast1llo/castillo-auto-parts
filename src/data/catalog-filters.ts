@@ -240,9 +240,11 @@ function sortYearSets(record: Record<string, Set<string>>): Record<string, strin
  * directamente en la base de datos.
  *
  * Cobertura:
- * - query: busca por name, sku, partNumber y brand con modo insensible a case.
- *   La búsqueda full-text (descripción, compatibilidad) sigue haciéndose en
- *   memoria vía filterCatalogProducts cuando se necesita (mock/autocomplete).
+ * - query: busca por los campos de `DB_QUERY_FIELDS`, insensible a mayúsculas.
+ *   **No es el mismo conjunto que busca `filterCatalogProducts`**, y la
+ *   diferencia no es de cobertura sino de resultado: la misma consulta devuelve
+ *   cosas distintas según qué camino esté activo. Ver la nota de
+ *   `DB_QUERY_FIELDS`.
  * - categories: filtra por slug de categoría (OR entre múltiples). Por slug y
  *   no por nombre porque el nombre se traduce y el filtro no puede depender
  *   del idioma en que se esté viendo el catálogo.
@@ -253,6 +255,32 @@ function sortYearSets(record: Record<string, Set<string>>): Record<string, strin
  * Nota: los filtros de stockStatus requieren JOIN con inventoryStocks.
  * Prisma genera la subquery automáticamente mediante `inventoryStocks: { some: ... }`.
  */
+/**
+ * Campos por los que busca la base de datos.
+ *
+ * `filterCatalogProducts` —el camino en memoria, que corre con el mock y en el
+ * autocompletado— busca además por `category`, `compatibility`, `description`,
+ * `compatibleVehicles` y `technicalDetails`. Eso no es "la memoria cubre más":
+ * es que **la misma consulta devuelve resultados distintos según qué camino
+ * esté activo**. Medido contra el seed de 63 productos:
+ *
+ * | consulta              | base | memoria |
+ * |-----------------------|------|---------|
+ * | `bujías`              | 0    | 6       |
+ * | `freno`               | 2    | 8       |
+ * | `pastillas de freno`  | 0    | 1       |
+ *
+ * O sea que si la base se cae y entra el fallback, la búsqueda encuentra *más*
+ * cosas que en operación normal. Cerrar la brecha pide sumar las relaciones al
+ * `where` —con el costo de join que eso trae— o mover la búsqueda a `tsvector`,
+ * que es lo que `docs/database-schema.md` ya anota como pendiente.
+ *
+ * La lista se exporta para que las pruebas que dependen de este conjunto lo
+ * lean de acá y no lo repitan: una copia que se desactualice haría pasar tests
+ * sobre campos que la base ya no consulta.
+ */
+export const DB_QUERY_FIELDS = ["name", "sku", "partNumber", "brand"] as const;
+
 export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
   const where: Prisma.ProductWhereInput = { isActive: true };
   const conditions: Prisma.ProductWhereInput[] = [];
@@ -261,12 +289,9 @@ export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereIn
   if (filters.query.trim()) {
     const q = filters.query.trim();
     conditions.push({
-      OR: [
-        { name: { contains: q, mode: "insensitive" } },
-        { sku: { contains: q, mode: "insensitive" } },
-        { partNumber: { contains: q, mode: "insensitive" } },
-        { brand: { contains: q, mode: "insensitive" } },
-      ],
+      OR: DB_QUERY_FIELDS.map((field) => ({
+        [field]: { contains: q, mode: "insensitive" },
+      })),
     });
   }
 

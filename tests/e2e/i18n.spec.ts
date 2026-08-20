@@ -377,7 +377,7 @@ test("every empty-state shortcut leads to results, in both languages", async ({ 
     for (const target of targets) {
       await page.goto(target);
       await expect(
-        page.getByText(/^[1-9]\d* (productos?|products?)$/),
+        page.getByText(/^[1-9][\d.,]* (productos?|products?)$/),
         `${target} deberia devolver resultados`,
       ).toBeVisible();
     }
@@ -390,8 +390,10 @@ test("a multi-word search finds products", async ({ page }) => {
   // resultados a cualquiera que escriba mas de una palabra, que es lo normal.
   for (const query of ["filtro+de+aceite", "filtro%20de%20aceite", "disco%20de%20freno"]) {
     await page.goto(`/es/catalog?q=${query}`);
+    // El contador acepta los dos idiomas y separador de miles: lo que se
+    // verifica es que haya resultados, no como se escribe el numero.
     await expect(
-      page.getByText(/^[1-9]\d* productos?$/),
+      page.getByText(/^[1-9][\d.,]* (productos?|products?)$/),
       `${query} deberia devolver resultados`,
     ).toBeVisible();
   }

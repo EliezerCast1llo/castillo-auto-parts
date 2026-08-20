@@ -26,34 +26,13 @@ import {
   type CatalogSearchParams,
 } from "@/data/catalog-filters";
 import { getCatalogFacets, getFilteredCatalogProducts } from "@/data/products";
+import { SEARCH_SUGGESTIONS } from "@/data/search-suggestions";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { localizePath } from "@/lib/i18n/path";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getTranslations } from "next-intl/server";
 
-/**
- * Atajos de la pantalla sin resultados.
- *
- * Dos cosas distintas, y por eso van separadas:
- *
- * - `label` es lo que se lee, y se traduce.
- * - `query` es lo que se busca, y **no** se traduce: se compara contra el
- *   contenido, que está en español hasta que el producto tenga traducción.
- *
- * La query es además el singular. La búsqueda hace `contains` literal, sin
- * lematización, así que "amortiguadores" no encuentra "Amortiguador delantero
- * Toyota Corolla" y "bujías" no encuentra "Bujía iridio". Medido contra la base
- * sembrada: en singular dan 4 y 5 resultados; en plural, cero.
- *
- * El label sí puede ir en plural, que es como se lee natural.
- */
-const SEARCH_SUGGESTIONS = [
-  { key: "shocks", query: "amortiguador" },
-  { key: "brakePads", query: "pastilla" },
-  { key: "oilFilter", query: "filtro de aceite" },
-  { key: "sparkPlugs", query: "bujía" },
-] as const;
 
 export const dynamic = "force-dynamic";
 
