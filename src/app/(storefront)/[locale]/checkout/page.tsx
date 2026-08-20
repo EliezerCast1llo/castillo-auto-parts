@@ -1,10 +1,15 @@
+import { cookies } from "next/headers";
 import { Link } from "@/lib/i18n/navigation";
 import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin, PackageCheck } from "lucide-react";
 import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { getGuestCart } from "@/lib/cart";
-import { createCheckoutIdempotencyKey } from "@/lib/checkout-idempotency";
+import {
+  CHECKOUT_RETRY_KEY_COOKIE,
+  createCheckoutIdempotencyKey,
+  normalizeCheckoutIdempotencyKey,
+} from "@/lib/checkout-idempotency";
 import { db } from "@/lib/db";
 import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
@@ -32,6 +37,19 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
+
+  // La key de reintento se adopta cuando el carrito NO está vacío. Con carrito lleno
+  // una key vieja es inofensiva: isSameCheckoutIntent + la key derivada evitan pisar
+  // otra orden. El caso peligroso era el carrito VACÍO (el atajo de sameIntent
+  // reproduciría la orden vieja), y ahí sí se ignora. El discriminante es el carrito,
+  // no el query param: volver a /checkout sin ?estado con la orden en vuelo debe
+  // reusar la key, no acuñar una nueva y duplicar.
+  const cookieStore = await cookies();
+  const retryKey =
+    cart.lines.length > 0
+      ? normalizeCheckoutIdempotencyKey(cookieStore.get(CHECKOUT_RETRY_KEY_COOKIE)?.value)
+      : undefined;
+  const idempotencyKey = retryKey ?? createCheckoutIdempotencyKey();
 
   let userDefaults: { name: string; email: string; phone: string } | null = null;
   let savedAddresses: { id: string; formattedAddress: string; addressLine1: string; addressLine2: string | null; city: string; department: string; deliveryNotes: string | null; latitude: string | null; longitude: string | null }[] = [];
@@ -80,14 +98,13 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
 
-            {/* Tras duplicate_in_progress NO se re-renderiza el formulario: reenviar
-                generaría una key nueva y podría crear una orden duplicada. Se muestra
-                solo el aviso hasta que el pedido en curso termine. */}
-            {status !== "duplicate_in_progress" &&
-              (cart.lines.length > 0 && !cart.hasBlockingIssues ? (
+            {/* El form se muestra siempre que haya carrito utilizable. En
+                duplicate_in_progress el reintento reusa la key de la cookie
+                (reproduce, no duplica), así que no hace falta ocultarlo. */}
+            {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
                 deliveryZones={fulfillmentOptions.deliveryZones}
-                idempotencyKey={createCheckoutIdempotencyKey()}
+                idempotencyKey={idempotencyKey}
                 pickupLocation={fulfillmentOptions.pickupLocation}
                 savedAddresses={savedAddresses}
                 subtotalCents={cart.subtotalCents}
@@ -95,7 +112,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               />
             ) : (
               <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
-            ))}
+            )}
           </div>
 
           {/* Resumen — sticky en desktop, visible debajo en mobile */}
@@ -322,7 +339,7 @@ function getStatusMessage(status: string) {
     coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
     db_unavailable: "No pudimos crear el pedido. Intenta de nuevo.",
     duplicate_in_progress:
-      "Tu pedido se está procesando. Si ya iniciaste el pago, revisa tu correo para completarlo; no reenvíes el formulario. Si no continúa, vuelve al carrito.",
+      "Tu pedido se está procesando. Espera unos segundos y vuelve a confirmar: se retomará el mismo pedido, no se duplica.",
     invalid: "Revisa los datos del formulario.",
     payment_unavailable: "No pudimos iniciar el pago. Intenta nuevamente.",
   };

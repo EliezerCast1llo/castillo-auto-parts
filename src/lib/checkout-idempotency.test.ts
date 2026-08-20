@@ -3,6 +3,7 @@ import {
   createCheckoutIdempotencyKey,
   deriveScopedIdempotencyKey,
   normalizeCheckoutIdempotencyKey,
+  shouldPreserveRetryKey,
 } from "./checkout-idempotency";
 
 describe("createCheckoutIdempotencyKey", () => {
@@ -66,3 +67,18 @@ describe("deriveScopedIdempotencyKey", () => {
     expect(deriveScopedIdempotencyKey("base", "SKU-A:2")).toMatch(/^[a-f0-9]{64}$/);
   });
 });
+
+describe("shouldPreserveRetryKey", () => {
+  it("conserva la cookie solo en duplicate_in_progress con key", () => {
+    expect(shouldPreserveRetryKey("duplicate_in_progress", true)).toBe(true);
+  });
+
+  it("la limpia sin key, o en cualquier otro estado", () => {
+    expect(shouldPreserveRetryKey("duplicate_in_progress", false)).toBe(false);
+    expect(shouldPreserveRetryKey("created", true)).toBe(false);
+    expect(shouldPreserveRetryKey("payment_unavailable", true)).toBe(false);
+    expect(shouldPreserveRetryKey("empty_cart", true)).toBe(false);
+    expect(shouldPreserveRetryKey("invalid", true)).toBe(false);
+  });
+});
+
