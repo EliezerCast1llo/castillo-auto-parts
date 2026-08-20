@@ -17,6 +17,8 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { searchCatalogProducts } from "@/data/products";
+import { defaultLocale } from "@/lib/i18n/config";
+import { isLocale } from "@/lib/i18n/params";
 import { formatCurrency } from "@/lib/money";
 import { createSearchRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
 import { getClientIp } from "@/lib/request-ip";
@@ -43,6 +45,14 @@ export type SearchResponse = {
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+
+  // El idioma viaja en la query y no se lee de la cookie a propósito: esta ruta
+  // está fuera de `[locale]`, así que no hay segmento del que deducirlo, y la
+  // respuesta se cachea en el CDN (`s-maxage`). Con el idioma en la URL la
+  // clave de caché los separa sola; leyéndolo de la cookie, el primer visitante
+  // decidiría qué idioma ve el resto.
+  const requestedLocale = request.nextUrl.searchParams.get("locale") ?? "";
+  const locale = isLocale(requestedLocale) ? requestedLocale : defaultLocale;
 
   if (q.length > MAX_QUERY_LENGTH) {
     return NextResponse.json({ error: "Query demasiado larga." }, { status: 400 });
@@ -76,7 +86,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const matched = await searchCatalogProducts(q, MAX_RESULTS);
+  const matched = await searchCatalogProducts(q, MAX_RESULTS, locale);
   const results: SearchResult[] = matched.products.map((product) => ({
     slug: product.slug,
     name: product.name,

@@ -37,7 +37,7 @@ type ProductPageProps = {
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
   const locale = await resolveAndPublishRouteLocale(params);
-  const product = await getCatalogProductBySlug(slug);
+  const product = await getCatalogProductBySlug(slug, locale);
 
   if (!product) return { title: "Producto no encontrado | Castillo Auto Parts" };
 
@@ -67,11 +67,11 @@ export async function generateMetadata({ params }: ProductPageProps) {
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const locale = await resolveAndPublishRouteLocale(params);
-  const product = await getCatalogProductBySlug(slug);
+  const product = await getCatalogProductBySlug(slug, locale);
 
   if (!product) notFound();
 
-  const relatedProducts = await getRelatedCatalogProducts(product);
+  const relatedProducts = await getRelatedCatalogProducts(product, locale);
   const isAvailable = product.stockStatus !== "OUT_OF_STOCK";
   const supportMessage = `Hola, necesito validar compatibilidad del repuesto ${product.name} (SKU ${product.sku}, parte ${product.partNumber}).`;
 

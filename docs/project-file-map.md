@@ -192,6 +192,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/i18n/legacy-redirects.ts` | Traduce URLs viejas sin prefijo a su equivalente en espanol; guarda contra loop. |
 | `src/lib/i18n/middleware-composition.ts` | Re-emite la respuesta de next-intl preservando los headers forwardeados (nonce de CSP). |
 | `src/lib/i18n/revalidate.ts` | `revalidatePath` para rutas bajo `[locale]`. |
+| `src/lib/i18n/action-locale.ts` | Idioma dentro de una server action, leido del `Referer`. |
 | `src/lib/actions/*` | Server actions compartidas por componentes, fuera del arbol de rutas. |
 | `src/lib/cookie-consent.ts` | Helpers puros del aviso de cookies: parseo, serializacion y versionado. |
 | `src/lib/cookie-consent-server.ts` | Lectura server-side del consentimiento. |
