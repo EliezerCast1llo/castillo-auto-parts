@@ -10,6 +10,7 @@ import {
   parseCatalogSort,
   stockStatusToPrismaStatuses,
 } from "./catalog-filters";
+import { toLinkQuery } from "@/lib/url-utils";
 import { mockProducts } from "./mock-products";
 
 describe("catalog filters", () => {
@@ -71,7 +72,10 @@ describe("catalog filters", () => {
     const query = buildCanonicalCatalogQuery({ stock: "No disponible" });
     expect(query).toBe("stock=OUT_OF_STOCK");
 
-    const asParams = Object.fromEntries(new URLSearchParams(query ?? ""));
+    // `toLinkQuery` y no `Object.fromEntries`: hoy da igual porque hay una sola
+    // clave, pero el dia que este caso se extienda a multi-valor el aplanado
+    // perderia las repeticiones, que es exactamente el bug que ya costo una vez.
+    const asParams = toLinkQuery(new URLSearchParams(query ?? ""));
     expect(buildCanonicalCatalogQuery(asParams)).toBeNull();
   });
 
