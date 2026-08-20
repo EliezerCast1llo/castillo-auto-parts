@@ -32,22 +32,24 @@ import { getTranslations } from "next-intl/server";
 /**
  * Atajos de la pantalla sin resultados.
  *
- * La `query` va en el idioma del contenido y no se traduce: es lo que se compara
- * contra los nombres y descripciones de los productos. Solo el label cambia de
- * idioma. Traducir también la query hacía que en inglés cada atajo llevara a
- * otra búsqueda vacía.
+ * Dos cosas distintas, y por eso van separadas:
  *
- * Y es la raíz de la palabra, no el término que se muestra: la búsqueda hace
- * `contains` sobre el nombre, así que "pastillas de freno" no coincide con
- * "Pastillas de freno delanteras Toyota Corolla" pero "pastilla" sí. Tres de
- * los cuatro atajos originales devolvían cero resultados por eso, en español
- * también.
+ * - `label` es lo que se lee, y se traduce.
+ * - `query` es lo que se busca, y **no** se traduce: se compara contra el
+ *   contenido, que está en español hasta que el producto tenga traducción.
+ *
+ * La query es además el singular. La búsqueda hace `contains` literal, sin
+ * lematización, así que "amortiguadores" no encuentra "Amortiguador delantero
+ * Toyota Corolla" y "bujías" no encuentra "Bujía iridio". Medido contra la base
+ * sembrada: en singular dan 4 y 5 resultados; en plural, cero.
+ *
+ * El label sí puede ir en plural, que es como se lee natural.
  */
 const SEARCH_SUGGESTIONS = [
-  { key: "filters", query: "filtro" },
+  { key: "shocks", query: "amortiguador" },
   { key: "brakePads", query: "pastilla" },
+  { key: "oilFilter", query: "filtro de aceite" },
   { key: "sparkPlugs", query: "bujía" },
-  { key: "brakes", query: "freno" },
 ] as const;
 
 export const dynamic = "force-dynamic";

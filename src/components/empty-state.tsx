@@ -48,6 +48,7 @@ export function EmptyState({
             {suggestions.map((suggestion) => (
               <Link
                 className="rounded-full border border-ca-border bg-ca-background px-3 py-1.5 text-xs font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-white"
+                data-testid="empty-state-suggestion"
                 href={{ pathname: "/catalog", query: { q: suggestion.query } }}
                 key={suggestion.query}
               >

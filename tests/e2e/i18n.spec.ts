@@ -275,7 +275,7 @@ test("every empty-state shortcut leads to results, in both languages", async ({ 
   for (const locale of ["es", "en"] as const) {
     await page.goto(`/${locale}/catalog?q=zzzz-sin-resultados`);
 
-    const shortcuts = page.locator('a[href*="/catalog?q="]');
+    const shortcuts = page.getByTestId("empty-state-suggestion");
     const count = await shortcuts.count();
     expect(count).toBeGreaterThan(0);
 
@@ -291,6 +291,19 @@ test("every empty-state shortcut leads to results, in both languages", async ({ 
         `${target} deberia devolver resultados`,
       ).toBeVisible();
     }
+  }
+});
+
+test("a multi-word search finds products", async ({ page }) => {
+  // El espacio viaja como `+` en la query que serializa next-intl. Se prueban
+  // las dos codificaciones porque una falla silenciosa aca dejaria sin
+  // resultados a cualquiera que escriba mas de una palabra, que es lo normal.
+  for (const query of ["filtro+de+aceite", "filtro%20de%20aceite", "disco%20de%20freno"]) {
+    await page.goto(`/es/catalog?q=${query}`);
+    await expect(
+      page.getByText(/^[1-9]\d* productos?$/),
+      `${query} deberia devolver resultados`,
+    ).toBeVisible();
   }
 });
 
