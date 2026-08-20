@@ -2,19 +2,11 @@ import { InventoryStatus, PrismaClient } from "@prisma/client";
 import type { StockStatus } from "../src/lib/stock-status";
 import { mockProducts } from "../src/data/mock-products";
 import { hashPassword } from "../src/lib/admin-credentials";
+import { slugifyValue as slugify } from "../src/lib/slug";
 
 const prisma = new PrismaClient();
 
 const DEFAULT_LOCATION_CODE = "MAIN";
-
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 /**
  * El estado de la app tiene tres valores y el enum de Prisma cuatro; PREORDER
@@ -189,36 +181,11 @@ async function main() {
     },
   });
 
-  for (const [index, category] of Array.from(new Set(mockProducts.map((product) => product.category))).entries()) {
-    await prisma.productCategory.upsert({
-      where: { slug: slugify(category) },
-      update: {
-        name: category,
-        isActive: true,
-        sortOrder: index,
-      },
-      create: {
-        name: category,
-        slug: slugify(category),
-        isActive: true,
-        sortOrder: index,
-      },
-    });
-
-    const categoryEn = CATEGORY_EN[slugify(category)];
-    if (categoryEn) {
-      const stored = await prisma.productCategory.findUniqueOrThrow({
-        where: { slug: slugify(category) },
-      });
-      await prisma.productCategoryTranslation.upsert({
-        where: { categoryId_locale: { categoryId: stored.id, locale: "en" } },
-        update: { name: categoryEn },
-        create: { categoryId: stored.id, locale: "en", name: categoryEn },
-      });
-    }
-  }
-
-  // Los dos mapas de traduccion tienen el mismo agujero: la clave que no
+  // Las dos validaciones van antes de cualquier escritura: una clave mala tiene
+  // que cortar el seed con la base intacta, no a mitad de camino. La de
+  // PRODUCT_EN ya quedaba antes de su bucle por casualidad; la de CATEGORY_EN
+  // corria despues del suyo, asi que abortaba con las categorias ya escritas.
+  // Los dos mapas tienen el mismo agujero: la clave que no
   // corresponde a nada no hace nada y no falla. La traduccion queda escrita en
   // el archivo, nadie la aplica, y el catalogo en ingles muestra ese contenido
   // en espanol como si no estuviera traducido. Paso con dos de las seis claves
@@ -246,6 +213,36 @@ async function main() {
     throw new Error(
       `PRODUCT_EN tiene claves que no son slugs de producto: ${unknownTranslations.join(", ")}`,
     );
+  }
+
+
+  for (const [index, category] of Array.from(new Set(mockProducts.map((product) => product.category))).entries()) {
+    await prisma.productCategory.upsert({
+      where: { slug: slugify(category) },
+      update: {
+        name: category,
+        isActive: true,
+        sortOrder: index,
+      },
+      create: {
+        name: category,
+        slug: slugify(category),
+        isActive: true,
+        sortOrder: index,
+      },
+    });
+
+    const categoryEn = CATEGORY_EN[slugify(category)];
+    if (categoryEn) {
+      const stored = await prisma.productCategory.findUniqueOrThrow({
+        where: { slug: slugify(category) },
+      });
+      await prisma.productCategoryTranslation.upsert({
+        where: { categoryId_locale: { categoryId: stored.id, locale: "en" } },
+        update: { name: categoryEn },
+        create: { categoryId: stored.id, locale: "en", name: categoryEn },
+      });
+    }
   }
 
   for (const product of mockProducts) {
