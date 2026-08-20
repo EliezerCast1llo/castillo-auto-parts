@@ -475,6 +475,9 @@ model StockAlertRequest {
 /// demas idiomas. Cada campo es nullable a proposito, para que el fallback sea
 /// **por campo** y no por fila: un producto con nombre en ingles pero sin
 /// descripcion muestra el nombre traducido y la descripcion en espanol.
+///
+/// `locale` tiene un CHECK de formato (`^[a-z]{2}$`) que Prisma no puede
+/// expresar; vive en la migración 20260820120000_locale_format_check.
 model ProductTranslation {
   id               String   @id @default(cuid())
   productId        String
@@ -490,7 +493,8 @@ model ProductTranslation {
   @@index([locale])
 }
 
-/// Traduccion de una categoria. Mismas reglas que ProductTranslation.
+/// Traduccion de una categoria. Mismas reglas que ProductTranslation, CHECK de
+/// formato sobre `locale` incluido.
 model ProductCategoryTranslation {
   id          String          @id @default(cuid())
   categoryId  String

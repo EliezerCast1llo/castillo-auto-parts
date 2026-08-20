@@ -11,6 +11,7 @@ import {
 } from "./mock-products";
 import { shouldUseMockCatalogFallback } from "./catalog-source";
 import { defaultLocale, type Locale } from "@/lib/i18n/config";
+import { toIntlLocale } from "@/lib/i18n/intl-locale";
 import {
   buildPrismaWhere,
   buildVehicleFilterOptions,
@@ -601,52 +602,70 @@ function compareByName(left: CatalogProduct, right: CatalogProduct) {
  * Facetas con queries agregadas — evita cargar la tabla completa de productos
  * (con todas sus relaciones) solo para derivar las opciones de filtro.
  */
-const findDbCatalogFacets = unstable_cache(
-  async () => {
-    const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
-      db.product.groupBy({ by: ["brand"], where: { isActive: true }, _count: { _all: true } }),
-      db.productCategory.findMany({
-        where: { isActive: true, products: { some: { isActive: true } } },
-        select: {
-          name: true,
-          _count: { select: { products: { where: { isActive: true } } } },
-        },
-      }),
-      db.inventoryStock.groupBy({
-        by: ["status"],
-        where: { product: { isActive: true } },
-      }),
-      db.vehicleCompatibility.findMany({
-        where: { product: { isActive: true } },
-        select: { make: true, model: true, yearFrom: true, yearTo: true },
-        distinct: ["make", "model", "yearFrom", "yearTo"],
-      }),
-    ]);
+/**
+ * El idioma va como argumento y no leído del contexto: `unstable_cache` deriva
+ * la clave de los argumentos, así que sin esto las facetas en inglés y en
+ * español compartirían fila de caché y la UI mostraría la que se haya calentado
+ * primero.
+ *
+ * Doble capa igual que `findDbProducts`. La de React hace falta porque el
+ * catálogo pide las facetas dos veces por request —una en `generateMetadata`
+ * para el título, otra en la página— y sin ella son dos lecturas donde alcanza
+ * una.
+ */
+const findDbCatalogFacets = cache(
+  unstable_cache(
+    async (locale: Locale) => {
+      const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
+        db.product.groupBy({ by: ["brand"], where: { isActive: true }, _count: { _all: true } }),
+        db.productCategory.findMany({
+          where: { isActive: true, products: { some: { isActive: true } } },
+          select: {
+            name: true,
+            slug: true,
+            translations: { where: { locale }, select: { name: true } },
+            _count: { select: { products: { where: { isActive: true } } } },
+          },
+        }),
+        db.inventoryStock.groupBy({
+          by: ["status"],
+          where: { product: { isActive: true } },
+        }),
+        db.vehicleCompatibility.findMany({
+          where: { product: { isActive: true } },
+          select: { make: true, model: true, yearFrom: true, yearTo: true },
+          distinct: ["make", "model", "yearFrom", "yearTo"],
+        }),
+      ]);
 
-    return {
-      brands: brandGroups.map((group) => group.brand),
-      brandCounts: Object.fromEntries(
-        brandGroups.map((group) => [group.brand, group._count._all]),
-      ),
-      categories: categories.map((category) => category.name),
-      categoryCounts: Object.fromEntries(
-        categories.map((category) => [category.name, category._count.products]),
-      ),
-      stockStatuses: stockGroups.map((group) => group.status),
-      vehicles,
-    };
-  },
-  ["catalog-facets"],
-  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+      return {
+        brands: brandGroups.map((group) => group.brand),
+        brandCounts: Object.fromEntries(
+          brandGroups.map((group) => [group.brand, group._count._all]),
+        ),
+        categories: categories.map((category) => ({
+          slug: category.slug,
+          label: translated(category.translations[0]?.name, category.name),
+          count: category._count.products,
+        })),
+        stockStatuses: stockGroups.map((group) => group.status),
+        vehicles,
+      };
+    },
+    ["catalog-facets"],
+    { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+  ),
 );
 
 /**
  * Opciones de filtro del catálogo. Con DB disponible usa agregaciones; en
  * fallback deriva las opciones del mock con getCatalogFilterOptions.
  */
-export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
+export async function getCatalogFacets(
+  locale: Locale = defaultLocale,
+): Promise<CatalogFilterOptions> {
   try {
-    const facets = await findDbCatalogFacets();
+    const facets = await findDbCatalogFacets(locale);
     const hasData = facets.brands.length > 0 || facets.categories.length > 0;
 
     if (hasData || !shouldUseMockCatalogFallback()) {
@@ -656,11 +675,23 @@ export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
         facets.stockStatuses.map((status) => toStockStatus(status, 1)),
       );
 
+      // Las categorías se ordenan por la etiqueta que se ve, no por el slug:
+      // en inglés "Brakes" y "Belts" no salen en el mismo orden que "Frenos" y
+      // "Correas", y el orden alfabético es del texto que el usuario lee.
+      const sortedCategories = [...facets.categories].sort((a, b) =>
+        a.label.localeCompare(b.label, toIntlLocale(locale)),
+      );
+
       return {
         brands: uniqueSorted(facets.brands),
         brandCounts: facets.brandCounts,
-        categories: uniqueSorted(facets.categories),
-        categoryCounts: facets.categoryCounts,
+        categories: sortedCategories.map((category) => category.slug),
+        categoryLabels: Object.fromEntries(
+          sortedCategories.map((category) => [category.slug, category.label]),
+        ),
+        categoryCounts: Object.fromEntries(
+          sortedCategories.map((category) => [category.slug, category.count]),
+        ),
         stockStatuses: stockStatusOrder.filter((status) => stockStatusSet.has(status)),
         ...buildVehicleFilterOptions(facets.vehicles),
       };
@@ -711,6 +742,12 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
   const translation = product.translations[0];
   const categoryTranslation = product.category.translations[0];
 
+  // La descripción corta no se muestra en un campo propio: es el respaldo de
+  // "compatibilidad" cuando el producto no tiene vehículos cargados. Si no se
+  // traduce acá, el admin puede cargar la versión en inglés, guardarla, y no
+  // verla nunca en ningún lado.
+  const shortDescription = translated(translation?.shortDescription, product.shortDescription);
+
   const stock = product.inventoryStocks[0];
   const stockQuantity = stock ? Math.max(stock.quantityOnHand - stock.quantityReserved, 0) : 0;
 
@@ -721,11 +758,12 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
     slug: product.slug,
     name: translated(translation?.name, product.name),
     category: translated(categoryTranslation?.name, product.category.name),
+    categorySlug: product.category.slug,
     brand: product.brand,
     sku: product.sku,
     partNumber: product.partNumber ?? "Sin número de parte",
-    compatibility: formatCompatibilitySummary(product),
-    compatibleVehicles: formatCompatibleVehicles(product),
+    compatibility: formatCompatibilitySummary(product, shortDescription),
+    compatibleVehicles: formatCompatibleVehicles(product, shortDescription),
     vehicleCompatibilities: product.compatibilities.map((compatibility) => ({
       make: compatibility.make,
       model: compatibility.model,
@@ -792,22 +830,19 @@ function getEmptySearchFilters(): CatalogFilters {
   };
 }
 
-function formatCompatibilitySummary(product: DbProduct) {
-  const vehicles = formatCompatibleVehicles(product);
-  return vehicles.length > 0 ? vehicles.join(" · ") : product.shortDescription ?? "Validar compatibilidad";
+function formatCompatibilitySummary(product: DbProduct, shortDescription: string) {
+  const vehicles = formatCompatibleVehicles(product, shortDescription);
+  return vehicles.length > 0 ? vehicles.join(" · ") : shortDescription || "Validar compatibilidad";
 }
 
-function formatCompatibleVehicles(product: DbProduct) {
+function formatCompatibleVehicles(product: DbProduct, shortDescription: string) {
   const compatibilities = product.compatibilities.map(
     (compatibility) =>
       `${compatibility.make} ${compatibility.model} ${compatibility.yearFrom}-${compatibility.yearTo}`,
   );
 
-  return compatibilities.length > 0
-    ? compatibilities
-    : product.shortDescription
-      ? [product.shortDescription]
-      : [];
+  if (compatibilities.length > 0) return compatibilities;
+  return shortDescription ? [shortDescription] : [];
 }
 
 function toStringArray(value: unknown): string[] {

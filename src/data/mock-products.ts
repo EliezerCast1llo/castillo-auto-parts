@@ -13,6 +13,12 @@ export type MockProduct = {
   slug: string;
   name: string;
   category: string;
+  /**
+   * Identificador estable de la categoría. Lo traen los productos de base; el
+   * mock lo omite y se deriva del nombre (ver `categorySlugOf`), porque no
+   * tiene tabla de categorías de la que sacarlo.
+   */
+  categorySlug?: string;
   brand: string;
   sku: string;
   partNumber: string;

@@ -11,7 +11,15 @@ type EmptyStateProps = {
   /** Icono del estado vacío; por defecto SearchX. */
   icon?: React.ReactNode;
   showWhatsApp?: boolean;
-  suggestions?: string[];
+  /**
+   * Atajos de búsqueda. `label` es lo que se lee; `query` es lo que se busca.
+   *
+   * Van separados porque no son lo mismo: el label se traduce y la query tiene
+   * que coincidir con el dato. Colapsarlos hacía que en inglés cada atajo
+   * llevara a otra búsqueda vacía — justo en la pantalla que existe para
+   * rescatar una búsqueda fallida.
+   */
+  suggestions?: { label: string; query: string }[];
   title: string;
 };
 
@@ -40,10 +48,10 @@ export function EmptyState({
             {suggestions.map((suggestion) => (
               <Link
                 className="rounded-full border border-ca-border bg-ca-background px-3 py-1.5 text-xs font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-white"
-                href={{ pathname: "/catalog", query: { q: suggestion } }}
-                key={suggestion}
+                href={{ pathname: "/catalog", query: { q: suggestion.query } }}
+                key={suggestion.query}
               >
-                {suggestion}
+                {suggestion.label}
               </Link>
             ))}
           </div>

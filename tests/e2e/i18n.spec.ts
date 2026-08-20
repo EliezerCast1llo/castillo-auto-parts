@@ -283,6 +283,107 @@ test("a product without translation still renders inside the English site", asyn
   await expect(page.getByRole("link", { name: /^Amortiguador delantero/ }).first()).toBeVisible();
 });
 
+test("category facets are translated and still filter", async ({ page }) => {
+  // Las dos mitades del mismo hallazgo: la faceta tiene que decirse en ingles
+  // y, al usarla, tiene que seguir encontrando productos. Antes se filtraba
+  // por nombre de categoria, asi que traducir la etiqueta habria dejado el
+  // filtro sin resultados; ahora el identificador es el slug y la etiqueta va
+  // aparte.
+  //
+  // El `:visible` no es adorno: el sidebar esta dos veces en el DOM (el drawer
+  // movil primero, oculto), y sin filtrar se engancha la copia escondida.
+  await page.goto(EN("/catalog"));
+
+  const brakes = page.locator("label:visible", { hasText: /^Brakes/ });
+  await expect(brakes).toHaveCount(1);
+
+  // La etiqueta se lee traducida, y el valor que viaja en el form sigue siendo
+  // el identificador.
+  await expect(brakes.locator("input[name='category']")).toHaveValue("frenos");
+  await expect(page.locator("label:visible", { hasText: /^Frenos/ })).toHaveCount(0);
+
+  // Y filtrando por ese identificador hay resultados: es la mitad que se
+  // habria roto si la faceta hubiera empezado a mandar "Brakes".
+  await page.goto(EN("/catalog?category=frenos"));
+  // El contador sigue en espanol: ese copy es de fase 6. Lo que se verifica
+  // aca es que haya resultados, no en que idioma se cuentan.
+  await expect(page.getByText(/^[1-9]\d* (productos?|products?)$/)).toBeVisible();
+  await expect(page.getByText("Categoría: Brakes")).toBeVisible();
+});
+
+test("old category URLs redirect to the canonical slug", async ({ page }) => {
+  // `/catalog?category=Frenos` viajo en la navegacion del sitio y quedo en
+  // historiales y en el indice: tiene que seguir encontrando la categoria, y
+  // curarse sola hacia el identificador canonico.
+  await page.goto(ES("/catalog?category=Frenos"));
+
+  // Al slug canonico, y sin salir del idioma: `permanentRedirect` es el de
+  // `next/navigation` y no localiza nada, asi que un "/catalog" pelado como
+  // destino sacaba de /en a quien navegaba en ingles.
+  await expect(page).toHaveURL(/\/es\/catalog\?category=frenos$/);
+  await expect(page.getByText(/^[1-9]\d* productos?$/)).toBeVisible();
+
+  // En ingles el mismo nombre viejo tiene que curarse dentro de /en.
+  await page.goto(EN("/catalog?category=Frenos"));
+  await expect(page).toHaveURL(/\/en\/catalog\?category=frenos$/);
+});
+
+test("the English short description reaches the page", async ({ page }) => {
+  // La descripcion corta no tiene campo propio en la ficha: aparece como
+  // compatibilidad cuando el producto no tiene vehiculos cargados. Sin
+  // traducirla, el admin podia cargarla, guardarla, y no verla nunca.
+  await page.goto(ES("/product/escobilla-universal-22-pulgadas"));
+  await expect(page.getByText("Universal por medida").first()).toBeVisible();
+
+  await page.goto(EN("/product/escobilla-universal-22-pulgadas"));
+  await expect(page.getByText("Universal by size").first()).toBeVisible();
+});
+
+test("the catalog copy and its plurals follow the language", async ({ page }) => {
+  await page.goto(ES("/catalog"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Catálogo de repuestos");
+  await expect(page.getByRole("navigation", { name: "Ruta del catálogo" })).toBeVisible();
+
+  await page.goto(EN("/catalog"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Parts catalog");
+  await expect(page.getByRole("navigation", { name: "Catalog breadcrumb" })).toBeVisible();
+
+  // Para probar el plural hay que forzar la forma singular: `products?` habria
+  // pasado igual con la concatenacion vieja. Se filtra por un SKU exacto, que
+  // devuelve un solo producto.
+  await page.goto(EN("/catalog?q=MOCK-FIL-TOY-18"));
+  await expect(page.getByText("1 product", { exact: true })).toBeVisible();
+
+  await page.goto(ES("/catalog?q=MOCK-FIL-TOY-18"));
+  await expect(page.getByText("1 producto", { exact: true })).toBeVisible();
+});
+
+test("every empty-state shortcut leads to results, in both languages", async ({ page }) => {
+  // El label se traduce, la query no: es lo que se compara contra el contenido.
+  // Se recorren TODOS los atajos y no uno: cuando este test miraba solo el
+  // primero, tres de los cuatro devolvian cero resultados sin que nada avisara.
+  for (const locale of ["es", "en"] as const) {
+    await page.goto(`/${locale}/catalog?q=zzzz-sin-resultados`);
+
+    const shortcuts = page.locator('a[href*="/catalog?q="]');
+    const count = await shortcuts.count();
+    expect(count).toBeGreaterThan(0);
+
+    const targets: string[] = [];
+    for (let index = 0; index < count; index += 1) {
+      targets.push((await shortcuts.nth(index).getAttribute("href"))!);
+    }
+
+    for (const target of targets) {
+      await page.goto(target);
+      await expect(
+        page.getByText(/^[1-9]\d* (productos?|products?)$/),
+        `${target} deberia devolver resultados`,
+      ).toBeVisible();
+    }
+  }
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";
