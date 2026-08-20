@@ -21,7 +21,8 @@ export function localizePath(path: string, locale: Locale): string {
 
 /**
  * Rutas que hoy se arman con `localizePath`: los breadcrumbs y el `url` del
- * JSON-LD, más la URL de retorno del pago.
+ * JSON-LD, la URL de retorno del pago, y los enlaces que van dentro de los
+ * correos.
  *
  * Vive acá y no en el test para que quien agregue un consumidor nuevo lo sume
  * en el mismo archivo donde está la restricción. Si alguna de estas rutas se
@@ -32,4 +33,8 @@ export const LOCALIZE_PATH_ROUTES = [
   "/catalog",
   "/product/[slug]",
   "/orders/[orderNumber]",
+  // Enlace del correo de restablecimiento. `localizePath` antepone el prefijo
+  // a ciegas, así que el día que esta ruta cambie de grafía —`/es/restablecer-
+  // contrasena` es plausible— el correo mandaría a una URL que no existe.
+  "/auth/reset-password/[token]",
 ] as const;

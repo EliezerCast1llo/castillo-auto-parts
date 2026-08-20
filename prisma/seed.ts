@@ -52,9 +52,9 @@ const PRODUCT_EN: Record<string, { name: string; shortDescription?: string; desc
     description:
       "Oil filter for Toyota 1.8L engines. Replace it with every oil change to keep the lubrication circuit clean.",
   },
-  "pastillas-freno-delanteras-toyota-corolla": {
-    name: "Toyota Corolla front brake pads",
-    description: "Front brake pads for Toyota Corolla. Check the discs when you replace them.",
+  "pastillas-delanteras-nissan-sentra": {
+    name: "Nissan Sentra front brake pads",
+    description: "Front brake pads for Nissan Sentra. Check the discs when you replace them.",
   },
   "bujia-iridio-hyundai-kia-16l": {
     name: "Hyundai/Kia 1.6L iridium spark plug",
@@ -73,9 +73,9 @@ const PRODUCT_EN: Record<string, { name: string; shortDescription?: string; desc
     shortDescription: "Universal by size",
     description: "Universal 22-inch wiper blade with a multi-adapter mount.",
   },
-  "bateria-12v-65ah": {
-    name: "12V 65Ah battery",
-    description: "Sealed 12V 65Ah battery, maintenance free.",
+  "bateria-grupo-35-600cca": {
+    name: "Group 35 battery, 600 CCA",
+    description: "Sealed group 35 battery, 600 CCA, maintenance free.",
   },
 };
 
@@ -207,6 +207,19 @@ async function main() {
         create: { categoryId: stored.id, locale: "en", name: categoryEn },
       });
     }
+  }
+
+  // Una clave de PRODUCT_EN que no corresponda a ningun producto no hace nada
+  // y no falla: la traduccion queda escrita en el archivo, nadie la aplica, y
+  // el catalogo en ingles muestra ese producto en espanol como si no estuviera
+  // traducido. Paso con dos de las seis.
+  const unknownTranslations = Object.keys(PRODUCT_EN).filter(
+    (slug) => !mockProducts.some((product) => product.slug === slug),
+  );
+  if (unknownTranslations.length > 0) {
+    throw new Error(
+      `PRODUCT_EN tiene claves que no son slugs de producto: ${unknownTranslations.join(", ")}`,
+    );
   }
 
   for (const product of mockProducts) {
