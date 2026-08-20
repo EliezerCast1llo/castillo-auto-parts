@@ -26,7 +26,7 @@ import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { getPathname } from "@/lib/i18n/navigation";
-import { resolveRouteLocale } from "@/lib/i18n/params";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ type ProductPageProps = {
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const product = await getCatalogProductBySlug(slug);
 
   if (!product) return { title: "Producto no encontrado | Castillo Auto Parts" };
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const locale = await resolveRouteLocale(params);
+  const locale = await resolveAndPublishRouteLocale(params);
   const product = await getCatalogProductBySlug(slug);
 
   if (!product) notFound();
@@ -86,7 +86,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <JsonLd data={buildProductJsonLd(product, locale)} />
       <JsonLd data={buildBreadcrumbJsonLd(breadcrumbs, locale)} />
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         <ProductBreadcrumb product={product} />

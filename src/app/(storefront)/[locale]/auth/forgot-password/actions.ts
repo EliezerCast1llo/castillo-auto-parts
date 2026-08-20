@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { redirect } from "@/lib/i18n/navigation";
 import { getEmailProvider, getTransactionalEmailFrom } from "@/lib/email";
 import { logError } from "@/lib/logger";
@@ -12,7 +12,7 @@ import { createForgotPasswordRateLimiter, type AsyncRateLimiter } from "@/lib/ra
 let _forgotPasswordRateLimiter: AsyncRateLimiter | undefined;
 
 export async function requestPasswordReset(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const forgotPasswordRateLimiter = (_forgotPasswordRateLimiter ??= createForgotPasswordRateLimiter());
   const email = formString(formData, "email").trim().toLowerCase();
 

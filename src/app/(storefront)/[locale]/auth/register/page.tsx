@@ -5,7 +5,8 @@ import { auth } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { firstValue } from "@/lib/url-utils";
 import { asLocaleHref, redirect } from "@/lib/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getStatusMessage } from "@/lib/i18n/status";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -14,21 +15,22 @@ export const metadata = {
 };
 
 type RegisterPageProps = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function RegisterPage({ searchParams }: RegisterPageProps) {
-  const locale = await getLocale();
+export default async function RegisterPage({ params: routeParams, searchParams }: RegisterPageProps) {
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const session = await auth();
   const params = searchParams ? await searchParams : {};
   const nextPath = getSafeCustomerNextPath(firstValue(params.next));
-  const errorMessage = getErrorMessage(firstValue(params.estado));
+  const errorMessage = await getStatusMessage("auth", firstValue(params.estado), locale);
 
   if (session?.user) redirect({ href: asLocaleHref(nextPath), locale });
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md">
@@ -52,14 +54,3 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   );
 }
 
-function getErrorMessage(estado: string | undefined) {
-  const messages: Record<string, string> = {
-    missing_fields: "Por favor completa todos los campos.",
-    weak_password: "La contraseña debe tener al menos 8 caracteres.",
-    password_mismatch: "Las contraseñas no coinciden.",
-    email_exists: "Ya existe una cuenta con ese correo. ¿Quieres iniciar sesión?",
-    error: "Ocurrió un error. Intenta de nuevo.",
-    rate_limited: "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
-  };
-  return messages[estado ?? ""] ?? "";
-}

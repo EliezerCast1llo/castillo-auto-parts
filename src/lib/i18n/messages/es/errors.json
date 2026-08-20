@@ -1,0 +1,7 @@
+{
+  "unexpected": {
+    "badge": "Algo salió mal",
+    "title": "No pudimos cargar esta página",
+    "description": "Es un problema temporal de nuestro lado. Intenta de nuevo; si persiste, vuelve en unos minutos."
+  }
+}

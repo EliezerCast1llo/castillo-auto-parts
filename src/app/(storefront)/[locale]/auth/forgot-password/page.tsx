@@ -3,6 +3,7 @@ import { KeyRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { firstValue } from "@/lib/url-utils";
 import { requestPasswordReset } from "./actions";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const metadata = {
   robots: { follow: false, index: false },
@@ -10,10 +11,15 @@ export const metadata = {
 };
 
 type ForgotPasswordPageProps = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function ForgotPasswordPage({ searchParams }: ForgotPasswordPageProps) {
+export default async function ForgotPasswordPage({
+  params: routeParams,
+  searchParams,
+}: ForgotPasswordPageProps) {
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado);
   const sent = estado === "sent";
@@ -21,7 +27,7 @@ export default async function ForgotPasswordPage({ searchParams }: ForgotPasswor
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md">

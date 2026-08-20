@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/site-header";
 import { verifyPasswordResetToken } from "@/lib/auth-user";
 import { firstValue } from "@/lib/url-utils";
 import { applyPasswordResetAction } from "./actions";
+import { getStatusMessage } from "@/lib/i18n/status";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
@@ -13,21 +15,22 @@ export const metadata = {
 };
 
 type ResetPasswordPageProps = {
-  params: Promise<{ token: string }>;
+  params: Promise<{ locale: string; token: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function ResetPasswordPage({ params, searchParams }: ResetPasswordPageProps) {
+  const locale = await resolveAndPublishRouteLocale(params);
   const { token } = await params;
   const queryParams = searchParams ? await searchParams : {};
-  const errorMessage = getErrorMessage(firstValue(queryParams.estado));
+  const errorMessage = await getStatusMessage("auth", firstValue(queryParams.estado), locale);
 
   const record = await verifyPasswordResetToken(token);
   if (!record) notFound();
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md">
@@ -89,11 +92,3 @@ export default async function ResetPasswordPage({ params, searchParams }: ResetP
   );
 }
 
-function getErrorMessage(estado: string | undefined) {
-  const messages: Record<string, string> = {
-    weak_password: "La contraseña debe tener al menos 8 caracteres.",
-    password_mismatch: "Las contraseñas no coinciden.",
-    rate_limited: "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
-  };
-  return messages[estado ?? ""] ?? "";
-}

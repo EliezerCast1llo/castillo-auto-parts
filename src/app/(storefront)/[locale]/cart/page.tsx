@@ -19,6 +19,7 @@ import { getGuestCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
 import { createStockAlert } from "@/lib/actions/cart";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const metadata = {
   title: "Tu carrito | Castillo Auto Parts",
@@ -29,17 +30,19 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 type CartPageProps = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function CartPage({ searchParams }: CartPageProps) {
+export default async function CartPage({ params: routeParams, searchParams }: CartPageProps) {
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const cart = await getGuestCart();
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado) ?? "";
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         <Link

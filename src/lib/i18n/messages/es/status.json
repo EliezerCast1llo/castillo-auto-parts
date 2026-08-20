@@ -1,0 +1,34 @@
+{
+  "auth": {
+    "email_exists": "Ya existe una cuenta con ese correo. ¿Quieres iniciar sesión?",
+    "error": "Ocurrió un error. Intenta de nuevo.",
+    "invalid": "Email o contraseña incorrectos.",
+    "missing_fields": "Por favor completa todos los campos.",
+    "oauth_error": "Error al conectar con Google. Intenta de nuevo.",
+    "password_mismatch": "Las contraseñas no coinciden.",
+    "password_reset": "Contraseña restablecida. Inicia sesión con tu nueva contraseña.",
+    "rate_limited": "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
+    "weak_password": "La contraseña debe tener al menos 8 caracteres."
+  },
+  "account": {
+    "success": {
+      "password_changed": "Contraseña cambiada correctamente.",
+      "updated": "Teléfono actualizado correctamente."
+    },
+    "error": {
+      "invalid_phone": "Ingresa un teléfono válido o deja el campo vacío.",
+      "missing_name": "El nombre es requerido.",
+      "no_credentials": "Tu cuenta no tiene contraseña propia (usas Google).",
+      "password_mismatch": "Las contraseñas no coinciden.",
+      "weak_password": "La contraseña debe tener al menos 8 caracteres.",
+      "wrong_password": "La contraseña actual es incorrecta."
+    }
+  },
+  "checkout": {
+    "coverage_unavailable": "La zona seleccionada aún no está dentro de la cobertura.",
+    "db_unavailable": "No pudimos crear el pedido. Intenta de nuevo.",
+    "duplicate_in_progress": "Tu pedido se está procesando. Espera unos segundos y vuelve a confirmar: se retomará el mismo pedido, no se duplica.",
+    "invalid": "Revisa los datos del formulario.",
+    "payment_unavailable": "No pudimos iniciar el pago. Intenta nuevamente."
+  }
+}

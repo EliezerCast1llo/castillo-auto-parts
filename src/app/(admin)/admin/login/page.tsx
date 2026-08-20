@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { getAdminSecretConfig, getSafeAdminNextPath, isAdminAuthenticated } from "@/lib/admin-auth";
 import { firstValue } from "@/lib/url-utils";
 import { loginAdmin } from "@/lib/actions/admin-login";
+import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={defaultLocale} />
 
       <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md rounded-md border border-border bg-card p-6 shadow-ca-card">

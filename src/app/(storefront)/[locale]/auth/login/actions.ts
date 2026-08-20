@@ -2,7 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { asLocaleHref, getPathname, redirect } from "@/lib/i18n/navigation";
 import { signIn } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
@@ -12,7 +12,7 @@ import { createCustomerLoginRateLimiter, type AsyncRateLimiter } from "@/lib/rat
 let _loginRateLimiter: AsyncRateLimiter | undefined;
 
 export async function loginWithCredentials(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const loginRateLimiter = (_loginRateLimiter ??= createCustomerLoginRateLimiter());
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
   const key = await getLoginRateLimitKey();
@@ -42,7 +42,7 @@ export async function loginWithCredentials(formData: FormData) {
 }
 
 export async function loginWithGoogle(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
   try {
     await signIn("google", { redirectTo: getPathname({ href: asLocaleHref(nextPath), locale }) });

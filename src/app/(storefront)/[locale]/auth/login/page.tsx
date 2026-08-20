@@ -5,7 +5,8 @@ import { auth } from "@/lib/auth";
 import { getSafeCustomerNextPath } from "@/lib/auth-paths";
 import { firstValue } from "@/lib/url-utils";
 import { loginWithCredentials, loginWithGoogle } from "./actions";
-import { getLocale } from "next-intl/server";
+import { getStatusMessage } from "@/lib/i18n/status";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -14,21 +15,22 @@ export const metadata = {
 };
 
 type LoginPageProps = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const locale = await getLocale();
+export default async function LoginPage({ params: routeParams, searchParams }: LoginPageProps) {
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const session = await auth();
   const params = searchParams ? await searchParams : {};
   const nextPath = getSafeCustomerNextPath(firstValue(params.next));
-  const errorMessage = getErrorMessage(firstValue(params.estado));
+  const errorMessage = await getStatusMessage("auth", firstValue(params.estado), locale);
 
   if (session?.user) redirect({ href: asLocaleHref(nextPath), locale });
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md">
@@ -131,16 +133,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </section>
     </main>
   );
-}
-
-function getErrorMessage(estado: string | undefined) {
-  const messages: Record<string, string> = {
-    invalid: "Email o contraseña incorrectos.",
-    oauth_error: "Error al conectar con Google. Intenta de nuevo.",
-    password_reset: "Contraseña restablecida. Inicia sesión con tu nueva contraseña.",
-    rate_limited: "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
-  };
-  return messages[estado ?? ""] ?? "";
 }
 
 function GoogleIcon() {

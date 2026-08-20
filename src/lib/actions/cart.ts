@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidateStorefrontPath } from "@/lib/i18n/revalidate";
-import { getLocale } from "next-intl/server";
+import { getActionLocale } from "@/lib/i18n/action-locale";
 import { redirect } from "@/lib/i18n/navigation";
 import { addGuestCartItem, removeGuestCartItem, updateGuestCartItem } from "@/lib/cart";
 import { createRateLimiter } from "@/lib/rate-limit";
@@ -15,7 +15,7 @@ const stockAlertRateLimiter = createRateLimiter({
 });
 
 export async function addCartItem(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 1);
   const shouldStayOnPage = formData.get("stayOnPage") === "true";
@@ -60,7 +60,7 @@ export async function addCartItemInline(
 }
 
 export async function updateCartItem(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 0);
   const result = await updateGuestCartItem(sku, quantity);
@@ -69,7 +69,7 @@ export async function updateCartItem(formData: FormData) {
 }
 
 export async function removeCartItem(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const sku = String(formData.get("sku") ?? "");
   await removeGuestCartItem(sku);
 
@@ -77,7 +77,7 @@ export async function removeCartItem(formData: FormData) {
 }
 
 export async function createStockAlert(formData: FormData) {
-  const locale = await getLocale();
+  const locale = await getActionLocale();
   const rateLimit = stockAlertRateLimiter.registerFailure(await getStockAlertRateLimitKey());
   if (!rateLimit.allowed) {
     redirect({ href: { pathname: "/cart", query: { estado: "stock_alert_rate_limited" } }, locale });

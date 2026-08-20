@@ -15,6 +15,8 @@ import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOpti
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
 import { createGuestOrder } from "./actions";
+import { getStatusMessage } from "@/lib/i18n/status";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const metadata = {
   title: "Finalizar compra | Castillo Auto Parts",
@@ -25,10 +27,12 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 type CheckoutPageProps = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
+export default async function CheckoutPage({ params: routeParams, searchParams }: CheckoutPageProps) {
+  const locale = await resolveAndPublishRouteLocale(routeParams);
   const [cart, fulfillmentOptions, session] = await Promise.all([
     getGuestCart(),
     getFulfillmentOptions(),
@@ -36,7 +40,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   ]);
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
-  const statusMessage = getStatusMessage(status);
+  const statusMessage = await getStatusMessage("checkout", status, locale);
 
   // La key de reintento se adopta cuando el carrito NO está vacío. Con carrito lleno
   // una key vieja es inofensiva: isSameCheckoutIntent + la key derivada evitan pisar
@@ -75,7 +79,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         <Link
@@ -334,14 +338,3 @@ function formatDeliveryZoneSummary(zones: DeliveryZoneOption[]) {
   return zones.map((zone) => `${zone.name} ${formatCurrency(zone.feeCents)}`).join(", ");
 }
 
-function getStatusMessage(status: string) {
-  const messages: Record<string, string> = {
-    coverage_unavailable: "La zona seleccionada aún no está dentro de la cobertura.",
-    db_unavailable: "No pudimos crear el pedido. Intenta de nuevo.",
-    duplicate_in_progress:
-      "Tu pedido se está procesando. Espera unos segundos y vuelve a confirmar: se retomará el mismo pedido, no se duplica.",
-    invalid: "Revisa los datos del formulario.",
-    payment_unavailable: "No pudimos iniciar el pago. Intenta nuevamente.",
-  };
-  return messages[status] ?? "";
-}

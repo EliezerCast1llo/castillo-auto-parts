@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { EN } from "./helpers";
+import { EN, ES } from "./helpers";
 
 test("legacy unprefixed URLs redirect permanently to Spanish", async ({ request }) => {
   for (const path of ["/catalog", "/ayuda", "/cart", "/vehiculos/toyota"]) {
@@ -189,6 +189,60 @@ test("a language without its own copy is served but not offered to crawlers", as
   expect(urls.filter((url) => new URL(url).pathname.startsWith("/en"))).toEqual([]);
   // Los alternates si listan el otro idioma: le dicen al buscador que existe.
   expect(sitemap).toContain('hreflang="en"');
+});
+
+test("the chrome and the status messages speak the language of the page", async ({ page }) => {
+  // Por testid y no por el aria-label: ese label ahora se traduce, asi que
+  // buscarlo por texto ataria el test al idioma que justamente esta probando.
+  const nav = () => page.getByTestId("site-nav").getByRole("link");
+
+  await page.goto("/es/catalog");
+  await expect(nav().first()).toHaveText("Catálogo");
+
+  await page.goto("/en/catalog");
+  await expect(nav().first()).toHaveText("Catalog");
+
+  // El mismo codigo significa cosas distintas segun el area, asi que se
+  // verifican las dos: `invalid` es credenciales en el login y formulario en el
+  // checkout.
+  await page.goto("/en/auth/login?estado=invalid");
+  await expect(page.getByText("Incorrect email or password.")).toBeVisible();
+
+  await page.goto("/es/auth/login?estado=invalid");
+  await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible();
+
+  await page.goto("/en/checkout?estado=invalid");
+  await expect(page.getByText("Please review the form details.")).toBeVisible();
+});
+
+test("a failed action redirects back into the language the visitor was browsing", async ({
+  page,
+}) => {
+  // El circuito completo, no solo el renderizado: la accion arma el redirect y
+  // la pagina de destino traduce el mensaje. Si la accion deduce mal el idioma,
+  // el mensaje sale correcto pero en el idioma equivocado, porque el usuario ya
+  // aterrizo en la URL equivocada.
+  await page.goto(EN("/auth/login"));
+  await page.getByLabel("Correo electrónico").fill("no-existe@e2e.castilloautoparts.com");
+  await page.getByLabel("Contraseña").fill("credenciales-invalidas");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(page).toHaveURL(/\/en\/auth\/login\?.*estado=invalid/);
+  await expect(page.getByText("Incorrect email or password.")).toBeVisible();
+
+  // El idioma sale del `Referer` del POST, que apunta a la pagina del
+  // formulario. Se verifica el resultado y no el mecanismo, pero vale dejar
+  // dicho cual es: la cookie de idioma NO esta garantizada en este punto.
+});
+
+test("the same failed action keeps a Spanish visitor in Spanish", async ({ page }) => {
+  await page.goto(ES("/auth/login"));
+  await page.getByLabel("Correo electrónico").fill("no-existe@e2e.castilloautoparts.com");
+  await page.getByLabel("Contraseña").fill("credenciales-invalidas");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(page).toHaveURL(/\/es\/auth\/login\?.*estado=invalid/);
+  await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible();
 });
 
 test("alternate links point search engines at the other language", async ({ request }) => {

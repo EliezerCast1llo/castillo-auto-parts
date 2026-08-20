@@ -7,11 +7,13 @@ import { formatCurrency } from "@/lib/money";
 import { formatOrderStatus, formatShipmentMethod } from "@/lib/order-formatters";
 import { verifyOrderAccessToken } from "@/lib/order-access-token";
 import { firstValue } from "@/lib/url-utils";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
 type OrderPageProps = {
   params: Promise<{
+    locale: string;
     orderNumber: string;
   }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -26,6 +28,7 @@ export async function generateMetadata({ params }: OrderPageProps) {
 }
 
 export default async function OrderPage({ params, searchParams }: OrderPageProps) {
+  const locale = await resolveAndPublishRouteLocale(params);
   const { orderNumber } = await params;
   const paramsValue = searchParams ? await searchParams : {};
   const accessToken = firstValue(paramsValue.token);
@@ -54,7 +57,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">

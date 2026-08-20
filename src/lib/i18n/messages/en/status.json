@@ -1,0 +1,34 @@
+{
+  "auth": {
+    "email_exists": "An account with that email already exists. Would you like to sign in?",
+    "error": "Something went wrong. Please try again.",
+    "invalid": "Incorrect email or password.",
+    "missing_fields": "Please fill in every field.",
+    "oauth_error": "We could not connect to Google. Please try again.",
+    "password_mismatch": "The passwords do not match.",
+    "password_reset": "Your password was reset. Sign in with your new password.",
+    "rate_limited": "Too many attempts. Wait a few minutes and try again.",
+    "weak_password": "Your password must be at least 8 characters long."
+  },
+  "account": {
+    "success": {
+      "password_changed": "Your password was changed.",
+      "updated": "Your phone number was updated."
+    },
+    "error": {
+      "invalid_phone": "Enter a valid phone number or leave the field empty.",
+      "missing_name": "Name is required.",
+      "no_credentials": "Your account has no password of its own (you sign in with Google).",
+      "password_mismatch": "The passwords do not match.",
+      "weak_password": "Your password must be at least 8 characters long.",
+      "wrong_password": "Your current password is incorrect."
+    }
+  },
+  "checkout": {
+    "coverage_unavailable": "That area is not within our delivery coverage yet.",
+    "db_unavailable": "We could not create your order. Please try again.",
+    "duplicate_in_progress": "Your order is being processed. Wait a few seconds and confirm again: the same order is resumed, it is not duplicated.",
+    "invalid": "Please review the form details.",
+    "payment_unavailable": "We could not start the payment. Please try again."
+  }
+}

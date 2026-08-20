@@ -16,6 +16,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cardVariants } from "@/components/ui/card";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { cn } from "@/lib/utils";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 
 export const metadata: Metadata = {
   title: "Ayuda para comprar repuestos | Castillo Auto Parts",
@@ -85,10 +86,16 @@ const faqs = [
   },
 ];
 
-export default function HelpPage() {
+export default async function HelpPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const locale = await resolveAndPublishRouteLocale(params);
+
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <HelpHero />
 

@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { createAdminProduct } from "../actions";
+import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function NewAdminProductPage({ searchParams }: NewAdminProd
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={defaultLocale} />
 
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">

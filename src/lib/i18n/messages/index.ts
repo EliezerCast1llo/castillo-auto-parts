@@ -25,7 +25,7 @@ export function loadMessages(locale: Locale) {
  * o renombrado no compila, en vez de convertirse en un `MISSING_MESSAGE` en
  * runtime lejos de la causa.
  */
-const CLIENT_NAMESPACES = ["Common", "Consent"] as const satisfies readonly (keyof typeof es)[];
+const CLIENT_NAMESPACES = ["Common", "Consent", "Errors", "Nav"] as const satisfies readonly (keyof typeof es)[];
 
 export function pickClientMessages(messages: typeof es | typeof en) {
   return Object.fromEntries(

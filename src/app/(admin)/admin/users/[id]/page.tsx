@@ -7,6 +7,7 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { ADMIN_ROLES, ROLE_LABELS, getAdminUserById } from "@/lib/admin-user";
 import { firstValue } from "@/lib/url-utils";
 import { updateAdminUserAction } from "../actions";
+import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export default async function EditAdminUserPage({ params, searchParams }: EditAd
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={defaultLocale} />
 
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">

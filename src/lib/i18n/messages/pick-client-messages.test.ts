@@ -7,7 +7,7 @@ describe("pickClientMessages", () => {
   it("ships only the namespaces the client components use", () => {
     // Todo lo que salga de acá viaja al navegador en cada página del
     // storefront, así que la lista es deliberadamente corta.
-    expect(Object.keys(pickClientMessages(es)).sort()).toEqual(["Common", "Consent"]);
+    expect(Object.keys(pickClientMessages(es)).sort()).toEqual(["Common", "Consent", "Errors", "Nav"]);
   });
 
   it("never ships the whole catalog", () => {
