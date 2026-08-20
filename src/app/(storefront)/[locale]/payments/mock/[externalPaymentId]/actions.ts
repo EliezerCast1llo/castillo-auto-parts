@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { processPaymentWebhookEvent } from "@/lib/payment-events";
 import { isMockPaymentAvailable } from "@/lib/payments/mock-access";
+import { locales } from "@/lib/i18n/config";
 
 export async function confirmMockPayment(formData: FormData) {
   if (!isMockPaymentAvailable()) notFound();
@@ -50,7 +51,7 @@ function safeReturnUrl(value: string | undefined) {
       "http://localhost:3000",
   );
   const returnUrl = new URL(value, siteUrl);
-  if (returnUrl.origin !== siteUrl.origin || !returnUrl.pathname.startsWith("/orders/")) {
+  if (returnUrl.origin !== siteUrl.origin || !isOrderPath(returnUrl.pathname)) {
     return undefined;
   }
   return returnUrl.toString();
@@ -58,4 +59,21 @@ function safeReturnUrl(value: string | undefined) {
 
 function stringValue(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+/**
+ * El allowlist del retorno del pago acepta la ruta de la orden con y sin
+ * prefijo de idioma.
+ *
+ * La URL que se le pasa al proveedor ahora lleva prefijo para que quien pagó en
+ * inglés vuelva en inglés, así que un allowlist que exigiera `/orders/` a secas
+ * rechazaría su propia URL y dejaría al cliente varado en la pasarela.
+ *
+ * Sigue siendo un allowlist: solo se acepta `/orders/` o `/<idioma>/orders/`
+ * del mismo origen, nada más.
+ */
+function isOrderPath(pathname: string): boolean {
+  if (pathname.startsWith("/orders/")) return true;
+
+  return locales.some((locale) => pathname.startsWith(`/${locale}/orders/`));
 }

@@ -24,7 +24,12 @@ export function CookieConsentBanner() {
   return (
     <div
       aria-labelledby={headingId}
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-ca-border bg-white/97 backdrop-blur-md"
+      // `sticky` y no `fixed`: un banner fijo se sale del flujo y queda por
+      // encima del contenido. Tapaba el botón de "Confirmar y pagar" del
+      // checkout, así que quien no había aceptado las cookies no podía pagar
+      // sin descartarlo antes. Con `sticky` reserva su alto, sigue pegado al
+      // borde inferior mientras se navega, y nunca se apoya sobre nada.
+      className="sticky inset-x-0 bottom-0 z-50 border-t border-ca-border bg-white/97 backdrop-blur-md"
       data-testid="cookie-consent"
       role="region"
     >
