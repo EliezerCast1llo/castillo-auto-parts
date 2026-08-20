@@ -14,6 +14,8 @@ import {
   hashOrderAccessToken,
 } from "./order-access-token";
 import type { PaymentWebhookEvent } from "./payments";
+import { defaultLocale } from "@/lib/i18n/config";
+import { isLocale } from "@/lib/i18n/params";
 
 export type ProcessPaymentEventResult =
   | { status: "already_processed" | "duplicate" | "manual_review" | "processed" }
@@ -144,13 +146,22 @@ export async function processPaymentWebhookEvent(
         where: { orderId: currentPayment.order.id },
       });
 
+      // El idioma sale de la orden y no del request: este camino nace en el
+      // webhook del proveedor de pagos, que no trae ni segmento de idioma ni
+      // cookie del cliente.
+      const orderLocale = isLocale(currentPayment.order.locale)
+        ? currentPayment.order.locale
+        : defaultLocale;
+
       return {
         email: {
           customerEmail: currentPayment.order.customerEmail,
           customerName: currentPayment.order.customerName,
+          locale: orderLocale,
           orderNumber: currentPayment.order.orderNumber,
           orderUrl: buildAbsoluteAppUrl(
             buildOrderAccessHref(currentPayment.order.orderNumber, emailAccessToken),
+            orderLocale,
           ),
           totalCents: currentPayment.order.totalCents,
         },

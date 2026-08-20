@@ -1,5 +1,6 @@
 import Common from "./common.json";
 import Consent from "./consent.json";
+import Email from "./email.json";
 import Errors from "./errors.json";
 import Nav from "./nav.json";
 import Status from "./status.json";
@@ -15,6 +16,7 @@ import Status from "./status.json";
 const messages = {
   Common,
   Consent,
+  Email,
   Errors,
   Nav,
   Status,
