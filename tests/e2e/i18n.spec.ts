@@ -258,9 +258,32 @@ test("the catalog copy and its plurals follow the language", async ({ page }) =>
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Parts catalog");
   await expect(page.getByRole("navigation", { name: "Catalog breadcrumb" })).toBeVisible();
 
-  // El contador usa plurales ICU: se verifica que el idioma elija la forma, no
-  // que concatene un sufijo.
-  await expect(page.getByText(/^\d+ products?$/)).toBeVisible();
+  // Para probar el plural hay que forzar la forma singular: `products?` habria
+  // pasado igual con la concatenacion vieja. Se filtra por un SKU exacto, que
+  // devuelve un solo producto.
+  await page.goto(EN("/catalog?q=MOCK-FIL-TOY-18"));
+  await expect(page.getByText("1 product", { exact: true })).toBeVisible();
+
+  await page.goto(ES("/catalog?q=MOCK-FIL-TOY-18"));
+  await expect(page.getByText("1 producto", { exact: true })).toBeVisible();
+});
+
+test("the empty-state shortcuts lead to results in both languages", async ({ page }) => {
+  // El label se traduce, la query no: es lo que se compara contra el contenido.
+  // Traducir ambos hacia que en ingles cada atajo llevara a otra busqueda vacia,
+  // justo en la pantalla que existe para rescatar una busqueda fallida.
+  await page.goto(EN("/catalog?q=zzzz-sin-resultados"));
+
+  const shortcut = page.getByRole("link", { name: "oil filter" });
+  await expect(shortcut).toBeVisible();
+  await shortcut.click();
+
+  await expect(page).toHaveURL(/\/en\/catalog\?q=/);
+
+  // Se afirma que hay resultados y no que exista un link con ese texto: el
+  // propio chip del atajo tiene ese nombre, asi que buscarlo pasaria igual con
+  // la query rota.
+  await expect(page.getByText(/^[1-9]\d* products?$/)).toBeVisible();
 });
 
 test("alternate links point search engines at the other language", async ({ request }) => {

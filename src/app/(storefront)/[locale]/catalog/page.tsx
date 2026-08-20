@@ -29,6 +29,21 @@ import { localizedAlternates } from "@/lib/i18n/metadata";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getTranslations } from "next-intl/server";
 
+/**
+ * Atajos de la pantalla sin resultados.
+ *
+ * La `query` va en el idioma del contenido y no se traduce: es lo que se compara
+ * contra los nombres y descripciones de los productos. Solo el label cambia de
+ * idioma. Traducir también la query hacía que en inglés cada atajo llevara a
+ * otra búsqueda vacía.
+ */
+const SEARCH_SUGGESTIONS = [
+  { key: "shocks", query: "amortiguadores" },
+  { key: "brakePads", query: "pastillas de freno" },
+  { key: "oilFilter", query: "filtro de aceite" },
+  { key: "sparkPlugs", query: "bujías" },
+] as const;
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -198,12 +213,10 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
                     : t("empty.noMatchesDescription")
                 }
                 showWhatsApp
-                suggestions={[
-                  t("suggestions.shocks"),
-                  t("suggestions.brakePads"),
-                  t("suggestions.oilFilter"),
-                  t("suggestions.sparkPlugs"),
-                ]}
+                suggestions={SEARCH_SUGGESTIONS.map(({ key, query }) => ({
+                  label: t(`suggestions.${key}`),
+                  query,
+                }))}
                 title={
                   totalCount === 0
                     ? t("empty.noInventoryTitle")
@@ -229,6 +242,9 @@ function CatalogBreadcrumb({
   t: CatalogTranslator;
 }) {
   const catalogLabel = t("breadcrumb.catalog");
+  // Booleano y no comparación de textos: una categoría que se llamara
+  // "Catálogo" colapsaría la ruta en vez de mostrarse.
+  const hasCurrent = Boolean(filters.categories[0] || filters.query);
   const current =
     filters.categories[0] ??
     (filters.query ? t("breadcrumb.search", { query: filters.query }) : catalogLabel);
@@ -242,7 +258,7 @@ function CatalogBreadcrumb({
         {t("breadcrumb.home")}
       </Link>
       <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
-      {current === catalogLabel ? (
+      {!hasCurrent ? (
         <span className="text-ca-navy-950">{catalogLabel}</span>
       ) : (
         <>
