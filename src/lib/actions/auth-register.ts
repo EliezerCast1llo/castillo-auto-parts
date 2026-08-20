@@ -54,7 +54,7 @@ export async function registerAction(formData: FormData) {
     });
   }
 
-  const result = await registerCustomer({ name, email, password, phone });
+  const result = await registerCustomer({ name, email, password, phone, locale });
 
   if (result.status === "email_exists") {
     await registerRateLimiter.registerFailure(key);

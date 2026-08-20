@@ -30,7 +30,6 @@ import {
   reserveInventory,
 } from "./inventory-reservations";
 import { defaultLocale, type Locale } from "@/lib/i18n/config";
-import { localizePath } from "@/lib/i18n/path";
 import { buildOrderAccessHref, createOrderAccessToken, hashOrderAccessToken } from "./order-access-token";
 import { cancelPaymentProcessingOrder } from "./payment-reservations";
 import {
@@ -233,6 +232,9 @@ export async function createGuestCheckoutFromCart(
           currency: "USD",
           idempotencyKey: effectiveIdempotencyKey ?? null,
           intentHash,
+          // El correo de confirmación se dispara después, desde el webhook del
+          // proveedor de pagos: sin esto no habría de dónde sacar el idioma.
+          locale,
           userId: userId ?? null,
           customerEmail: parsed.data.customerEmail,
           customerName: parsed.data.customerName,
@@ -295,8 +297,11 @@ export async function createGuestCheckoutFromCart(
         amountCents: order.totalCents,
         customerEmail: order.customerEmail,
         orderNumber: order.orderNumber,
+        // El prefijo de idioma lo pone `buildAbsoluteAppUrl`: si se agregara
+        // también acá, la URL saldría con el idioma dos veces.
         redirectUrl: buildAbsoluteAppUrl(
-          localizePath(buildOrderAccessHref(order.orderNumber, order.accessToken), locale),
+          buildOrderAccessHref(order.orderNumber, order.accessToken),
+          locale,
         ),
       });
     } catch {

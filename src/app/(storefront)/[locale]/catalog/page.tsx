@@ -33,7 +33,6 @@ import { localizePath } from "@/lib/i18n/path";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getTranslations } from "next-intl/server";
 
-
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
