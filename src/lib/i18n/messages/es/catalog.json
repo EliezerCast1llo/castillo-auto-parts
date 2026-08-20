@@ -31,9 +31,9 @@
     "noMatchesDescription": "Prueba quitar un filtro, buscar por número de parte o escríbenos y te ayudamos a ubicar el repuesto correcto."
   },
   "suggestions": {
-    "shocks": "amortiguadores",
+    "filters": "filtros",
     "brakePads": "pastillas de freno",
-    "oilFilter": "filtro de aceite",
-    "sparkPlugs": "bujías"
+    "sparkPlugs": "bujías",
+    "brakes": "frenos"
   }
 }

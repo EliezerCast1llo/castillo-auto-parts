@@ -268,22 +268,30 @@ test("the catalog copy and its plurals follow the language", async ({ page }) =>
   await expect(page.getByText("1 producto", { exact: true })).toBeVisible();
 });
 
-test("the empty-state shortcuts lead to results in both languages", async ({ page }) => {
+test("every empty-state shortcut leads to results, in both languages", async ({ page }) => {
   // El label se traduce, la query no: es lo que se compara contra el contenido.
-  // Traducir ambos hacia que en ingles cada atajo llevara a otra busqueda vacia,
-  // justo en la pantalla que existe para rescatar una busqueda fallida.
-  await page.goto(EN("/catalog?q=zzzz-sin-resultados"));
+  // Se recorren TODOS los atajos y no uno: cuando este test miraba solo el
+  // primero, tres de los cuatro devolvian cero resultados sin que nada avisara.
+  for (const locale of ["es", "en"] as const) {
+    await page.goto(`/${locale}/catalog?q=zzzz-sin-resultados`);
 
-  const shortcut = page.getByRole("link", { name: "oil filter" });
-  await expect(shortcut).toBeVisible();
-  await shortcut.click();
+    const shortcuts = page.locator('a[href*="/catalog?q="]');
+    const count = await shortcuts.count();
+    expect(count).toBeGreaterThan(0);
 
-  await expect(page).toHaveURL(/\/en\/catalog\?q=/);
+    const targets: string[] = [];
+    for (let index = 0; index < count; index += 1) {
+      targets.push((await shortcuts.nth(index).getAttribute("href"))!);
+    }
 
-  // Se afirma que hay resultados y no que exista un link con ese texto: el
-  // propio chip del atajo tiene ese nombre, asi que buscarlo pasaria igual con
-  // la query rota.
-  await expect(page.getByText(/^[1-9]\d* products?$/)).toBeVisible();
+    for (const target of targets) {
+      await page.goto(target);
+      await expect(
+        page.getByText(/^[1-9]\d* (productos?|products?)$/),
+        `${target} deberia devolver resultados`,
+      ).toBeVisible();
+    }
+  }
 });
 
 test("alternate links point search engines at the other language", async ({ request }) => {

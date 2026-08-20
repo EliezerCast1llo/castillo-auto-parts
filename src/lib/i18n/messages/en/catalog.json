@@ -31,9 +31,9 @@
     "noMatchesDescription": "Try removing a filter, searching by part number, or write to us and we will help you find the right part."
   },
   "suggestions": {
-    "shocks": "shock absorbers",
+    "filters": "filters",
     "brakePads": "brake pads",
-    "oilFilter": "oil filter",
-    "sparkPlugs": "spark plugs"
+    "sparkPlugs": "spark plugs",
+    "brakes": "brakes"
   }
 }
