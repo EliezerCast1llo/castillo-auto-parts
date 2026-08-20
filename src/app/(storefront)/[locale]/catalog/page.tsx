@@ -66,10 +66,12 @@ export async function generateMetadata({
 }
 
 type CatalogPageProps = {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<CatalogSearchParams>;
 };
 
-export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+export default async function CatalogPage({ params: routeParams, searchParams }: CatalogPageProps) {
+  const locale = await resolveRouteLocale(routeParams);
   const resolvedParams = searchParams ? await searchParams : {};
 
   // Las URLs viejas traían el estado de stock en español
@@ -117,7 +119,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Botón de filtros mobile + drawer */}

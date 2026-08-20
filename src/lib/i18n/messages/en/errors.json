@@ -1,0 +1,13 @@
+{
+  "notFound": {
+    "badge": "Error 404",
+    "title": "Page not found",
+    "description": "The link may have expired or the product may no longer be available. Browse the catalog to find the part you are looking for.",
+    "goToCatalog": "Go to the catalog"
+  },
+  "unexpected": {
+    "badge": "Something went wrong",
+    "title": "We could not load this page",
+    "description": "It is a temporary problem on our side. Try again; if it persists, come back in a few minutes."
+  }
+}

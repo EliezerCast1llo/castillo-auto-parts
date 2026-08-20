@@ -8,7 +8,10 @@ import { loadMessages } from "./messages";
  * Claves cuyo texto es legítimamente idéntico en ambos idiomas (nombres de
  * marca, siglas). Todo lo demás que salga igual es una traducción olvidada.
  */
-const IDENTICAL_BY_DESIGN = new Set<string>([]);
+const IDENTICAL_BY_DESIGN = new Set<string>([
+  // "Error 404" se escribe igual en los dos idiomas.
+  "Errors.notFound.badge",
+]);
 
 /** Palabras de 3 letras o menos coinciden por casualidad demasiado seguido. */
 const MIN_LENGTH_FOR_TRANSLATION_CHECK = 4;

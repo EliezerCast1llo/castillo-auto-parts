@@ -27,6 +27,7 @@ import {
 } from "@/data/catalog-filters";
 import { mockProducts } from "@/data/mock-products";
 import { formatCurrency } from "@/lib/money";
+import { resolveRouteLocale } from "@/lib/i18n/params";
 
 const sampleProduct = mockProducts[0];
 const relatedProducts = mockProducts.slice(1, 4);
@@ -46,7 +47,13 @@ export const metadata = {
   description: "Componentes visuales implementables para el MVP.",
 };
 
-export default function DesignPreviewPage() {
+export default async function DesignPreviewPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  await resolveRouteLocale(params);
+
   // Esta página es solo para revisión visual en desarrollo.
   // En producción retorna 404 para no exponer internos del sistema de diseño.
   if (process.env.NODE_ENV === "production") {

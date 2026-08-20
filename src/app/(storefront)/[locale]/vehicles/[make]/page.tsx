@@ -48,6 +48,7 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
 }
 
 export default async function VehicleMakePage({ params, searchParams }: VehicleMakePageProps) {
+  const locale = await resolveRouteLocale(params);
   const { make: slug } = await params;
   const make = await resolveMake(slug);
 
@@ -66,7 +67,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <nav

@@ -6,15 +6,17 @@ import { formatCurrency } from "@/lib/money";
 import { isMockPaymentAvailable } from "@/lib/payments/mock-access";
 import { firstValue } from "@/lib/url-utils";
 import { confirmMockPayment } from "./actions";
+import { resolveRouteLocale } from "@/lib/i18n/params";
 
 export const dynamic = "force-dynamic";
 
 type MockPaymentPageProps = {
-  params: Promise<{ externalPaymentId: string }>;
+  params: Promise<{ externalPaymentId: string; locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function MockPaymentPage({ params, searchParams }: MockPaymentPageProps) {
+  const locale = await resolveRouteLocale(params);
   if (!isMockPaymentAvailable()) notFound();
   const { externalPaymentId } = await params;
   const query = searchParams ? await searchParams : {};
@@ -29,7 +31,7 @@ export default async function MockPaymentPage({ params, searchParams }: MockPaym
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
       <section className="mx-auto max-w-xl px-4 py-12 sm:px-6">
         <div className="rounded-2xl border border-border bg-card p-6 shadow-[0_18px_50px_rgba(6,25,51,0.1)] sm:p-8">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">

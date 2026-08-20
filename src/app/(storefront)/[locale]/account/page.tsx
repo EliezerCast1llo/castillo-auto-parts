@@ -12,6 +12,7 @@ import { firstValue } from "@/lib/url-utils";
 import { changePasswordAction, logoutCustomer, updateProfileAction } from "./actions";
 
 import { resolveRouteLocale } from "@/lib/i18n/params";
+import { getStatusMessage } from "@/lib/i18n/status";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +39,10 @@ export default async function AccountPage({
 
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado);
-  const statusMessage = getStatusMessage(estado);
-  const errorMessage = getErrorMessage(estado);
+  const [statusMessage, errorMessage] = await Promise.all([
+    getStatusMessage("account.success", estado, locale),
+    getStatusMessage("account.error", estado, locale),
+  ]);
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
@@ -68,7 +71,7 @@ export default async function AccountPage({
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-sm font-bold text-ca-text-secondary">
@@ -146,22 +149,3 @@ function AccountNotice({
   );
 }
 
-function getStatusMessage(estado: string | undefined) {
-  const messages: Record<string, string> = {
-    password_changed: "Contraseña cambiada correctamente.",
-    updated: "Teléfono actualizado correctamente.",
-  };
-  return messages[estado ?? ""] ?? "";
-}
-
-function getErrorMessage(estado: string | undefined) {
-  const messages: Record<string, string> = {
-    invalid_phone: "Ingresa un teléfono válido o deja el campo vacío.",
-    missing_name: "El nombre es requerido.",
-    no_credentials: "Tu cuenta no tiene contraseña propia (usas Google).",
-    password_mismatch: "Las contraseñas no coinciden.",
-    weak_password: "La contraseña debe tener al menos 8 caracteres.",
-    wrong_password: "La contraseña actual es incorrecta.",
-  };
-  return messages[estado ?? ""] ?? "";
-}

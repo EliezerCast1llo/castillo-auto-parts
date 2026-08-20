@@ -6,6 +6,7 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { stockAlertStatuses, parseStockAlertStatus } from "@/lib/stock-alerts";
 import { updateStockAlertStatus } from "./actions";
+import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function AdminStockAlertsPage({ searchParams }: AdminStockA
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={defaultLocale} />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-md border border-border bg-card p-5">

@@ -18,6 +18,7 @@ import {
 } from "@/lib/order-formatters";
 import { firstValue } from "@/lib/url-utils";
 import { updateAdminOrderStatus } from "./actions";
+import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +81,7 @@ export default async function AdminOrderDetailPage({
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <SiteHeader locale={defaultLocale} />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Link href="/admin/orders" className="inline-flex items-center gap-2 text-sm font-semibold text-primary">

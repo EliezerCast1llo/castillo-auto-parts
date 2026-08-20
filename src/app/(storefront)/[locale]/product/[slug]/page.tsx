@@ -86,7 +86,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
       <JsonLd data={buildProductJsonLd(product, locale)} />
       <JsonLd data={buildBreadcrumbJsonLd(breadcrumbs, locale)} />
-      <SiteHeader />
+      <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         <ProductBreadcrumb product={product} />

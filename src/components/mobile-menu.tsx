@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { Menu, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -21,6 +22,7 @@ export function MobileMenu({
   accountLabel,
   variant = "dark",
 }: MobileMenuProps) {
+  const t = useTranslations("Nav");
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -101,12 +103,12 @@ export function MobileMenu({
             <nav className="flex flex-col gap-1 p-4" aria-label="Navegación móvil">
               {navLinks.map((link) => (
                 <Link
-                  key={link.label}
+                  key={link.key}
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className="flex h-12 items-center rounded-xl px-4 text-base font-bold text-ca-navy-950 transition hover:bg-ca-background"
                 >
-                  {link.label}
+                  {t(link.key)}
                 </Link>
               ))}
             </nav>

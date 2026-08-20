@@ -33,7 +33,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <main className="min-h-screen bg-background text-foreground">
       <JsonLd data={buildOrganizationJsonLd()} />
       <JsonLd data={buildWebSiteJsonLd(locale)} />
-      <SiteHeader variant="hero" />
+      <SiteHeader locale={locale} variant="hero" />
       <SearchHero filterOptions={filterOptions} />
 
       <div className="ca-premium-shell">

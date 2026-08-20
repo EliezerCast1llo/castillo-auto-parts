@@ -1,10 +1,10 @@
 import { ProductCardSkeleton, Skeleton } from "@/components/ui/skeleton";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeaderSkeleton } from "@/components/site-header-skeleton";
 
 export default function CatalogLoading() {
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
-      <SiteHeader />
+      <SiteHeaderSkeleton />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">

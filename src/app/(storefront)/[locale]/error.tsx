@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { AlertTriangle } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,6 +14,9 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("Errors.unexpected");
+  const tCommon = useTranslations("Common");
+
   useEffect(() => {
     // El error ya queda registrado por Next en servidor; aquí solo consola local.
     console.error("Unhandled route error", error);
@@ -25,19 +29,18 @@ export default function GlobalError({
           <AlertTriangle className="h-7 w-7" />
         </span>
         <p className="mt-5 text-xs font-black uppercase tracking-widest text-ca-gold-500">
-          Algo salió mal
+          {t("badge")}
         </p>
         <h1 className="mt-1 font-display text-2xl font-black text-ca-navy-950">
-          No pudimos cargar esta página
+          {t("title")}
         </h1>
         <p className="mt-3 text-sm leading-6 text-ca-text-secondary">
-          Es un problema temporal de nuestro lado. Intenta de nuevo; si persiste, vuelve en unos
-          minutos.
+          {t("description")}
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-          <Button onClick={reset}>Reintentar</Button>
+          <Button onClick={reset}>{tCommon("retry")}</Button>
           <Link className={cn(buttonVariants({ variant: "outline" }), "font-bold")} href="/">
-            Volver al inicio
+            {tCommon("backToHome")}
           </Link>
         </div>
       </div>

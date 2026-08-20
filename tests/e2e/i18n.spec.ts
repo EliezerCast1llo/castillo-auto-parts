@@ -191,6 +191,28 @@ test("a language without its own copy is served but not offered to crawlers", as
   expect(sitemap).toContain('hreflang="en"');
 });
 
+test("the chrome and the status messages speak the language of the page", async ({ page }) => {
+  const nav = () => page.getByRole("navigation", { name: "Navegación principal" }).getByRole("link");
+
+  await page.goto("/es/catalog");
+  await expect(nav().first()).toHaveText("Catálogo");
+
+  await page.goto("/en/catalog");
+  await expect(nav().first()).toHaveText("Catalog");
+
+  // El mismo codigo significa cosas distintas segun el area, asi que se
+  // verifican las dos: `invalid` es credenciales en el login y formulario en el
+  // checkout.
+  await page.goto("/en/auth/login?estado=invalid");
+  await expect(page.getByText("Incorrect email or password.")).toBeVisible();
+
+  await page.goto("/es/auth/login?estado=invalid");
+  await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible();
+
+  await page.goto("/en/checkout?estado=invalid");
+  await expect(page.getByText("Please review the form details.")).toBeVisible();
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";

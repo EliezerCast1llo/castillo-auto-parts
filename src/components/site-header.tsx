@@ -11,8 +11,17 @@ import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { siteNavItems } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import type { LocaleHref } from "@/lib/i18n/navigation";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 
 type SiteHeaderProps = {
+  /**
+   * Idioma del contenido. Se recibe y no se deduce: `getLocale()` resuelve el
+   * segmento de forma poco confiable en componentes anidados y cae al idioma
+   * por defecto sin avisar, así que el header terminaba en español dentro de
+   * páginas en inglés.
+   */
+  locale: Locale;
   /**
    * "default": header claro sticky con buscador (páginas internas).
    * "hero": header navy con utility bar (home).
@@ -20,7 +29,8 @@ type SiteHeaderProps = {
   variant?: "default" | "hero";
 };
 
-export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
+export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProps) {
+  const tNav = await getTranslations({ locale, namespace: "Nav" });
   const [cartItemCount, session] = await Promise.all([
     getGuestCartItemCount(),
     auth(),
@@ -34,6 +44,7 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
   if (variant === "hero") {
     return (
       <HeroHeader
+        locale={locale}
         accountHref={accountHref}
         accountLabel={accountLabel}
         cartItemCount={cartItemCount}
@@ -72,9 +83,9 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
                 <Link
                   className="inline-flex h-10 items-center rounded-ca-control px-3 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
                   href={item.href}
-                  key={item.label}
+                  key={item.key}
                 >
-                  {item.label}
+                  {tNav(item.key)}
                 </Link>
               ))}
             </nav>
@@ -136,12 +147,14 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
 // ---------------------------------------------------------------------------
 
 type HeroHeaderProps = {
+  locale: Locale;
   accountHref: LocaleHref;
   accountLabel: string;
   cartItemCount: number;
 };
 
-function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProps) {
+async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: HeroHeaderProps) {
+  const tNav = await getTranslations({ locale, namespace: "Nav" });
   return (
     <header className="bg-ca-navy-950 text-white">
       <UtilityBar />
@@ -165,9 +178,9 @@ function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProp
             <Link
               className="inline-flex items-center gap-1 text-sm font-bold text-white/88 transition hover:text-ca-gold-400"
               href={item.href}
-              key={item.label}
+              key={item.key}
             >
-              {item.label}
+              {tNav(item.key)}
             </Link>
           ))}
         </nav>
