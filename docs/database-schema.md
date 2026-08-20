@@ -519,3 +519,31 @@ Usos:
 - `Payment.externalPaymentId`.
 - `InvoiceDte.generationCode`.
 - `VehicleCompatibility(make, model, yearFrom, yearTo)`.
+
+## Traducciones de contenido
+
+`ProductTranslation` y `ProductCategoryTranslation` guardan el contenido en los
+idiomas **distintos del principal**. El espanol vive en las columnas de
+`Product` y `ProductCategory`; estas tablas solo tienen filas para los demas.
+
+Cada campo traducible es nullable a proposito: el fallback es **por campo**, no
+por fila. Un producto con nombre en ingles pero sin descripcion muestra el
+nombre traducido y la descripcion en espanol, en vez de caer entero a un idioma.
+
+La clave `@@unique([productId, locale])` es la que usa el admin para el upsert.
+Cuando los tres campos quedan vacios la fila se borra: una traduccion sin
+contenido no aporta y ensucia el `include` de cada lectura del catalogo.
+
+**Los slugs no se traducen.** `/en/product/pastillas-freno-toyota` conserva el
+slug en espanol. Traducirlos pediria una columna `slugEn`, una politica de
+colisiones y su propia tabla de redirects; queda fuera de alcance.
+
+**La busqueda no tiene indice para las traducciones.** La clausula sobre
+`ProductTranslation.name` es un `ILIKE '%q%'` con scan secuencial, igual que las
+que ya existian sobre `Product`. No es una regresion de tipo, pero una busqueda
+seria pide `pg_trgm` o una columna `tsvector`.
+
+`Order.locale` y `User.locale` existen para los correos: el de confirmacion se
+dispara desde el webhook del proveedor de pagos, fuera de todo request con
+segmento de idioma. El checkout admite invitados, asi que `User` no alcanza y la
+columna tiene que estar en la orden.

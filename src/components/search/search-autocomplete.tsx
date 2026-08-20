@@ -18,6 +18,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SearchResponse, SearchResult } from "@/app/api/search/route";
+import { useLocale } from "next-intl";
 import { formatStockStatus, type StockStatus } from "@/lib/stock-status";
 
 const DEBOUNCE_MS = 300;
@@ -29,6 +30,7 @@ type SearchAutocompleteProps = {
 };
 
 export function SearchAutocomplete({ variant = "default" }: SearchAutocompleteProps = {}) {
+  const locale = useLocale();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -55,7 +57,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
 
       try {
         const response = await fetch(
-          `/api/search?q=${encodeURIComponent(query)}`,
+          `/api/search?q=${encodeURIComponent(query)}&locale=${locale}`,
           { signal: abortRef.current.signal },
         );
 
@@ -78,7 +80,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query]);
+  }, [locale, query]);
 
   // Cerrar al hacer clic fuera
   useEffect(() => {

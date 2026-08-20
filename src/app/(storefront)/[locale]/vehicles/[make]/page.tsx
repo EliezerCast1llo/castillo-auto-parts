@@ -63,7 +63,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
   filters.vehicleMake = make;
 
   const { products, totalCount, totalPages, currentPage, status } =
-    await getFilteredCatalogProducts(filters, page, sort);
+    await getFilteredCatalogProducts(filters, page, sort, locale);
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">

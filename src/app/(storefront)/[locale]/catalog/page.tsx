@@ -97,7 +97,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
   }
 
   const [catalogResult, filterOptions] = await Promise.all([
-    getFilteredCatalogProducts(filters, page, sort),
+    getFilteredCatalogProducts(filters, page, sort, locale),
     getCatalogFacets(),
   ]);
 

@@ -249,6 +249,40 @@ test("the same failed action keeps a Spanish visitor in Spanish", async ({ page 
   await expect(page.getByText("Email o contraseña incorrectos.")).toBeVisible();
 });
 
+test("product content follows the language, and falls back field by field", async ({
+  page,
+  request,
+}) => {
+  // Producto con traduccion: nombre y descripcion en ingles.
+  await page.goto(ES("/product/filtro-aceite-toyota-18l"));
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Filtro de aceite");
+
+  await page.goto(EN("/product/filtro-aceite-toyota-18l"));
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("oil filter");
+
+  // La busqueda encuentra por el nombre traducido: sin la clausula sobre la
+  // tabla de traducciones, quien busca en ingles no encuentra nada.
+  const english = await (await request.get("/api/search?q=oil%20filter&locale=en")).json();
+  expect(english.results.length).toBeGreaterThan(0);
+  expect(english.results[0].name).toContain("oil filter");
+
+  // Y el idioma viaja en la query, no en la cookie: la respuesta se cachea en
+  // el CDN y la clave tiene que separarlos.
+  const spanish = await (await request.get("/api/search?q=filtro&locale=es")).json();
+  expect(spanish.results.length).toBeGreaterThan(0);
+  expect(spanish.results[0].name).toContain("Filtro");
+});
+
+test("a product without translation still renders inside the English site", async ({ page }) => {
+  // El fallback es por campo y por producto: el catalogo en ingles muestra en
+  // espanol lo que todavia no tiene traduccion, en vez de quedar en blanco.
+  // Sin esto, publicar el ingles obligaria a traducir el catalogo entero antes.
+  await page.goto(EN("/catalog"));
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("link", { name: /^Amortiguador delantero/ }).first()).toBeVisible();
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";

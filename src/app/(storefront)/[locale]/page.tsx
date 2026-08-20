@@ -26,7 +26,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const locale = await resolveAndPublishRouteLocale(params);
   const [filterOptions, featuredResult] = await Promise.all([
     getCatalogFacets(),
-    getFeaturedCatalogProductsResult(),
+    getFeaturedCatalogProductsResult(locale),
   ]);
 
   return (

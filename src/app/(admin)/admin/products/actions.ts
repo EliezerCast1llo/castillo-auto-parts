@@ -33,6 +33,7 @@ type AdminProductInput = {
   quantityOnHand: number;
   reorderPoint: number;
   shortDescription: string | null;
+  translationEn: { name: string | null; shortDescription: string | null; description: string | null };
   sku: string;
   slug: string;
   status: InventoryStatus;
@@ -76,6 +77,7 @@ export async function createAdminProduct(formData: FormData) {
 
       await replaceCompatibilities(tx, savedProduct.id, input.compatibilities);
       await upsertInventoryStock(tx, savedProduct.id, input);
+      await saveProductTranslation(tx, savedProduct.id, "en", input.translationEn);
       await writeAdminAuditLog(tx, {
         action: "product.created",
         entityId: savedProduct.id,
@@ -144,6 +146,7 @@ export async function updateAdminProduct(formData: FormData) {
 
       await replaceCompatibilities(tx, productId, input.compatibilities);
       await upsertInventoryStock(tx, productId, input);
+      await saveProductTranslation(tx, productId, "en", input.translationEn);
       await writeAdminAuditLog(tx, {
         action: "product.updated",
         entityId: productId,
@@ -265,6 +268,11 @@ function parseAdminProductFormData(formData: FormData): AdminProductInput | null
     reorderPoint,
     shortDescription: optionalFormStringOrNull(formData, "shortDescription"),
     sku,
+    translationEn: {
+      name: optionalFormStringOrNull(formData, "nameEn"),
+      shortDescription: optionalFormStringOrNull(formData, "shortDescriptionEn"),
+      description: optionalFormStringOrNull(formData, "descriptionEn"),
+    },
     slug,
     status: normalizeAdminInventoryStatus({ quantityOnHand, requestedStatus }),
     technicalDetails: parseTechnicalDetails(formString(formData, "technicalDetails")),
@@ -430,4 +438,31 @@ class AdminProductDomainError extends Error {
   constructor(readonly code: "invalid" | "not_found") {
     super(code);
   }
+}
+
+/**
+ * Guarda o borra la traducción de un producto.
+ *
+ * Si los tres campos quedan vacíos se borra la fila entera en vez de guardar
+ * nulos: una fila de traducción sin contenido no aporta nada y ensucia el
+ * `include` de cada lectura del catálogo.
+ */
+async function saveProductTranslation(
+  tx: Prisma.TransactionClient,
+  productId: string,
+  locale: string,
+  translation: AdminProductInput["translationEn"],
+) {
+  const hasContent = Object.values(translation).some((value) => value != null);
+
+  if (!hasContent) {
+    await tx.productTranslation.deleteMany({ where: { productId, locale } });
+    return;
+  }
+
+  await tx.productTranslation.upsert({
+    where: { productId_locale: { productId, locale } },
+    update: translation,
+    create: { productId, locale, ...translation },
+  });
 }
