@@ -142,12 +142,18 @@ export function filterCatalogProducts(products: CatalogProduct[], filters: Catal
 export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilterOptions {
   const vehicles = products.flatMap((product) => product.vehicleCompatibilities);
 
+  const categoryLabels: Record<string, string> = Object.fromEntries(
+    products.map((product) => [categorySlugOf(product), product.category]),
+  );
+
   return {
-    categories: uniqueSorted(products.map(categorySlugOf)),
-    brands: uniqueSorted(products.map((product) => product.brand)),
-    categoryLabels: Object.fromEntries(
-      products.map((product) => [categorySlugOf(product), product.category]),
+    // Ordenadas por la etiqueta que se lee, igual que las facetas de base: si
+    // el fallback ordenara por slug, activarlo reacomodaría el sidebar.
+    categories: uniqueSorted(products.map(categorySlugOf)).sort((a, b) =>
+      (categoryLabels[a] ?? a).localeCompare(categoryLabels[b] ?? b),
     ),
+    brands: uniqueSorted(products.map((product) => product.brand)),
+    categoryLabels,
     categoryCounts: countBy(products, categorySlugOf),
     brandCounts: countBy(products, (product) => product.brand),
     stockStatuses: stockStatusOrder.filter((status) =>

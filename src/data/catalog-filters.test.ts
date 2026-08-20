@@ -191,6 +191,17 @@ describe("catalog filters", () => {
     expect(options.vehicleYears).toContain("2022");
   });
 
+  it("ordena las categorías del fallback por la etiqueta, no por el slug", () => {
+    // El camino de base ordena por el nombre que se lee; si el fallback
+    // ordenara por slug, activarlo reacomodaría el sidebar sin que nada más
+    // cambie. Se nota solo cuando la base no responde, que es justo cuando
+    // nadie está mirando.
+    const options = getCatalogFilterOptions(mockProducts);
+    const labels = options.categories.map((slug) => options.categoryLabels[slug]);
+
+    expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b)));
+  });
+
   it("builds dependent vehicle year facets by make and make+model", () => {
     const options = getCatalogFilterOptions(mockProducts);
 

@@ -9,6 +9,11 @@
  *
  * Quita acentos antes de bajar a minúsculas para que "Suspensión" y
  * "suspension" lleguen al mismo slug.
+ *
+ * Que `slug === slugifyValue(name)` se sostiene porque los dos caminos que
+ * escriben categorías lo derivan del nombre: `prisma/seed.ts` y el
+ * `resolveCategoryId` del admin. Una categoría cuyo slug divergiera del nombre
+ * no resolvería su URL vieja, pero hoy no hay forma de crearla.
  */
 export function slugifyValue(value: string) {
   return value

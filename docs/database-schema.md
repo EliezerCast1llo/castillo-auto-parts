@@ -541,13 +541,17 @@ script con `"EN"` o `"en-US"`: el `where: { locale }` busca `"en"` exacto, asi
 que esa fila no se selecciona nunca y la traduccion se da por cargada sin
 estarlo. Verifica la forma y no la lista de idiomas soportados —esa vive en
 `src/lib/i18n/config.ts` y repetirla en SQL garantiza que una de las dos se
-desactualice.
+desactualice. Si algun dia se soporta un idioma con region (`pt-BR`), el CHECK
+hay que relajarlo a `^[a-z]{2}(-[A-Z]{2})?$`.
 
 **`ProductCategory.slug` es el identificador del filtro del catalogo**, no su
 `name`. El nombre se traduce, asi que filtrar por el hacia imposible traducir la
 faceta: en cuanto el sidebar dijera "Brakes", `?category=Brakes` no encontraba
 nada. Las URLs con el nombre en espanol (`?category=Frenos`) se siguen
-entendiendo y redirigen 308 al slug.
+entendiendo y redirigen 308 al slug. Esa traduccion de vuelta asume
+`slug === slugify(name)`, que se sostiene porque los dos caminos que crean
+categorias —el seed y el `resolveCategoryId` del admin— derivan el slug del
+nombre.
 
 **Los slugs no se traducen.** `/en/product/pastillas-freno-toyota` conserva el
 slug en espanol. Traducirlos pediria una columna `slugEn`, una politica de

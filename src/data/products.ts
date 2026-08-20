@@ -607,47 +607,54 @@ function compareByName(left: CatalogProduct, right: CatalogProduct) {
  * la clave de los argumentos, así que sin esto las facetas en inglés y en
  * español compartirían fila de caché y la UI mostraría la que se haya calentado
  * primero.
+ *
+ * Doble capa igual que `findDbProducts`. La de React hace falta porque el
+ * catálogo pide las facetas dos veces por request —una en `generateMetadata`
+ * para el título, otra en la página— y sin ella son dos lecturas donde alcanza
+ * una.
  */
-const findDbCatalogFacets = unstable_cache(
-  async (locale: Locale) => {
-    const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
-      db.product.groupBy({ by: ["brand"], where: { isActive: true }, _count: { _all: true } }),
-      db.productCategory.findMany({
-        where: { isActive: true, products: { some: { isActive: true } } },
-        select: {
-          name: true,
-          slug: true,
-          translations: { where: { locale }, select: { name: true } },
-          _count: { select: { products: { where: { isActive: true } } } },
-        },
-      }),
-      db.inventoryStock.groupBy({
-        by: ["status"],
-        where: { product: { isActive: true } },
-      }),
-      db.vehicleCompatibility.findMany({
-        where: { product: { isActive: true } },
-        select: { make: true, model: true, yearFrom: true, yearTo: true },
-        distinct: ["make", "model", "yearFrom", "yearTo"],
-      }),
-    ]);
+const findDbCatalogFacets = cache(
+  unstable_cache(
+    async (locale: Locale) => {
+      const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
+        db.product.groupBy({ by: ["brand"], where: { isActive: true }, _count: { _all: true } }),
+        db.productCategory.findMany({
+          where: { isActive: true, products: { some: { isActive: true } } },
+          select: {
+            name: true,
+            slug: true,
+            translations: { where: { locale }, select: { name: true } },
+            _count: { select: { products: { where: { isActive: true } } } },
+          },
+        }),
+        db.inventoryStock.groupBy({
+          by: ["status"],
+          where: { product: { isActive: true } },
+        }),
+        db.vehicleCompatibility.findMany({
+          where: { product: { isActive: true } },
+          select: { make: true, model: true, yearFrom: true, yearTo: true },
+          distinct: ["make", "model", "yearFrom", "yearTo"],
+        }),
+      ]);
 
-    return {
-      brands: brandGroups.map((group) => group.brand),
-      brandCounts: Object.fromEntries(
-        brandGroups.map((group) => [group.brand, group._count._all]),
-      ),
-      categories: categories.map((category) => ({
-        slug: category.slug,
-        label: translated(category.translations[0]?.name, category.name),
-        count: category._count.products,
-      })),
-      stockStatuses: stockGroups.map((group) => group.status),
-      vehicles,
-    };
-  },
-  ["catalog-facets"],
-  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+      return {
+        brands: brandGroups.map((group) => group.brand),
+        brandCounts: Object.fromEntries(
+          brandGroups.map((group) => [group.brand, group._count._all]),
+        ),
+        categories: categories.map((category) => ({
+          slug: category.slug,
+          label: translated(category.translations[0]?.name, category.name),
+          count: category._count.products,
+        })),
+        stockStatuses: stockGroups.map((group) => group.status),
+        vehicles,
+      };
+    },
+    ["catalog-facets"],
+    { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+  ),
 );
 
 /**
