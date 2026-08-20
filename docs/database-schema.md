@@ -519,3 +519,50 @@ Usos:
 - `Payment.externalPaymentId`.
 - `InvoiceDte.generationCode`.
 - `VehicleCompatibility(make, model, yearFrom, yearTo)`.
+
+## Traducciones de contenido
+
+`ProductTranslation` y `ProductCategoryTranslation` guardan el contenido en los
+idiomas **distintos del principal**. El espanol vive en las columnas de
+`Product` y `ProductCategory`; estas tablas solo tienen filas para los demas.
+
+Cada campo traducible es nullable a proposito: el fallback es **por campo**, no
+por fila. Un producto con nombre en ingles pero sin descripcion muestra el
+nombre traducido y la descripcion en espanol, en vez de caer entero a un idioma.
+
+La clave `@@unique([productId, locale])` es la que usa el admin para el upsert.
+Cuando los tres campos quedan vacios la fila se borra: una traduccion sin
+contenido no aporta y ensucia el `include` de cada lectura del catalogo.
+
+Las cuatro columnas `locale` (las dos tablas de traduccion, `Order` y `User`)
+llevan un CHECK de formato `^[a-z]{2}$` que Prisma no puede declarar y vive en
+la migracion `20260820120000_locale_format_check`. Ataja la fila escrita por
+script con `"EN"` o `"en-US"`: el `where: { locale }` busca `"en"` exacto, asi
+que esa fila no se selecciona nunca y la traduccion se da por cargada sin
+estarlo. Verifica la forma y no la lista de idiomas soportados —esa vive en
+`src/lib/i18n/config.ts` y repetirla en SQL garantiza que una de las dos se
+desactualice. Si algun dia se soporta un idioma con region (`pt-BR`), el CHECK
+hay que relajarlo a `^[a-z]{2}(-[A-Z]{2})?$`.
+
+**`ProductCategory.slug` es el identificador del filtro del catalogo**, no su
+`name`. El nombre se traduce, asi que filtrar por el hacia imposible traducir la
+faceta: en cuanto el sidebar dijera "Brakes", `?category=Brakes` no encontraba
+nada. Las URLs con el nombre en espanol (`?category=Frenos`) se siguen
+entendiendo y redirigen 308 al slug. Esa traduccion de vuelta asume
+`slug === slugify(name)`, que se sostiene porque los dos caminos que crean
+categorias —el seed y el `resolveCategoryId` del admin— derivan el slug del
+nombre.
+
+**Los slugs no se traducen.** `/en/product/pastillas-freno-toyota` conserva el
+slug en espanol. Traducirlos pediria una columna `slugEn`, una politica de
+colisiones y su propia tabla de redirects; queda fuera de alcance.
+
+**La busqueda no tiene indice para las traducciones.** La clausula sobre
+`ProductTranslation.name` es un `ILIKE '%q%'` con scan secuencial, igual que las
+que ya existian sobre `Product`. No es una regresion de tipo, pero una busqueda
+seria pide `pg_trgm` o una columna `tsvector`.
+
+`Order.locale` y `User.locale` existen para los correos: el de confirmacion se
+dispara desde el webhook del proveedor de pagos, fuera de todo request con
+segmento de idioma. El checkout admite invitados, asi que `User` no alcanza y la
+columna tiene que estar en la orden.

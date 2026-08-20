@@ -53,6 +53,8 @@ enum InvoiceStatus {
 
 model User {
   id            String    @id @default(cuid())
+  /// Idioma preferido para los correos que no nacen de un request suyo.
+  locale        String    @default("es")
   name          String?
   email         String    @unique
   emailVerified DateTime?
@@ -121,15 +123,16 @@ model GuestSession {
 }
 
 model ProductCategory {
-  id          String    @id @default(cuid())
-  name        String
-  slug        String    @unique
-  description String?
-  isActive    Boolean   @default(true)
-  sortOrder   Int       @default(0)
-  products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String                       @id @default(cuid())
+  name         String
+  slug         String                       @unique
+  description  String?
+  isActive     Boolean                      @default(true)
+  sortOrder    Int                          @default(0)
+  products     Product[]
+  translations ProductCategoryTranslation[]
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
 }
 
 model Product {
@@ -155,6 +158,7 @@ model Product {
   stockAlertRequests StockAlertRequest[]
   cartItems          CartItem[]
   orderItems         OrderItem[]
+  translations       ProductTranslation[]
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
 
@@ -268,6 +272,11 @@ model Address {
 
 model Order {
   id                   String        @id @default(cuid())
+  /// Idioma en el que el cliente hizo la compra. El correo de confirmacion se
+  /// dispara desde el webhook del proveedor de pagos, fuera de todo request con
+  /// segmento de idioma: sin esta columna no hay forma de saberlo. Y el checkout
+  /// admite invitados, asi que `User` no alcanza.
+  locale               String        @default("es")
   orderNumber          String        @unique
   idempotencyKey       String?       @unique
   intentHash           String?
@@ -458,4 +467,44 @@ model StockAlertRequest {
   @@index([productId])
   @@index([skuSnapshot])
   @@index([status])
+}
+
+/// Traduccion de un producto a un idioma no principal.
+///
+/// El espanol vive en las columnas de `Product`: aca solo hay filas para los
+/// demas idiomas. Cada campo es nullable a proposito, para que el fallback sea
+/// **por campo** y no por fila: un producto con nombre en ingles pero sin
+/// descripcion muestra el nombre traducido y la descripcion en espanol.
+///
+/// `locale` tiene un CHECK de formato (`^[a-z]{2}$`) que Prisma no puede
+/// expresar; vive en la migración 20260820120000_locale_format_check.
+model ProductTranslation {
+  id               String   @id @default(cuid())
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locale           String
+  name             String?
+  shortDescription String?
+  description      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([productId, locale])
+  @@index([locale])
+}
+
+/// Traduccion de una categoria. Mismas reglas que ProductTranslation, CHECK de
+/// formato sobre `locale` incluido.
+model ProductCategoryTranslation {
+  id          String          @id @default(cuid())
+  categoryId  String
+  category    ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  locale      String
+  name        String?
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([categoryId, locale])
+  @@index([locale])
 }

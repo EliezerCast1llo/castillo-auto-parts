@@ -52,6 +52,7 @@ export default async function EditAdminProductPage({
         images: {
           orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
         },
+        translations: { where: { locale: "en" } },
       },
       where: { slug },
     }),
@@ -86,7 +87,7 @@ export default async function EditAdminProductPage({
           <AdminProductForm
             action={updateAdminProduct}
             categories={categories}
-            product={product}
+            product={{ ...product, translationEn: product.translations[0] ?? null }}
             submitLabel="Guardar producto"
           />
           {/* Gestión de imágenes — solo disponible en edición, requiere product.id existente */}

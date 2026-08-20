@@ -5,12 +5,19 @@ import {
   stockStatuses,
   type StockStatus,
 } from "@/lib/stock-status";
+import { slugifyValue } from "@/lib/slug";
 import type { CatalogProduct } from "./products";
 
 export type CatalogSearchParams = Record<string, string | string[] | undefined>;
 
 export type CatalogFilters = {
   query: string;
+  /**
+   * Slugs de categoría, no nombres. El nombre es texto que se traduce; el slug
+   * es el identificador con el que se filtra. Colapsarlos hacía imposible
+   * traducir la faceta: en cuanto el sidebar dijera "Brakes", el filtro por
+   * nombre dejaba de encontrar nada.
+   */
   categories: string[];
   brands: string[];
   stockStatuses: CatalogProduct["stockStatus"][];
@@ -20,8 +27,11 @@ export type CatalogFilters = {
 };
 
 export type CatalogFilterOptions = {
+  /** Slugs de categoría; el texto a mostrar sale de `categoryLabels`. */
   categories: string[];
   brands: string[];
+  /** Slug de categoría al nombre ya traducido que se muestra. */
+  categoryLabels: Record<string, string>;
   /** Productos activos por categoría/marca; alimenta los "(n)" de la UI. */
   categoryCounts: Record<string, number>;
   brandCounts: Record<string, number>;
@@ -54,7 +64,7 @@ export const stockStatusOrder: readonly StockStatus[] = stockStatuses;
 export function parseCatalogFilters(searchParams: CatalogSearchParams): CatalogFilters {
   return {
     query: firstValue(searchParams.q),
-    categories: valuesFor(searchParams.category),
+    categories: parseCategoryParams(searchParams.category),
     brands: valuesFor(searchParams.brand),
     stockStatuses: parseStockStatusParams(searchParams.stock),
     vehicleMake: firstValue(searchParams.vehicleMake),
@@ -64,25 +74,32 @@ export function parseCatalogFilters(searchParams: CatalogSearchParams): CatalogF
 }
 
 /**
- * Si el query param `stock` trae valores en español legacy, devuelve el query
- * string canónico para redirigir; `null` cuando no hay nada que migrar.
+ * Si `stock` o `category` traen los valores en español que la app publicó antes
+ * de separar identificador y etiqueta, devuelve el query string canónico para
+ * redirigir; `null` cuando no hay nada que migrar.
  *
  * El `null` es la guarda contra el loop: después del redirect los valores ya son
  * identificadores canónicos, así que la segunda pasada no vuelve a disparar.
  */
 export function buildCanonicalCatalogQuery(searchParams: CatalogSearchParams): string | null {
   const rawStock = valuesFor(searchParams.stock);
-  if (!rawStock.some(isLegacyStockStatusParam)) return null;
+  const rawCategory = valuesFor(searchParams.category);
+  const needsMigration =
+    rawStock.some(isLegacyStockStatusParam) || rawCategory.some(isLegacyCategoryParam);
+  if (!needsMigration) return null;
 
   const canonical = new URLSearchParams();
   for (const [key, value] of Object.entries(searchParams)) {
-    if (key === "stock" || value === undefined) continue;
+    if (key === "stock" || key === "category" || value === undefined) continue;
     for (const item of Array.isArray(value) ? value : [value]) {
       canonical.append(key, item);
     }
   }
   for (const status of parseStockStatusParams(searchParams.stock)) {
     canonical.append("stock", status);
+  }
+  for (const slug of parseCategoryParams(searchParams.category)) {
+    canonical.append("category", slug);
   }
 
   return canonical.toString();
@@ -107,13 +124,13 @@ export function getEmptyCatalogFilters(): CatalogFilters {
 
 export function filterCatalogProducts(products: CatalogProduct[], filters: CatalogFilters) {
   const query = normalize(filters.query);
-  const categories = normalizedSet(filters.categories);
+  const categories = new Set(filters.categories);
   const brands = normalizedSet(filters.brands);
   const selectedStatuses = new Set<StockStatus>(filters.stockStatuses);
 
   return products.filter((product) => {
     if (query && !productMatchesQuery(product, query)) return false;
-    if (categories.size > 0 && !categories.has(normalize(product.category))) return false;
+    if (categories.size > 0 && !categories.has(categorySlugOf(product))) return false;
     if (brands.size > 0 && !brands.has(normalize(product.brand))) return false;
     if (selectedStatuses.size > 0 && !selectedStatuses.has(product.stockStatus)) return false;
     if (!productMatchesVehicle(product, filters)) return false;
@@ -125,10 +142,19 @@ export function filterCatalogProducts(products: CatalogProduct[], filters: Catal
 export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilterOptions {
   const vehicles = products.flatMap((product) => product.vehicleCompatibilities);
 
+  const categoryLabels: Record<string, string> = Object.fromEntries(
+    products.map((product) => [categorySlugOf(product), product.category]),
+  );
+
   return {
-    categories: uniqueSorted(products.map((product) => product.category)),
+    // Ordenadas por la etiqueta que se lee, igual que las facetas de base: si
+    // el fallback ordenara por slug, activarlo reacomodaría el sidebar.
+    categories: uniqueSorted(products.map(categorySlugOf)).sort((a, b) =>
+      (categoryLabels[a] ?? a).localeCompare(categoryLabels[b] ?? b),
+    ),
     brands: uniqueSorted(products.map((product) => product.brand)),
-    categoryCounts: countBy(products, (product) => product.category),
+    categoryLabels,
+    categoryCounts: countBy(products, categorySlugOf),
     brandCounts: countBy(products, (product) => product.brand),
     stockStatuses: stockStatusOrder.filter((status) =>
       products.some((product) => product.stockStatus === status),
@@ -207,7 +233,9 @@ function sortYearSets(record: Record<string, Set<string>>): Record<string, strin
  * - query: busca por name, sku, partNumber y brand con modo insensible a case.
  *   La búsqueda full-text (descripción, compatibilidad) sigue haciéndose en
  *   memoria vía filterCatalogProducts cuando se necesita (mock/autocomplete).
- * - categories: filtra por nombre de categoría (OR entre múltiples).
+ * - categories: filtra por slug de categoría (OR entre múltiples). Por slug y
+ *   no por nombre porque el nombre se traduce y el filtro no puede depender
+ *   del idioma en que se esté viendo el catálogo.
  * - brands: filtra por marca (OR entre múltiples).
  * - stockStatuses: traduce el estado de la app a InventoryStatus de Prisma.
  * - vehicle: filtra por VehicleCompatibility con make, model y año.
@@ -235,7 +263,7 @@ export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereIn
   // Categorías (OR entre seleccionadas)
   if (filters.categories.length > 0) {
     conditions.push({
-      category: { name: { in: filters.categories } },
+      category: { slug: { in: filters.categories } },
     });
   }
 
@@ -353,6 +381,40 @@ function valuesFor(value: string | string[] | undefined) {
   const values = Array.isArray(value) ? value : [value];
   return uniqueSorted(values.filter((item): item is string => Boolean(item)).map((item) => item.trim()))
     .filter(Boolean);
+}
+
+/**
+ * Slug de la categoría de un producto.
+ *
+ * El mock no tiene columna de slug —no tiene tabla de categorías— así que se
+ * deriva del nombre con la misma regla del seed. Para los productos de base,
+ * `mapDbProduct` trae el slug real y esta función lo devuelve tal cual, sin
+ * re-derivarlo: si alguien renombra una categoría sin tocar su slug, el filtro
+ * tiene que seguir el slug y no el nombre nuevo.
+ */
+export function categorySlugOf(product: CatalogProduct): string {
+  return product.categorySlug ?? slugifyValue(product.category);
+}
+
+/** Nombre a mostrar para un slug; cae al slug si la faceta no lo conoce. */
+export function categoryLabelOf(options: CatalogFilterOptions, slug: string): string {
+  return options.categoryLabels[slug] ?? slug;
+}
+
+/**
+ * Lee el query param `category`, aceptando tanto slugs como los nombres en
+ * español que la app publicó antes de separar identificador y etiqueta.
+ *
+ * `?category=Frenos` y `?category=frenos` llegan al mismo slug porque
+ * `slugifyValue` es la regla con la que se sembraron las filas.
+ */
+function parseCategoryParams(value: string | string[] | undefined): string[] {
+  return uniqueSorted(valuesFor(value).map(slugifyValue)).filter(Boolean);
+}
+
+/** True si el valor del param no es ya su forma canónica. */
+export function isLegacyCategoryParam(value: string) {
+  return slugifyValue(value) !== value;
 }
 
 function normalizedSet(values: string[]) {

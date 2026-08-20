@@ -49,8 +49,11 @@ const mockProducts = {
   status: "ready",
 };
 
-function makeRequest(q: string) {
-  return new NextRequest(`http://localhost:3000/api/search?q=${encodeURIComponent(q)}`);
+function makeRequest(q: string, locale?: string) {
+  const url = new URL("http://localhost:3000/api/search");
+  url.searchParams.set("q", q);
+  if (locale !== undefined) url.searchParams.set("locale", locale);
+  return new NextRequest(url);
 }
 
 describe("GET /api/search", () => {
@@ -84,7 +87,7 @@ describe("GET /api/search", () => {
   it("busca por nombre de producto", async () => {
     const response = await GET(makeRequest("filtro"));
     const data = await response.json();
-    expect(searchCatalogProducts).toHaveBeenCalledWith("filtro", 6);
+    expect(searchCatalogProducts).toHaveBeenCalledWith("filtro", 6, "es");
     expect(data.results).toHaveLength(2);
     expect(data.results[0].slug).toBe("filtro-aceite-toyota");
   });
@@ -92,7 +95,7 @@ describe("GET /api/search", () => {
   it("busca por SKU", async () => {
     const response = await GET(makeRequest("FRN-042"));
     const data = await response.json();
-    expect(searchCatalogProducts).toHaveBeenCalledWith("FRN-042", 6);
+    expect(searchCatalogProducts).toHaveBeenCalledWith("FRN-042", 6, "es");
     expect(data.results[1].slug).toBe("pastillas-freno-honda");
   });
 
@@ -137,4 +140,30 @@ describe("GET /api/search", () => {
     expect(data.error).toContain("Demasiadas búsquedas");
     expect(searchCatalogProducts).not.toHaveBeenCalled();
   });
+  it("busca en el idioma que pide la query", async () => {
+    vi.mocked(searchCatalogProducts).mockResolvedValue({
+      products: [],
+      source: "database",
+      status: "empty",
+    });
+
+    await GET(makeRequest("oil filter", "en"));
+
+    expect(searchCatalogProducts).toHaveBeenCalledWith("oil filter", 6, "en");
+  });
+
+  it("cae al idioma principal si el parámetro es inválido", async () => {
+    // El valor viene de la URL: un idioma inventado no debe romper la búsqueda
+    // ni colarse como clave de caché del CDN.
+    vi.mocked(searchCatalogProducts).mockResolvedValue({
+      products: [],
+      source: "database",
+      status: "empty",
+    });
+
+    await GET(makeRequest("oil filter", "klingon"));
+
+    expect(searchCatalogProducts).toHaveBeenCalledWith("oil filter", 6, "es");
+  });
+
 });

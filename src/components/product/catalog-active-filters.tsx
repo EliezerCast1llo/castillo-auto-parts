@@ -1,6 +1,7 @@
 import { Link } from "@/lib/i18n/navigation";
 import { X } from "lucide-react";
-import type { CatalogFilters, CatalogSort } from "@/data/catalog-filters";
+import { categoryLabelOf } from "@/data/catalog-filters";
+import type { CatalogFilters, CatalogFilterOptions, CatalogSort } from "@/data/catalog-filters";
 import type { LocaleHref } from "@/lib/i18n/navigation";
 import { formatStockStatus } from "@/lib/stock-status";
 import { toLinkQuery } from "@/lib/url-utils";
@@ -12,10 +13,16 @@ type FilterChip = {
 
 export function CatalogActiveFilters({
   filters,
+  options,
   sort = "relevance",
   hideVehicleChips = false,
 }: {
   filters: CatalogFilters;
+  /**
+   * Las facetas, solo para resolver el nombre visible de cada categoría: el
+   * filtro guarda el slug y el chip tiene que mostrar el texto traducido.
+   */
+  options: CatalogFilterOptions;
   sort?: CatalogSort;
   /**
    * Cuando el filtro de vehículo viene de la cookie "mi vehículo" (no de la
@@ -27,6 +34,7 @@ export function CatalogActiveFilters({
   const chips = getActiveFilterChips(
     hideVehicleChips ? { ...filters, vehicleMake: "", vehicleModel: "", vehicleYear: "" } : filters,
     sort,
+    options,
   );
 
   if (chips.length === 0) {
@@ -67,7 +75,11 @@ export function CatalogActiveFilters({
   );
 }
 
-function getActiveFilterChips(filters: CatalogFilters, sort: CatalogSort): FilterChip[] {
+function getActiveFilterChips(
+  filters: CatalogFilters,
+  sort: CatalogSort,
+  options: CatalogFilterOptions,
+): FilterChip[] {
   const chips: FilterChip[] = [];
 
   if (filters.query) {
@@ -102,11 +114,11 @@ function getActiveFilterChips(filters: CatalogFilters, sort: CatalogSort): Filte
     });
   }
 
-  filters.categories.forEach((category) => {
+  filters.categories.forEach((slug) => {
     chips.push({
-      label: `Categoría: ${category}`,
+      label: `Categoría: ${categoryLabelOf(options, slug)}`,
       href: buildCatalogHref(filters, sort, {
-        categories: filters.categories.filter((item) => item !== category),
+        categories: filters.categories.filter((item) => item !== slug),
       }),
     });
   });

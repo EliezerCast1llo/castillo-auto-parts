@@ -20,6 +20,65 @@ function slugify(value: string) {
  * El estado de la app tiene tres valores y el enum de Prisma cuatro; PREORDER
  * no se siembra, así que el resto cae en OUT_OF_STOCK.
  */
+/**
+ * Traducciones al ingles de las categorias. Todas, porque son once y se ven en
+ * los filtros de cada pagina del catalogo.
+ */
+const CATEGORY_EN: Record<string, string> = {
+  Filtros: "Filters",
+  Frenos: "Brakes",
+  "Bujías": "Spark plugs",
+  Escobillas: "Wiper blades",
+  Focos: "Bulbs",
+  Fluidos: "Fluids",
+  "Suspensión": "Suspension",
+  "Baterías": "Batteries",
+  Correas: "Belts",
+  Enfriamiento: "Cooling",
+  "Eléctrico": "Electrical",
+};
+
+/**
+ * Traducciones de producto para un subconjunto representativo.
+ *
+ * A proposito no estan todos: sirve para que el smoke en ingles sea real y,
+ * sobre todo, para dejar vivo el caso de fallback —producto sin traduccion,
+ * que debe mostrarse en espanol dentro de una pagina en ingles— que es lo que
+ * hay que poder mirar en QA.
+ */
+const PRODUCT_EN: Record<string, { name: string; shortDescription?: string; description?: string }> = {
+  "filtro-aceite-toyota-18l": {
+    name: "Toyota 1.8L oil filter",
+    description:
+      "Oil filter for Toyota 1.8L engines. Replace it with every oil change to keep the lubrication circuit clean.",
+  },
+  "pastillas-freno-delanteras-toyota-corolla": {
+    name: "Toyota Corolla front brake pads",
+    description: "Front brake pads for Toyota Corolla. Check the discs when you replace them.",
+  },
+  "bujia-iridio-hyundai-kia-16l": {
+    name: "Hyundai/Kia 1.6L iridium spark plug",
+    description: "Iridium spark plug for Hyundai and Kia 1.6L engines. Longer service life than copper.",
+  },
+  "refrigerante-premix-1-galon": {
+    name: "Pre-mixed coolant, 1 gallon",
+    description: "Ready-to-use pre-mixed coolant. No dilution needed.",
+  },
+  "escobilla-universal-22-pulgadas": {
+    name: "Universal wiper blade, 22 inches",
+    // Con descripcion corta a proposito: es el unico camino por el que ese
+    // campo se ve en la tienda —sustituye a la compatibilidad cuando el
+    // producto no tiene vehiculos cargados— y sin una fila asi la traduccion
+    // se guardaba y no se mostraba en ningun lado sin que nada avisara.
+    shortDescription: "Universal by size",
+    description: "Universal 22-inch wiper blade with a multi-adapter mount.",
+  },
+  "bateria-12v-65ah": {
+    name: "12V 65Ah battery",
+    description: "Sealed 12V 65Ah battery, maintenance free.",
+  },
+};
+
 function toInventoryStatus(status: StockStatus) {
   if (status === "IN_STOCK") return InventoryStatus.IN_STOCK;
   if (status === "LOW_STOCK") return InventoryStatus.LOW_STOCK;
@@ -136,6 +195,18 @@ async function main() {
         sortOrder: index,
       },
     });
+
+    const categoryEn = CATEGORY_EN[category];
+    if (categoryEn) {
+      const stored = await prisma.productCategory.findUniqueOrThrow({
+        where: { slug: slugify(category) },
+      });
+      await prisma.productCategoryTranslation.upsert({
+        where: { categoryId_locale: { categoryId: stored.id, locale: "en" } },
+        update: { name: categoryEn },
+        create: { categoryId: stored.id, locale: "en", name: categoryEn },
+      });
+    }
   }
 
   for (const product of mockProducts) {
@@ -175,6 +246,15 @@ async function main() {
         isFeatured: true,
       },
     });
+
+    const productEn = PRODUCT_EN[product.slug];
+    if (productEn) {
+      await prisma.productTranslation.upsert({
+        where: { productId_locale: { productId: savedProduct.id, locale: "en" } },
+        update: productEn,
+        create: { productId: savedProduct.id, locale: "en", ...productEn },
+      });
+    }
 
     await prisma.vehicleCompatibility.deleteMany({
       where: { productId: savedProduct.id },

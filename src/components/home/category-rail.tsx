@@ -1,4 +1,5 @@
 import { Link } from "@/lib/i18n/navigation";
+import { categoryLabelOf } from "@/data/catalog-filters";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import { ProductVisual } from "@/components/product/product-visual";
 import { ScrollCarousel } from "@/components/ui/scroll-carousel";
@@ -29,39 +30,46 @@ export function CategoryQuickLinks({
 
       <div className="mt-3">
         <ScrollCarousel autoPlay label="Categorías del catálogo">
-          {options.categories.map((category) => (
+          {options.categories.map((slug) => {
+            const category = categoryLabelOf(options, slug);
+
+            return (
             <div
               className="w-[168px] shrink-0 snap-start sm:w-[190px]"
-              key={category}
+              key={slug}
             >
               <Link
                 className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-white transition-colors hover:border-ca-navy-950/30"
-                href={{ pathname: "/catalog", query: { category } }}
+                href={{ pathname: "/catalog", query: { category: slug } }}
               >
                 <span className="px-4 pb-3 pt-3.5">
                   <span className="block font-display text-sm font-extrabold uppercase tracking-[0.04em] text-ca-navy-950">
                     Explorar {category}
                   </span>
-                  {typeof options.categoryCounts[category] === "number" ? (
+                  {typeof options.categoryCounts[slug] === "number" ? (
                     <span className="mt-0.5 block text-xs text-ca-text-secondary">
-                      {options.categoryCounts[category]}{" "}
-                      {options.categoryCounts[category] === 1
+                      {options.categoryCounts[slug]}{" "}
+                      {options.categoryCounts[slug] === 1
                         ? "producto"
                         : "productos"}
                     </span>
                   ) : null}
                 </span>
                 <span className="flex h-28 items-center justify-center bg-ca-navy-950">
+                  {/* El slug y no la etiqueta: getProductVisualType matchea
+                      palabras en español ("freno", "filtro"), así que con el
+                      nombre traducido el icono caería al genérico en inglés. */}
                   <ProductVisual
-                    kind={category}
-                    seed={category}
+                    kind={slug}
+                    seed={slug}
                     size="card"
                     tone="text-ca-gold-400"
                   />
                 </span>
               </Link>
             </div>
-          ))}
+            );
+          })}
         </ScrollCarousel>
       </div>
     </section>

@@ -1,5 +1,6 @@
 import { InventoryStatus } from "@prisma/client";
 import { canonicalizeVehicle, splitMakeAndModel } from "@/data/vehicle-catalog";
+import { slugifyValue } from "@/lib/slug";
 
 export type ParsedCompatibility = {
   make: string;
@@ -9,12 +10,7 @@ export type ParsedCompatibility = {
 };
 
 export function slugifyProductValue(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+  return slugifyValue(value);
 }
 
 export function parseAdminPriceCents(value: string) {

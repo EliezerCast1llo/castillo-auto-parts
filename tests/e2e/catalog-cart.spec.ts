@@ -56,6 +56,12 @@ test("multi-select filters keep every checked value", async ({ page }) => {
   const first = (await boxes.nth(0).getAttribute("value"))!;
   const second = (await boxes.nth(1).getAttribute("value"))!;
 
+  // El identificador y la etiqueta son dos cosas distintas: el checkbox manda
+  // el slug ("baterias") y el chip muestra el nombre ("Baterías"). Armar el
+  // texto del chip con el value hacia que este test buscara un enlace que no
+  // existe.
+  const firstLabel = (await categories.locator("label").nth(0).locator("span").first().textContent())!.trim();
+
   // El form navega en cada cambio, asi que hay que esperar cada navegacion
   // antes de tocar el siguiente checkbox: si no, el segundo click cae sobre un
   // DOM que se esta reemplazando.
@@ -72,7 +78,7 @@ test("multi-select filters keep every checked value", async ({ page }) => {
   expect(new URL(page.url()).searchParams.getAll("category")).toEqual([first, second]);
 
   // Y quitar un filtro no debe descartar el otro.
-  await page.getByRole("link", { name: `Quitar filtro Categoría: ${first}` }).click();
+  await page.getByRole("link", { name: `Quitar filtro Categoría: ${firstLabel}` }).click();
   await expect(page).not.toHaveURL(new RegExp(`category=${encodeURIComponent(first)}`));
   expect(new URL(page.url()).searchParams.getAll("category")).toEqual([second]);
 });

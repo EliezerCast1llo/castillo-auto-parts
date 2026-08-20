@@ -10,6 +10,8 @@ import {
   type MockProduct,
 } from "./mock-products";
 import { shouldUseMockCatalogFallback } from "./catalog-source";
+import { defaultLocale, type Locale } from "@/lib/i18n/config";
+import { toIntlLocale } from "@/lib/i18n/intl-locale";
 import {
   buildPrismaWhere,
   buildVehicleFilterOptions,
@@ -66,20 +68,31 @@ type DbSearchProduct = Awaited<ReturnType<typeof findDbSearchProducts>>[number];
 
 // Sin `as const` en el objeto completo: Prisma necesita arrays mutables para orderBy.
 // Los literales "desc"/"asc" se preservan con las aserciones inline.
-const productInclude = {
-  category: true,
-  compatibilities: true,
-  inventoryStocks: true,
-  images: {
-    orderBy: [{ isPrimary: "desc" as const }, { sortOrder: "asc" as const }],
-  },
-};
+/**
+ * Include del catálogo, con las traducciones del idioma pedido.
+ *
+ * El filtro por idioma va en el `where` de la relación y no se omite para el
+ * idioma principal: la forma del resultado queda igual para todos, así hay un
+ * solo tipo y un solo camino de mapeo. Para el español la relación viene vacía
+ * —no existen filas— y el costo es una búsqueda por índice.
+ */
+function productIncludeFor(locale: Locale) {
+  return {
+    category: { include: { translations: { where: { locale } } } },
+    compatibilities: true,
+    inventoryStocks: true,
+    images: {
+      orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
+    },
+    translations: { where: { locale } },
+  } satisfies Prisma.ProductInclude;
+}
 
 /** Query cruda del catálogo activo, sin cache. */
-function queryAllActiveProducts() {
+function queryAllActiveProducts(locale: Locale) {
   return db.product.findMany({
     where: { isActive: true },
-    include: productInclude,
+    include: productIncludeFor(locale),
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
   });
 }
@@ -106,10 +119,10 @@ const findDbProducts = cache(
 const findLiveDbProducts = cache(queryAllActiveProducts);
 
 const findDbFeaturedProducts = unstable_cache(
-  async () =>
+  async (locale: Locale) =>
     db.product.findMany({
       where: { isActive: true, isFeatured: true },
-      include: productInclude,
+      include: productIncludeFor(locale),
       orderBy: { name: "asc" },
       take: 6,
     }),
@@ -122,14 +135,14 @@ const findDbFeaturedProducts = unstable_cache(
  * desde admin, más react.cache para dedupe generateMetadata + page en la misma
  * request (antes eran dos queries).
  */
-const findDbProductBySlug = cache(async (slug: string) =>
+const findDbProductBySlug = cache(async (slug: string, locale: Locale) =>
   unstable_cache(
     () =>
       db.product.findUnique({
         where: { slug },
-        include: productInclude,
+        include: productIncludeFor(locale),
       }),
-    ["catalog-product-by-slug", slug],
+    ["catalog-product-by-slug", slug, locale],
     {
       revalidate: CATALOG_REVALIDATE_SECONDS,
       tags: [CATALOG_CACHE_TAG, productCacheTag(slug)],
@@ -149,13 +162,13 @@ const findDbProductSlugs = unstable_cache(
 );
 
 const findDbFilteredProducts = unstable_cache(
-  async (filters: CatalogFilters, page: number, sort: CatalogSort) => {
+  async (filters: CatalogFilters, page: number, sort: CatalogSort, locale: Locale) => {
     const where = buildPrismaWhere(filters);
     const [totalCount, products] = await Promise.all([
       db.product.count({ where }),
       db.product.findMany({
         where,
-        include: productInclude,
+        include: productIncludeFor(locale),
         orderBy: getCatalogOrderBy(sort),
         skip: (page - 1) * PAGE_SIZE,
         take: PAGE_SIZE,
@@ -168,14 +181,14 @@ const findDbFilteredProducts = unstable_cache(
 );
 
 const findDbRelatedProducts = unstable_cache(
-  (categoryName: string, excludeSlug: string) =>
+  (categoryName: string, excludeSlug: string, locale: Locale) =>
     db.product.findMany({
       where: {
         isActive: true,
         slug: { not: excludeSlug },
         category: { name: categoryName },
       },
-      include: productInclude,
+      include: productIncludeFor(locale),
       orderBy: { name: "asc" },
       take: 3,
     }),
@@ -183,12 +196,19 @@ const findDbRelatedProducts = unstable_cache(
   { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
 );
 
-function findDbSearchProducts(query: string, limit: number) {
+function findDbSearchProducts(query: string, limit: number, locale: Locale) {
   return db.product.findMany({
     where: {
       isActive: true,
       OR: [
         { name: { contains: query, mode: "insensitive" } },
+        // Sin esto, quien busca en inglés no encuentra nada: el nombre
+        // traducido vive en otra tabla.
+        {
+          translations: {
+            some: { locale, name: { contains: query, mode: "insensitive" } },
+          },
+        },
         { sku: { contains: query, mode: "insensitive" } },
         { partNumber: { contains: query, mode: "insensitive" } },
         { brand: { contains: query, mode: "insensitive" } },
@@ -207,7 +227,10 @@ function findDbSearchProducts(query: string, limit: number) {
     },
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
     select: {
-      category: { select: { name: true } },
+      category: {
+        select: { name: true, translations: { where: { locale }, select: { name: true } } },
+      },
+      translations: { where: { locale }, select: { name: true } },
       inventoryStocks: {
         select: {
           quantityOnHand: true,
@@ -239,11 +262,23 @@ export async function getLiveCatalogProducts(): Promise<CatalogProduct[]> {
   return result.products;
 }
 
+/**
+ * El idioma se recibe como parámetro y **no** se lee del contexto del request.
+ *
+ * No es estilo: `unstable_cache` deriva su clave de los argumentos de la
+ * función. Si el idioma se leyera adentro, español e inglés compartirían las
+ * mismas filas cacheadas y cada visitante vería el idioma que otro calentó
+ * primero. Pasarlo como argumento hace que la clave los separe sola.
+ *
+ * El valor por defecto deja compilando a los llamadores que no traducen —
+ * sitemap, admin— sin obligarlos a decidir.
+ */
 export async function getCatalogProductsResult({
   live = false,
-}: { live?: boolean } = {}): Promise<CatalogProductsResult> {
+  locale = defaultLocale,
+}: { live?: boolean; locale?: Locale } = {}): Promise<CatalogProductsResult> {
   try {
-    const products = live ? await findLiveDbProducts() : await findDbProducts();
+    const products = live ? await findLiveDbProducts(locale) : await findDbProducts(locale);
     if (products.length > 0) {
       return {
         products: products.map(mapDbProduct),
@@ -289,9 +324,11 @@ export async function getFeaturedCatalogProducts(): Promise<CatalogProduct[]> {
   return result.products;
 }
 
-export async function getFeaturedCatalogProductsResult(): Promise<CatalogProductsResult> {
+export async function getFeaturedCatalogProductsResult(
+  locale: Locale = defaultLocale,
+): Promise<CatalogProductsResult> {
   try {
-    const products = await findDbFeaturedProducts();
+    const products = await findDbFeaturedProducts(locale);
 
     if (products.length > 0) {
       return {
@@ -333,9 +370,12 @@ export async function getFeaturedCatalogProductsResult(): Promise<CatalogProduct
   }
 }
 
-export async function getCatalogProductBySlug(slug: string): Promise<CatalogProduct | undefined> {
+export async function getCatalogProductBySlug(
+  slug: string,
+  locale: Locale = defaultLocale,
+): Promise<CatalogProduct | undefined> {
   try {
-    const product = await findDbProductBySlug(slug);
+    const product = await findDbProductBySlug(slug, locale);
 
     return product ? mapDbProduct(product) : getFallbackProductBySlug(slug);
   } catch (error) {
@@ -395,9 +435,10 @@ export type CatalogSearchProductsResult = {
 export async function searchCatalogProducts(
   query: string,
   limit: number,
+  locale: Locale = defaultLocale,
 ): Promise<CatalogSearchProductsResult> {
   try {
-    const products = await findDbSearchProducts(query, limit);
+    const products = await findDbSearchProducts(query, limit, locale);
 
     if (products.length > 0 || !shouldUseMockCatalogFallback()) {
       return {
@@ -453,11 +494,12 @@ export async function getFilteredCatalogProducts(
   filters: CatalogFilters,
   page: number,
   sort: CatalogSort = "relevance",
+  locale: Locale = defaultLocale,
 ): Promise<PaginatedCatalogResult> {
   const safePage = Math.max(1, Math.floor(page));
 
   try {
-    const { totalCount, products } = await findDbFilteredProducts(filters, safePage, sort);
+    const { totalCount, products } = await findDbFilteredProducts(filters, safePage, sort, locale);
 
     if (totalCount > 0 || !shouldUseMockCatalogFallback()) {
       return {
@@ -560,52 +602,70 @@ function compareByName(left: CatalogProduct, right: CatalogProduct) {
  * Facetas con queries agregadas — evita cargar la tabla completa de productos
  * (con todas sus relaciones) solo para derivar las opciones de filtro.
  */
-const findDbCatalogFacets = unstable_cache(
-  async () => {
-    const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
-      db.product.groupBy({ by: ["brand"], where: { isActive: true }, _count: { _all: true } }),
-      db.productCategory.findMany({
-        where: { isActive: true, products: { some: { isActive: true } } },
-        select: {
-          name: true,
-          _count: { select: { products: { where: { isActive: true } } } },
-        },
-      }),
-      db.inventoryStock.groupBy({
-        by: ["status"],
-        where: { product: { isActive: true } },
-      }),
-      db.vehicleCompatibility.findMany({
-        where: { product: { isActive: true } },
-        select: { make: true, model: true, yearFrom: true, yearTo: true },
-        distinct: ["make", "model", "yearFrom", "yearTo"],
-      }),
-    ]);
+/**
+ * El idioma va como argumento y no leído del contexto: `unstable_cache` deriva
+ * la clave de los argumentos, así que sin esto las facetas en inglés y en
+ * español compartirían fila de caché y la UI mostraría la que se haya calentado
+ * primero.
+ *
+ * Doble capa igual que `findDbProducts`. La de React hace falta porque el
+ * catálogo pide las facetas dos veces por request —una en `generateMetadata`
+ * para el título, otra en la página— y sin ella son dos lecturas donde alcanza
+ * una.
+ */
+const findDbCatalogFacets = cache(
+  unstable_cache(
+    async (locale: Locale) => {
+      const [brandGroups, categories, stockGroups, vehicles] = await Promise.all([
+        db.product.groupBy({ by: ["brand"], where: { isActive: true }, _count: { _all: true } }),
+        db.productCategory.findMany({
+          where: { isActive: true, products: { some: { isActive: true } } },
+          select: {
+            name: true,
+            slug: true,
+            translations: { where: { locale }, select: { name: true } },
+            _count: { select: { products: { where: { isActive: true } } } },
+          },
+        }),
+        db.inventoryStock.groupBy({
+          by: ["status"],
+          where: { product: { isActive: true } },
+        }),
+        db.vehicleCompatibility.findMany({
+          where: { product: { isActive: true } },
+          select: { make: true, model: true, yearFrom: true, yearTo: true },
+          distinct: ["make", "model", "yearFrom", "yearTo"],
+        }),
+      ]);
 
-    return {
-      brands: brandGroups.map((group) => group.brand),
-      brandCounts: Object.fromEntries(
-        brandGroups.map((group) => [group.brand, group._count._all]),
-      ),
-      categories: categories.map((category) => category.name),
-      categoryCounts: Object.fromEntries(
-        categories.map((category) => [category.name, category._count.products]),
-      ),
-      stockStatuses: stockGroups.map((group) => group.status),
-      vehicles,
-    };
-  },
-  ["catalog-facets"],
-  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+      return {
+        brands: brandGroups.map((group) => group.brand),
+        brandCounts: Object.fromEntries(
+          brandGroups.map((group) => [group.brand, group._count._all]),
+        ),
+        categories: categories.map((category) => ({
+          slug: category.slug,
+          label: translated(category.translations[0]?.name, category.name),
+          count: category._count.products,
+        })),
+        stockStatuses: stockGroups.map((group) => group.status),
+        vehicles,
+      };
+    },
+    ["catalog-facets"],
+    { revalidate: CATALOG_REVALIDATE_SECONDS, tags: [CATALOG_CACHE_TAG] },
+  ),
 );
 
 /**
  * Opciones de filtro del catálogo. Con DB disponible usa agregaciones; en
  * fallback deriva las opciones del mock con getCatalogFilterOptions.
  */
-export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
+export async function getCatalogFacets(
+  locale: Locale = defaultLocale,
+): Promise<CatalogFilterOptions> {
   try {
-    const facets = await findDbCatalogFacets();
+    const facets = await findDbCatalogFacets(locale);
     const hasData = facets.brands.length > 0 || facets.categories.length > 0;
 
     if (hasData || !shouldUseMockCatalogFallback()) {
@@ -615,11 +675,23 @@ export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
         facets.stockStatuses.map((status) => toStockStatus(status, 1)),
       );
 
+      // Las categorías se ordenan por la etiqueta que se ve, no por el slug:
+      // en inglés "Brakes" y "Belts" no salen en el mismo orden que "Frenos" y
+      // "Correas", y el orden alfabético es del texto que el usuario lee.
+      const sortedCategories = [...facets.categories].sort((a, b) =>
+        a.label.localeCompare(b.label, toIntlLocale(locale)),
+      );
+
       return {
         brands: uniqueSorted(facets.brands),
         brandCounts: facets.brandCounts,
-        categories: uniqueSorted(facets.categories),
-        categoryCounts: facets.categoryCounts,
+        categories: sortedCategories.map((category) => category.slug),
+        categoryLabels: Object.fromEntries(
+          sortedCategories.map((category) => [category.slug, category.label]),
+        ),
+        categoryCounts: Object.fromEntries(
+          sortedCategories.map((category) => [category.slug, category.count]),
+        ),
         stockStatuses: stockStatusOrder.filter((status) => stockStatusSet.has(status)),
         ...buildVehicleFilterOptions(facets.vehicles),
       };
@@ -637,9 +709,12 @@ export async function getCatalogFacets(): Promise<CatalogFilterOptions> {
   }
 }
 
-export async function getRelatedCatalogProducts(product: CatalogProduct) {
+export async function getRelatedCatalogProducts(
+  product: CatalogProduct,
+  locale: Locale = defaultLocale,
+) {
   try {
-    const products = await findDbRelatedProducts(product.category, product.slug);
+    const products = await findDbRelatedProducts(product.category, product.slug, locale);
 
     return products.length > 0
       ? products.map(mapDbProduct)
@@ -654,7 +729,25 @@ export function isPurchasableStockStatus(status: CatalogProduct["stockStatus"]) 
   return status !== "OUT_OF_STOCK";
 }
 
+/**
+ * Primer valor no vacío. El fallback de traducciones es **por campo**: un
+ * producto con nombre en inglés pero sin descripción muestra el nombre
+ * traducido y la descripción en español, en vez de caer entero a un idioma.
+ */
+function translated(...values: (string | null | undefined)[]): string {
+  return values.find((value) => value != null && value.trim() !== "") ?? "";
+}
+
 function mapDbProduct(product: DbProduct): CatalogProduct {
+  const translation = product.translations[0];
+  const categoryTranslation = product.category.translations[0];
+
+  // La descripción corta no se muestra en un campo propio: es el respaldo de
+  // "compatibilidad" cuando el producto no tiene vehículos cargados. Si no se
+  // traduce acá, el admin puede cargar la versión en inglés, guardarla, y no
+  // verla nunca en ningún lado.
+  const shortDescription = translated(translation?.shortDescription, product.shortDescription);
+
   const stock = product.inventoryStocks[0];
   const stockQuantity = stock ? Math.max(stock.quantityOnHand - stock.quantityReserved, 0) : 0;
 
@@ -663,20 +756,21 @@ function mapDbProduct(product: DbProduct): CatalogProduct {
 
   return {
     slug: product.slug,
-    name: product.name,
-    category: product.category.name,
+    name: translated(translation?.name, product.name),
+    category: translated(categoryTranslation?.name, product.category.name),
+    categorySlug: product.category.slug,
     brand: product.brand,
     sku: product.sku,
     partNumber: product.partNumber ?? "Sin número de parte",
-    compatibility: formatCompatibilitySummary(product),
-    compatibleVehicles: formatCompatibleVehicles(product),
+    compatibility: formatCompatibilitySummary(product, shortDescription),
+    compatibleVehicles: formatCompatibleVehicles(product, shortDescription),
     vehicleCompatibilities: product.compatibilities.map((compatibility) => ({
       make: compatibility.make,
       model: compatibility.model,
       yearFrom: compatibility.yearFrom,
       yearTo: compatibility.yearTo,
     })),
-    description: product.description ?? "",
+    description: translated(translation?.description, product.description),
     technicalDetails: toStringArray(product.technicalDetails),
     priceCents: product.priceCents,
     stockQuantity,
@@ -695,8 +789,8 @@ function mapDbSearchProduct(product: DbSearchProduct): CatalogSearchProduct {
   const stockQuantity = stock ? Math.max(stock.quantityOnHand - stock.quantityReserved, 0) : 0;
 
   return {
-    category: product.category.name,
-    name: product.name,
+    category: translated(product.category.translations[0]?.name, product.category.name),
+    name: translated(product.translations[0]?.name, product.name),
     priceCents: product.priceCents,
     sku: product.sku,
     slug: product.slug,
@@ -736,22 +830,19 @@ function getEmptySearchFilters(): CatalogFilters {
   };
 }
 
-function formatCompatibilitySummary(product: DbProduct) {
-  const vehicles = formatCompatibleVehicles(product);
-  return vehicles.length > 0 ? vehicles.join(" · ") : product.shortDescription ?? "Validar compatibilidad";
+function formatCompatibilitySummary(product: DbProduct, shortDescription: string) {
+  const vehicles = formatCompatibleVehicles(product, shortDescription);
+  return vehicles.length > 0 ? vehicles.join(" · ") : shortDescription || "Validar compatibilidad";
 }
 
-function formatCompatibleVehicles(product: DbProduct) {
+function formatCompatibleVehicles(product: DbProduct, shortDescription: string) {
   const compatibilities = product.compatibilities.map(
     (compatibility) =>
       `${compatibility.make} ${compatibility.model} ${compatibility.yearFrom}-${compatibility.yearTo}`,
   );
 
-  return compatibilities.length > 0
-    ? compatibilities
-    : product.shortDescription
-      ? [product.shortDescription]
-      : [];
+  if (compatibilities.length > 0) return compatibilities;
+  return shortDescription ? [shortDescription] : [];
 }
 
 function toStringArray(value: unknown): string[] {
