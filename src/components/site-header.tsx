@@ -10,6 +10,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { siteNavItems } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import type { LocaleHref } from "@/lib/i18n/navigation";
 
 type SiteHeaderProps = {
   /**
@@ -135,7 +136,7 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
 // ---------------------------------------------------------------------------
 
 type HeroHeaderProps = {
-  accountHref: string;
+  accountHref: LocaleHref;
   accountLabel: string;
   cartItemCount: number;
 };

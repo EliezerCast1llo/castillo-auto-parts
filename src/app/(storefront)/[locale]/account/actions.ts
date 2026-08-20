@@ -22,13 +22,13 @@ export async function updateProfileAction(formData: FormData) {
   const phone = formString(formData, "phone").trim();
   const phoneDigits = phone.replace(/\D/g, "");
 
-  if (phone && phoneDigits.length < 8) redirect({ href: "/account?estado=invalid_phone", locale });
+  if (phone && phoneDigits.length < 8) redirect({ href: { pathname: "/account", query: { estado: "invalid_phone" } }, locale });
 
   await db.user.update({
     where: { id: session.id },
     data: { phone: phone || null },
   });
-  redirect({ href: "/account?estado=updated", locale });
+  redirect({ href: { pathname: "/account", query: { estado: "updated" } }, locale });
 }
 
 export async function changePasswordAction(formData: FormData) {
@@ -40,13 +40,13 @@ export async function changePasswordAction(formData: FormData) {
   const next = formString(formData, "newPassword");
   const confirm = formString(formData, "confirmPassword");
 
-  if (next.length < 8) redirect({ href: "/account?estado=weak_password", locale });
-  if (next !== confirm) redirect({ href: "/account?estado=password_mismatch", locale });
+  if (next.length < 8) redirect({ href: { pathname: "/account", query: { estado: "weak_password" } }, locale });
+  if (next !== confirm) redirect({ href: { pathname: "/account", query: { estado: "password_mismatch" } }, locale });
 
   const result = await updateCustomerPassword(session.id, current, next);
 
-  if (result === "wrong_password") redirect({ href: "/account?estado=wrong_password", locale });
-  if (result === "no_credentials") redirect({ href: "/account?estado=no_credentials", locale });
+  if (result === "wrong_password") redirect({ href: { pathname: "/account", query: { estado: "wrong_password" } }, locale });
+  if (result === "no_credentials") redirect({ href: { pathname: "/account", query: { estado: "no_credentials" } }, locale });
 
-  redirect({ href: "/account?estado=password_changed", locale });
+  redirect({ href: { pathname: "/account", query: { estado: "password_changed" } }, locale });
 }

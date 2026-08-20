@@ -5,10 +5,11 @@ import { Menu, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { siteNavItems as navLinks } from "@/lib/nav";
+import type { LocaleHref } from "@/lib/i18n/navigation";
 
 type MobileMenuProps = {
   cartItemCount: number;
-  accountHref: string;
+  accountHref: LocaleHref;
   accountLabel: string;
   variant?: "dark" | "light";
 };
@@ -100,7 +101,7 @@ export function MobileMenu({
             <nav className="flex flex-col gap-1 p-4" aria-label="Navegación móvil">
               {navLinks.map((link) => (
                 <Link
-                  key={link.href}
+                  key={link.label}
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className="flex h-12 items-center rounded-xl px-4 text-base font-bold text-ca-navy-950 transition hover:bg-ca-background"

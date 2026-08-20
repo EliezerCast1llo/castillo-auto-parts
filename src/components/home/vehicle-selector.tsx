@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import { useVehicleSelection } from "@/components/product/use-vehicle-selection";
 import { buildMyVehicleSetCookie } from "@/lib/my-vehicle";
+import { toLinkQuery } from "@/lib/url-utils";
 
 export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilterOptions }) {
   const router = useRouter();
@@ -39,8 +40,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
             });
           }
 
-          const query = params.toString();
-          router.push(query ? `/catalog?${query}` : "/catalog");
+          router.push({ pathname: "/catalog", query: toLinkQuery(params) });
         }}
       >
         <div className="flex items-center gap-4 self-stretch border-ca-border lg:border-r lg:pr-5">

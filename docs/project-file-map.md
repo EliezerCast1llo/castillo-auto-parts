@@ -193,6 +193,9 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/i18n/middleware-composition.ts` | Re-emite la respuesta de next-intl preservando los headers forwardeados (nonce de CSP). |
 | `src/lib/i18n/revalidate.ts` | `revalidatePath` para rutas bajo `[locale]`. |
 | `src/lib/actions/*` | Server actions compartidas por componentes, fuera del arbol de rutas. |
+| `src/lib/cookie-consent.ts` | Helpers puros del aviso de cookies: parseo, serializacion y versionado. |
+| `src/lib/cookie-consent-server.ts` | Lectura server-side del consentimiento. |
+| `src/components/consent/*` | Slot server que decide si mostrar el aviso, y el banner cliente. |
 
 ## Datos
 

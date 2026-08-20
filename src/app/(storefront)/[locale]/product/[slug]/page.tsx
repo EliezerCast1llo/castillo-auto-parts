@@ -48,11 +48,17 @@ export async function generateMetadata({ params }: ProductPageProps) {
   return {
     title: `${product.name} | Castillo Auto Parts`,
     description,
-    alternates: localizedAlternates(`/product/${product.slug}`, locale),
+    alternates: localizedAlternates(
+      { pathname: "/product/[slug]", params: { slug: product.slug } },
+      locale,
+    ),
     openGraph: {
       title: product.name,
       description,
-      url: getPathname({ href: `/product/${product.slug}`, locale }),
+      url: getPathname({
+        href: { pathname: "/product/[slug]", params: { slug: product.slug } },
+        locale,
+      }),
       type: "website",
     },
   };
@@ -250,7 +256,7 @@ function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
         <Link
           className="transition hover:text-ca-navy-950"
-          href={`/catalog?category=${encodeURIComponent(product.category)}`}
+          href={{ pathname: "/catalog", query: { category: product.category } }}
         >
           {product.category}
         </Link>

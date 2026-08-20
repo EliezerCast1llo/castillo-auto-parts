@@ -121,7 +121,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <p className="mt-5 text-center text-sm text-ca-text-secondary">
             ¿No tienes cuenta?{" "}
             <Link
-              href={`/auth/register?next=${encodeURIComponent(nextPath)}`}
+              href={{ pathname: "/auth/register", query: { next: nextPath } }}
               className="font-bold text-ca-blue-700 hover:underline"
             >
               Crear cuenta gratis

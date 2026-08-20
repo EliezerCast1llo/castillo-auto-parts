@@ -25,11 +25,11 @@ export async function createAddress(formData: FormData) {
   const longitudeRaw = String(formData.get("longitude") ?? "").trim();
 
   if (!addressLine1 || !city || !department) {
-    redirect({ href: "/account/addresses?estado=missing_fields", locale });
+    redirect({ href: { pathname: "/account/addresses", query: { estado: "missing_fields" } }, locale });
   }
 
   if (!SV_DEPARTMENTS.includes(department)) {
-    redirect({ href: "/account/addresses?estado=invalid_department", locale });
+    redirect({ href: { pathname: "/account/addresses", query: { estado: "invalid_department" } }, locale });
   }
 
   const latitude = latitudeRaw ? parseFloat(latitudeRaw) : undefined;
@@ -54,7 +54,7 @@ export async function createAddress(formData: FormData) {
     },
   });
 
-  redirect({ href: "/account/addresses?estado=created", locale });
+  redirect({ href: { pathname: "/account/addresses", query: { estado: "created" } }, locale });
 }
 
 export async function deleteAddress(formData: FormData) {
@@ -65,5 +65,5 @@ export async function deleteAddress(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   await db.address.deleteMany({ where: { id, userId: session.user.id } });
 
-  redirect({ href: "/account/addresses?estado=deleted", locale });
+  redirect({ href: { pathname: "/account/addresses", query: { estado: "deleted" } }, locale });
 }

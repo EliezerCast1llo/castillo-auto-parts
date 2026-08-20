@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Barlow_Condensed, Outfit } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { CookieConsentSlot } from "@/components/consent/cookie-consent-slot";
 import { ToastProvider } from "@/components/ui/toast";
 import { defaultLocale, locales, type Locale } from "@/lib/i18n/config";
+import { loadMessages, pickClientMessages } from "@/lib/i18n/messages";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "../../globals.css";
 
@@ -90,11 +92,14 @@ export default async function StorefrontLayout({
 
   setRequestLocale(locale);
 
+  const messages = loadMessages(locale);
+
   return (
     <html lang={locale}>
       <body className={`${barlowCondensed.variable} ${outfit.variable} font-sans antialiased`}>
-        <NextIntlClientProvider locale={locale}>
+        <NextIntlClientProvider locale={locale} messages={pickClientMessages(messages)}>
           <ToastProvider>{children}</ToastProvider>
+          <CookieConsentSlot />
         </NextIntlClientProvider>
       </body>
     </html>

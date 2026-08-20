@@ -28,7 +28,7 @@ export async function addCartItem(formData: FormData) {
     return;
   }
 
-  redirect({ href: `/cart?estado=${result}`, locale });
+  redirect({ href: { pathname: "/cart", query: { estado: result } }, locale });
 }
 
 export type AddCartItemInlineState = {
@@ -65,7 +65,7 @@ export async function updateCartItem(formData: FormData) {
   const quantity = Number(formData.get("quantity") ?? 0);
   const result = await updateGuestCartItem(sku, quantity);
 
-  redirect({ href: `/cart?estado=${result}`, locale });
+  redirect({ href: { pathname: "/cart", query: { estado: result } }, locale });
 }
 
 export async function removeCartItem(formData: FormData) {
@@ -73,19 +73,19 @@ export async function removeCartItem(formData: FormData) {
   const sku = String(formData.get("sku") ?? "");
   await removeGuestCartItem(sku);
 
-  redirect({ href: "/cart?estado=removed", locale });
+  redirect({ href: { pathname: "/cart", query: { estado: "removed" } }, locale });
 }
 
 export async function createStockAlert(formData: FormData) {
   const locale = await getLocale();
   const rateLimit = stockAlertRateLimiter.registerFailure(await getStockAlertRateLimitKey());
   if (!rateLimit.allowed) {
-    redirect({ href: "/cart?estado=stock_alert_rate_limited", locale });
+    redirect({ href: { pathname: "/cart", query: { estado: "stock_alert_rate_limited" } }, locale });
   }
 
   const result = await createStockAlertRequest(formData);
 
-  redirect({ href: `/cart?estado=stock_alert_${result}`, locale });
+  redirect({ href: { pathname: "/cart", query: { estado: `stock_alert_${result}` } }, locale });
 }
 
 async function getStockAlertRateLimitKey() {
