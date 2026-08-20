@@ -562,6 +562,25 @@ colisiones y su propia tabla de redirects; queda fuera de alcance.
 que ya existian sobre `Product`. No es una regresion de tipo, pero una busqueda
 seria pide `pg_trgm` o una columna `tsvector`.
 
+Dos limites de esa busqueda, medidos contra el seed de 63 productos:
+
+- **Los dos caminos no devuelven lo mismo.** La base consulta `name`, `sku`,
+  `partNumber` y `brand` (`DB_QUERY_FIELDS`); el camino en memoria
+  —`filterCatalogProducts`, que corre con el mock y en el autocompletado— suma
+  `category`, `compatibility`, `description`, `compatibleVehicles` y
+  `technicalDetails`. No es que uno cubra mas: es que la misma consulta devuelve
+  cosas distintas segun cual este activo. `bujias` da 0 contra la base y 6 en
+  memoria; `freno`, 2 y 8. Si la base se cae, la busqueda encuentra **mas** que
+  en operacion normal.
+- **No hay lematizacion ni normalizacion de acentos.** El plural no encuentra al
+  singular (`amortiguadores` da 0, `amortiguador` da 4) y `bujia` sin tilde da 0
+  contra la base. Por eso las sugerencias del estado vacio guardan la query en
+  singular y con acento, con `src/data/search-suggestions.test.ts` verificandolo.
+
+Las dos se cierran juntas moviendo la busqueda a `tsvector` con un diccionario
+en espanol, que resuelve stemming y acentos y de paso deja de depender de que
+camino corra.
+
 `Order.locale` y `User.locale` existen para los correos: el de confirmacion se
 dispara desde el webhook del proveedor de pagos, fuera de todo request con
 segmento de idioma. El checkout admite invitados, asi que `User` no alcanza y la

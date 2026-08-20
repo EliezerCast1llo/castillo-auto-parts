@@ -26,32 +26,13 @@ import {
   type CatalogSearchParams,
 } from "@/data/catalog-filters";
 import { getCatalogFacets, getFilteredCatalogProducts } from "@/data/products";
+import { SEARCH_SUGGESTIONS } from "@/data/search-suggestions";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { localizePath } from "@/lib/i18n/path";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getTranslations } from "next-intl/server";
 
-/**
- * Atajos de la pantalla sin resultados.
- *
- * La `query` va en el idioma del contenido y no se traduce: es lo que se compara
- * contra los nombres y descripciones de los productos. Solo el label cambia de
- * idioma. Traducir también la query hacía que en inglés cada atajo llevara a
- * otra búsqueda vacía.
- *
- * Y es la raíz de la palabra, no el término que se muestra: la búsqueda hace
- * `contains` sobre el nombre, así que "pastillas de freno" no coincide con
- * "Pastillas de freno delanteras Toyota Corolla" pero "pastilla" sí. Tres de
- * los cuatro atajos originales devolvían cero resultados por eso, en español
- * también.
- */
-const SEARCH_SUGGESTIONS = [
-  { key: "filters", query: "filtro" },
-  { key: "brakePads", query: "pastilla" },
-  { key: "sparkPlugs", query: "bujía" },
-  { key: "brakes", query: "freno" },
-] as const;
 
 export const dynamic = "force-dynamic";
 
