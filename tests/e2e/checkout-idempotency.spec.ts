@@ -1,5 +1,9 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
 import { addProductToCart, fillCustomerFields, getStockSnapshot, prisma, ES } from "./helpers";
+import { PRODUCT_CLAIMS } from "./fixtures/products";
+
+// La reserva de productos de este spec; ver fixtures/products.ts.
+const CLAIMS = PRODUCT_CLAIMS["checkout-idempotency.spec.ts"];
 
 test.afterAll(async () => {
   await prisma.$disconnect();
@@ -23,11 +27,11 @@ test("double submit with the same idempotency key creates only one order", async
   page,
   context,
 }) => {
-  const sku = "MOCK-SPK-CIV-15T";
+  const { sku, slug } = CLAIMS.doubleSubmit;
   const email = `qa-idem-${Date.now()}@e2e.castilloautoparts.com`;
   const initialStock = await getStockSnapshot(sku);
 
-  await addProductToCart(page, "bujia-iridio-honda-civic-15t");
+  await addProductToCart(page, slug);
   await page.goto(ES("/checkout"));
   await fillCustomerFields(page, {
     email,
@@ -96,11 +100,11 @@ test("double submit with the same idempotency key creates only one order", async
 
 // Regresión: un checkout normal (un solo submit) sigue creando exactamente una orden.
 test("a single normal checkout creates exactly one order", async ({ page }) => {
-  const sku = "MOCK-SPK-COR-18";
+  const { sku, slug } = CLAIMS.singleSubmit;
   const email = `qa-single-${Date.now()}@e2e.castilloautoparts.com`;
   const initialStock = await getStockSnapshot(sku);
 
-  await addProductToCart(page, "bujia-platino-toyota-corolla-18");
+  await addProductToCart(page, slug);
   await page.goto(ES("/checkout"));
   await fillCustomerFields(page, {
     email,

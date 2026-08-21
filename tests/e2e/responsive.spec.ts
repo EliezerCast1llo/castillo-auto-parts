@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ES } from "./helpers";
+import { PRODUCT_CLAIMS } from "./fixtures/products";
 
 const viewports = [
   { height: 844, name: "mobile", width: 390 },
@@ -27,7 +28,10 @@ const customerPages = [
     heading: "Datos de entrega y pago",
     path: "/checkout",
     setup: async (page: Page) => {
-      await addProductToCart(page, "bujia-iridio-hyundai-kia-16l");
+      // No es el mismo producto que compra catalog-cart.spec.ts: ese test
+      // compara deltas de stock y una compra concurrente se los rompe. La
+      // reserva está en fixtures/products.ts.
+      await addProductToCart(page, PRODUCT_CLAIMS["responsive.spec.ts"].cartLayout.slug);
       await page.getByRole("link", { name: "Continuar al pago" }).click();
     },
   },

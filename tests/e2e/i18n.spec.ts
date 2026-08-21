@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { EN, ES } from "./helpers";
+import { PRODUCT_CLAIMS } from "./fixtures/products";
 
 test("legacy unprefixed URLs redirect permanently to Spanish", async ({ request }) => {
   for (const path of ["/catalog", "/ayuda", "/cart", "/vehiculos/toyota"]) {
@@ -426,7 +427,7 @@ test("a multi-word search finds products", async ({ page }) => {
  * contextos de navegador separados. Con ese producto estos tests pasaban
  * aislados y fallaban en la suite completa, que es la peor forma de fallar.
  */
-const CART_PRODUCT = "pastillas-delanteras-nissan-sentra";
+const CART_PRODUCT = PRODUCT_CLAIMS["i18n.spec.ts"].cartAndCheckout.slug;
 
 test("the cart speaks the language of the page, plurals included", async ({ page }) => {
   // El plural va por ICU y no por concatenacion: con `productos?` en el regex

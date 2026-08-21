@@ -6,7 +6,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { formatCurrency } from "@/lib/money";
 import type { FulfillmentMethod } from "@/lib/checkout";
-import type { Locale } from "@/lib/i18n/config";
 import type { DeliveryZoneOption, PickupLocationOption } from "@/lib/fulfillment";
 import { CheckoutLocationPicker, type LocationInfo } from "./checkout-location-picker";
 
@@ -46,7 +45,7 @@ export function CheckoutDeliveryFields({
   // El idioma sale del contexto y no de una prop: acá solo alimenta el formato
   // del monto, no decide a dónde va nadie. Donde el idioma elige un destino
   // —redirects, URLs de correo— se pasa explícito.
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const [method, setMethod] = useState<FulfillmentMethod>("PICKUP");
   const [selectedAddressId, setSelectedAddressId] = useState(
     savedAddresses.length > 0 ? savedAddresses[0].id : "",
@@ -177,7 +176,7 @@ export function CheckoutDeliveryFields({
                     <option value="">{t("selectCity")}</option>
                     {deliveryZones.map((zone) => (
                       <option key={zone.id} value={zone.slug}>
-                        {zone.name} · {formatCurrency(zone.feeCents)}
+                        {zone.name} · {formatCurrency(zone.feeCents, locale)}
                       </option>
                     ))}
                   </select>
