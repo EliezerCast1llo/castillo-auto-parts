@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "title": "Your cart | Castillo Auto Parts",
+    "description": "Review the parts you picked and continue to checkout."
+  },
+  "backToCatalog": "Keep shopping",
+  "eyebrow": "Shopping cart",
+  "title": "Your cart",
+  "itemCount": "{count, plural, one {# product} other {# products}}",
+  "units": "{count, plural, one {# unit} other {# units}}",
+  "summary": {
+    "title": "Order summary",
+    "products": "Products",
+    "subtotal": "Subtotal",
+    "taxNotice": "Prices include 13% VAT."
+  },
+  "readiness": {
+    "availabilityPending": "Availability pending",
+    "availabilityConfirmed": "Availability confirmed",
+    "payment": "Payment available at checkout",
+    "delivery": "Choose how to get your order"
+  },
+  "blockingIssues": "Adjust the unavailable products to continue.",
+  "continueToCheckout": "Continue to payment",
+  "addMore": "Add more products",
+  "line": {
+    "viewDetail": "View details for {name}"
+  },
+  "issue": {
+    "unavailable": "This product is no longer available. Remove it to continue.",
+    "limited": "Only {units} left. Adjust the quantity."
+  },
+  "alert": {
+    "emailPlaceholder": "Email for the alert",
+    "emailAriaLabel": "Email for the availability alert",
+    "phonePlaceholder": "Phone (optional)",
+    "phoneAriaLabel": "Phone for the alert",
+    "submit": "Notify me"
+  },
+  "empty": {
+    "title": "Your cart is empty",
+    "description": "Browse the catalog and add the parts you need.",
+    "action": "Browse catalog"
+  },
+  "quantity": {
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "remove": "Remove from cart"
+  },
+  "addToCart": {
+    "label": "Add to cart",
+    "unavailable": "Not available right now",
+    "added": "Part added to your cart",
+    "quantityAdjusted": "Added; we adjusted the quantity to what is in stock",
+    "notAvailable": "This part is not available right now",
+    "failed": "We could not add the part to your cart"
+  },
+  "notice": {
+    "dismiss": "Dismiss notice"
+  }
+}

@@ -30,5 +30,20 @@
     "duplicate_in_progress": "Your order is being processed. Wait a few seconds and confirm again: the same order is resumed, it is not duplicated.",
     "invalid": "Please review the form details.",
     "payment_unavailable": "We could not start the payment. Please try again."
+  },
+  "cart": {
+    "added": "Product added to your cart.",
+    "empty_cart": "Add products before continuing.",
+    "invalid": "We could not process that action. Try again.",
+    "quantity_adjusted": "We adjusted the quantity to the stock available.",
+    "removed": "Product removed from your cart.",
+    "stock_alert_created": "Done. We will let you know when it is back in stock.",
+    "stock_alert_db_unavailable": "We could not save the alert. Try again later.",
+    "stock_alert_invalid": "Enter a valid email or phone number.",
+    "stock_alert_not_found": "We could not find that product.",
+    "stock_alert_rate_limited": "Too many attempts. Try again in a few minutes.",
+    "stock_issue": "Check availability before continuing.",
+    "unavailable": "This product is no longer available.",
+    "updated": "Cart updated."
   }
 }

@@ -6,9 +6,18 @@ import { loadMessages } from "./messages";
 
 /**
  * Claves cuyo texto es legítimamente idéntico en ambos idiomas (nombres de
- * marca, siglas). Todo lo demás que salga igual es una traducción olvidada.
+ * marca, siglas, préstamos que no se traducen). Todo lo demás que salga igual
+ * es una traducción olvidada.
+ *
+ * La lista se escribe a mano a propósito: agregar una clave acá es afirmar que
+ * se miró y que la coincidencia es correcta, no que el test molestaba.
  */
-const IDENTICAL_BY_DESIGN = new Set<string>([]);
+const IDENTICAL_BY_DESIGN = new Set<string>([
+  // "Subtotal" y "Email" son la misma palabra en los dos idiomas.
+  "Cart.summary.subtotal",
+  "Checkout.summary.subtotal",
+  "Checkout.form.email",
+]);
 
 /** Palabras de 3 letras o menos coinciden por casualidad demasiado seguido. */
 const MIN_LENGTH_FOR_TRANSLATION_CHECK = 4;

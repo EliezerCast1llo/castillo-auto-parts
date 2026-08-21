@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useTransition, useState } from "react";
 import { removeCartItem, updateCartItem } from "@/lib/actions/cart";
 
@@ -17,6 +18,7 @@ export function CartQuantityControl({
   max,
   disabled = false,
 }: CartQuantityControlProps) {
+  const t = useTranslations("Cart.quantity");
   const [quantity, setQuantity] = useState(initialQuantity);
   const [pending, startTransition] = useTransition();
 
@@ -43,7 +45,7 @@ export function CartQuantityControl({
       {/* Stepper */}
       <div className="flex h-10 items-center overflow-hidden rounded-xl border border-ca-border bg-white">
         <button
-          aria-label="Disminuir cantidad"
+          aria-label={t("decrease")}
           className="flex w-10 items-center justify-center text-ca-navy-950 transition hover:bg-ca-background disabled:text-ca-border"
           disabled={!canDecrease || pending}
           onClick={() => submit(quantity - 1)}
@@ -55,7 +57,7 @@ export function CartQuantityControl({
           {quantity}
         </span>
         <button
-          aria-label="Aumentar cantidad"
+          aria-label={t("increase")}
           className="flex w-10 items-center justify-center text-ca-navy-950 transition hover:bg-ca-background disabled:text-ca-border"
           disabled={!canIncrease || pending}
           onClick={() => submit(quantity + 1)}
@@ -72,7 +74,7 @@ export function CartQuantityControl({
 
       {/* Eliminar */}
       <button
-        aria-label="Eliminar del carrito"
+        aria-label={t("remove")}
         className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border px-3 text-sm font-bold text-red-500 transition hover:bg-red-50 disabled:opacity-50"
         disabled={pending}
         onClick={handleRemove}

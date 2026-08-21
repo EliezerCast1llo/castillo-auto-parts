@@ -20,12 +20,22 @@ import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
 import { createStockAlert } from "@/lib/actions/cart";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getStatusMessage } from "@/lib/i18n/status";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 
-export const metadata = {
-  title: "Tu carrito | Castillo Auto Parts",
-  description: "Revisa tu selección de repuestos y continúa con la compra.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Cart.metadata" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+    robots: { index: false, follow: false },
+  };
+}
+
+type CartTranslator = Awaited<ReturnType<typeof getTranslations<"Cart">>>;
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +49,11 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
   const cart = await getGuestCart();
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado) ?? "";
+  const t = await getTranslations({ locale, namespace: "Cart" });
+  // El aviso se resuelve en el servidor y viaja como texto: `CartNotice` es
+  // cliente por los temporizadores, y mandarle el namespace `Status` entero
+  // significaría enviarlo en cada página del sitio para usarlo solo acá.
+  const noticeMessage = await getStatusMessage("cart", status, locale);
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
@@ -50,7 +65,7 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
           className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
         >
           <ArrowLeft className="h-4 w-4" />
-          Seguir comprando
+          {t("backToCatalog")}
         </Link>
 
         {/* En mobile: columna única (items arriba, resumen abajo)
@@ -62,26 +77,26 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
             {/* Header */}
             <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
               <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
-                Carrito de compras
+                {t("eyebrow")}
               </p>
-              <h1 className="mt-1 text-2xl font-black text-ca-navy-950">Tu carrito</h1>
+              <h1 className="mt-1 text-2xl font-black text-ca-navy-950">{t("title")}</h1>
               {cart.lines.length > 0 ? (
                 <p className="mt-1 text-sm text-ca-text-secondary">
-                  {cart.itemCount} {cart.itemCount === 1 ? "producto" : "productos"}
+                  {t("itemCount", { count: cart.itemCount })}
                 </p>
               ) : null}
             </div>
 
-            {status ? <CartNotice status={status} /> : null}
+            {noticeMessage ? <CartNotice message={noticeMessage} status={status} /> : null}
 
             {cart.lines.length > 0 ? (
               <div className="space-y-3">
                 {cart.lines.map((line) => (
-                  <CartLineItem key={line.product.sku} line={line} />
+                  <CartLineItem key={line.product.sku} line={line} locale={locale} t={t} />
                 ))}
               </div>
             ) : (
-              <EmptyCart />
+              <EmptyCart t={t} />
             )}
           </div>
 
@@ -89,15 +104,18 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
           <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium lg:sticky lg:top-6">
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-ca-navy-950" strokeWidth={1.8} />
-              <h2 className="text-lg font-black text-ca-navy-950">Resumen del pedido</h2>
+              <h2 className="text-lg font-black text-ca-navy-950">{t("summary.title")}</h2>
             </div>
 
             <dl className="mt-4 space-y-3 text-sm">
-              <SummaryRow label="Productos" value={formatUnits(cart.itemCount)} />
+              <SummaryRow
+                label={t("summary.products")}
+                value={t("units", { count: cart.itemCount })}
+              />
               <div className="border-t border-ca-border pt-3">
                 <SummaryRow
-                  label="Subtotal"
-                  value={formatCurrency(cart.subtotalCents)}
+                  label={t("summary.subtotal")}
+                  value={formatCurrency(cart.subtotalCents, locale)}
                   strong
                 />
               </div>
@@ -105,14 +123,14 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
 
             <div className="mt-4 flex gap-2 rounded-xl bg-ca-navy-950/5 p-3 text-sm font-semibold text-ca-navy-950">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              Precios con IVA incluido (13%).
+              {t("summary.taxNotice")}
             </div>
 
-            <CheckoutReadiness hasBlockingIssues={cart.hasBlockingIssues} />
+            <CheckoutReadiness hasBlockingIssues={cart.hasBlockingIssues} t={t} />
 
             {cart.hasBlockingIssues ? (
               <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">
-                Ajusta los productos sin disponibilidad para continuar.
+                {t("blockingIssues")}
               </div>
             ) : null}
 
@@ -121,7 +139,7 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
                 className="mt-5 inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
                 href="/checkout"
               >
-                Continuar al pago
+                {t("continueToCheckout")}
                 <CreditCard className="h-4 w-4" />
               </Link>
             ) : null}
@@ -130,7 +148,7 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
               className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
               href="/catalog"
             >
-              Agregar más productos
+              {t("addMore")}
             </Link>
           </aside>
         </div>
@@ -140,7 +158,15 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
   );
 }
 
-function CartLineItem({ line }: { line: CartLine }) {
+function CartLineItem({
+  line,
+  locale,
+  t,
+}: {
+  line: CartLine;
+  locale: Locale;
+  t: CartTranslator;
+}) {
   const isUnavailable = line.issue === "unavailable";
 
   return (
@@ -148,7 +174,7 @@ function CartLineItem({ line }: { line: CartLine }) {
       <div className="flex gap-4">
         {/* Imagen/visual */}
         <Link
-          aria-label={`Ver detalle de ${line.product.name}`}
+          aria-label={t("line.viewDetail", { name: line.product.name })}
           className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-ca-background"
           href={{ pathname: "/product/[slug]", params: { slug: line.product.slug } }}
         >
@@ -188,28 +214,36 @@ function CartLineItem({ line }: { line: CartLine }) {
 
         <div className="text-right">
           <p className="text-xs font-semibold text-ca-text-secondary">
-            {formatCurrency(line.product.priceCents)} × {line.quantity}
+            {formatCurrency(line.product.priceCents, locale)} × {line.quantity}
           </p>
           <p className="text-xl font-black text-ca-navy-950">
-            {formatCurrency(line.lineTotalCents)}
+            {formatCurrency(line.lineTotalCents, locale)}
           </p>
         </div>
       </div>
 
-      {line.issue ? <LineIssue line={line} /> : null}
+      {line.issue ? <LineIssue line={line} t={t} /> : null}
     </article>
   );
 }
 
-function CheckoutReadiness({ hasBlockingIssues }: { hasBlockingIssues: boolean }) {
+function CheckoutReadiness({
+  hasBlockingIssues,
+  t,
+}: {
+  hasBlockingIssues: boolean;
+  t: CartTranslator;
+}) {
   const items = [
     {
       icon: <PackageCheck className="h-4 w-4" />,
-      label: hasBlockingIssues ? "Disponibilidad pendiente" : "Disponibilidad confirmada",
+      label: hasBlockingIssues
+        ? t("readiness.availabilityPending")
+        : t("readiness.availabilityConfirmed"),
       ok: !hasBlockingIssues,
     },
-    { icon: <CreditCard className="h-4 w-4" />, label: "Pago disponible en checkout", ok: true },
-    { icon: <Truck className="h-4 w-4" />, label: "Elige cómo recibir tu pedido", ok: true },
+    { icon: <CreditCard className="h-4 w-4" />, label: t("readiness.payment"), ok: true },
+    { icon: <Truck className="h-4 w-4" />, label: t("readiness.delivery"), ok: true },
   ];
 
   return (
@@ -226,11 +260,11 @@ function CheckoutReadiness({ hasBlockingIssues }: { hasBlockingIssues: boolean }
   );
 }
 
-function LineIssue({ line }: { line: CartLine }) {
+function LineIssue({ line, t }: { line: CartLine; t: CartTranslator }) {
   const message =
     line.issue === "unavailable"
-      ? "Este producto ya no está disponible. Elimínalo para continuar."
-      : `Solo hay ${formatUnits(line.availableQuantity)} disponibles. Ajusta la cantidad.`;
+      ? t("issue.unavailable")
+      : t("issue.limited", { units: t("units", { count: line.availableQuantity }) });
 
   return (
     <div className="mt-3 rounded-xl bg-red-50 p-3">
@@ -244,33 +278,33 @@ function LineIssue({ line }: { line: CartLine }) {
         <input
           className="h-10 rounded-xl border border-ca-border bg-white px-3 text-sm"
           name="customerEmail"
-          placeholder="Email para aviso"
+          placeholder={t("alert.emailPlaceholder")}
           type="email"
-          aria-label="Email para aviso de disponibilidad"
+          aria-label={t("alert.emailAriaLabel")}
         />
         <input
           className="h-10 rounded-xl border border-ca-border bg-white px-3 text-sm"
           name="customerPhone"
-          placeholder="Teléfono (opcional)"
+          placeholder={t("alert.phonePlaceholder")}
           type="tel"
-          aria-label="Teléfono para aviso"
+          aria-label={t("alert.phoneAriaLabel")}
         />
         <button className="h-10 rounded-xl bg-ca-navy-950 px-4 text-sm font-black text-white transition hover:bg-ca-navy-800">
-          Avisarme
+          {t("alert.submit")}
         </button>
       </form>
     </div>
   );
 }
 
-function EmptyCart() {
+function EmptyCart({ t }: { t: CartTranslator }) {
   return (
     <EmptyState
       actionHref="/catalog"
-      actionLabel="Explorar catálogo"
-      description="Explora el catálogo y agrega los repuestos que necesitas."
+      actionLabel={t("empty.action")}
+      description={t("empty.description")}
       icon={<ShoppingCart className="h-7 w-7" strokeWidth={1.5} />}
-      title="Tu carrito está vacío"
+      title={t("empty.title")}
     />
   );
 }
@@ -287,7 +321,3 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
   );
 }
 
-
-function formatUnits(quantity: number) {
-  return quantity === 1 ? "1 unidad" : `${quantity} unidades`;
-}

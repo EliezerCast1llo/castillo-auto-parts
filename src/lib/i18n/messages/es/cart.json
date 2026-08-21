@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "title": "Tu carrito | Castillo Auto Parts",
+    "description": "Revisa tu selección de repuestos y continúa con la compra."
+  },
+  "backToCatalog": "Seguir comprando",
+  "eyebrow": "Carrito de compras",
+  "title": "Tu carrito",
+  "itemCount": "{count, plural, one {# producto} other {# productos}}",
+  "units": "{count, plural, one {# unidad} other {# unidades}}",
+  "summary": {
+    "title": "Resumen del pedido",
+    "products": "Productos",
+    "subtotal": "Subtotal",
+    "taxNotice": "Precios con IVA incluido (13%)."
+  },
+  "readiness": {
+    "availabilityPending": "Disponibilidad pendiente",
+    "availabilityConfirmed": "Disponibilidad confirmada",
+    "payment": "Pago disponible en checkout",
+    "delivery": "Elige cómo recibir tu pedido"
+  },
+  "blockingIssues": "Ajusta los productos sin disponibilidad para continuar.",
+  "continueToCheckout": "Continuar al pago",
+  "addMore": "Agregar más productos",
+  "line": {
+    "viewDetail": "Ver detalle de {name}"
+  },
+  "issue": {
+    "unavailable": "Este producto ya no está disponible. Elimínalo para continuar.",
+    "limited": "Solo hay {units} disponibles. Ajusta la cantidad."
+  },
+  "alert": {
+    "emailPlaceholder": "Email para aviso",
+    "emailAriaLabel": "Email para aviso de disponibilidad",
+    "phonePlaceholder": "Teléfono (opcional)",
+    "phoneAriaLabel": "Teléfono para aviso",
+    "submit": "Avisarme"
+  },
+  "empty": {
+    "title": "Tu carrito está vacío",
+    "description": "Explora el catálogo y agrega los repuestos que necesitas.",
+    "action": "Explorar catálogo"
+  },
+  "quantity": {
+    "decrease": "Disminuir cantidad",
+    "increase": "Aumentar cantidad",
+    "remove": "Eliminar del carrito"
+  },
+  "addToCart": {
+    "label": "Agregar al carrito",
+    "unavailable": "No disponible por ahora",
+    "added": "Repuesto agregado al carrito",
+    "quantityAdjusted": "Agregado; ajustamos la cantidad a la disponibilidad actual",
+    "notAvailable": "Este repuesto no está disponible por ahora",
+    "failed": "No pudimos agregar el repuesto al carrito"
+  },
+  "notice": {
+    "dismiss": "Cerrar aviso"
+  }
+}
