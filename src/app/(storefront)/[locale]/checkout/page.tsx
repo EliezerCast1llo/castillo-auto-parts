@@ -17,12 +17,21 @@ import { firstValue } from "@/lib/url-utils";
 import { createGuestOrder } from "./actions";
 import { getStatusMessage } from "@/lib/i18n/status";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 
-export const metadata = {
-  title: "Finalizar compra | Castillo Auto Parts",
-  description: "Completa tus datos de entrega y pago para confirmar tu pedido.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Checkout.metadata" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+    robots: { index: false, follow: false },
+  };
+}
+
+type CheckoutTranslator = Awaited<ReturnType<typeof getTranslations<"Checkout">>>;
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +50,7 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = await getStatusMessage("checkout", status, locale);
+  const t = await getTranslations({ locale, namespace: "Checkout" });
 
   // La key de reintento se adopta cuando el carrito NO está vacío. Con carrito lleno
   // una key vieja es inofensiva: isSameCheckoutIntent + la key derivada evitan pisar
@@ -87,7 +97,7 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
           className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
         >
           <ArrowLeft className="h-4 w-4" />
-          Volver al carrito
+          {t("backToCart")}
         </Link>
 
         <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -95,9 +105,9 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
           <div className="space-y-4">
             <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
               <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
-                Finalizar compra
+                {t("eyebrow")}
               </p>
-              <h1 className="mt-1 text-2xl font-black text-ca-navy-950">Datos de entrega y pago</h1>
+              <h1 className="mt-1 text-2xl font-black text-ca-navy-950">{t("title")}</h1>
             </div>
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
@@ -112,10 +122,11 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
                 pickupLocation={fulfillmentOptions.pickupLocation}
                 savedAddresses={savedAddresses}
                 subtotalCents={cart.subtotalCents}
+                t={t}
                 userDefaults={userDefaults}
               />
             ) : (
-              <EmptyCheckout hasIssues={cart.hasBlockingIssues} />
+              <EmptyCheckout hasIssues={cart.hasBlockingIssues} t={t} />
             )}
           </div>
 
@@ -123,7 +134,7 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
           <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium lg:sticky lg:top-6">
             <div className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-ca-navy-950" strokeWidth={1.8} />
-              <h2 className="text-lg font-black text-ca-navy-950">Tu pedido</h2>
+              <h2 className="text-lg font-black text-ca-navy-950">{t("summary.title")}</h2>
             </div>
 
             <div className="mt-4 space-y-3">
@@ -132,11 +143,11 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
                   <div className="min-w-0">
                     <p className="font-bold text-ca-navy-950 truncate">{line.product.name}</p>
                     <p className="text-ca-text-secondary">
-                      {line.quantity} × {formatCurrency(line.product.priceCents)}
+                      {line.quantity} × {formatCurrency(line.product.priceCents, locale)}
                     </p>
                   </div>
                   <p className="shrink-0 font-black text-ca-navy-950">
-                    {formatCurrency(line.lineTotalCents)}
+                    {formatCurrency(line.lineTotalCents, locale)}
                   </p>
                 </div>
               ))}
@@ -144,26 +155,28 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
 
             <div className="mt-4 border-t border-ca-border pt-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-ca-text-secondary">Subtotal</span>
+                <span className="text-sm text-ca-text-secondary">{t("summary.subtotal")}</span>
                 <span className="text-xl font-black text-ca-navy-950">
-                  {formatCurrency(cart.subtotalCents)}
+                  {formatCurrency(cart.subtotalCents, locale)}
                 </span>
               </div>
             </div>
 
             <div className="mt-3 rounded-xl bg-ca-background p-3 text-sm">
-              <p className="font-bold text-ca-navy-950">Envío</p>
+              <p className="font-bold text-ca-navy-950">{t("summary.shippingTitle")}</p>
               <p className="mt-0.5 text-ca-text-secondary">
-                Retiro gratis en {fulfillmentOptions.pickupLocation.name}
                 {fulfillmentOptions.deliveryZones.length > 0
-                  ? `; o envío ${formatDeliveryZoneSummary(fulfillmentOptions.deliveryZones)}.`
-                  : "."}
+                  ? t("summary.pickupOrDelivery", {
+                      location: fulfillmentOptions.pickupLocation.name,
+                      zones: formatDeliveryZoneSummary(fulfillmentOptions.deliveryZones, locale),
+                    })
+                  : `${t("summary.pickupFree", { location: fulfillmentOptions.pickupLocation.name })}.`}
               </p>
             </div>
 
             <div className="mt-3 flex gap-2 rounded-xl bg-ca-navy-950/5 p-3 text-sm font-semibold text-ca-navy-950">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              Precios con IVA incluido (13%).
+              {t("summary.taxNotice")}
             </div>
           </aside>
         </div>
@@ -190,6 +203,7 @@ function CheckoutForm({
   pickupLocation,
   savedAddresses,
   subtotalCents,
+  t,
   userDefaults,
 }: {
   deliveryZones: DeliveryZoneOption[];
@@ -197,6 +211,7 @@ function CheckoutForm({
   pickupLocation: PickupLocationOption;
   savedAddresses: SavedAddress[];
   subtotalCents: number;
+  t: CheckoutTranslator;
   userDefaults: { name: string; email: string; phone: string } | null;
 }) {
   const isGuest = userDefaults === null;
@@ -205,24 +220,49 @@ function CheckoutForm({
     <form action={createGuestOrder} className="space-y-4">
       <input name="idempotencyKey" type="hidden" value={idempotencyKey} />
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-        <h2 className="text-base font-black text-ca-navy-950">Tus datos</h2>
+        <h2 className="text-base font-black text-ca-navy-950">{t("form.yourData")}</h2>
         {isGuest ? (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <CheckoutField autoComplete="name" label="Nombre completo" name="customerName" required />
-            <CheckoutField autoComplete="email" label="Email" name="customerEmail" required type="email" />
-            <CheckoutField autoComplete="tel" label="Teléfono" name="customerPhone" required />
+            <CheckoutField
+              autoComplete="name"
+              label={t("form.fullName")}
+              name="customerName"
+              required
+            />
+            <CheckoutField
+              autoComplete="email"
+              label={t("form.email")}
+              name="customerEmail"
+              required
+              type="email"
+            />
+            <CheckoutField autoComplete="tel" label={t("form.phone")} name="customerPhone" required />
           </div>
         ) : (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <CheckoutFieldReadonly label="Nombre" value={userDefaults.name} />
-            <CheckoutFieldReadonly label="Email" value={userDefaults.email} />
-            {userDefaults.phone ? <CheckoutFieldReadonly label="Teléfono" value={userDefaults.phone} /> : null}
+            <CheckoutFieldReadonly
+              emptyLabel={t("form.noData")}
+              label={t("form.name")}
+              value={userDefaults.name}
+            />
+            <CheckoutFieldReadonly
+              emptyLabel={t("form.noData")}
+              label={t("form.email")}
+              value={userDefaults.email}
+            />
+            {userDefaults.phone ? (
+              <CheckoutFieldReadonly
+                emptyLabel={t("form.noData")}
+                label={t("form.phone")}
+                value={userDefaults.phone}
+              />
+            ) : null}
           </div>
         )}
       </section>
 
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-        <h2 className="text-base font-black text-ca-navy-950">Método de entrega</h2>
+        <h2 className="text-base font-black text-ca-navy-950">{t("form.deliveryMethod")}</h2>
         <CheckoutDeliveryFields
           deliveryZones={deliveryZones}
           isGuest={isGuest}
@@ -233,7 +273,7 @@ function CheckoutForm({
       </section>
 
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-        <h2 className="text-base font-black text-ca-navy-950">Pago</h2>
+        <h2 className="text-base font-black text-ca-navy-950">{t("form.payment")}</h2>
         <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-ca-border bg-ca-background px-4 text-sm font-bold text-ca-navy-950">
           <input
             className="h-4 w-4 accent-ca-navy-950"
@@ -242,13 +282,13 @@ function CheckoutForm({
             type="radio"
             value="online_card"
           />
-          Tarjeta en línea
+          {t("form.card")}
         </label>
       </section>
 
       <button className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800">
         <PackageCheck className="h-4 w-4" strokeWidth={2} />
-        Confirmar y pagar
+        {t("form.submit")}
       </button>
     </form>
   );
@@ -285,36 +325,42 @@ function CheckoutField({
   );
 }
 
-function CheckoutFieldReadonly({ label, value }: { label: string; value: string }) {
+function CheckoutFieldReadonly({
+  emptyLabel,
+  label,
+  value,
+}: {
+  emptyLabel: string;
+  label: string;
+  value: string;
+}) {
   return (
     <div>
       <p className="block text-sm font-bold text-ca-navy-950">{label}</p>
       <p className="mt-2 flex h-11 items-center rounded-xl border border-ca-border bg-ca-background px-3 text-sm text-ca-text-secondary">
-        {value || <span className="italic">Sin datos</span>}
+        {value || <span className="italic">{emptyLabel}</span>}
       </p>
     </div>
   );
 }
 
-function EmptyCheckout({ hasIssues }: { hasIssues: boolean }) {
+function EmptyCheckout({ hasIssues, t }: { hasIssues: boolean; t: CheckoutTranslator }) {
   return (
     <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-ca-soft">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-ca-navy-950/5">
         <MapPin className="h-8 w-8 text-ca-navy-950" strokeWidth={1.5} />
       </div>
       <h2 className="mt-4 text-xl font-black text-ca-navy-950">
-        {hasIssues ? "Ajusta tu carrito primero" : "Tu carrito está vacío"}
+        {hasIssues ? t("empty.issuesTitle") : t("empty.emptyTitle")}
       </h2>
       <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ca-text-secondary">
-        {hasIssues
-          ? "Hay productos sin disponibilidad. Revisa tu carrito antes de continuar."
-          : "Agrega repuestos desde el catálogo para completar tu compra."}
+        {hasIssues ? t("empty.issuesDescription") : t("empty.emptyDescription")}
       </p>
       <Link
         className="mt-5 inline-flex h-12 items-center justify-center rounded-[14px] bg-ca-navy-950 px-6 text-sm font-black text-white transition hover:bg-ca-navy-800"
         href={hasIssues ? "/cart" : "/catalog"}
       >
-        {hasIssues ? "Volver al carrito" : "Ver catálogo"}
+        {hasIssues ? t("empty.issuesAction") : t("empty.emptyAction")}
       </Link>
     </div>
   );
@@ -334,7 +380,7 @@ function CheckoutNotice({ message, status }: { message: string; status: string }
   );
 }
 
-function formatDeliveryZoneSummary(zones: DeliveryZoneOption[]) {
-  return zones.map((zone) => `${zone.name} ${formatCurrency(zone.feeCents)}`).join(", ");
+function formatDeliveryZoneSummary(zones: DeliveryZoneOption[], locale: Locale) {
+  return zones.map((zone) => `${zone.name} ${formatCurrency(zone.feeCents, locale)}`).join(", ");
 }
 

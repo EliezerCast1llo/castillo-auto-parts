@@ -2,9 +2,11 @@
 
 import { Info, MapPin, X } from "lucide-react";
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { formatCurrency } from "@/lib/money";
 import type { FulfillmentMethod } from "@/lib/checkout";
+import type { Locale } from "@/lib/i18n/config";
 import type { DeliveryZoneOption, PickupLocationOption } from "@/lib/fulfillment";
 import { CheckoutLocationPicker, type LocationInfo } from "./checkout-location-picker";
 
@@ -40,6 +42,11 @@ export function CheckoutDeliveryFields({
   savedAddresses: SavedAddress[];
   subtotalCents: number;
 }) {
+  const t = useTranslations("Checkout.delivery");
+  // El idioma sale del contexto y no de una prop: acá solo alimenta el formato
+  // del monto, no decide a dónde va nadie. Donde el idioma elige un destino
+  // —redirects, URLs de correo— se pasa explícito.
+  const locale = useLocale() as Locale;
   const [method, setMethod] = useState<FulfillmentMethod>("PICKUP");
   const [selectedAddressId, setSelectedAddressId] = useState(
     savedAddresses.length > 0 ? savedAddresses[0].id : "",
@@ -106,7 +113,7 @@ export function CheckoutDeliveryFields({
             type="radio"
             value="PICKUP"
           />
-          Retiro en bodega
+          {t("pickup")}
         </label>
         <label
           className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold"
@@ -120,7 +127,7 @@ export function CheckoutDeliveryFields({
             type="radio"
             value="LOCAL_DELIVERY"
           />
-          Envío local
+          {t("localDelivery")}
         </label>
       </div>
 
@@ -138,7 +145,7 @@ export function CheckoutDeliveryFields({
             <>
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block text-sm font-semibold md:col-span-2">
-                  Dirección
+                  {t("address")}
                   <input
                     className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
                     name="addressLine1"
@@ -149,7 +156,7 @@ export function CheckoutDeliveryFields({
                   />
                 </label>
                 <label className="block text-sm font-semibold">
-                  Casa, local o referencia
+                  {t("addressLine2")}
                   <input
                     className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
                     name="addressLine2"
@@ -159,7 +166,7 @@ export function CheckoutDeliveryFields({
                   />
                 </label>
                 <label className="block text-sm font-semibold">
-                  Municipio
+                  {t("city")}
                   <select
                     className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
                     name="deliveryZoneSlug"
@@ -167,7 +174,7 @@ export function CheckoutDeliveryFields({
                     required
                     value={guestFields.deliveryZoneSlug}
                   >
-                    <option value="">Selecciona municipio</option>
+                    <option value="">{t("selectCity")}</option>
                     {deliveryZones.map((zone) => (
                       <option key={zone.id} value={zone.slug}>
                         {zone.name} · {formatCurrency(zone.feeCents)}
@@ -176,7 +183,7 @@ export function CheckoutDeliveryFields({
                   </select>
                 </label>
                 <label className="block text-sm font-semibold">
-                  Departamento
+                  {t("department")}
                   <input
                     className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
                     readOnly
@@ -187,12 +194,12 @@ export function CheckoutDeliveryFields({
               </div>
 
               <label className="block text-sm font-semibold">
-                Notas de entrega
+                {t("notes")}
                 <textarea
                   className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                   name="deliveryNotes"
                   onChange={setGuestField("deliveryNotes")}
-                  placeholder="Indicaciones, horario preferido o referencia del lugar"
+                  placeholder={t("notesPlaceholder")}
                   value={guestFields.deliveryNotes}
                 />
               </label>
@@ -207,7 +214,7 @@ export function CheckoutDeliveryFields({
                   type="button"
                 >
                   <MapPin className="h-4 w-4" />
-                  Ver resumen de dirección
+                  {t("viewAddressSummary")}
                 </button>
               ) : null}
             </>
@@ -220,7 +227,7 @@ export function CheckoutDeliveryFields({
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div>
-                  <h3 className="font-bold text-primary">Retiro en bodega</h3>
+                  <h3 className="font-bold text-primary">{t("pickup")}</h3>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
                     {pickupLocation.address}.
                   </p>
@@ -231,7 +238,7 @@ export function CheckoutDeliveryFields({
                     {pickupLocation.pickupInstructions}
                   </p>
                   <p className="mt-3 text-sm font-semibold text-success">
-                    Costo de retiro: {formatCurrency(0)}
+                    {t("pickupCost", { amount: formatCurrency(0, locale) })}
                   </p>
                 </div>
               </div>
@@ -241,7 +248,7 @@ export function CheckoutDeliveryFields({
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               src={pickupLocation.mapUrl}
-              title="Ubicación de bodega"
+              title={t("warehouseMapTitle")}
             />
           </div>
         </div>
@@ -250,15 +257,24 @@ export function CheckoutDeliveryFields({
       <div className="mt-4 rounded-md bg-primary/5 p-4 text-sm">
         <div className="flex gap-2 font-semibold text-primary">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>Los precios de productos ya incluyen IVA.</span>
+          <span>{t("taxNotice")}</span>
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <DeliveryTotal label="Productos" value={formatCurrency(subtotalCents)} />
           <DeliveryTotal
-            label="Envío"
-            value={shippingCents === null ? "Selecciona municipio" : formatCurrency(shippingCents)}
+            label={t("totalsProducts")}
+            value={formatCurrency(subtotalCents, locale)}
           />
-          <DeliveryTotal label="Total estimado" value={formatCurrency(totalCents)} strong />
+          <DeliveryTotal
+            label={t("totalsShipping")}
+            value={
+              shippingCents === null ? t("selectCity") : formatCurrency(shippingCents, locale)
+            }
+          />
+          <DeliveryTotal
+            label={t("totalsEstimated")}
+            value={formatCurrency(totalCents, locale)}
+            strong
+          />
         </div>
       </div>
 
@@ -289,10 +305,12 @@ function SavedAddressSelector({
   savedZone: DeliveryZoneOption | undefined;
   setSelectedAddressId: (id: string) => void;
 }) {
+  const t = useTranslations("Checkout.delivery");
+
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm font-semibold text-ca-navy-950">Dirección guardada</p>
+        <p className="text-sm font-semibold text-ca-navy-950">{t("savedAddress")}</p>
         <div className="mt-2 space-y-2">
           {addresses.map((address) => (
             <label
@@ -345,9 +363,9 @@ function SavedAddressSelector({
       ) : null}
 
       <p className="text-sm text-muted-foreground">
-        ¿Quieres enviar a otra dirección?{" "}
+        {t("otherAddressQuestion")}{" "}
         <Link className="font-semibold text-ca-navy-950 underline" href="/account/addresses">
-          Administra tus direcciones
+          {t("manageAddresses")}
         </Link>
       </p>
     </div>
@@ -369,16 +387,18 @@ function DeliveryAddressModal({
   deliveryNotes: string;
   onClose: () => void;
 }) {
+  const t = useTranslations("Checkout.addressModal");
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
       <div className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
             <MapPin className="h-5 w-5 shrink-0 text-ca-navy-950" />
-            <h2 className="text-lg font-black text-ca-navy-950">Dirección de entrega</h2>
+            <h2 className="text-lg font-black text-ca-navy-950">{t("title")}</h2>
           </div>
           <button
-            aria-label="Cerrar"
+            aria-label={t("close")}
             className="rounded-md p-1 text-ca-text-secondary hover:bg-ca-background"
             onClick={onClose}
             type="button"
@@ -388,21 +408,21 @@ function DeliveryAddressModal({
         </div>
 
         <div className="mt-5 space-y-3 rounded-xl bg-ca-background p-4 text-sm">
-          <ModalRow label="Dirección" value={addressLine1} />
-          {addressLine2 ? <ModalRow label="Referencia" value={addressLine2} /> : null}
-          <ModalRow label="Municipio" value={city} />
-          <ModalRow label="Departamento" value={department} />
-          {deliveryNotes ? <ModalRow label="Notas" value={deliveryNotes} /> : null}
+          <ModalRow label={t("address")} value={addressLine1} />
+          {addressLine2 ? <ModalRow label={t("reference")} value={addressLine2} /> : null}
+          <ModalRow label={t("city")} value={city} />
+          <ModalRow label={t("department")} value={department} />
+          {deliveryNotes ? <ModalRow label={t("notes")} value={deliveryNotes} /> : null}
         </div>
 
         <p className="mt-3 text-sm text-muted-foreground">
-          ¿Algo incorrecto?{" "}
+          {t("wrongQuestion")}{" "}
           <button
             className="font-semibold text-ca-navy-950 underline"
             onClick={onClose}
             type="button"
           >
-            Editar dirección
+            {t("edit")}
           </button>
         </p>
 
@@ -411,7 +431,7 @@ function DeliveryAddressModal({
           onClick={onClose}
           type="button"
         >
-          Cerrar
+          {t("close")}
         </button>
       </div>
     </div>

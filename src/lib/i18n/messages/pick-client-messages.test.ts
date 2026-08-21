@@ -7,7 +7,21 @@ describe("pickClientMessages", () => {
   it("ships only the namespaces the client components use", () => {
     // Todo lo que salga de acá viaja al navegador en cada página del
     // storefront, así que la lista es deliberadamente corta.
-    expect(Object.keys(pickClientMessages(es)).sort()).toEqual(["Common", "Consent", "Errors", "Nav"]);
+    expect(Object.keys(pickClientMessages(es)).sort()).toEqual([
+      "Cart",
+      "Checkout",
+      "Common",
+      "Consent",
+      "Errors",
+      "Nav",
+    ]);
+  });
+
+  it("keeps the status messages out of the browser", () => {
+    // Los códigos de `?estado=` se traducen en el servidor y bajan como texto.
+    // Si `Status` entrara acá, los mensajes de auth, cuenta, carrito y checkout
+    // viajarían en cada página del storefront para usarse en cuatro.
+    expect(pickClientMessages(es)).not.toHaveProperty("Status");
   });
 
   it("never ships the whole catalog", () => {

@@ -418,6 +418,68 @@ test("a multi-word search finds products", async ({ page }) => {
   }
 });
 
+/**
+ * Producto de trabajo de estos tres tests.
+ *
+ * No es `filtro-aceite-toyota-18l` a proposito: `catalog-cart.spec.ts` lo deja
+ * sin stock a mitad de su corrida, y los specs comparten base aunque tengan
+ * contextos de navegador separados. Con ese producto estos tests pasaban
+ * aislados y fallaban en la suite completa, que es la peor forma de fallar.
+ */
+const CART_PRODUCT = "pastillas-delanteras-nissan-sentra";
+
+test("the cart speaks the language of the page, plurals included", async ({ page }) => {
+  // El plural va por ICU y no por concatenacion: con `productos?` en el regex
+  // este test habria pasado igual con la version vieja. Se compara el texto
+  // exacto en singular, que es la forma que la concatenacion no sabia producir.
+  await page.goto(ES(`/product/${CART_PRODUCT}`));
+  await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
+  await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
+
+  await page.goto(ES("/cart"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tu carrito");
+  await expect(page.getByText("1 producto", { exact: true })).toBeVisible();
+  await expect(page.getByText("1 unidad", { exact: true })).toBeVisible();
+
+  await page.goto(EN("/cart"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart");
+  await expect(page.getByText("1 product", { exact: true })).toBeVisible();
+  await expect(page.getByText("1 unit", { exact: true })).toBeVisible();
+  // Y el carrito es el mismo: el idioma cambia el texto, no el estado.
+  await expect(page.getByText("Continue to payment")).toBeVisible();
+});
+
+test("the checkout form speaks the language of the page", async ({ page }) => {
+  await page.goto(ES(`/product/${CART_PRODUCT}`));
+  await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
+  await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
+
+  await page.goto(ES("/checkout"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Datos de entrega y pago");
+  await expect(page.getByLabel("Nombre completo")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirmar y pagar" })).toBeVisible();
+
+  await page.goto(EN("/checkout"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Delivery and payment details");
+  await expect(page.getByLabel("Full name")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirm and pay" })).toBeVisible();
+
+  // Los campos de entrega son un componente de cliente: si sus mensajes no
+  // viajaran al navegador, esto saldria como MISSING_MESSAGE en vez de texto.
+  await expect(page.getByText("Local delivery")).toBeVisible();
+  await expect(page.getByText("Pickup at the warehouse").first()).toBeVisible();
+});
+
+test("an empty cart says so in both languages", async ({ page, context }) => {
+  await context.clearCookies();
+
+  await page.goto(ES("/cart"));
+  await expect(page.getByText("Tu carrito está vacío")).toBeVisible();
+
+  await page.goto(EN("/cart"));
+  await expect(page.getByText("Your cart is empty")).toBeVisible();
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";

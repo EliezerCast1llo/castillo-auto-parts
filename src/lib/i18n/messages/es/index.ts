@@ -1,4 +1,6 @@
+import Cart from "./cart.json";
 import Catalog from "./catalog.json";
+import Checkout from "./checkout.json";
 import Common from "./common.json";
 import Consent from "./consent.json";
 import Email from "./email.json";
@@ -15,7 +17,9 @@ import Status from "./status.json";
  * conflictos de merge.
  */
 const messages = {
+  Cart,
   Catalog,
+  Checkout,
   Common,
   Consent,
   Email,
