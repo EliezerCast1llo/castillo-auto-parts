@@ -1,5 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ES } from "./helpers";
+import { PRODUCT_CLAIMS } from "./fixtures/products";
+
+// La reserva de productos de este spec; ver fixtures/products.ts.
+const CLAIMS = PRODUCT_CLAIMS["catalog-cart.spec.ts"];
 import { InventoryStatus, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -117,10 +121,10 @@ test("local delivery checkout exposes delivery zone and map fields", async ({ pa
 });
 
 test("guest can create a pickup order awaiting payment confirmation", async ({ page }) => {
-  const sku = "MOCK-SPK-HK-16";
+  const { sku, slug } = CLAIMS.pickupOrder;
   const initialStock = await getStockSnapshot(sku);
 
-  await addProductToCart(page, "bujia-iridio-hyundai-kia-16l");
+  await addProductToCart(page, slug);
   await page.getByRole("link", { name: "Continuar al pago" }).click();
 
   await fillCustomerFields(page, {
@@ -212,10 +216,10 @@ test("guest can complete local delivery checkout with zone and exact location", 
 });
 
 test("guest can request a stock alert when cart item becomes unavailable", async ({ page }) => {
-  const sku = "MOCK-FIL-TOY-18";
+  const { sku, slug } = CLAIMS.stockAlert;
   const alertEmail = "qa-stock-alert@example.com";
 
-  await addProductToCart(page, "filtro-aceite-toyota-18l");
+  await addProductToCart(page, slug);
   await makeProductUnavailable(sku);
   await page.goto(ES("/cart"));
 
