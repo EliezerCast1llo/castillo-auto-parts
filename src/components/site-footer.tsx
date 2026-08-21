@@ -94,7 +94,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
 
         {/* Soporte */}
         <FooterColumn title={t("support")}>
-          <FooterLink href="/help">Centro de ayuda</FooterLink>
+          <FooterLink href="/help">{t("helpCenter")}</FooterLink>
           {SUPPORT_WHATSAPP_NUMBER ? (
             <a
               className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"

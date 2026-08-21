@@ -500,12 +500,17 @@ test("the product page and the footer speak the language of the page", async ({ 
   await expect(page.getByRole("heading", { level: 2, name: "Descripción" })).toBeVisible();
   await expect(page.getByText("Detalles técnicos")).toBeVisible();
   // El footer es server component y recibe el idioma por prop, no del contexto.
+  // Se miran dos columnas distintas: con una sola, un enlace sin traducir en la
+  // otra pasaba desapercibido — que es exactamente lo que pasó con "Centro de
+  // ayuda" mientras este test verificaba solo "Catálogo completo".
   await expect(page.getByText("Catálogo completo")).toBeVisible();
+  await expect(page.getByText("Centro de ayuda")).toBeVisible();
 
   await page.goto(EN(`/product/${slug}`));
   await expect(page.getByRole("heading", { level: 2, name: "Description" })).toBeVisible();
   await expect(page.getByText("Technical details")).toBeVisible();
   await expect(page.getByText("Full catalog")).toBeVisible();
+  await expect(page.getByText("Help center")).toBeVisible();
   // Y el precio sigue en USD en los dos: El Salvador esta dolarizado.
   await expect(page.getByText(/\$\d/).first()).toBeVisible();
 });
