@@ -8,12 +8,14 @@ describe("pickClientMessages", () => {
     // Todo lo que salga de acá viaja al navegador en cada página del
     // storefront, así que la lista es deliberadamente corta.
     expect(Object.keys(pickClientMessages(es)).sort()).toEqual([
+      "Auth",
       "Cart",
       "Checkout",
       "Common",
       "Consent",
       "Errors",
       "Nav",
+      "VehicleSearch",
     ]);
   });
 

@@ -7,12 +7,18 @@ import { firstValue } from "@/lib/url-utils";
 import { loginWithCredentials, loginWithGoogle } from "./actions";
 import { getStatusMessage } from "@/lib/i18n/status";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = {
-  robots: { follow: false, index: false },
-  title: "Iniciar sesión | Castillo Auto Parts",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Auth.login" });
+
+  return {
+    robots: { follow: false, index: false },
+    title: t("metadataTitle"),
+  };
+}
 
 type LoginPageProps = {
   params: Promise<{ locale: string }>;
@@ -21,6 +27,7 @@ type LoginPageProps = {
 
 export default async function LoginPage({ params: routeParams, searchParams }: LoginPageProps) {
   const locale = await resolveAndPublishRouteLocale(routeParams);
+  const t = await getTranslations({ locale, namespace: "Auth.login" });
   const session = await auth();
   const params = searchParams ? await searchParams : {};
   const nextPath = getSafeCustomerNextPath(firstValue(params.next));
@@ -40,8 +47,8 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
               <LogIn className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">Tu cuenta</p>
-              <h1 className="text-2xl font-black text-ca-navy-950">Iniciar sesión</h1>
+              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">{t("eyebrow")}</p>
+              <h1 className="text-2xl font-black text-ca-navy-950">{t("title")}</h1>
             </div>
           </div>
 
@@ -58,7 +65,7 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
 
               <div>
                 <label htmlFor="email" className="block text-sm font-bold text-ca-navy-950">
-                  Correo electrónico
+                  {t("email")}
                 </label>
                 <input
                   id="email"
@@ -72,7 +79,7 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
 
               <div>
                 <label htmlFor="password" className="block text-sm font-bold text-ca-navy-950">
-                  Contraseña
+                  {t("password")}
                 </label>
                 <input
                   id="password"
@@ -89,7 +96,7 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
                   href="/auth/forgot-password"
                   className="text-xs font-bold text-ca-blue-700 hover:underline"
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t("forgotPassword")}
                 </Link>
               </div>
 
@@ -97,13 +104,13 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
                 type="submit"
                 className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
               >
-                Entrar
+                {t("submit")}
               </button>
             </form>
 
             <div className="my-5 flex items-center gap-3">
               <div className="h-px flex-1 bg-ca-border" />
-              <span className="text-xs font-bold text-ca-text-secondary">o continúa con</span>
+              <span className="text-xs font-bold text-ca-text-secondary">{t("orContinueWith")}</span>
               <div className="h-px flex-1 bg-ca-border" />
             </div>
 
@@ -115,18 +122,18 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
                 className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
               >
                 <GoogleIcon />
-                Continuar con Google
+                {t("google")}
               </button>
             </form>
           </div>
 
           <p className="mt-5 text-center text-sm text-ca-text-secondary">
-            ¿No tienes cuenta?{" "}
+            {t("noAccount")}{" "}
             <Link
               href={{ pathname: "/auth/register", query: { next: nextPath } }}
               className="font-bold text-ca-blue-700 hover:underline"
             >
-              Crear cuenta gratis
+              {t("createAccount")}
             </Link>
           </p>
         </div>

@@ -6,13 +6,19 @@ import { firstValue } from "@/lib/url-utils";
 import { applyPasswordResetAction } from "./actions";
 import { getStatusMessage } from "@/lib/i18n/status";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  robots: { follow: false, index: false },
-  title: "Nueva contraseña | Castillo Auto Parts",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Auth.resetPassword" });
+
+  return {
+    robots: { follow: false, index: false },
+    title: t("metadataTitle"),
+  };
+}
 
 type ResetPasswordPageProps = {
   params: Promise<{ locale: string; token: string }>;
@@ -21,6 +27,7 @@ type ResetPasswordPageProps = {
 
 export default async function ResetPasswordPage({ params, searchParams }: ResetPasswordPageProps) {
   const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Auth.resetPassword" });
   const { token } = await params;
   const queryParams = searchParams ? await searchParams : {};
   const errorMessage = await getStatusMessage("auth", firstValue(queryParams.estado), locale);
@@ -39,8 +46,8 @@ export default async function ResetPasswordPage({ params, searchParams }: ResetP
               <KeyRound className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-muted-foreground">Cuenta</p>
-              <h1 className="text-2xl font-bold text-primary">Nueva contraseña</h1>
+              <p className="text-sm font-semibold text-muted-foreground">{t("eyebrow")}</p>
+              <h1 className="text-2xl font-bold text-primary">{t("title")}</h1>
             </div>
           </div>
 
@@ -54,7 +61,7 @@ export default async function ResetPasswordPage({ params, searchParams }: ResetP
             <input type="hidden" name="token" value={token} />
 
             <label className="block text-sm font-semibold">
-              Nueva contraseña
+              {t("newPassword")}
               <input
                 name="password"
                 required
@@ -66,7 +73,7 @@ export default async function ResetPasswordPage({ params, searchParams }: ResetP
             </label>
 
             <label className="block text-sm font-semibold">
-              Confirmar contraseña
+              {t("confirmPassword")}
               <input
                 name="passwordConfirm"
                 required
@@ -83,7 +90,7 @@ export default async function ResetPasswordPage({ params, searchParams }: ResetP
               type="submit"
               className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
             >
-              Guardar nueva contraseña
+              {t("submit")}
             </button>
           </form>
         </div>

@@ -228,7 +228,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
           </section>
         </div>
       </div>
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </main>
   );
 }

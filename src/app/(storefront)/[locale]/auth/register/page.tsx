@@ -7,12 +7,18 @@ import { firstValue } from "@/lib/url-utils";
 import { asLocaleHref, redirect } from "@/lib/i18n/navigation";
 import { getStatusMessage } from "@/lib/i18n/status";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = {
-  robots: { follow: false, index: false },
-  title: "Crear cuenta | Castillo Auto Parts",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Auth.register" });
+
+  return {
+    robots: { follow: false, index: false },
+    title: t("metadataTitle"),
+  };
+}
 
 type RegisterPageProps = {
   params: Promise<{ locale: string }>;

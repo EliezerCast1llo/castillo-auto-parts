@@ -481,6 +481,35 @@ test("an empty cart says so in both languages", async ({ page, context }) => {
   await expect(page.getByText("Your cart is empty")).toBeVisible();
 });
 
+test("the sign-in page speaks the language of the page", async ({ page }) => {
+  await page.goto(ES("/auth/login"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Iniciar sesión");
+  await expect(page.getByLabel("Correo electrónico")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
+
+  await page.goto(EN("/auth/login"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sign in");
+  await expect(page.getByLabel("Email address")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
+});
+
+test("the product page and the footer speak the language of the page", async ({ page }) => {
+  const slug = PRODUCT_CLAIMS["i18n.spec.ts"].cartAndCheckout.slug;
+
+  await page.goto(ES(`/product/${slug}`));
+  await expect(page.getByRole("heading", { level: 2, name: "Descripción" })).toBeVisible();
+  await expect(page.getByText("Detalles técnicos")).toBeVisible();
+  // El footer es server component y recibe el idioma por prop, no del contexto.
+  await expect(page.getByText("Catálogo completo")).toBeVisible();
+
+  await page.goto(EN(`/product/${slug}`));
+  await expect(page.getByRole("heading", { level: 2, name: "Description" })).toBeVisible();
+  await expect(page.getByText("Technical details")).toBeVisible();
+  await expect(page.getByText("Full catalog")).toBeVisible();
+  // Y el precio sigue en USD en los dos: El Salvador esta dolarizado.
+  await expect(page.getByText(/\$\d/).first()).toBeVisible();
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";

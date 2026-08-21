@@ -4,11 +4,17 @@ import { SiteHeader } from "@/components/site-header";
 import { firstValue } from "@/lib/url-utils";
 import { requestPasswordReset } from "./actions";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  robots: { follow: false, index: false },
-  title: "Recuperar contraseña | Castillo Auto Parts",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Auth.forgotPassword" });
+
+  return {
+    robots: { follow: false, index: false },
+    title: t("metadataTitle"),
+  };
+}
 
 type ForgotPasswordPageProps = {
   params: Promise<{ locale: string }>;
@@ -20,6 +26,7 @@ export default async function ForgotPasswordPage({
   searchParams,
 }: ForgotPasswordPageProps) {
   const locale = await resolveAndPublishRouteLocale(routeParams);
+  const t = await getTranslations({ locale, namespace: "Auth.forgotPassword" });
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado);
   const sent = estado === "sent";
@@ -36,28 +43,28 @@ export default async function ForgotPasswordPage({
               <KeyRound className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-muted-foreground">Acceso</p>
-              <h1 className="text-2xl font-bold text-primary">Recuperar contraseña</h1>
+              <p className="text-sm font-semibold text-muted-foreground">{t("eyebrow")}</p>
+              <h1 className="text-2xl font-bold text-primary">{t("title")}</h1>
             </div>
           </div>
 
           {sent ? (
             <div className="mt-6 rounded-md bg-success/10 p-4 text-sm font-semibold text-success">
-              Si ese correo está registrado, recibirás un enlace para restablecer tu contraseña. Revisa también tu carpeta de spam.
+              {t("sent")}
             </div>
           ) : rateLimited ? (
             <div className="mt-6 rounded-md bg-destructive/10 p-4 text-sm font-semibold text-destructive">
-              Demasiados intentos. Espera unos minutos e intenta de nuevo.
+              {t("rateLimited")}
             </div>
           ) : (
             <>
               <p className="mt-4 text-sm text-muted-foreground">
-                Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+                {t("description")}
               </p>
 
               <form action={requestPasswordReset} className="mt-6 space-y-4">
                 <label className="block text-sm font-semibold">
-                  Correo electrónico
+                  {t("email")}
                   <input
                     name="email"
                     required
@@ -71,7 +78,7 @@ export default async function ForgotPasswordPage({
                   type="submit"
                   className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
                 >
-                  Enviar enlace
+                  {t("submit")}
                 </button>
               </form>
             </>
@@ -79,7 +86,7 @@ export default async function ForgotPasswordPage({
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
             <Link href="/auth/login" className="font-semibold text-primary hover:underline">
-              Volver al inicio de sesión
+              {t("backToLogin")}
             </Link>
           </p>
         </div>

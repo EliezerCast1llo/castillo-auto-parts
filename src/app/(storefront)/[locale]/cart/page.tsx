@@ -153,7 +153,7 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
           </aside>
         </div>
       </div>
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </main>
   );
 }

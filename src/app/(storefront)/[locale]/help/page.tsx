@@ -131,7 +131,7 @@ export default async function HelpPage({
         <ClosingCta />
       </div>
 
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </main>
   );
 }

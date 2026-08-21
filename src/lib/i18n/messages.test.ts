@@ -17,6 +17,8 @@ const IDENTICAL_BY_DESIGN = new Set<string>([
   "Cart.summary.subtotal",
   "Checkout.summary.subtotal",
   "Checkout.form.email",
+  // Nombre propio del país: se escribe igual en los dos idiomas.
+  "Footer.country",
 ]);
 
 /** Palabras de 3 letras o menos coinciden por casualidad demasiado seguido. */

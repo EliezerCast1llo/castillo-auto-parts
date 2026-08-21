@@ -32,12 +32,14 @@ export function loadMessages(locale: Locale) {
  * namespace `Status` entero.
  */
 const CLIENT_NAMESPACES = [
+  "Auth",
   "Cart",
   "Checkout",
   "Common",
   "Consent",
   "Errors",
   "Nav",
+  "VehicleSearch",
 ] as const satisfies readonly (keyof typeof es)[];
 
 export function pickClientMessages(messages: typeof es | typeof en) {

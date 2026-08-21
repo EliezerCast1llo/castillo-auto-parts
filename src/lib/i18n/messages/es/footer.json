@@ -1,0 +1,18 @@
+{
+  "checkCompatibility": "Revisa la compatibilidad",
+  "deliveryArea": "Entrega en San Salvador y Santa Tecla",
+  "country": "El Salvador",
+  "shop": "Tienda",
+  "fullCatalog": "Catálogo completo",
+  "cart": "Carrito",
+  "myAccount": "Mi cuenta",
+  "myOrders": "Mis pedidos",
+  "byVehicle": "Repuestos por vehículo",
+  "partsFor": "Repuestos {make}",
+  "searchByVehicle": "Buscar por vehículo",
+  "partBrands": "Marcas de repuesto",
+  "support": "Soporte",
+  "whatsapp": "WhatsApp: asesoría de repuestos",
+  "rights": "© {year} {siteName}. Todos los derechos reservados.",
+  "priceNotice": "Precios en USD con IVA (13%) incluido."
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Car } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filters";
 import { useVehicleSelection } from "@/components/product/use-vehicle-selection";
 import { Select } from "@/components/ui/select";
@@ -14,6 +15,7 @@ type VehicleSearchPanelProps = {
 };
 
 export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps) {
+  const t = useTranslations("VehicleSearch");
   const selection = useVehicleSelection({
     options,
     initialMake: filters.vehicleMake,
@@ -25,17 +27,17 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
     <section>
       <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-ca-navy-950">
         <Car aria-hidden className="h-4 w-4 shrink-0 text-ca-text-secondary" />
-        Busca por vehículo
+        {t("title")}
       </h2>
       <div className="mt-2 space-y-2">
         <Select
           className={FLAT_SELECT}
-          aria-label="Marca de vehículo"
+          aria-label={t("makeAriaLabel")}
           name="vehicleMake"
           onChange={selection.handleMakeChange}
           value={selection.make}
         >
-          <option value="">Marca</option>
+          <option value="">{t("make")}</option>
           {options.vehicleMakes.map((make) => (
             <option key={make} value={make}>
               {make}
@@ -44,13 +46,13 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
         </Select>
         <Select
           className={FLAT_SELECT}
-          aria-label="Modelo de vehículo"
+          aria-label={t("modelAriaLabel")}
           disabled={!selection.make}
           name="vehicleModel"
           onChange={selection.handleModelChange}
           value={selection.model}
         >
-          <option value="">{selection.make ? "Modelo" : "Elige la marca"}</option>
+          <option value="">{selection.make ? t("model") : t("chooseMake")}</option>
           {selection.models.map((model) => (
             <option key={model} value={model}>
               {model}
@@ -59,13 +61,13 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
         </Select>
         <Select
           className={FLAT_SELECT}
-          aria-label="Año de vehículo"
+          aria-label={t("yearAriaLabel")}
           disabled={!selection.model}
           name="vehicleYear"
           onChange={selection.handleYearChange}
           value={selection.year}
         >
-          <option value="">{selection.model ? "Año" : "Elige el modelo"}</option>
+          <option value="">{selection.model ? t("year") : t("chooseModel")}</option>
           {selection.years.map((year) => (
             <option key={year} value={year}>
               {year}

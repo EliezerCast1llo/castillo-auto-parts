@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { Check, X } from "lucide-react";
@@ -10,14 +12,21 @@ type Props = {
   errorMessage: string;
 };
 
-type Req = { label: string; met: boolean };
+/**
+ * Una regla de contraseña: si se cumple, y con qué clave se nombra.
+ *
+ * La clave y no el texto, por lo mismo que el resto de la serie: la regla es
+ * lógica —se evalúa— y su nombre es copy. Mezclarlas obligaba a traducir dentro
+ * de la función que decide.
+ */
+type Req = { key: "minLength" | "uppercase" | "symbol" | "match"; met: boolean };
 
 function getRequirements(password: string, confirm: string): Req[] {
   return [
-    { label: "Mínimo 8 caracteres", met: password.length >= 8 },
-    { label: "Al menos una letra mayúscula", met: /[A-Z]/.test(password) },
-    { label: "Al menos un símbolo (!@#$...)", met: /[^a-zA-Z0-9]/.test(password) },
-    { label: "Las contraseñas coinciden", met: password.length > 0 && password === confirm },
+    { key: "minLength", met: password.length >= 8 },
+    { key: "uppercase", met: /[A-Z]/.test(password) },
+    { key: "symbol", met: /[^a-zA-Z0-9]/.test(password) },
+    { key: "match", met: password.length > 0 && password === confirm },
   ];
 }
 
@@ -30,6 +39,7 @@ function isValidEmail(email: string) {
 }
 
 export function RegisterForm({ nextPath, errorMessage }: Props) {
+  const t = useTranslations("Auth.register");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +72,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       {/* Nombre */}
       <div>
         <label htmlFor="name" className="block text-sm font-bold text-ca-navy-950">
-          Nombre completo
+          {t("fullName")}
         </label>
         <input
           id="name"
@@ -77,7 +87,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
         />
         {touched.name && !nameValid && (
           <p className="mt-1 text-xs text-red-500">
-            Solo letras y espacios, mínimo 2 caracteres.
+            {t("nameHelper")}
           </p>
         )}
       </div>
@@ -85,7 +95,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       {/* Email */}
       <div>
         <label htmlFor="email" className="block text-sm font-bold text-ca-navy-950">
-          Correo electrónico
+          {t("email")}
         </label>
         <input
           id="email"
@@ -100,7 +110,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
         />
         {touched.email && !emailValid && (
           <p className="mt-1 text-xs text-red-500">
-            Ingresa un correo válido, ej: usuario@correo.com
+            {t("emailHelper")}
           </p>
         )}
       </div>
@@ -108,7 +118,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       {/* Contraseña */}
       <div>
         <label htmlFor="password" className="block text-sm font-bold text-ca-navy-950">
-          Contraseña
+          {t("password")}
         </label>
         <input
           id="password"
@@ -125,7 +135,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       {/* Confirmar contraseña */}
       <div>
         <label htmlFor="passwordConfirm" className="block text-sm font-bold text-ca-navy-950">
-          Confirmar contraseña
+          {t("confirmPassword")}
         </label>
         <input
           id="passwordConfirm"
@@ -143,7 +153,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       {password.length > 0 || confirm.length > 0 ? (
         <ul className="space-y-1.5 rounded-xl border border-ca-border bg-ca-background px-4 py-3">
           {requirements.map((req) => (
-            <li key={req.label} className="flex items-center gap-2 text-xs font-semibold">
+            <li key={req.key} className="flex items-center gap-2 text-xs font-semibold">
               {req.met ? (
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
                   <Check className="h-2.5 w-2.5" strokeWidth={3} />
@@ -154,7 +164,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
                 </span>
               )}
               <span className={req.met ? "text-emerald-700" : "text-red-500"}>
-                {req.label}
+                {t(`rule.${req.key}`)}
               </span>
             </li>
           ))}
@@ -164,8 +174,8 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       {/* Teléfono */}
       <div>
         <label htmlFor="phone" className="block text-sm font-bold text-ca-navy-950">
-          Teléfono{" "}
-          <span className="font-normal text-ca-text-secondary">(opcional)</span>
+          {t("phone")}{" "}
+          <span className="font-normal text-ca-text-secondary">{t("optional")}</span>
         </label>
         <div className="mt-2 flex h-11 overflow-hidden rounded-xl border border-ca-border bg-ca-background focus-within:border-ca-navy-950 focus-within:ring-2 focus-within:ring-ca-navy-950/10 transition">
           <span className="flex items-center border-r border-ca-border bg-white px-3 text-sm font-bold text-ca-navy-950 select-none">
@@ -188,16 +198,16 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
         type="submit"
         className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
       >
-        Crear cuenta
+        {t("submit")}
       </button>
 
       <p className="text-center text-sm text-ca-text-secondary">
-        ¿Ya tienes cuenta?{" "}
+        {t("haveAccount")}{" "}
         <Link
           href={{ pathname: "/auth/login", query: { next: nextPath } }}
           className="font-bold text-ca-blue-700 hover:underline"
         >
-          Iniciar sesión
+          {t("signIn")}
         </Link>
       </p>
     </form>

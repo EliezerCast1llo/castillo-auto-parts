@@ -1,0 +1,11 @@
+{
+  "title": "Busca por vehículo",
+  "makeAriaLabel": "Marca de vehículo",
+  "make": "Marca",
+  "modelAriaLabel": "Modelo de vehículo",
+  "model": "Modelo",
+  "chooseMake": "Elige la marca",
+  "yearAriaLabel": "Año de vehículo",
+  "year": "Año",
+  "chooseModel": "Elige el modelo"
+}
