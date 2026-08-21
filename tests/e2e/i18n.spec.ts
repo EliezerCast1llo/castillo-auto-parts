@@ -514,6 +514,10 @@ test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { id: { in: userIds } } });
 });
 
+test.afterAll(async () => {
+  await prisma.$disconnect();
+});
+
 /**
  * Registrarse deja la sesion abierta, que es todo lo que estos dos tests
  * necesitan. Cada uno usa su propio correo para no pisarse entre workers.

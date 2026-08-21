@@ -1,8 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ES } from "./helpers";
-import { PrismaClient } from "@prisma/client";
+import { prisma, ES } from "./helpers";
 
-const prisma = new PrismaClient();
 
 test.beforeEach(async ({ page }, testInfo) => {
   await page.setExtraHTTPHeaders({
