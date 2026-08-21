@@ -1,3 +1,4 @@
+import Account from "./account.json";
 import Cart from "./cart.json";
 import Catalog from "./catalog.json";
 import Checkout from "./checkout.json";
@@ -6,6 +7,7 @@ import Consent from "./consent.json";
 import Email from "./email.json";
 import Errors from "./errors.json";
 import Nav from "./nav.json";
+import Orders from "./orders.json";
 import Status from "./status.json";
 
 /**
@@ -17,6 +19,7 @@ import Status from "./status.json";
  * conflictos de merge.
  */
 const messages = {
+  Account,
   Cart,
   Catalog,
   Checkout,
@@ -25,6 +28,7 @@ const messages = {
   Email,
   Errors,
   Nav,
+  Orders,
   Status,
 } as const;
 

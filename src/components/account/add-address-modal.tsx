@@ -1,6 +1,7 @@
 "use client";
 
 import { MapPin, Plus, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createAddress } from "@/lib/actions/account-addresses";
@@ -22,6 +23,7 @@ const inputClass =
  "h-11 w-full rounded-ca-control border border-ca-border bg-ca-background px-3 text-sm outline-none transition focus:border-ca-navy-950 focus:ring-2 focus:ring-ca-navy-950/10";
 
 export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZoneOption[] }) {
+  const t = useTranslations("Account.addresses");
  const [open, setOpen] = useState(false);
  const [step, setStep] = useState<Step>("form");
  const [saving, setSaving] = useState(false);
@@ -111,7 +113,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  <div className="flex items-center gap-2">
  <MapPin className="h-4 w-4 text-ca-navy-950" />
  <h2 className="text-base font-black text-ca-navy-950">
- {step === "confirm" ? "Confirma tu dirección" : "Nueva dirección"}
+ {step === "confirm" ? t("confirmTitle") : t("newTitle")}
  </h2>
  </div>
  <button
@@ -135,13 +137,13 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
 
  <div>
  <label htmlFor="addressLine1" className="block text-sm font-bold text-ca-navy-950">
- Dirección <span className="text-red-500">*</span>
+ {t("addressLabel")} <span className="text-red-500">{t("required")}</span>
  </label>
  <input
  id="addressLine1"
  name="addressLine1"
  onChange={set("addressLine1")}
- placeholder="Calle, número, colonia o residencial"
+ placeholder={t("addressPlaceholder")}
  required
  type="text"
  value={fields.addressLine1}
@@ -151,14 +153,14 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
 
  <div>
  <label htmlFor="addressLine2" className="block text-sm font-bold text-ca-navy-950">
- Referencia{" "}
- <span className="font-normal text-ca-text-secondary">(opcional)</span>
+ {t("addressLine2Label")}{" "}
+ <span className="font-normal text-ca-text-secondary">{t("optional")}</span>
  </label>
  <input
  id="addressLine2"
  name="addressLine2"
  onChange={set("addressLine2")}
- placeholder="Apto, local, edificio"
+ placeholder={t("addressLine2Placeholder")}
  type="text"
  value={fields.addressLine2}
  className={`mt-2 ${inputClass}`}
@@ -167,7 +169,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
 
  <div>
  <label htmlFor="deliveryZoneSlug" className="block text-sm font-bold text-ca-navy-950">
- Municipio <span className="text-red-500">*</span>
+ {t("cityLabel")} <span className="text-red-500">{t("required")}</span>
  </label>
  {deliveryZones.length > 0 ? (
  <select
@@ -177,7 +179,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  value={fields.deliveryZoneSlug}
  className={`mt-2 ${inputClass} cursor-pointer`}
  >
- <option value="">Selecciona municipio</option>
+ <option value="">{t("selectCity")}</option>
  {deliveryZones.map((zone) => (
  <option key={zone.id} value={zone.slug}>
  {zone.name}
@@ -190,7 +192,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  onChange={(e) =>
  setFields((prev) => ({ ...prev, city: e.target.value }))
  }
- placeholder="Ej: Santa Tecla"
+ placeholder={t("cityPlaceholder")}
  required
  type="text"
  value={fields.city}
@@ -215,14 +217,14 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
 
  <div>
  <label htmlFor="deliveryNotes" className="block text-sm font-bold text-ca-navy-950">
- Indicaciones de entrega{" "}
- <span className="font-normal text-ca-text-secondary">(opcional)</span>
+ {t("notesLabel")}{" "}
+ <span className="font-normal text-ca-text-secondary">{t("optional")}</span>
  </label>
  <textarea
  id="deliveryNotes"
  name="deliveryNotes"
  onChange={set("deliveryNotes")}
- placeholder="Ej: Portón azul, timbre 2 veces"
+ placeholder={t("notesPlaceholder")}
  rows={2}
  value={fields.deliveryNotes}
  className="mt-2 w-full resize-none rounded-ca-control border border-ca-border bg-ca-background px-3 py-2.5 text-sm outline-none transition focus:border-ca-navy-950 focus:ring-2 focus:ring-ca-navy-950/10"
@@ -237,13 +239,13 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  onClick={handleClose}
  className="h-11 flex-1 rounded-ca-control border border-ca-border text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
  >
- Cancelar
+ {t("cancel")}
  </button>
  <button
  type="submit"
  className="h-11 flex-1 rounded-ca-control bg-ca-navy-950 text-sm font-black text-white transition hover:bg-ca-navy-800"
  >
- Revisar dirección
+ {t("review")}
  </button>
  </div>
  </form>
@@ -251,18 +253,18 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  {step === "confirm" ? (
  <div className="p-5">
  <p className="text-sm text-ca-text-secondary">
- Verifica que los datos sean correctos antes de guardar.
+ {t("verifyBeforeSaving")}
  </p>
 
  <div className="mt-4 space-y-3 rounded-ca-control bg-ca-background p-4 text-sm">
- <ConfirmRow label="Dirección" value={fields.addressLine1} />
+ <ConfirmRow label={t("addressLabel")} value={fields.addressLine1} />
  {fields.addressLine2 ? (
- <ConfirmRow label="Referencia" value={fields.addressLine2} />
+ <ConfirmRow label={t("addressLine2Label")} value={fields.addressLine2} />
  ) : null}
- <ConfirmRow label="Municipio" value={fields.city} />
- <ConfirmRow label="Departamento" value={fields.department} />
+ <ConfirmRow label={t("cityLabel")} value={fields.city} />
+ <ConfirmRow label={t("departmentLabel")} value={fields.department} />
  {fields.deliveryNotes ? (
- <ConfirmRow label="Notas" value={fields.deliveryNotes} />
+ <ConfirmRow label={t("notesLabelShort")} value={fields.deliveryNotes} />
  ) : null}
  </div>
 
@@ -272,7 +274,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  onClick={() => setStep("form")}
  className="h-11 flex-1 rounded-ca-control border border-ca-border text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
  >
- Editar
+ {t("edit")}
  </button>
  <button
  disabled={saving}
@@ -280,7 +282,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  type="button"
  className="h-11 flex-1 rounded-ca-control bg-ca-navy-950 text-sm font-black text-white transition hover:bg-ca-navy-800 disabled:opacity-60"
  >
- {saving ? "Guardando…" : "Guardar dirección"}
+ {saving ? t("saving") : t("save")}
  </button>
  </div>
  </div>
@@ -299,7 +301,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  className="inline-flex h-10 items-center gap-2 rounded-ca-control bg-ca-navy-950 px-4 text-sm font-black text-white transition hover:bg-ca-navy-800"
  >
  <Plus className="h-4 w-4" strokeWidth={2.5} />
- Nueva dirección
+ {t("newTitle")}
  </button>
 
  {modal}

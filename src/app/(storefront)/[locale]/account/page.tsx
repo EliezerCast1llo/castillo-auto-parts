@@ -13,14 +13,20 @@ import { changePasswordAction, logoutCustomer, updateProfileAction } from "./act
 
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getStatusMessage } from "@/lib/i18n/status";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Mi cuenta | Castillo Auto Parts",
-  description: "Gestiona tu perfil, revisa tus pedidos y tus direcciones guardadas.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Account" });
+
+  return {
+    title: t("metadataTitle"),
+    description: t("metadataDescription"),
+    robots: { index: false, follow: false },
+  };
+}
 
 type AccountPageProps = {
   params: Promise<{ locale: string }>;
@@ -32,6 +38,7 @@ export default async function AccountPage({
   searchParams,
 }: AccountPageProps) {
   const locale = await resolveAndPublishRouteLocale(routeParams);
+  const t = await getTranslations({ locale, namespace: "Account" });
   const session = await auth();
   if (!session?.user?.id) {
     return redirect({ href: { pathname: "/auth/login", query: { next: "/account" } }, locale });
@@ -77,10 +84,10 @@ export default async function AccountPage({
         <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-sm font-bold text-ca-text-secondary">
           <Link className="inline-flex items-center gap-1.5 transition hover:text-ca-navy-950" href="/">
             <Home className="h-4 w-4" strokeWidth={1.8} />
-            Inicio
+            {t("breadcrumbHome")}
           </Link>
           <span aria-hidden="true">/</span>
-          <span className="text-ca-navy-950">Mi cuenta</span>
+          <span className="text-ca-navy-950">{t("breadcrumbCurrent")}</span>
         </nav>
 
         <div className="space-y-5">
@@ -90,12 +97,14 @@ export default async function AccountPage({
             hasPassword={hasPassword}
             image={user.image}
             isActive={user.isActive}
+            locale={locale}
             logoutAction={logoutCustomer}
             name={user.name}
           />
 
           <AccountQuickActions
             addressesCount={user._count.addresses}
+            locale={locale}
             ordersCount={user._count.orders}
           />
 
@@ -106,17 +115,22 @@ export default async function AccountPage({
               <AccountProfileForm
                 action={updateProfileAction}
                 email={user.email}
+                locale={locale}
                 name={user.name}
                 phone={user.phone}
               />
             </div>
 
             <div className="min-w-0">
-              <AccountPasswordForm action={changePasswordAction} hasPassword={hasPassword} />
+              <AccountPasswordForm
+                action={changePasswordAction}
+                hasPassword={hasPassword}
+                locale={locale}
+              />
             </div>
 
             <div className="lg:col-span-2">
-              <AccountSupportCard />
+              <AccountSupportCard locale={locale} />
             </div>
           </div>
         </div>

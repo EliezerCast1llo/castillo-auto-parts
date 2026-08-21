@@ -1,0 +1,98 @@
+{
+  "list": {
+    "metadataTitle": "Mis pedidos | Castillo Auto Parts",
+    "metadataDescription": "Historial de compras en Castillo Auto Parts.",
+    "emptyTitle": "Todavía no tienes pedidos",
+    "emptyDescription": "Cuando compres un repuesto, podrás consultar aquí el estado, fecha estimada y detalle de entrega.",
+    "emptyAction": "Ver catálogo",
+    "backToAccount": "Mi cuenta",
+    "title": "Mis pedidos",
+    "subtitle": "Consulta el estado de tus pedidos y el historial de compras.",
+    "lastSixMonths": "Últimos 6 meses",
+    "helpTitle": "¿Necesitas ayuda con tu pedido?",
+    "helpDescription": "Nuestro equipo está para ayudarte.",
+    "contactAdvisor": "Contactar asesor"
+  },
+  "tracking": {
+    "cancelled": "Cancelado",
+    "refunded": "Reembolsado",
+    "paymentProcessing": "Procesando pago",
+    "preparing": "Preparando pedido",
+    "readyForPickup": "Listo para retiro",
+    "inTransit": "En camino",
+    "delivered": "Entregado"
+  },
+  "step": {
+    "confirmed": "Confirmado",
+    "preparing": "Preparando",
+    "readyForPickup": "Listo para retiro",
+    "inTransit": "En camino",
+    "delivered": "Entregado"
+  },
+  "dateLabel": {
+    "updatedAt": "Actualizado el",
+    "readyForPickup": "Listo para retiro",
+    "estimatedDelivery": "Entrega estimada",
+    "deliveredAt": "Entregado el",
+    "pending": "Fecha por confirmar"
+  },
+  "fulfillment": {
+    "pickup": "Retiro en tienda",
+    "delivery": "Entrega a domicilio"
+  },
+  "action": {
+    "track": "Rastrear pedido",
+    "detail": "Ver detalle",
+    "contact": "Contactar asesor",
+    "reorder": "Volver a comprar",
+    "detailTitle": "Ver detalles del pedido {orderNumber}"
+  },
+  "productCount": "{count, plural, one {# producto} other {# productos}}",
+  "detail": {
+    "orderCreated": "Orden creada",
+    "paymentInProgress": "Pago en proceso",
+    "method": "Método",
+    "zone": "Zona",
+    "pending": "Pendiente",
+    "address": "Dirección",
+    "pickupAtWarehouse": "Retiro en bodega",
+    "customer": "Cliente",
+    "products": "Productos",
+    "shipping": "Envío",
+    "total": "Total",
+    "confirmingPayment": "Confirmando pago",
+    "paymentConfirmed": "Pago confirmado",
+    "waitingProvider": "Estamos esperando la confirmación del proveedor. Este pedido aún no está listo para preparación.",
+    "readyForPreparation": "El pago fue confirmado y el pedido está listo para preparación.",
+    "metadataTitle": "Orden {orderNumber} | Castillo Auto Parts",
+    "currentStatus": "Estado actual: {status}.",
+    "productsSection": "Productos",
+    "deliverySection": "Entrega",
+    "summarySection": "Resumen",
+    "units": "{count, plural, one {# unidad} other {# unidades}}",
+    "taxNotice": "Los precios ya incluyen IVA.",
+    "backToCatalog": "Volver al catálogo",
+    "andMore": "{names} y más"
+  },
+  "status": {
+    "CANCELLED": "Cancelada",
+    "DELIVERED": "Entregada",
+    "PAYMENT_PROCESSING": "Confirmando pago",
+    "PAID_PENDING_SHIPMENT": "Pendiente de entrega",
+    "REFUNDED": "Reembolsada",
+    "SHIPPED": "Enviada"
+  },
+  "method": {
+    "PICKUP": "Retiro en bodega",
+    "LOCAL_DELIVERY": "Envío local",
+    "PENDING": "Pendiente"
+  },
+  "card": {
+    "orderLabel": "Pedido",
+    "unitCount": "{count, plural, one {# unidad} other {# unidades}}",
+    "sku": "SKU: {sku}",
+    "part": "Parte: {part}",
+    "viewProducts": "Ver productos",
+    "compatible": "Compatible: {vehicle}"
+  }
+}

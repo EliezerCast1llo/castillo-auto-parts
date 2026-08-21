@@ -1,9 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
-// Cliente Prisma compartido para specs e2e. Cada spec corre en su propio worker
-// (proceso), así que cada uno obtiene su propia instancia; hacer $disconnect en un
-// spec no afecta a otros.
 /**
  * Prefijo de idioma del storefront.
  *
@@ -13,6 +10,15 @@ import { PrismaClient } from "@prisma/client";
  */
 export const ES = (path: string) => (path === "/" ? "/es" : `/es${path}`);
 export const EN = (path: string) => (path === "/" ? "/en" : `/en${path}`);
+/**
+ * Único cliente Prisma de los specs e2e.
+ *
+ * Cada spec corre en su propio worker, que es un proceso aparte, así que cada
+ * uno recibe su propia instancia de este módulo: hacer `$disconnect()` en un
+ * spec no afecta a los demás. Por eso cada spec que lo usa lo cierra en su
+ * `afterAll`, y esa es la regla — antes convivían cinco clientes contra la
+ * misma base, cuatro cerrándose y uno no.
+ */
 export const prisma = new PrismaClient();
 
 export async function addProductToCart(page: Page, slug: string) {

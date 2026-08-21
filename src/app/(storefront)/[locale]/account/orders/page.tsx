@@ -19,14 +19,22 @@ import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { db } from "@/lib/db";
 
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Mis pedidos | Castillo Auto Parts",
-  description: "Historial de compras en Castillo Auto Parts.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Orders.list" });
+
+  return {
+    title: t("metadataTitle"),
+    description: t("metadataDescription"),
+    robots: { index: false, follow: false },
+  };
+}
+
+type OrdersListTranslator = Awaited<ReturnType<typeof getTranslations<"Orders.list">>>;
 
 export default async function AccountOrdersPage({
   params,
@@ -34,6 +42,7 @@ export default async function AccountOrdersPage({
   params: Promise<{ locale: string }>;
 }) {
   const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Orders.list" });
   const session = await auth();
   if (!session?.user?.id) {
     return redirect({ href: { pathname: "/auth/login", query: { next: "/account/orders" } }, locale });
@@ -57,14 +66,14 @@ export default async function AccountOrdersPage({
               href="/account"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
-              Mi cuenta
+              {t("backToAccount")}
             </Link>
 
             <h1 className="mt-4 text-3xl font-black tracking-tight text-ca-navy-950 sm:text-4xl">
-              Mis pedidos
+              {t("title")}
             </h1>
             <p className="mt-2 max-w-2xl text-base font-medium text-ca-text-secondary">
-              Consulta el estado de tus pedidos y el historial de compras.
+              {t("subtitle")}
             </p>
           </div>
 
@@ -73,43 +82,43 @@ export default async function AccountOrdersPage({
             type="button"
           >
             <CalendarDays className="h-4 w-4" strokeWidth={1.9} />
-            Últimos 6 meses
+            {t("lastSixMonths")}
             <ChevronDown className="h-4 w-4" strokeWidth={1.9} />
           </button>
         </div>
 
         {orders.length === 0 ? (
-          <EmptyOrders />
+          <EmptyOrders t={t} />
         ) : (
           <div className="mt-6 space-y-4">
             {orders.map((order) => (
-              <AccountOrderCard key={order.id} order={order} />
+              <AccountOrderCard key={order.id} locale={locale} order={order} />
             ))}
           </div>
         )}
 
-        <OrderHelpCard />
+        <OrderHelpCard t={t} />
       </div>
     </main>
   );
 }
 
-function EmptyOrders() {
+function EmptyOrders({ t }: { t: OrdersListTranslator }) {
   return (
     <div className="mt-8">
       <EmptyState
         actionHref="/catalog"
-        actionLabel="Ver catálogo"
-        description="Cuando compres un repuesto, podrás consultar aquí el estado, fecha estimada y detalle de entrega."
+        actionLabel={t("emptyAction")}
+        description={t("emptyDescription")}
         icon={<PackageSearch className="h-7 w-7" strokeWidth={1.8} />}
         showWhatsApp
-        title="Todavía no tienes pedidos"
+        title={t("emptyTitle")}
       />
     </div>
   );
 }
 
-function OrderHelpCard() {
+function OrderHelpCard({ t }: { t: OrdersListTranslator }) {
   return (
     <section className="mt-5 flex flex-col gap-4 rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-4">
@@ -118,10 +127,10 @@ function OrderHelpCard() {
         </span>
         <div>
           <h2 className="text-base font-black text-ca-navy-950">
-            ¿Necesitas ayuda con tu pedido?
+            {t("helpTitle")}
           </h2>
           <p className="mt-1 text-sm font-medium text-ca-text-secondary">
-            Nuestro equipo está para ayudarte.
+            {t("helpDescription")}
           </p>
         </div>
       </div>
@@ -129,7 +138,7 @@ function OrderHelpCard() {
       <div className="grid gap-2 sm:flex sm:items-center">
         <WhatsAppCTA
           className="h-11 justify-center"
-          label="Contactar asesor"
+          label={t("contactAdvisor")}
           phone={SUPPORT_WHATSAPP_NUMBER}
           variant="subtle"
         />

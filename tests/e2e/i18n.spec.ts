@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { EN, ES } from "./helpers";
 import { PRODUCT_CLAIMS } from "./fixtures/products";
+import { prisma } from "./helpers";
 
 test("legacy unprefixed URLs redirect permanently to Spanish", async ({ request }) => {
   for (const path of ["/catalog", "/ayuda", "/cart", "/vehiculos/toyota"]) {
@@ -479,6 +480,150 @@ test("an empty cart says so in both languages", async ({ page, context }) => {
 
   await page.goto(EN("/cart"));
   await expect(page.getByText("Your cart is empty")).toBeVisible();
+});
+
+/** Correos creados por este spec, para poder borrarlos al terminar. */
+const createdEmails: string[] = [];
+
+/**
+ * `npm run test:e2e` siembra un esquema aislado por corrida y lo tira al
+ * final, asi que ahi esto sobra. `test:e2e:raw` corre playwright pelado contra
+ * la base de desarrollo, y sin esto cada corrida deja usuarios y pedidos
+ * acumulados.
+ */
+test.afterAll(async () => {
+  if (createdEmails.length === 0) return;
+
+  const users = await prisma.user.findMany({
+    select: { id: true },
+    where: { email: { in: createdEmails } },
+  });
+  const userIds = users.map((user) => user.id);
+
+  // El orden importa: las lineas y el envio cuelgan de la orden, y la orden
+  // del usuario.
+  const orders = await prisma.order.findMany({
+    select: { id: true },
+    where: { userId: { in: userIds } },
+  });
+  const orderIds = orders.map((order) => order.id);
+
+  await prisma.orderItem.deleteMany({ where: { orderId: { in: orderIds } } });
+  await prisma.shipment.deleteMany({ where: { orderId: { in: orderIds } } });
+  await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
+  await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+});
+
+test.afterAll(async () => {
+  await prisma.$disconnect();
+});
+
+/**
+ * Registrarse deja la sesion abierta, que es todo lo que estos dos tests
+ * necesitan. Cada uno usa su propio correo para no pisarse entre workers.
+ */
+async function signInCustomer(page: Page, prefix: string) {
+  const email = `${prefix}-${Date.now()}@e2e.castilloautoparts.com`;
+
+  await page.goto(ES("/auth/register"));
+  await page.getByLabel("Nombre completo").fill("Cliente i18n E2E");
+  await page.getByLabel("Correo electrónico").fill(email);
+  await page.getByLabel("Contraseña").first().fill("TestPassword123!");
+  await page.getByLabel("Confirmar contraseña").fill("TestPassword123!");
+  await page.getByRole("button", { name: "Crear cuenta" }).click();
+  await expect(page).toHaveURL(/\/account/);
+
+  createdEmails.push(email);
+
+  return email;
+}
+
+/**
+ * Deja un pedido enviado para ese cliente, escrito directo a la base.
+ *
+ * No pasa por el checkout a propósito: lo que se quiere probar es el
+ * seguimiento, y hacerlo comprando ataría este test al flujo de compra y
+ * consumiría inventario que otros specs miden. El producto es el que este spec
+ * ya tiene reservado en `fixtures/products.ts`.
+ *
+ * `SHIPPED` + `LOCAL_DELIVERY` es el estado que produce la etiqueta más
+ * específica del seguimiento —"En camino" / "On the way"—, que es justo la que
+ * distingue haber traducido de haber dejado el identificador crudo.
+ */
+async function createShippedOrder(email: string) {
+  const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+  const product = await prisma.product.findUniqueOrThrow({
+    where: { sku: PRODUCT_CLAIMS["i18n.spec.ts"].cartAndCheckout.sku },
+  });
+
+  return prisma.order.create({
+    data: {
+      customerEmail: email,
+      customerName: "Cliente i18n E2E",
+      customerPhone: "70000000",
+      items: {
+        create: {
+          brandSnapshot: product.brand,
+          lineTotalCents: product.priceCents,
+          productId: product.id,
+          productNameSnapshot: product.name,
+          quantity: 1,
+          skuSnapshot: product.sku,
+          taxCents: 0,
+          unitPriceCents: product.priceCents,
+        },
+      },
+      orderNumber: `CAP-I18N-${Date.now()}`,
+      shipment: { create: { deliveryZone: "Santa Tecla", method: "LOCAL_DELIVERY" } },
+      shippingCents: 0,
+      status: "SHIPPED",
+      subtotalCents: product.priceCents,
+      taxCents: 0,
+      totalCents: product.priceCents,
+      userId: user.id,
+    },
+  });
+}
+
+test("the account area speaks the language of the page", async ({ page }) => {
+  await signInCustomer(page, "i18n-account");
+
+  await page.goto(ES("/account"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mi cuenta");
+  await expect(page.getByText("Información personal")).toBeVisible();
+
+  await page.goto(EN("/account"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("My account");
+  await expect(page.getByText("Personal information")).toBeVisible();
+  await expect(page.getByText("Account security")).toBeVisible();
+});
+
+test("the order tracking labels follow the language, and the identifiers do not", async ({
+  page,
+}) => {
+  const email = await signInCustomer(page, "i18n-orders");
+  await createShippedOrder(email);
+
+  // El seguimiento devuelve identificadores y el catalogo los escribe. Este
+  // test es la otra mitad del unitario: alli se verifica que cada identificador
+  // tenga texto, aca que ese texto llegue traducido a la pantalla.
+  await page.goto(ES("/account/orders"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mis pedidos");
+  // El badge de estado esta dos veces en el DOM, uno por breakpoint: sin
+  // filtrar por visible se engancha la copia oculta.
+  await expect(page.locator("span:visible", { hasText: /^En camino$/ }).first()).toBeVisible();
+  await expect(page.getByText("Entrega a domicilio")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Rastrear pedido" })).toBeVisible();
+
+  await page.goto(EN("/account/orders"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("My orders");
+  await expect(page.locator("span:visible", { hasText: /^On the way$/ }).first()).toBeVisible();
+  await expect(page.getByText("Home delivery")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Track order" })).toBeVisible();
+
+  // Y el identificador crudo nunca llega a la pantalla: si el catalogo no
+  // resolviera, se veria "inTransit" en vez de la etiqueta.
+  await expect(page.getByText(/inTransit|readyForPickup|paymentProcessing/)).toHaveCount(0);
 });
 
 test("alternate links point search engines at the other language", async ({ request }) => {
