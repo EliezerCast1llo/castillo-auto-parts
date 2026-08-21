@@ -45,5 +45,11 @@
     "stock_issue": "Revisa disponibilidad antes de continuar.",
     "unavailable": "Este producto ya no está disponible.",
     "updated": "Carrito actualizado."
+  },
+  "addresses": {
+    "created": "Dirección guardada correctamente.",
+    "deleted": "Dirección eliminada.",
+    "missing_fields": "Completa los campos obligatorios.",
+    "invalid_department": "Selecciona un departamento válido."
   }
 }

@@ -1,18 +1,24 @@
 import { Save, User } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 
 type AccountProfileFormProps = {
   action: (formData: FormData) => Promise<void>;
   email: string | null;
+  locale: Locale;
   name: string | null;
   phone: string | null;
 };
 
-export function AccountProfileForm({
+export async function AccountProfileForm({
   action,
   email,
+  locale,
   name,
   phone,
 }: AccountProfileFormProps) {
+  const t = await getTranslations({ locale, namespace: "Account.profile" });
+
   return (
     <section className="h-full rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
       <div className="flex items-start gap-3">
@@ -20,9 +26,9 @@ export function AccountProfileForm({
           <User className="h-5 w-5" strokeWidth={1.8} />
         </span>
         <div>
-          <h2 className="text-xl font-black text-ca-navy-950">Información personal</h2>
+          <h2 className="text-xl font-black text-ca-navy-950">{t("title")}</h2>
           <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
-            Revisa tus datos de cuenta y actualiza tu teléfono de contacto.
+            {t("description")}
           </p>
         </div>
       </div>
@@ -30,20 +36,20 @@ export function AccountProfileForm({
       <form action={action} className="mt-6 space-y-5">
         <div className="grid gap-4 md:grid-cols-2">
           <ReadOnlyField
-            helper="El nombre no puede modificarse desde esta sección."
+            helper={t("nameHelper")}
             label="Nombre completo"
             value={name || "Nombre no disponible"}
           />
           <ReadOnlyField
-            helper="El correo está asociado a tu cuenta."
-            label="Correo electrónico"
+            helper={t("emailHelper")}
+            label={t("emailLabel")}
             value={email || "Correo no disponible"}
           />
         </div>
 
         <div>
           <label htmlFor="account-phone" className="block text-sm font-black text-ca-navy-950">
-            Teléfono
+            {t("phoneLabel")}
           </label>
           <div className="mt-2 flex min-h-12 overflow-hidden rounded-xl border border-ca-border bg-ca-background transition focus-within:border-ca-navy-950 focus-within:ring-2 focus-within:ring-ca-navy-950/10">
             <span className="flex shrink-0 items-center border-r border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950">
@@ -60,7 +66,7 @@ export function AccountProfileForm({
             />
           </div>
           <p className="mt-2 text-xs font-semibold leading-5 text-ca-text-secondary">
-            Este es tu número de contacto para pedidos y notificaciones.
+            {t("phoneHelper")}
           </p>
         </div>
 
@@ -69,7 +75,7 @@ export function AccountProfileForm({
           type="submit"
         >
           <Save className="h-4 w-4" strokeWidth={2} />
-          Guardar teléfono
+          {t("save")}
         </button>
       </form>
     </section>

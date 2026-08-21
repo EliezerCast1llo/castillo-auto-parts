@@ -1,32 +1,46 @@
 import type { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 import { Link } from "@/lib/i18n/navigation";
 import { ChevronRight, ClipboardList, MapPin } from "lucide-react";
 import type { LocaleHref } from "@/lib/i18n/navigation";
 
 type AccountQuickActionsProps = {
   addressesCount?: number;
+  locale: Locale;
   ordersCount?: number;
 };
 
-export function AccountQuickActions({
+export async function AccountQuickActions({
   addressesCount,
+  locale,
   ordersCount,
 }: AccountQuickActionsProps) {
+  const t = await getTranslations({ locale, namespace: "Account.quickActions" });
+
   return (
     <section className="grid gap-4 md:grid-cols-2">
       <QuickActionCard
-        count={formatOrdersCount(ordersCount)}
-        description="Consulta el estado e historial de tus compras."
+        count={
+          typeof ordersCount === "number"
+            ? t("ordersCount", { count: ordersCount })
+            : undefined
+        }
+        description={t("ordersDescription")}
         href="/account/orders"
         icon={<ClipboardList className="h-6 w-6" strokeWidth={1.8} />}
-        label="Mis pedidos"
+        label={t("ordersLabel")}
       />
       <QuickActionCard
-        count={formatAddressesCount(addressesCount)}
-        description="Administra tus direcciones de entrega."
+        count={
+          typeof addressesCount === "number"
+            ? t("addressesCount", { count: addressesCount })
+            : undefined
+        }
+        description={t("addressesDescription")}
         href="/account/addresses"
         icon={<MapPin className="h-6 w-6" strokeWidth={1.8} />}
-        label="Mis direcciones"
+        label={t("addressesLabel")}
       />
     </section>
   );
@@ -73,14 +87,4 @@ function QuickActionCard({
   );
 }
 
-function formatOrdersCount(value: number | undefined) {
-  if (typeof value !== "number") return undefined;
-  if (value === 1) return "1 pedido";
-  return `${value} pedidos`;
-}
 
-function formatAddressesCount(value: number | undefined) {
-  if (typeof value !== "number") return undefined;
-  if (value === 1) return "1 dirección";
-  return `${value} direcciones`;
-}

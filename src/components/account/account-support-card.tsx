@@ -1,8 +1,12 @@
 import { Headphones } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 
-export function AccountSupportCard() {
+export async function AccountSupportCard({ locale }: { locale: Locale }) {
+  const t = await getTranslations({ locale, namespace: "Account.support" });
+
   return (
     <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -12,17 +16,17 @@ export function AccountSupportCard() {
           </span>
           <div>
             <h2 className="text-xl font-black text-ca-navy-950">
-              ¿Necesitas ayuda con tu cuenta?
+              {t("title")}
             </h2>
             <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-ca-text-secondary">
-              Nuestro equipo puede ayudarte con tus datos, direcciones o pedidos.
+              {t("description")}
             </p>
           </div>
         </div>
 
         <WhatsAppCTA
           className="h-11 w-full justify-center sm:w-auto"
-          label="Contactar asesor"
+          label={t("contactAdvisor")}
           phone={SUPPORT_WHATSAPP_NUMBER}
           variant="subtle"
         />

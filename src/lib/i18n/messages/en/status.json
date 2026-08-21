@@ -45,5 +45,11 @@
     "stock_issue": "Check availability before continuing.",
     "unavailable": "This product is no longer available.",
     "updated": "Cart updated."
+  },
+  "addresses": {
+    "created": "Address saved successfully.",
+    "deleted": "Address removed.",
+    "missing_fields": "Fill in the required fields.",
+    "invalid_department": "Select a valid department."
   }
 }

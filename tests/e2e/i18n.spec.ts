@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { EN, ES } from "./helpers";
 import { PRODUCT_CLAIMS } from "./fixtures/products";
 
@@ -479,6 +479,53 @@ test("an empty cart says so in both languages", async ({ page, context }) => {
 
   await page.goto(EN("/cart"));
   await expect(page.getByText("Your cart is empty")).toBeVisible();
+});
+
+/**
+ * Registrarse deja la sesion abierta, que es todo lo que estos dos tests
+ * necesitan. Cada uno usa su propio correo para no pisarse entre workers.
+ */
+async function signInCustomer(page: Page, prefix: string) {
+  await page.goto(ES("/auth/register"));
+  await page.getByLabel("Nombre completo").fill("Cliente i18n E2E");
+  await page.getByLabel("Correo electrónico").fill(`${prefix}-${Date.now()}@e2e.castilloautoparts.com`);
+  await page.getByLabel("Contraseña").first().fill("TestPassword123!");
+  await page.getByLabel("Confirmar contraseña").fill("TestPassword123!");
+  await page.getByRole("button", { name: "Crear cuenta" }).click();
+  await expect(page).toHaveURL(/\/account/);
+}
+
+test("the account area speaks the language of the page", async ({ page }) => {
+  await signInCustomer(page, "i18n-account");
+
+  await page.goto(ES("/account"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mi cuenta");
+  await expect(page.getByText("Información personal")).toBeVisible();
+
+  await page.goto(EN("/account"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("My account");
+  await expect(page.getByText("Personal information")).toBeVisible();
+  await expect(page.getByText("Account security")).toBeVisible();
+});
+
+test("the order tracking labels follow the language, and the identifiers do not", async ({
+  page,
+}) => {
+  await signInCustomer(page, "i18n-orders");
+
+  // El seguimiento devuelve identificadores y el catalogo los escribe. Este
+  // test es la otra mitad del unitario: alli se verifica que cada identificador
+  // tenga texto, aca que el texto llegue traducido a la pantalla.
+  await page.goto(ES("/account/orders"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mis pedidos");
+
+  await page.goto(EN("/account/orders"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("My orders");
+  // El vacio y el lleno dicen cosas distintas; cualquiera de los dos sirve para
+  // probar que el idioma llego, y no dependemos de que haya pedidos.
+  await expect(
+    page.getByText(/You have no orders yet|Confirmed|Preparing|Delivered/).first(),
+  ).toBeVisible();
 });
 
 test("alternate links point search engines at the other language", async ({ request }) => {

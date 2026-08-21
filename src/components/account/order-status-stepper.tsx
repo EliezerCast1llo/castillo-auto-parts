@@ -4,7 +4,16 @@ import type { OrderTrackingStep } from "@/lib/order-tracking";
 type OrderStatusStepperProps = {
   isCancelled?: boolean;
   isRefunded?: boolean;
-  label?: string;
+  /** Texto ya traducido del estado. */
+  label: string;
+  /**
+   * Etiqueta de cada paso, en el mismo orden que `steps`.
+   *
+   * Llegan aparte porque `OrderTrackingStep` ya no trae texto: el paso decide
+   * cuál es, no cómo se escribe. Quien renderiza es un server component, así
+   * que traduce sin costo de bundle.
+   */
+  stepLabels: string[];
   steps: OrderTrackingStep[];
 };
 
@@ -12,11 +21,12 @@ export function OrderStatusStepper({
   isCancelled = false,
   isRefunded = false,
   label,
+  stepLabels,
   steps,
 }: OrderStatusStepperProps) {
   if (isCancelled || isRefunded) {
     const Icon = isCancelled ? XCircle : RotateCcw;
-    const title = label ?? (isCancelled ? "Cancelado" : "Reembolsado");
+    const title = label;
 
     return (
       <div
@@ -58,7 +68,7 @@ export function OrderStatusStepper({
                 <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
               </span>
               <span className={`mt-1.5 max-w-[96px] text-center text-[11px] font-black leading-tight ${style.label}`}>
-                {step.label}
+                {stepLabels[index]}
               </span>
             </li>
           );

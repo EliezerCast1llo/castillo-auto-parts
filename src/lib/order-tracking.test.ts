@@ -1,5 +1,6 @@
 import { OrderStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
+import es from "./i18n/messages/es";
 import { getOrderTrackingState } from "./order-tracking";
 
 describe("getOrderTrackingState", () => {
@@ -9,13 +10,13 @@ describe("getOrderTrackingState", () => {
       status: OrderStatus.PAID_PENDING_SHIPMENT,
     });
 
-    expect(state.label).toBe("Preparando pedido");
-    expect(state.fulfillmentLabel).toBe("Entrega a domicilio");
-    expect(state.steps.map((step) => step.label)).toEqual([
-      "Confirmado",
-      "Preparando",
-      "En camino",
-      "Entregado",
+    expect(state.labelKey).toBe("preparing");
+    expect(state.fulfillmentKey).toBe("delivery");
+    expect(state.steps.map((step) => step.key)).toEqual([
+      "confirmed",
+      "preparing",
+      "inTransit",
+      "delivered",
     ]);
     expect(state.steps[1]?.status).toBe("current");
   });
@@ -26,13 +27,13 @@ describe("getOrderTrackingState", () => {
       status: OrderStatus.PAID_PENDING_SHIPMENT,
     });
 
-    expect(state.label).toBe("Preparando pedido");
-    expect(state.fulfillmentLabel).toBe("Retiro en tienda");
-    expect(state.steps.map((step) => step.label)).toEqual([
-      "Confirmado",
-      "Preparando",
-      "Listo para retiro",
-      "Entregado",
+    expect(state.labelKey).toBe("preparing");
+    expect(state.fulfillmentKey).toBe("pickup");
+    expect(state.steps.map((step) => step.key)).toEqual([
+      "confirmed",
+      "preparing",
+      "readyForPickup",
+      "delivered",
     ]);
     expect(state.steps[1]?.status).toBe("current");
   });
@@ -43,9 +44,9 @@ describe("getOrderTrackingState", () => {
       status: OrderStatus.SHIPPED,
     });
 
-    expect(state.label).toBe("En camino");
-    expect(state.primaryAction).toBe("Rastrear pedido");
-    expect(state.steps[2]?.label).toBe("En camino");
+    expect(state.labelKey).toBe("inTransit");
+    expect(state.primaryAction).toBe("track");
+    expect(state.steps[2]?.key).toBe("inTransit");
     expect(state.steps[2]?.status).toBe("current");
   });
 
@@ -55,9 +56,9 @@ describe("getOrderTrackingState", () => {
       status: OrderStatus.SHIPPED,
     });
 
-    expect(state.label).toBe("Listo para retiro");
-    expect(state.primaryAction).toBe("Ver detalle");
-    expect(state.steps[2]?.label).toBe("Listo para retiro");
+    expect(state.labelKey).toBe("readyForPickup");
+    expect(state.primaryAction).toBe("detail");
+    expect(state.steps[2]?.key).toBe("readyForPickup");
     expect(state.steps[2]?.status).toBe("current");
   });
 
@@ -67,7 +68,7 @@ describe("getOrderTrackingState", () => {
       status: OrderStatus.DELIVERED,
     });
 
-    expect(state.label).toBe("Entregado");
+    expect(state.labelKey).toBe("delivered");
     expect(state.steps.every((step) => step.status === "completed")).toBe(true);
   });
 
@@ -77,10 +78,10 @@ describe("getOrderTrackingState", () => {
       status: OrderStatus.CANCELLED,
     });
 
-    expect(state.label).toBe("Cancelado");
+    expect(state.labelKey).toBe("cancelled");
     expect(state.isCancelled).toBe(true);
     expect(state.currentStepIndex).toBe(-1);
-    expect(state.secondaryAction).toBe("Contactar asesor");
+    expect(state.secondaryAction).toBe("contact");
   });
 
   it("maps REFUNDED to compact refunded state", () => {
@@ -89,9 +90,44 @@ describe("getOrderTrackingState", () => {
       status: OrderStatus.REFUNDED,
     });
 
-    expect(state.label).toBe("Reembolsado");
+    expect(state.labelKey).toBe("refunded");
     expect(state.isRefunded).toBe(true);
     expect(state.currentStepIndex).toBe(-1);
-    expect(state.secondaryAction).toBe("Contactar asesor");
+    expect(state.secondaryAction).toBe("contact");
+  });
+
+  // La garantía que hace útil el refactor: el módulo decide qué mostrar, y el
+  // catálogo tiene cómo escribirlo. Sin esto, agregar un estado nuevo acá
+  // dejaría la UI con un MISSING_MESSAGE en producción y ningún test en rojo.
+  it("todo identificador que devuelve tiene texto en el catálogo", () => {
+    const estados = [
+      OrderStatus.PAYMENT_PROCESSING,
+      OrderStatus.PAID_PENDING_SHIPMENT,
+      OrderStatus.SHIPPED,
+      OrderStatus.DELIVERED,
+      OrderStatus.CANCELLED,
+      OrderStatus.REFUNDED,
+    ];
+
+    for (const method of ["PICKUP", "LOCAL_DELIVERY"]) {
+      for (const status of estados) {
+        const state = getOrderTrackingState({ shipment: { method }, status });
+
+        expect(es.Orders.tracking, `falta tracking.${state.labelKey}`).toHaveProperty(
+          state.labelKey,
+        );
+        expect(es.Orders.dateLabel, `falta dateLabel.${state.dateLabelKey}`).toHaveProperty(
+          state.dateLabelKey,
+        );
+        expect(es.Orders.fulfillment).toHaveProperty(state.fulfillmentKey);
+        expect(es.Orders.action).toHaveProperty(state.primaryAction);
+        if (state.secondaryAction) {
+          expect(es.Orders.action).toHaveProperty(state.secondaryAction);
+        }
+        for (const step of state.steps) {
+          expect(es.Orders.step, `falta step.${step.key}`).toHaveProperty(step.key);
+        }
+      }
+    }
   });
 });
