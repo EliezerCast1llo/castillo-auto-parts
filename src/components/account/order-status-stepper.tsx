@@ -1,27 +1,29 @@
 import { Check, Clock3, RotateCcw, XCircle } from "lucide-react";
 import type { OrderTrackingStep } from "@/lib/order-tracking";
 
+/**
+ * Un paso con su texto ya resuelto.
+ *
+ * La etiqueta viaja **dentro** del paso y no en un array paralelo: dos arrays
+ * que deben coincidir en orden y longitud son una convención que hay que
+ * recordar, y este componente existe justamente porque el módulo de
+ * seguimiento dejó de mezclar identificador con texto. Armarlo así lo vuelve
+ * imposible de desalinear.
+ */
+export type LabeledTrackingStep = OrderTrackingStep & { label: string };
+
 type OrderStatusStepperProps = {
   isCancelled?: boolean;
   isRefunded?: boolean;
   /** Texto ya traducido del estado. */
   label: string;
-  /**
-   * Etiqueta de cada paso, en el mismo orden que `steps`.
-   *
-   * Llegan aparte porque `OrderTrackingStep` ya no trae texto: el paso decide
-   * cuál es, no cómo se escribe. Quien renderiza es un server component, así
-   * que traduce sin costo de bundle.
-   */
-  stepLabels: string[];
-  steps: OrderTrackingStep[];
+  steps: LabeledTrackingStep[];
 };
 
 export function OrderStatusStepper({
   isCancelled = false,
   isRefunded = false,
   label,
-  stepLabels,
   steps,
 }: OrderStatusStepperProps) {
   if (isCancelled || isRefunded) {
@@ -68,7 +70,7 @@ export function OrderStatusStepper({
                 <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
               </span>
               <span className={`mt-1.5 max-w-[96px] text-center text-[11px] font-black leading-tight ${style.label}`}>
-                {stepLabels[index]}
+                {step.label}
               </span>
             </li>
           );

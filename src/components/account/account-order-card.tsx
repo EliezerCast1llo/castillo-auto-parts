@@ -84,8 +84,7 @@ export async function AccountOrderCard({ locale, order }: AccountOrderCardProps)
           isCancelled={tracking.isCancelled}
           isRefunded={tracking.isRefunded}
           label={t(`tracking.${tracking.labelKey}`)}
-          stepLabels={tracking.steps.map((step) => t(`step.${step.key}`))}
-          steps={tracking.steps}
+          steps={tracking.steps.map((step) => ({ ...step, label: t(`step.${step.key}`) }))}
         />
 
         <div className="grid gap-4 border-t border-ca-border pt-4 md:grid-cols-[minmax(0,1fr)_240px]">
