@@ -25,13 +25,15 @@ export function loadMessages(locale: Locale) {
  * o renombrado no compila, en vez de convertirse en un `MISSING_MESSAGE` en
  * runtime lejos de la causa.
  *
- * `Cart` y `Checkout` entran porque el stepper de cantidad, el form de agregar
- * al carrito y los campos de entrega son componentes de cliente. Es la parte
+ * `Account`, `Cart` y `Checkout` entran porque el modal de dirección, el
+ * stepper de cantidad, el form de agregar al carrito y los campos de entrega
+ * son componentes de cliente. Es la parte
  * cara de la lista y por eso los mensajes de `?estado=` no entran con ellos: se
  * resuelven en el servidor y bajan como texto, que es lo que deja fuera al
  * namespace `Status` entero.
  */
 const CLIENT_NAMESPACES = [
+  "Account",
   "Auth",
   "Cart",
   "Checkout",

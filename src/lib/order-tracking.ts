@@ -2,23 +2,49 @@ import type { OrderStatus } from "@prisma/client";
 
 export type TrackingStepStatus = "completed" | "current" | "upcoming";
 
+/** Pasos posibles del seguimiento. La grafía del paso se resuelve al mostrarlo. */
+export type OrderTrackingStepKey =
+  | "confirmed"
+  | "preparing"
+  | "readyForPickup"
+  | "inTransit"
+  | "delivered";
+
 export type OrderTrackingStep = {
-  key: string;
-  label: string;
+  key: OrderTrackingStepKey;
   status: TrackingStepStatus;
 };
 
+/**
+ * Estado del seguimiento, en identificadores.
+ *
+ * Este módulo devolvía el texto que se muestra —`label: "En camino"`, y el tipo
+ * de `primaryAction` era literalmente `"Rastrear pedido" | "Ver detalle"`—, así
+ * que traducirlo habría cambiado el **tipo**, no solo la vista. Peor: la `key`
+ * de cada paso se derivaba de su etiqueta, o sea que el identificador cambiaba
+ * de idioma junto con el texto.
+ *
+ * Ahora decide qué mostrar y no cómo se escribe. Las clases de color se quedan
+ * porque son presentación, no texto.
+ */
 export type OrderTrackingState = {
   badgeClassName: string;
   currentStepIndex: number;
-  dateLabel: string;
+  dateLabelKey: "updatedAt" | "readyForPickup" | "estimatedDelivery" | "deliveredAt";
   dateValue?: Date | string | null;
-  fulfillmentLabel: string;
+  fulfillmentKey: "pickup" | "delivery";
   isCancelled: boolean;
   isRefunded: boolean;
-  label: string;
-  primaryAction: "Rastrear pedido" | "Ver detalle";
-  secondaryAction?: "Contactar asesor" | "Ver detalle" | "Volver a comprar";
+  labelKey:
+    | "cancelled"
+    | "refunded"
+    | "paymentProcessing"
+    | "preparing"
+    | "readyForPickup"
+    | "inTransit"
+    | "delivered";
+  primaryAction: "track" | "detail";
+  secondaryAction?: "contact" | "detail" | "reorder";
   steps: OrderTrackingStep[];
   visualStatus:
     | "cancelled"
@@ -45,20 +71,20 @@ type OrderTrackingInput = {
 export function getOrderTrackingState(order: OrderTrackingInput): OrderTrackingState {
   const isPickup = order.shipment?.method === "PICKUP";
   const steps = buildSteps(isPickup ? "pickup" : "delivery");
-  const fulfillmentLabel = isPickup ? "Retiro en tienda" : "Entrega a domicilio";
+  const fulfillmentKey = isPickup ? "pickup" : "delivery";
 
   if (order.status === "CANCELLED") {
     return {
       badgeClassName: "border-red-200 bg-red-50 text-red-700",
       currentStepIndex: -1,
-      dateLabel: "Actualizado el",
+      dateLabelKey: "updatedAt",
       dateValue: order.updatedAt ?? order.createdAt ?? null,
-      fulfillmentLabel,
+      fulfillmentKey,
       isCancelled: true,
       isRefunded: false,
-      label: "Cancelado",
-      primaryAction: "Ver detalle",
-      secondaryAction: "Contactar asesor",
+      labelKey: "cancelled",
+      primaryAction: "detail",
+      secondaryAction: "contact",
       steps,
       visualStatus: "cancelled",
     };
@@ -68,14 +94,14 @@ export function getOrderTrackingState(order: OrderTrackingInput): OrderTrackingS
     return {
       badgeClassName: "border-slate-200 bg-slate-100 text-slate-700",
       currentStepIndex: -1,
-      dateLabel: "Actualizado el",
+      dateLabelKey: "updatedAt",
       dateValue: order.updatedAt ?? order.createdAt ?? null,
-      fulfillmentLabel,
+      fulfillmentKey,
       isCancelled: false,
       isRefunded: true,
-      label: "Reembolsado",
-      primaryAction: "Ver detalle",
-      secondaryAction: "Contactar asesor",
+      labelKey: "refunded",
+      primaryAction: "detail",
+      secondaryAction: "contact",
       steps,
       visualStatus: "refunded",
     };
@@ -85,14 +111,14 @@ export function getOrderTrackingState(order: OrderTrackingInput): OrderTrackingS
     return {
       badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
       currentStepIndex: 0,
-      dateLabel: isPickup ? "Listo para retiro" : "Entrega estimada",
+      dateLabelKey: isPickup ? "readyForPickup" : "estimatedDelivery",
       dateValue: order.shipment?.estimatedDeliveryAt ?? null,
-      fulfillmentLabel,
+      fulfillmentKey,
       isCancelled: false,
       isRefunded: false,
-      label: "Procesando pago",
-      primaryAction: "Ver detalle",
-      secondaryAction: "Contactar asesor",
+      labelKey: "paymentProcessing",
+      primaryAction: "detail",
+      secondaryAction: "contact",
       steps: applyCurrentStep(steps, 0),
       visualStatus: "payment_processing",
     };
@@ -102,14 +128,14 @@ export function getOrderTrackingState(order: OrderTrackingInput): OrderTrackingS
     return {
       badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
       currentStepIndex: 1,
-      dateLabel: isPickup ? "Listo para retiro" : "Entrega estimada",
+      dateLabelKey: isPickup ? "readyForPickup" : "estimatedDelivery",
       dateValue: order.shipment?.estimatedDeliveryAt ?? null,
-      fulfillmentLabel,
+      fulfillmentKey,
       isCancelled: false,
       isRefunded: false,
-      label: "Preparando pedido",
-      primaryAction: "Ver detalle",
-      secondaryAction: "Contactar asesor",
+      labelKey: "preparing",
+      primaryAction: "detail",
+      secondaryAction: "contact",
       steps: applyCurrentStep(steps, 1),
       visualStatus: "preparing",
     };
@@ -121,14 +147,14 @@ export function getOrderTrackingState(order: OrderTrackingInput): OrderTrackingS
         ? "border-sky-200 bg-sky-50 text-sky-700"
         : "border-blue-200 bg-blue-50 text-blue-700",
       currentStepIndex: 2,
-      dateLabel: isPickup ? "Listo para retiro" : "Entrega estimada",
+      dateLabelKey: isPickup ? "readyForPickup" : "estimatedDelivery",
       dateValue: order.shipment?.estimatedDeliveryAt ?? null,
-      fulfillmentLabel,
+      fulfillmentKey,
       isCancelled: false,
       isRefunded: false,
-      label: isPickup ? "Listo para retiro" : "En camino",
-      primaryAction: isPickup ? "Ver detalle" : "Rastrear pedido",
-      secondaryAction: isPickup ? "Contactar asesor" : "Ver detalle",
+      labelKey: isPickup ? "readyForPickup" : "inTransit",
+      primaryAction: isPickup ? "detail" : "track",
+      secondaryAction: isPickup ? "contact" : "detail",
       steps: applyCurrentStep(steps, 2),
       visualStatus: isPickup ? "ready_for_pickup" : "in_transit",
     };
@@ -137,30 +163,29 @@ export function getOrderTrackingState(order: OrderTrackingInput): OrderTrackingS
   return {
     badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
     currentStepIndex: 3,
-    dateLabel: "Entregado el",
+    dateLabelKey: "deliveredAt",
     dateValue: order.shipment?.deliveredAt ?? order.updatedAt ?? null,
-    fulfillmentLabel,
+    fulfillmentKey,
     isCancelled: false,
     isRefunded: false,
-    label: "Entregado",
-    primaryAction: "Ver detalle",
-    secondaryAction: "Volver a comprar",
+    labelKey: "delivered",
+    primaryAction: "detail",
+    secondaryAction: "reorder",
     steps: steps.map((step) => ({ ...step, status: "completed" })),
     visualStatus: "delivered",
   };
 }
 
 function buildSteps(fulfillmentType: "delivery" | "pickup"): OrderTrackingStep[] {
-  const labels =
+  // Las claves se escriben, no se derivan de la etiqueta. Antes salían de
+  // `label.toLowerCase()`, así que el identificador del paso cambiaba de idioma
+  // junto con el texto que lo describe.
+  const keys: OrderTrackingStepKey[] =
     fulfillmentType === "pickup"
-      ? ["Confirmado", "Preparando", "Listo para retiro", "Entregado"]
-      : ["Confirmado", "Preparando", "En camino", "Entregado"];
+      ? ["confirmed", "preparing", "readyForPickup", "delivered"]
+      : ["confirmed", "preparing", "inTransit", "delivered"];
 
-  return labels.map((label) => ({
-    key: label.toLowerCase().replace(/\s+/g, "_"),
-    label,
-    status: "upcoming",
-  }));
+  return keys.map((key) => ({ key, status: "upcoming" }));
 }
 
 function applyCurrentStep(steps: OrderTrackingStep[], currentStepIndex: number): OrderTrackingStep[] {

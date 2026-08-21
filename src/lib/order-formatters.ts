@@ -9,6 +9,8 @@
  * Todos los labels están en español salvadoreño (es-SV).
  */
 
+import { defaultLocale, type Locale } from "@/lib/i18n/config";
+import { APP_TIME_ZONE, toIntlLocale } from "@/lib/i18n/intl-locale";
 import type { OrderStatus } from "@prisma/client";
 
 // ---------------------------------------------------------------------------
@@ -103,11 +105,19 @@ export function formatPaymentStatus(status: string | undefined): string {
 /**
  * Formatea una fecha en zona horaria de El Salvador (America/El_Salvador).
  * Formato: "26 may 2026, 10:30 a. m."
+ *
+ * El huso no sigue al idioma: el negocio está en El Salvador y un cliente
+ * anglófono en El Salvador quiere la hora de El Salvador. Lo que cambia es la
+ * grafía de la fecha, no el momento que describe.
+ *
+ * El idioma tiene default porque este módulo lo comparten el admin —que es
+ * solo en español— y los correos. Los ~40 llamadores de ahí no tienen idioma
+ * que pasar; el storefront sí lo pasa siempre.
  */
-export function formatDateTime(date: Date): string {
-  return new Intl.DateTimeFormat("es-SV", {
+export function formatDateTime(date: Date, locale: Locale = defaultLocale): string {
+  return new Intl.DateTimeFormat(toIntlLocale(locale), {
     dateStyle: "medium",
     timeStyle: "short",
-    timeZone: "America/El_Salvador",
+    timeZone: APP_TIME_ZONE,
   }).format(date);
 }

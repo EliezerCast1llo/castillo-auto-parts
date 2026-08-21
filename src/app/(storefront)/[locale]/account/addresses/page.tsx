@@ -9,20 +9,32 @@ import { firstValue } from "@/lib/url-utils";
 import { deleteAddress } from "@/lib/actions/account-addresses";
 
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getStatusMessage } from "@/lib/i18n/status";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Mis direcciones | Castillo Auto Parts" };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Account.addresses" });
+
+  return { title: t("metadataTitle") };
+}
 
 type Props = {
   params: Promise<{ locale: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-const statusMessages: Record<string, { msg: string; ok: boolean }> = {
-  created: { msg: "Dirección guardada correctamente.", ok: true },
-  deleted: { msg: "Dirección eliminada.", ok: true },
-  missing_fields: { msg: "Completa los campos obligatorios.", ok: false },
-  invalid_department: { msg: "Selecciona un departamento válido.", ok: false },
+/**
+ * Tono del aviso por código. El texto vive en `Status.addresses`; acá solo
+ * queda si el resultado fue bueno o malo, que es comportamiento y no cambia
+ * con el idioma.
+ */
+const NOTICE_IS_SUCCESS: Record<string, boolean> = {
+  created: true,
+  deleted: true,
+  missing_fields: false,
+  invalid_department: false,
 };
 
 export default async function AccountAddressesPage({
@@ -37,7 +49,9 @@ export default async function AccountAddressesPage({
 
   const params = searchParams ? await searchParams : {};
   const estado = firstValue(params.estado) ?? "";
-  const notice = statusMessages[estado];
+  const noticeMessage = await getStatusMessage("addresses", estado, locale);
+  const noticeIsSuccess = NOTICE_IS_SUCCESS[estado] ?? false;
+  const t = await getTranslations({ locale, namespace: "Account.addresses" });
 
   const [addresses, fulfillmentOptions] = await Promise.all([
     db.address.findMany({
@@ -57,23 +71,23 @@ export default async function AccountAddressesPage({
           className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
         >
           <ArrowLeft className="h-4 w-4" />
-          Mi cuenta
+          {t("backToAccount")}
         </Link>
 
         <div className="mt-4 flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-black text-ca-navy-950">Mis direcciones</h1>
+          <h1 className="text-2xl font-black text-ca-navy-950">{t("title")}</h1>
           <AddAddressModal deliveryZones={fulfillmentOptions.deliveryZones} />
         </div>
 
-        {notice ? (
+        {noticeMessage ? (
           <div
             className={`mt-4 flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
-              notice.ok
+              noticeIsSuccess
                 ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                 : "border border-red-200 bg-red-50 text-red-600"
             }`}
           >
-            {notice.msg}
+            {noticeMessage}
           </div>
         ) : null}
 
@@ -83,9 +97,9 @@ export default async function AccountAddressesPage({
               <MapPin className="h-7 w-7" strokeWidth={1.6} />
             </span>
             <div>
-              <p className="font-black text-ca-navy-950">Sin direcciones guardadas</p>
+              <p className="font-black text-ca-navy-950">{t("emptyTitle")}</p>
               <p className="mt-1 max-w-xs text-sm text-ca-text-secondary">
-                Guarda una dirección para agilizar tus próximas compras.
+                {t("emptyDescription")}
               </p>
             </div>
             <AddAddressModal deliveryZones={fulfillmentOptions.deliveryZones} />
@@ -122,7 +136,7 @@ export default async function AccountAddressesPage({
                     <input type="hidden" name="id" value={address.id} />
                     <button
                       type="submit"
-                      aria-label="Eliminar dirección"
+                      aria-label={t("delete")}
                       className="flex h-8 w-8 items-center justify-center rounded-lg border border-ca-border text-ca-text-secondary transition hover:border-red-300 hover:bg-red-50 hover:text-red-500"
                     >
                       <Trash2 className="h-3.5 w-3.5" />

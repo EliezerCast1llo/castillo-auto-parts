@@ -13,12 +13,17 @@ import { loadMessages } from "./messages";
  * se miró y que la coincidencia es correcta, no que el test molestaba.
  */
 const IDENTICAL_BY_DESIGN = new Set<string>([
-  // "Subtotal" y "Email" son la misma palabra en los dos idiomas.
+  // "Subtotal", "Email" y "Total" son la misma palabra en los dos idiomas.
   "Cart.summary.subtotal",
   "Checkout.summary.subtotal",
   "Checkout.form.email",
   // Nombre propio del país: se escribe igual en los dos idiomas.
   "Footer.country",
+  "Orders.detail.total",
+  // Nombre de la marca: no se traduce en ningún idioma.
+  "Account.header.brandEyebrow",
+  // "SKU" es la misma sigla en los dos idiomas.
+  "Orders.card.sku",
 ]);
 
 /** Palabras de 3 letras o menos coinciden por casualidad demasiado seguido. */

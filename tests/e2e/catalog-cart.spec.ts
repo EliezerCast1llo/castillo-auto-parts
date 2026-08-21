@@ -1,12 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ES } from "./helpers";
+import { prisma, ES } from "./helpers";
 import { PRODUCT_CLAIMS } from "./fixtures/products";
 
 // La reserva de productos de este spec; ver fixtures/products.ts.
 const CLAIMS = PRODUCT_CLAIMS["catalog-cart.spec.ts"];
-import { InventoryStatus, PrismaClient } from "@prisma/client";
+import { InventoryStatus } from "@prisma/client";
 
-const prisma = new PrismaClient();
 
 test.afterAll(async () => {
   await prisma.$disconnect();

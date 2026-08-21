@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./helpers";
 import { allClaims, PRODUCT_CLAIMS } from "./fixtures/products";
 
-const prisma = new PrismaClient();
 
 test.afterAll(async () => {
   await prisma.$disconnect();

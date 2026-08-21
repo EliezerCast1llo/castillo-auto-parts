@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
-import { PrismaClient, type UserRole } from "@prisma/client";
+import { prisma } from "./helpers";
+import { type UserRole } from "@prisma/client";
 import { hashPassword } from "../../src/lib/admin-credentials";
 
 const ADMIN_EMAIL = process.env.ADMIN_SEED_EMAIL || "admin@castilloautoparts.com";
 const ADMIN_PASSWORD = process.env.ADMIN_SEED_PASSWORD || "admin123";
 const ROLE_PASSWORD = "RolePassword123!";
-const prisma = new PrismaClient();
 const roleUserEmails: Partial<Record<UserRole, string>> = {};
 
 test.beforeAll(async () => {
