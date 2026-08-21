@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 import { Link } from "@/lib/i18n/navigation";
 import { AddToCartForm } from "@/components/cart/add-to-cart-form";
 import { isPurchasableStockStatus, type CatalogProduct } from "@/data/products";
@@ -13,7 +15,14 @@ import { StockBadge } from "./stock-badge";
  * interior, para que la foto (cuando la haya) sea lo único que se vea.
  * La jerarquía la lleva el precio, no el peso uniforme de la tipografía.
  */
-export function ProductCard({ product }: { product: CatalogProduct }) {
+export async function ProductCard({
+  product,
+  locale,
+}: {
+  product: CatalogProduct;
+  locale: Locale;
+}) {
+  const t = await getTranslations({ locale, namespace: "Product" });
   const isAvailable = isPurchasableStockStatus(product.stockStatus);
   const href = { pathname: "/product/[slug]", params: { slug: product.slug } } as const;
 
@@ -57,7 +66,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
         <p className="mt-1 text-xs text-ca-text-secondary">SKU {product.sku}</p>
 
         <p className="mt-2 line-clamp-2 min-h-8 text-xs leading-snug text-ca-text-secondary">
-          <span className="font-bold text-ca-navy-950">Vehículo compatible: </span>
+          <span className="font-bold text-ca-navy-950">{t("compatibleVehicle")}</span>
           {product.compatibility}
         </p>
 

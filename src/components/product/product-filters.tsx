@@ -6,6 +6,10 @@ import { formatStockStatus } from "@/lib/stock-status";
 
 type ProductFiltersProps = {
   activeFilterCount: number;
+  /** Textos ya resueltos: ver la nota de `SortDropdown`. */
+  categoryLegend: string;
+  searchLegend: string;
+  searchPlaceholder: string;
   filters: CatalogFilters;
   options: CatalogFilterOptions;
 };
@@ -15,24 +19,31 @@ type ProductFiltersProps = {
  * el contenedor (aside en desktop, drawer en móvil) y aquí solo hay listas
  * separadas por reglas, que es lo que hace legible una columna de filtros.
  */
-export function ProductFilters({ activeFilterCount, filters, options }: ProductFiltersProps) {
+export function ProductFilters({
+  activeFilterCount,
+  categoryLegend,
+  filters,
+  options,
+  searchLegend,
+  searchPlaceholder,
+}: ProductFiltersProps) {
   return (
     <section className="border-t border-ca-border pt-4">
       <label className="block">
-        <FilterHeading>Buscar repuesto</FilterHeading>
+        <FilterHeading>{searchLegend}</FilterHeading>
         <div className="mt-2 flex h-10 items-center gap-2 rounded-ca-control border border-ca-border bg-white px-2.5 transition focus-within:border-ca-blue-700">
           <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" />
           <input
             className="w-full bg-transparent text-sm text-ca-navy-950 outline-none placeholder:text-ca-text-secondary"
             defaultValue={filters.query}
             name="q"
-            placeholder="Nombre, SKU o número de parte"
+            placeholder={searchPlaceholder}
             type="search"
           />
         </div>
       </label>
 
-      <FilterGroup legend="Categoría">
+      <FilterGroup legend={categoryLegend}>
         {options.categories.map((slug) => (
           <FilterOption
             key={slug}

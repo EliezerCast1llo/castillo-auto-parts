@@ -242,7 +242,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <h2 className="text-xl font-black text-ca-navy-950">Productos relacionados</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {relatedProducts.map((item) => (
-                <ProductCard key={item.sku} product={item} />
+                <ProductCard key={item.sku} locale={locale} product={item} />
               ))}
             </div>
           </section>

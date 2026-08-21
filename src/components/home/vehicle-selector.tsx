@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Car, Search } from "lucide-react";
 import type { ReactNode } from "react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
@@ -9,6 +10,7 @@ import { buildMyVehicleSetCookie } from "@/lib/my-vehicle";
 import { toLinkQuery } from "@/lib/url-utils";
 
 export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilterOptions }) {
+  const t = useTranslations("VehicleSearch");
   const router = useRouter();
   const selection = useVehicleSelection({ options: filterOptions });
 
@@ -92,7 +94,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
           label="Año"
           name="vehicleYear"
           onChange={selection.handleYearChange}
-          placeholder={selection.model ? "Selecciona año" : "Elige el modelo primero"}
+          placeholder={selection.model ? t("selectYear") : t("chooseModelFirst")}
           value={selection.year}
         >
           {selection.years.map((year) => (

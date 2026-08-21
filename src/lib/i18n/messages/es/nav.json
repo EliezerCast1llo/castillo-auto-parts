@@ -12,5 +12,6 @@
   "searchPlaceholderLong": "Busca por repuesto, SKU, parte o vehículo…",
   "searchPlaceholderShort": "Busca por repuesto, SKU o número de parte…",
   "search": "Buscar",
-  "seeAllResults": "Ver todos los resultados para “{query}” →"
+  "seeAllResults": "Ver todos los resultados para “{query}” →",
+  "advisory": "Asesoría"
 }

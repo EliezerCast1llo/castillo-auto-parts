@@ -7,5 +7,9 @@
   "chooseMake": "Choose the make",
   "yearAriaLabel": "Vehicle year",
   "year": "Year",
-  "chooseModel": "Choose the model"
+  "chooseModel": "Choose the model",
+  "heroSignal": "Search by vehicle",
+  "heroImageAlt": "Modern sedan for finding compatible parts",
+  "selectYear": "Select a year",
+  "chooseModelFirst": "Choose the model first"
 }

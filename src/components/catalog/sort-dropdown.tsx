@@ -8,10 +8,16 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { catalogSortOptions, type CatalogSort } from "@/data/catalog-filters";
 
 type SortDropdownProps = {
+  /**
+   * Texto ya resuelto. Llega por prop y no de un `useTranslations` porque
+   * `Catalog` no viaja al navegador: mandarlo entero por un aria-label
+   * significaría enviar todo el copy del catálogo en cada página del sitio.
+   */
+  ariaLabel: string;
   value: CatalogSort;
 };
 
-export function SortDropdown({ value }: SortDropdownProps) {
+export function SortDropdown({ ariaLabel, value }: SortDropdownProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -24,7 +30,7 @@ export function SortDropdown({ value }: SortDropdownProps) {
       <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition focus-within:border-ca-blue-700">
         <ArrowUpDown className="h-4 w-4 shrink-0 text-ca-blue-700" strokeWidth={1.9} />
         <select
-          aria-label="Ordenar catálogo"
+          aria-label={ariaLabel}
           className="h-full w-full bg-transparent outline-none"
           onChange={(event) => {
             const nextSort = event.target.value as CatalogSort;

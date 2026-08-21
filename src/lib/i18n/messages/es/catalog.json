@@ -35,5 +35,18 @@
     "brakePads": "pastillas de freno",
     "oilFilter": "filtro de aceite",
     "sparkPlugs": "bujías"
-  }
+  },
+  "sortAriaLabel": "Ordenar catálogo",
+  "paginationAriaLabel": "Paginación del catálogo",
+  "previousPage": "Página anterior",
+  "nextPage": "Página siguiente",
+  "searchPlaceholder": "Nombre, SKU o número de parte",
+  "categoryLegend": "Categoría",
+  "viewFullCatalog": "Ver catálogo completo",
+  "carouselLabel": "Categorías del catálogo",
+  "railsUnavailableTitle": "Catálogo temporalmente no disponible",
+  "railsEmptyTitle": "Aún no hay productos publicados",
+  "railsUnavailableDescription": "No pudimos cargar el catálogo en este momento. Intenta nuevamente en unos minutos.",
+  "railsEmptyDescription": "Todavía no hay repuestos publicados en esta categoría.",
+  "searchLegend": "Buscar repuesto"
 }

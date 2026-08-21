@@ -92,7 +92,7 @@ export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProp
 
             <div className="hidden xl:block">
               <WhatsAppCTA
-                label="Asesoría"
+                label={tNav("advisory")}
                 phone={SUPPORT_WHATSAPP_NUMBER}
                 variant="subtle"
               />
@@ -198,7 +198,7 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
 
           <div className="hidden xl:block">
             <WhatsAppCTA
-              label="Asesoría"
+              label={tNav("advisory")}
               phone={SUPPORT_WHATSAPP_NUMBER}
               variant="subtle"
             />

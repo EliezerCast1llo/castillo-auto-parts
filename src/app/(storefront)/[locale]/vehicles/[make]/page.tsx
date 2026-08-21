@@ -17,6 +17,7 @@ import { findMakeBySlug, vehicleMakeSlug } from "@/data/vehicle-catalog";
 
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,7 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
 
 export default async function VehicleMakePage({ params, searchParams }: VehicleMakePageProps) {
   const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Catalog" });
   const { make: slug } = await params;
   const make = await resolveMake(slug);
 
@@ -129,10 +131,10 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => (
-                  <ProductCard key={product.sku} product={product} />
+                  <ProductCard key={product.sku} locale={locale} product={product} />
                 ))}
               </div>
-              <CatalogPagination
+              <CatalogPagination locale={locale}
                 basePath={{ pathname: "/vehicles/[make]", params: { make: vehicleMakeSlug(make) } }}
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -142,7 +144,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
           ) : (
             <EmptyState
               actionHref="/catalog"
-              actionLabel="Ver catálogo completo"
+              actionLabel={t("viewFullCatalog")}
               description={`Todavía no hay repuestos publicados para ${make}. Escríbenos y te ayudamos a ubicar el repuesto correcto.`}
               showWhatsApp
               title={`Sin repuestos para ${make} por ahora`}

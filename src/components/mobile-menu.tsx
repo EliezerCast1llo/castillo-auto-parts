@@ -87,7 +87,7 @@ export function MobileMenu({
           >
             {/* Header del drawer */}
             <div className="flex items-center justify-between border-b border-ca-border px-5 py-4">
-              <p className="text-sm font-black uppercase tracking-[0.12em] text-ca-navy-950">Menú</p>
+              <p className="text-sm font-black uppercase tracking-[0.12em] text-ca-navy-950">{t("menu")}</p>
               <button
                 type="button"
                 aria-label={t("closeMenu")}

@@ -130,6 +130,9 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
       <VehicleSearchPanel filters={filters} options={filterOptions} />
       <ProductFilters
         activeFilterCount={activeFilterCount}
+        categoryLegend={t("categoryLegend")}
+        searchLegend={t("searchLegend")}
+        searchPlaceholder={t("searchPlaceholder")}
         filters={filters}
         options={filterOptions}
       />
@@ -176,7 +179,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
                     {t("pageOf", { current: currentPage, total: totalPages })}
                   </span>
                 ) : null}
-                <SortDropdown value={sort} />
+                <SortDropdown ariaLabel={t("sortAriaLabel")} value={sort} />
               </div>
             </div>
 
@@ -195,10 +198,10 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
               <>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredProducts.map((product) => (
-                    <ProductCard key={product.sku} product={product} />
+                    <ProductCard key={product.sku} locale={locale} product={product} />
                   ))}
                 </div>
-                <CatalogPagination
+                <CatalogPagination locale={locale}
                   currentPage={currentPage}
                   totalPages={totalPages}
                   searchParams={resolvedParams}

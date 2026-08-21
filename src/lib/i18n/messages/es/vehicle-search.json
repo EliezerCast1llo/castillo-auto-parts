@@ -7,5 +7,9 @@
   "chooseMake": "Elige la marca",
   "yearAriaLabel": "Año de vehículo",
   "year": "Año",
-  "chooseModel": "Elige el modelo"
+  "chooseModel": "Elige el modelo",
+  "heroSignal": "Busca por vehículo",
+  "heroImageAlt": "Vehículo sedán moderno para búsqueda de repuestos compatibles",
+  "selectYear": "Selecciona año",
+  "chooseModelFirst": "Elige el modelo primero"
 }

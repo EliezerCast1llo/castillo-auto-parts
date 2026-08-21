@@ -12,5 +12,6 @@
   "searchPlaceholderLong": "Search by part, SKU, part number or vehicle…",
   "searchPlaceholderShort": "Search by part, SKU or part number…",
   "search": "Search",
-  "seeAllResults": "See all results for “{query}” →"
+  "seeAllResults": "See all results for “{query}” →",
+  "advisory": "Advice"
 }

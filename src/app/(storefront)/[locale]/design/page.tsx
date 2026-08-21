@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { defaultLocale } from "@/lib/i18n/config";
 import { Link } from "@/lib/i18n/navigation";
 import {
   CheckCircle2,
@@ -41,6 +42,17 @@ const sampleFilters: CatalogFilters = {
   vehicleYear: "2018",
 };
 
+/**
+ * Esta página **no se traduce**, y es deliberado.
+ *
+ * Devuelve 404 en producción (ver el guard de abajo), así que no existe para
+ * ningún cliente ni para los buscadores, y tampoco está en el sitemap. Su
+ * lector es quien desarrolla, que trabaja en español.
+ *
+ * Traducirla no agregaría un lector y sí una obligación permanente: cada
+ * componente que se documente acá pediría dos textos en vez de uno, para
+ * siempre. Si algún día se publica, se traduce entonces.
+ */
 export const metadata = {
   title: "UI Kit | Castillo Auto Parts",
   description: "Componentes visuales implementables para el MVP.",
@@ -72,7 +84,7 @@ export default function DesignPreviewPage() {
           description="Home orienta, genera confianza y manda al catálogo. Los filtros viven únicamente en Catálogo."
         >
           <div className="space-y-5">
-            <HomeHero />
+            <HomeHero locale={defaultLocale} />
           </div>
         </DesignSection>
 
@@ -86,6 +98,9 @@ export default function DesignPreviewPage() {
               <CatalogFilterForm key="design-filters">
                 <VehicleSearchPanel filters={sampleFilters} options={filterOptions} />
                 <ProductFilters
+                  categoryLegend="Categoría"
+                  searchLegend="Buscar repuesto"
+                  searchPlaceholder="Nombre, SKU o número de parte"
                   activeFilterCount={countActiveCatalogFilters(sampleFilters)}
                   filters={sampleFilters}
                   options={filterOptions}
@@ -97,7 +112,7 @@ export default function DesignPreviewPage() {
               <CatalogActiveFilters filters={sampleFilters} options={filterOptions} />
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {mockProducts.slice(0, 6).map((product) => (
-                  <ProductCard key={product.sku} product={product} />
+                  <ProductCard key={product.sku} locale={defaultLocale} product={product} />
                 ))}
               </div>
             </section>

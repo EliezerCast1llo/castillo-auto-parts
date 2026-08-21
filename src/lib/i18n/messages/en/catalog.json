@@ -35,5 +35,18 @@
     "brakePads": "brake pads",
     "oilFilter": "oil filter",
     "sparkPlugs": "spark plugs"
-  }
+  },
+  "sortAriaLabel": "Sort catalog",
+  "paginationAriaLabel": "Catalog pagination",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "searchPlaceholder": "Name, SKU or part number",
+  "categoryLegend": "Category",
+  "viewFullCatalog": "View the full catalog",
+  "carouselLabel": "Catalog categories",
+  "railsUnavailableTitle": "Catalog temporarily unavailable",
+  "railsEmptyTitle": "No products published yet",
+  "railsUnavailableDescription": "We could not load the catalog right now. Try again in a few minutes.",
+  "railsEmptyDescription": "No parts published in this category yet.",
+  "searchLegend": "Search for a part"
 }

@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 import { Link } from "@/lib/i18n/navigation";
 import { CheckCircle2, MapPin, PackageSearch, ShieldCheck, Truck } from "lucide-react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
@@ -8,7 +10,7 @@ import { VehicleSelector } from "@/components/home/vehicle-selector";
 const heroSignals = [
   {
     icon: ShieldCheck,
-    label: "Busca por vehículo",
+    labelKey: "heroSignal",
   },
   {
     icon: PackageSearch,
@@ -20,7 +22,14 @@ const heroSignals = [
   },
 ];
 
-export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOptions }) {
+export async function SearchHero({
+  filterOptions,
+  locale,
+}: {
+  filterOptions: CatalogFilterOptions;
+  locale: Locale;
+}) {
+  const t = await getTranslations({ locale, namespace: "VehicleSearch" });
   return (
     <section className="relative ca-noise bg-ca-navy-950 pb-8 text-white lg:pb-[5.5rem]">
       {/* Grid texture + blobs — clipped within this overlay div only */}
@@ -81,7 +90,7 @@ export function SearchHero({ filterOptions }: { filterOptions: CatalogFilterOpti
             <div className="relative min-h-[280px] overflow-hidden lg:min-h-full">
               <div className="absolute inset-y-0 left-0 z-10 hidden w-44 bg-gradient-to-r from-ca-navy-900 via-ca-navy-900/75 to-transparent lg:block" />
               <Image
-                alt="Vehículo sedán moderno para búsqueda de repuestos compatibles"
+                alt={t("heroImageAlt")}
                 className="object-cover object-[62%_center] opacity-90"
                 fill
                 priority

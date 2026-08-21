@@ -17,5 +17,6 @@
   "breadcrumbAriaLabel": "Ruta del producto",
   "home": "Inicio",
   "catalog": "Catálogo",
-  "backToCatalog": "Volver al catálogo"
+  "backToCatalog": "Volver al catálogo",
+  "compatibleVehicle": "Vehículo compatible: "
 }
