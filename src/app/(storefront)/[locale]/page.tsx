@@ -49,7 +49,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           />
         </div>
       </div>
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </main>
   );
 }

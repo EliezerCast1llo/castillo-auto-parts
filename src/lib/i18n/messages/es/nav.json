@@ -7,5 +7,10 @@
   "mobileLabel": "Navegación móvil",
   "menu": "Menú de navegación",
   "openMenu": "Abrir menú",
-  "closeMenu": "Cerrar menú"
+  "closeMenu": "Cerrar menú",
+  "searchAriaLabel": "Buscar repuestos",
+  "searchPlaceholderLong": "Busca por repuesto, SKU, parte o vehículo…",
+  "searchPlaceholderShort": "Busca por repuesto, SKU o número de parte…",
+  "search": "Buscar",
+  "seeAllResults": "Ver todos los resultados para “{query}” →"
 }

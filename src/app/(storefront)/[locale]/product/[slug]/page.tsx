@@ -28,6 +28,7 @@ import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { getPathname } from "@/lib/i18n/navigation";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -40,11 +41,16 @@ export async function generateMetadata({ params }: ProductPageProps) {
   const locale = await resolveAndPublishRouteLocale(params);
   const product = await getCatalogProductBySlug(slug, locale);
 
-  if (!product) return { title: "Producto no encontrado | Castillo Auto Parts" };
+  const tMeta = await getTranslations({ locale, namespace: "Product" });
+  if (!product) return { title: tMeta("notFoundTitle") };
 
   const description =
     product.description ||
-    `${product.name} de ${product.brand} · ${product.compatibility}. Consulta disponibilidad y opciones de entrega.`;
+    tMeta("metaDescription", {
+      brand: product.brand,
+      compatibility: product.compatibility,
+      name: product.name,
+    });
 
   return {
     title: `${product.name} | Castillo Auto Parts`,
@@ -68,6 +74,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Product" });
   const product = await getCatalogProductBySlug(slug, locale);
 
   if (!product) notFound();
@@ -77,8 +84,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const supportMessage = `Hola, necesito validar compatibilidad del repuesto ${product.name} (SKU ${product.sku}, parte ${product.partNumber}).`;
 
   const breadcrumbs: BreadcrumbEntry[] = [
-    { name: "Inicio", path: "/" },
-    { name: "Catálogo", path: "/catalog" },
+    { name: t("home"), path: "/" },
+    { name: t("catalog"), path: "/catalog" },
     // El nombre se lee, el slug filtra. Con el nombre traducido en la URL, el
     // breadcrumb del JSON-LD en inglés apuntaba a `?category=Brakes`, que no
     // encuentra nada.
@@ -96,7 +103,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <ProductBreadcrumb product={product} />
+        <ProductBreadcrumb product={product} t={t} />
 
         {/* Cuerpo principal — aside va abajo en mobile, lateral en lg */}
         <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px]">
@@ -112,13 +119,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             <div className="rounded-ca-surface border border-ca-border bg-white p-5">
-              <h2 className="text-base font-black text-ca-navy-950">Descripción</h2>
+              <h2 className="text-base font-black text-ca-navy-950">{t("description")}</h2>
               <p className="mt-3 text-sm leading-6 text-ca-text-secondary">{product.description}</p>
             </div>
 
             {product.compatibleVehicles.length > 0 ? (
               <div className="rounded-ca-surface border border-ca-border bg-white p-5">
-                <h2 className="text-base font-black text-ca-navy-950">Vehículos compatibles</h2>
+                <h2 className="text-base font-black text-ca-navy-950">{t("compatibleVehicles")}</h2>
                 <div className="mt-3 empty:hidden">
                   <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
                 </div>
@@ -138,7 +145,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             {product.technicalDetails.length > 0 ? (
               <div className="rounded-ca-surface border border-ca-border bg-white p-5">
-                <h2 className="text-base font-black text-ca-navy-950">Detalles técnicos</h2>
+                <h2 className="text-base font-black text-ca-navy-950">{t("technicalDetails")}</h2>
                 <ul className="mt-3 space-y-2">
                   {product.technicalDetails.map((detail) => (
                     <li key={detail} className="flex items-start gap-2 text-sm text-ca-text-secondary">
@@ -168,10 +175,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             {/* Datos del producto */}
             <dl className="mt-4 grid grid-cols-2 gap-2.5 text-sm">
-              <InfoItem label="Marca" value={product.brand} />
-              <InfoItem label="N.º parte" value={product.partNumber} />
-              <InfoItem label="SKU" value={product.sku} />
-              <InfoItem label="Disponibilidad" value={`${product.stockQuantity} ud.`} />
+              <InfoItem label={t("brand")} value={product.brand} />
+              <InfoItem label={t("partNumber")} value={product.partNumber} />
+              <InfoItem label={t("sku")} value={product.sku} />
+              <InfoItem label={t("availability")} value={t("units", { count: product.stockQuantity })} />
             </dl>
 
             {/* Precio */}
@@ -186,7 +193,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <div>
                   <p className="text-sm font-black text-ca-navy-950">Revisa la compatibilidad antes de comprar</p>
                   <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
-                    Revisa los vehículos compatibles o consulta con un asesor. Puedes enviarnos los datos de tu vehículo, una foto o el número de parte si lo tienes.
+                    {t("checkCompatibility")}
                   </p>
                 </div>
               </div>
@@ -198,11 +205,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
               buttonClassName="h-[52px] rounded-ca-control"
               buttonSize="lg"
               className="mt-4 space-y-3"
-              label="Agregar al carrito"
+              label={t("addToCart")}
               sku={product.sku}
             >
               <label className="block text-sm font-bold text-ca-navy-950">
-                Cantidad
+                {t("quantity")}
                 <div className="mt-2">
                   <QuantityStepper disabled={!isAvailable} max={product.stockQuantity} />
                 </div>
@@ -211,7 +218,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <WhatsAppCTA
               className="mt-2.5 w-full"
-              label="Validar con asesor"
+              label={t("validateWithAdvisor")}
               message={supportMessage}
               phone={SUPPORT_WHATSAPP_NUMBER}
             />
@@ -222,7 +229,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div>
                 <p className="font-bold text-ca-navy-950">Retiro en bodega o entrega local</p>
                 <p className="mt-1 text-ca-text-secondary">
-                  Entrega en San Salvador y Santa Tecla. Tarifa confirmada al pagar.
+                  {t("deliveryNotice")}
                 </p>
               </div>
             </div>
@@ -241,24 +248,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         ) : null}
       </div>
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </main>
   );
 }
 
-function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
+type ProductTranslator = Awaited<ReturnType<typeof getTranslations<"Product">>>;
+
+function ProductBreadcrumb({
+  product,
+  t,
+}: {
+  product: CatalogProduct;
+  t: ProductTranslator;
+}) {
   return (
     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <nav
-        aria-label="Ruta del producto"
+        aria-label={t("breadcrumbAriaLabel")}
         className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
       >
         <Link className="transition hover:text-ca-navy-950" href="/">
-          Inicio
+          {t("home")}
         </Link>
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
         <Link className="transition hover:text-ca-navy-950" href="/catalog">
-          Catálogo
+          {t("catalog")}
         </Link>
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
         <Link
@@ -276,7 +291,7 @@ function ProductBreadcrumb({ product }: { product: CatalogProduct }) {
         className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
       >
         <ArrowLeft className="h-4 w-4" />
-        Volver al catálogo
+        {t("backToCatalog")}
       </Link>
     </div>
   );

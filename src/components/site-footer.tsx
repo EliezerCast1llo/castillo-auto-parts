@@ -4,17 +4,20 @@ import { getCatalogFacets } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
 import { DEFAULT_SUPPORT_MESSAGE, SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import type { Locale } from "@/lib/i18n/config";
+import { getTranslations } from "next-intl/server";
 import type { LocaleHref } from "@/lib/i18n/navigation";
 
 /**
  * Footer global de la tienda. Async: obtiene marcas de vehículo reales
  * (cacheadas con tag "catalog") para los enlaces de /vehiculos/*.
  */
-export async function SiteFooter() {
+export async function SiteFooter({ locale }: { locale: Locale }) {
+  const t = await getTranslations({ locale, namespace: "Footer" });
   let vehicleMakes: string[] = [];
   let partBrands: string[] = [];
   try {
-    const facets = await getCatalogFacets();
+    const facets = await getCatalogFacets(locale);
     vehicleMakes = facets.vehicleMakes.slice(0, 6);
     partBrands = facets.brands.slice(0, 6);
   } catch {
@@ -43,44 +46,44 @@ export async function SiteFooter() {
           <div className="mt-4 space-y-2 text-sm font-semibold text-white/80">
             <p className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-ca-gold-400" />
-              Revisa la compatibilidad
+              {t("checkCompatibility")}
             </p>
             <p className="flex items-center gap-2">
               <Truck className="h-4 w-4 text-ca-gold-400" />
-              Entrega en San Salvador y Santa Tecla
+              {t("deliveryArea")}
             </p>
             <p className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-ca-gold-400" />
-              El Salvador
+              {t("country")}
             </p>
           </div>
         </div>
 
         {/* Tienda */}
-        <FooterColumn title="Tienda">
-          <FooterLink href="/catalog">Catálogo completo</FooterLink>
-          <FooterLink href="/cart">Carrito</FooterLink>
-          <FooterLink href="/account">Mi cuenta</FooterLink>
-          <FooterLink href="/account/orders">Mis pedidos</FooterLink>
+        <FooterColumn title={t("shop")}>
+          <FooterLink href="/catalog">{t("fullCatalog")}</FooterLink>
+          <FooterLink href="/cart">{t("cart")}</FooterLink>
+          <FooterLink href="/account">{t("myAccount")}</FooterLink>
+          <FooterLink href="/account/orders">{t("myOrders")}</FooterLink>
         </FooterColumn>
 
         {/* Vehículos */}
-        <FooterColumn title="Repuestos por vehículo">
+        <FooterColumn title={t("byVehicle")}>
           {vehicleMakes.length > 0 ? (
             vehicleMakes.map((make) => (
               <FooterLink href={{ pathname: "/vehicles/[make]", params: { make: vehicleMakeSlug(make) } }} key={make}>
-                Repuestos {make}
+                {t("partsFor", { make })}
               </FooterLink>
             ))
           ) : (
-            <FooterLink href="/catalog">Buscar por vehículo</FooterLink>
+            <FooterLink href="/catalog">{t("searchByVehicle")}</FooterLink>
           )}
         </FooterColumn>
 
         {/* Marcas de repuesto — la navegación por fabricante vive aquí, no
             como franja en la home: es un índice, no una sección destacada. */}
         {partBrands.length > 0 ? (
-          <FooterColumn title="Marcas de repuesto">
+          <FooterColumn title={t("partBrands")}>
             {partBrands.map((brand) => (
               <FooterLink href={{ pathname: "/catalog", query: { brand } }} key={brand}>
                 {brand}
@@ -90,8 +93,8 @@ export async function SiteFooter() {
         ) : null}
 
         {/* Soporte */}
-        <FooterColumn title="Soporte">
-          <FooterLink href="/help">Centro de ayuda</FooterLink>
+        <FooterColumn title={t("support")}>
+          <FooterLink href="/help">{t("helpCenter")}</FooterLink>
           {SUPPORT_WHATSAPP_NUMBER ? (
             <a
               className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"
@@ -99,7 +102,7 @@ export async function SiteFooter() {
               rel="noopener noreferrer"
               target="_blank"
             >
-              WhatsApp: asesoría de repuestos
+              {t("whatsapp")}
             </a>
           ) : null}
         </FooterColumn>
@@ -108,9 +111,9 @@ export async function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs font-semibold text-white/55 sm:flex-row sm:px-6 lg:px-8">
           <p>
-            © {year} {SITE_NAME}. Todos los derechos reservados.
+            {t("rights", { siteName: SITE_NAME, year })}
           </p>
-          <p>Precios en USD con IVA (13%) incluido.</p>
+          <p>{t("priceNotice")}</p>
         </div>
       </div>
     </footer>

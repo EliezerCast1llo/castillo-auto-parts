@@ -1,0 +1,21 @@
+{
+  "notFoundTitle": "Producto no encontrado | Castillo Auto Parts",
+  "metaDescription": "{name} de {brand} · {compatibility}. Consulta disponibilidad y opciones de entrega.",
+  "description": "Descripción",
+  "compatibleVehicles": "Vehículos compatibles",
+  "technicalDetails": "Detalles técnicos",
+  "brand": "Marca",
+  "partNumber": "N.º parte",
+  "sku": "SKU",
+  "availability": "Disponibilidad",
+  "units": "{count} ud.",
+  "checkCompatibility": "Revisa los vehículos compatibles o consulta con un asesor. Puedes enviarnos los datos de tu vehículo, una foto o el número de parte si lo tienes.",
+  "addToCart": "Agregar al carrito",
+  "quantity": "Cantidad",
+  "validateWithAdvisor": "Validar con asesor",
+  "deliveryNotice": "Entrega en San Salvador y Santa Tecla. Tarifa confirmada al pagar.",
+  "breadcrumbAriaLabel": "Ruta del producto",
+  "home": "Inicio",
+  "catalog": "Catálogo",
+  "backToCatalog": "Volver al catálogo"
+}

@@ -150,7 +150,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
           )}
         </section>
       </div>
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </main>
   );
 }

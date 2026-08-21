@@ -1,0 +1,21 @@
+{
+  "notFoundTitle": "Product not found | Castillo Auto Parts",
+  "metaDescription": "{name} by {brand} · {compatibility}. Check availability and delivery options.",
+  "description": "Description",
+  "compatibleVehicles": "Compatible vehicles",
+  "technicalDetails": "Technical details",
+  "brand": "Brand",
+  "partNumber": "Part no.",
+  "sku": "SKU",
+  "availability": "Availability",
+  "units": "{count} units",
+  "checkCompatibility": "Check the compatible vehicles or ask an advisor. You can send us your vehicle details, a photo, or the part number if you have it.",
+  "addToCart": "Add to cart",
+  "quantity": "Quantity",
+  "validateWithAdvisor": "Check with an advisor",
+  "deliveryNotice": "Delivery in San Salvador and Santa Tecla. Fee confirmed at checkout.",
+  "breadcrumbAriaLabel": "Product breadcrumb",
+  "home": "Home",
+  "catalog": "Catalog",
+  "backToCatalog": "Back to the catalog"
+}

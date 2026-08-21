@@ -18,7 +18,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SearchResponse, SearchResult } from "@/app/api/search/route";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formatStockStatus, type StockStatus } from "@/lib/stock-status";
 
 const DEBOUNCE_MS = 300;
@@ -30,6 +30,7 @@ type SearchAutocompleteProps = {
 };
 
 export function SearchAutocomplete({ variant = "default" }: SearchAutocompleteProps = {}) {
+  const t = useTranslations("Nav");
   const locale = useLocale();
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -187,11 +188,11 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
               aria-autocomplete="list"
               aria-controls={isOpen ? "search-dropdown" : undefined}
               aria-expanded={isOpen}
-              aria-label="Buscar repuestos"
+              aria-label={t("searchAriaLabel")}
               autoComplete="off"
               className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-ca-text-secondary/60"
               name="q"
-              placeholder="Busca por repuesto, SKU, parte o vehículo…"
+              placeholder={t("searchPlaceholderLong")}
               role="combobox"
               type="search"
               value={query}
@@ -227,7 +228,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
           className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[12px] bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
         >
           <Search className="h-4 w-4" strokeWidth={2} />
-          <span>Buscar</span>
+          <span>{t("search")}</span>
         </button>
       </form>
     );
@@ -247,11 +248,11 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
         aria-autocomplete="list"
         aria-controls={isOpen ? "search-dropdown" : undefined}
         aria-expanded={isOpen}
-        aria-label="Buscar repuestos"
+        aria-label={t("searchAriaLabel")}
         autoComplete="off"
         className="min-w-0 flex-1 bg-transparent px-2.5 text-sm outline-none placeholder:text-ca-text-secondary/55"
         name="q"
-        placeholder="Busca por repuesto, SKU o número de parte…"
+        placeholder={t("searchPlaceholderShort")}
         role="combobox"
         type="search"
         value={query}
@@ -264,7 +265,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
       ) : null}
       <button
         type="submit"
-        aria-label="Buscar"
+        aria-label={t("search")}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ca-navy-950 text-white transition hover:bg-ca-navy-800"
       >
         <Search className="h-3.5 w-3.5" strokeWidth={2.2} />
@@ -303,6 +304,7 @@ function SearchDropdownItems({
   onSelect: (r: SearchResult) => void;
   onHover: (i: number) => void;
 }) {
+  const t = useTranslations("Nav");
   return (
     <>
       {results.map((result, index) => (
@@ -334,7 +336,7 @@ function SearchDropdownItems({
           type="submit"
           className="w-full text-left text-xs font-bold text-ca-blue-700 hover:underline"
         >
-          Ver todos los resultados para &ldquo;{query}&rdquo; →
+          {t("seeAllResults", { query })}
         </button>
       </div>
     </>

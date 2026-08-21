@@ -34,12 +34,14 @@ export function loadMessages(locale: Locale) {
  */
 const CLIENT_NAMESPACES = [
   "Account",
+  "Auth",
   "Cart",
   "Checkout",
   "Common",
   "Consent",
   "Errors",
   "Nav",
+  "VehicleSearch",
 ] as const satisfies readonly (keyof typeof es)[];
 
 export function pickClientMessages(messages: typeof es | typeof en) {

@@ -1,7 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
-import { EN, ES } from "./helpers";
+import { EN, ES, prisma } from "./helpers";
 import { PRODUCT_CLAIMS } from "./fixtures/products";
-import { prisma } from "./helpers";
 
 test("legacy unprefixed URLs redirect permanently to Spanish", async ({ request }) => {
   for (const path of ["/catalog", "/ayuda", "/cart", "/vehiculos/toyota"]) {
@@ -624,6 +623,41 @@ test("the order tracking labels follow the language, and the identifiers do not"
   // Y el identificador crudo nunca llega a la pantalla: si el catalogo no
   // resolviera, se veria "inTransit" en vez de la etiqueta.
   await expect(page.getByText(/inTransit|readyForPickup|paymentProcessing/)).toHaveCount(0);
+});
+
+test("the sign-in page speaks the language of the page", async ({ page }) => {
+  await page.goto(ES("/auth/login"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Iniciar sesión");
+  await expect(page.getByLabel("Correo electrónico")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
+
+  await page.goto(EN("/auth/login"));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sign in");
+  await expect(page.getByLabel("Email address")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
+});
+
+test("the product page and the footer speak the language of the page", async ({ page }) => {
+  const slug = PRODUCT_CLAIMS["i18n.spec.ts"].cartAndCheckout.slug;
+
+  await page.goto(ES(`/product/${slug}`));
+  await expect(page.getByRole("heading", { level: 2, name: "Descripción" })).toBeVisible();
+  await expect(page.getByText("Detalles técnicos")).toBeVisible();
+  // El footer es server component y recibe el idioma por prop, no del contexto.
+  // Se miran dos columnas distintas: con una sola, un enlace sin traducir en la
+  // otra pasaba desapercibido — que es exactamente lo que pasó con "Centro de
+  // ayuda" mientras este test verificaba solo "Catálogo completo".
+  await expect(page.getByText("Catálogo completo")).toBeVisible();
+  await expect(page.getByText("Centro de ayuda")).toBeVisible();
+
+  await page.goto(EN(`/product/${slug}`));
+  await expect(page.getByRole("heading", { level: 2, name: "Description" })).toBeVisible();
+  await expect(page.getByText("Technical details")).toBeVisible();
+  await expect(page.getByText("Full catalog")).toBeVisible();
+  await expect(page.getByText("Help center")).toBeVisible();
+  // Y el precio sigue en USD en los dos: El Salvador esta dolarizado.
+  await expect(page.getByText(/\$\d/).first()).toBeVisible();
+
 });
 
 test("alternate links point search engines at the other language", async ({ request }) => {

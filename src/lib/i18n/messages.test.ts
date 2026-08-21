@@ -17,6 +17,8 @@ const IDENTICAL_BY_DESIGN = new Set<string>([
   "Cart.summary.subtotal",
   "Checkout.summary.subtotal",
   "Checkout.form.email",
+  // Nombre propio del país: se escribe igual en los dos idiomas.
+  "Footer.country",
   "Orders.detail.total",
   // Nombre de la marca: no se traduce en ningún idioma.
   "Account.header.brandEyebrow",

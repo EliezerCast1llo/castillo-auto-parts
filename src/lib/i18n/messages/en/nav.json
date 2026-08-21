@@ -7,5 +7,10 @@
   "mobileLabel": "Mobile navigation",
   "menu": "Navigation menu",
   "openMenu": "Open menu",
-  "closeMenu": "Close menu"
+  "closeMenu": "Close menu",
+  "searchAriaLabel": "Search parts",
+  "searchPlaceholderLong": "Search by part, SKU, part number or vehicle…",
+  "searchPlaceholderShort": "Search by part, SKU or part number…",
+  "search": "Search",
+  "seeAllResults": "See all results for “{query}” →"
 }

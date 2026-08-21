@@ -1,0 +1,11 @@
+{
+  "title": "Search by vehicle",
+  "makeAriaLabel": "Vehicle make",
+  "make": "Make",
+  "modelAriaLabel": "Vehicle model",
+  "model": "Model",
+  "chooseMake": "Choose the make",
+  "yearAriaLabel": "Vehicle year",
+  "year": "Year",
+  "chooseModel": "Choose the model"
+}
