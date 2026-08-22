@@ -20,5 +20,7 @@
   "backToCatalog": "Volver al catálogo",
   "compatibleVehicle": "Vehículo compatible: ",
   "viewDetailsFor": "Ver detalles del repuesto {name}",
-  "viewImage": "Ver imagen {index}: {alt}"
+  "viewImage": "Ver imagen {index}: {alt}",
+  "ogAlt": "Repuesto de {siteName}",
+  "supportMessage": "Hola, necesito validar compatibilidad del repuesto {name} (SKU {sku}, parte {partNumber})."
 }

@@ -4,8 +4,11 @@ import { toIntlLocale, APP_CURRENCY, APP_TIME_ZONE } from "./intl-locale";
 import { LOCALIZE_PATH_ROUTES } from "./path";
 import { LOCALE_COOKIE, pathnames, routing } from "./routing";
 import { loadMessages } from "./messages";
+import { IDENTICAL_BY_DESIGN } from "./identical-by-design";
 
 type MessageTree = { [key: string]: string | MessageTree };
+
+
 
 /** Aplana el catálogo a claves con punto, igual que en messages.test.ts. */
 function flatten(tree: MessageTree, prefix = ""): Record<string, string> {
@@ -154,13 +157,25 @@ describe("published locales", () => {
     //
     // La regla es esta: publicar un idioma exige que tenga todas las claves del
     // idioma por defecto. Sirve igual para el tercer idioma que venga.
-    const esperadas = Object.keys(flatten(loadMessages(defaultLocale) as MessageTree));
+    const base = flatten(loadMessages(defaultLocale) as MessageTree);
 
     for (const locale of publishedLocales) {
-      const suyas = new Set(Object.keys(flatten(loadMessages(locale) as MessageTree)));
-      const faltan = esperadas.filter((key) => !suyas.has(key));
+      if (locale === defaultLocale) continue;
 
-      expect(faltan, `${locale} publicado con claves sin traducir`).toEqual([]);
+      const suyas = flatten(loadMessages(locale) as MessageTree);
+
+      const ausentes = Object.keys(base).filter((key) => !(key in suyas));
+      expect(ausentes, `${locale} publicado con claves ausentes`).toEqual([]);
+
+      // La presencia no alcanza: un catálogo con las 551 claves copiadas del
+      // español pasaría la comprobación de arriba. Esto exige que el valor
+      // difiera, salvo donde coincidir es correcto.
+      const sinTraducir = Object.entries(base)
+        .filter(([key, value]) => value.length >= 4 && suyas[key] === value)
+        .filter(([key]) => !IDENTICAL_BY_DESIGN.has(key))
+        .map(([key]) => key);
+
+      expect(sinTraducir, `${locale} publicado con valores en ${defaultLocale}`).toEqual([]);
     }
   });
 

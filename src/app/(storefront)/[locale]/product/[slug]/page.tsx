@@ -81,7 +81,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const relatedProducts = await getRelatedCatalogProducts(product, locale);
   const isAvailable = product.stockStatus !== "OUT_OF_STOCK";
-  const supportMessage = `Hola, necesito validar compatibilidad del repuesto ${product.name} (SKU ${product.sku}, parte ${product.partNumber}).`;
+  // El mensaje que se abre en WhatsApp lo escribe el cliente, así que va en su
+  // idioma: es el punto de contacto comercial, no un texto interno.
+  const supportMessage = t("supportMessage", {
+    name: product.name,
+    partNumber: product.partNumber,
+    sku: product.sku,
+  });
 
   const breadcrumbs: BreadcrumbEntry[] = [
     { name: t("home"), path: "/" },

@@ -4,5 +4,7 @@
   "summary": "{count, plural, one {# repuesto compatible} other {# repuestos compatibles}} con vehículos {make}. Precio con IVA y disponibilidad visible.",
   "filterByModel": "Filtrar por modelo y año",
   "home": "Inicio",
-  "catalogLink": "Catálogo"
+  "catalogLink": "Catálogo",
+  "notFoundTitle": "Marca no encontrada",
+  "metadataTitle": "Repuestos para {make}"
 }

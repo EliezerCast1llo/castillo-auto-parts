@@ -1,11 +1,35 @@
 import { ImageResponse } from "next/og";
+import { getTranslations } from "next-intl/server";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getCatalogProductBySlug } from "@/data/products";
 import { formatCurrency } from "@/lib/money";
 import { SITE_NAME } from "@/lib/site";
 
-export const alt = `Producto de ${SITE_NAME}`;
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+/** Tamaño de la imagen: lo usan tanto `generateImageMetadata` como el render. */
+const size = { width: 1200, height: 630 };
+
+/**
+ * El `alt` depende del idioma, así que sale por `generateImageMetadata` y no
+ * como `export const`: una constante de módulo no puede leer el segmento de
+ * ruta, y esta imagen es lo que se ve al compartir la ficha.
+ */
+export async function generateImageMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Product" });
+
+  return [
+    {
+      alt: t("ogAlt", { siteName: SITE_NAME }),
+      contentType: "image/png",
+      id: "product",
+      size,
+    },
+  ];
+}
 
 /**
  * OG image por producto: foto + nombre + precio + marca.
@@ -14,10 +38,13 @@ export const contentType = "image/png";
 export default async function ProductOpenGraphImage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getCatalogProductBySlug(slug);
+  // Con idioma: sin esto el nombre del producto salía en español dentro de la
+  // imagen que se comparte desde `/en`.
+  const locale = await resolveAndPublishRouteLocale(params);
+  const product = await getCatalogProductBySlug(slug, locale);
 
   if (!product) {
     return new ImageResponse(
