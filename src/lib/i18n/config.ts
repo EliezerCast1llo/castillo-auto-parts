@@ -18,8 +18,15 @@ export const defaultLocale: Locale = "es";
  * quien elija inglés lo ve; solo no se le ofrece a Google.
  *
  * **Agregar un idioma acá es el último paso de su traducción, no el primero.**
+ *
+ * `en` entró cuando el catálogo quedó completo: 551 claves, 542 traducidas y 9
+ * legítimamente idénticas —la marca, "Subtotal", "Email", "SKU", "El Salvador"—.
+ * Tres pruebas lo sostienen y corren en CI: `messages.test.ts` verifica paridad
+ * de claves y que ninguna quede sin traducir, `hardcoded-copy.test.ts` que no
+ * haya texto de interfaz escrito a mano, e `i18n.spec.ts` que lo traducido
+ * llegue a la pantalla en los dos idiomas.
  */
-export const publishedLocales: readonly Locale[] = [defaultLocale];
+export const publishedLocales: readonly Locale[] = locales;
 
 export function isPublishedLocale(locale: Locale): boolean {
   return publishedLocales.includes(locale);

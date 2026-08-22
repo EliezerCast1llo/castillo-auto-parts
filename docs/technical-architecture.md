@@ -189,9 +189,34 @@ export interface MapProvider {
 - Libreria: next-intl (decision cerrada). Peer valida Next 16 + React 19.
 - Idioma principal: espanol.
 - Idioma secundario: ingles.
-- Recomendacion inicial: centralizar textos de UI en archivos de mensajes.
-- El contenido de productos puede iniciar en espanol y tener campos opcionales para ingles.
-- Evitar textos hardcodeados en componentes cuando sean visibles al usuario.
+- Textos de UI centralizados en `src/lib/i18n/messages`, un JSON por namespace.
+- Contenido de producto traducido en base (`ProductTranslation`), con fallback
+  **por campo**: un producto con nombre en ingles y sin descripcion muestra el
+  nombre traducido y la descripcion en espanol.
+- Nada de texto visible escrito a mano: `hardcoded-copy.test.ts` lo verifica en
+  CI, mirando atributos y texto entre etiquetas.
+
+### Lo que deliberadamente no se traduce
+
+- `(admin)/**`: el panel es solo en espanol. Por eso `formatOrderStatus`,
+  `formatStockStatus` y `formatDateTime` se quedan con sus etiquetas en espanol
+  y un parametro de idioma opcional: el storefront lo pasa, el admin no tiene
+  cual pasar.
+- `[locale]/design`: devuelve 404 en produccion y no esta en el sitemap. Su
+  lector es quien desarrolla. Traducirla obligaria a escribir dos textos por
+  cada componente que se documente, para siempre.
+- `[locale]/payments/mock/[externalPaymentId]`: guardada por configuracion de
+  proveedor y se autodescribe como entorno de desarrollo.
+- Nombres propios: los 14 departamentos, marcas de vehiculo y de repuesto, y
+  los slugs de producto y categoria. Los departamentos ademas son valores
+  almacenados: traducirlos romperia el matching de direcciones.
+
+Las tres primeras estan declaradas en `hardcoded-copy.test.ts` con su motivo, y
+un segundo test verifica que cada archivo excluido siga existiendo.
+- Los dos idiomas estan publicados: `publishedLocales` en
+  `src/lib/i18n/config.ts` decide que `/en/*` sea indexable y entre al sitemap.
+  Agregar un idioma ahi es el ultimo paso de su traduccion, y un test exige que
+  su catalogo este completo antes de permitirlo.
 - Ruteo por prefijo: `/es` y `/en` siempre prefijados, asi que la URL es la
   fuente de verdad del idioma. La cookie `castillo_locale` es solo la pista que
   usa el middleware cuando la URL todavia no trae prefijo.

@@ -208,7 +208,11 @@ Pantallas prioritarias:
 - no hay secretos en repo.
 - responsive validado.
 - mapa/pin validado si la release toca checkout/direccion.
-- i18n validado si la release toca textos visibles.
+- i18n: lo verifica CI y no hace falta revisarlo a mano. `messages.test.ts`
+  exige paridad de claves entre idiomas y que ninguna quede sin traducir;
+  `hardcoded-copy.test.ts` que no haya texto de interfaz escrito a mano
+  —atributos y texto entre etiquetas—; `i18n.spec.ts` que lo traducido llegue a
+  la pantalla en los dos idiomas. Si los tres pasan, la release no rompio i18n.
 - cambios documentados.
 - QA humano reviso criterios de aceptacion.
 

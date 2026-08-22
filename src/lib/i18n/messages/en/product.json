@@ -20,5 +20,7 @@
   "backToCatalog": "Back to the catalog",
   "compatibleVehicle": "Fits vehicle: ",
   "viewDetailsFor": "View details for {name}",
-  "viewImage": "View image {index}: {alt}"
+  "viewImage": "View image {index}: {alt}",
+  "ogAlt": "Part from {siteName}",
+  "supportMessage": "Hi, I need to check whether {name} fits my vehicle (SKU {sku}, part {partNumber})."
 }
