@@ -291,4 +291,4 @@ Necesidades:
 5. Direccion exacta, horarios y dias de retiro en bodega.
 6. Tabla final de zonas/tarifas para San Salvador.
 7. Proveedor de mapas final y costos esperados.
-8. Alcance exacto del ingles en MVP: solo UI base o contenido completo.
+8. ~~Alcance exacto del ingles en MVP.~~ **Resuelto: contenido completo.** UI, correos y contenido de producto, con traducciones por campo en base y fallback al espanol. `/en` esta publicado e indexado desde que el catalogo de mensajes quedo completo.

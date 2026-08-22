@@ -3,6 +3,22 @@ import { defaultLocale, isPublishedLocale, locales, publishedLocales } from "./c
 import { toIntlLocale, APP_CURRENCY, APP_TIME_ZONE } from "./intl-locale";
 import { LOCALIZE_PATH_ROUTES } from "./path";
 import { LOCALE_COOKIE, pathnames, routing } from "./routing";
+import { loadMessages } from "./messages";
+
+type MessageTree = { [key: string]: string | MessageTree };
+
+/** Aplana el catálogo a claves con punto, igual que en messages.test.ts. */
+function flatten(tree: MessageTree, prefix = ""): Record<string, string> {
+  const flat: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(tree)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "string") flat[path] = value;
+    else Object.assign(flat, flatten(value, path));
+  }
+
+  return flat;
+}
 
 describe("routing", () => {
   it("exposes both locales with Spanish as the default", () => {
@@ -131,9 +147,25 @@ describe("published locales", () => {
     }
   });
 
-  it("does not publish a language whose copy is not translated yet", () => {
-    // Este test se cae cuando se agregue "en" a publishedLocales, que es
-    // justamente el momento de revisar que el catálogo esté completo.
-    expect(isPublishedLocale("en")).toBe(false);
+  it("solo publica idiomas cuyo catálogo está completo", () => {
+    // Reemplaza al cable trampa que exigía que "en" no estuviera publicado.
+    // Ese test cumplió su función —se cayó al accionar el interruptor, que era
+    // el momento de revisar el catálogo— pero afirmaba una fecha, no una regla.
+    //
+    // La regla es esta: publicar un idioma exige que tenga todas las claves del
+    // idioma por defecto. Sirve igual para el tercer idioma que venga.
+    const esperadas = Object.keys(flatten(loadMessages(defaultLocale) as MessageTree));
+
+    for (const locale of publishedLocales) {
+      const suyas = new Set(Object.keys(flatten(loadMessages(locale) as MessageTree)));
+      const faltan = esperadas.filter((key) => !suyas.has(key));
+
+      expect(faltan, `${locale} publicado con claves sin traducir`).toEqual([]);
+    }
+  });
+
+  it("publica los dos idiomas del sitio", () => {
+    expect(isPublishedLocale("es")).toBe(true);
+    expect(isPublishedLocale("en")).toBe(true);
   });
 });

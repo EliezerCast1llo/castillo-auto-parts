@@ -167,29 +167,20 @@ test("the canonical of each language points at its own URL", async ({ page }) =>
   }
 });
 
-test("a language without its own copy is served but not offered to crawlers", async ({
-  page,
-  request,
-}) => {
-  // Mientras el copy en ingles no exista, /en/* renderiza texto en espanol bajo
-  // lang="en": indexarlo seria publicar contenido duplicado en el idioma
-  // equivocado. Sigue navegable y sigue emitiendo hreflang.
-  await page.goto("/en/catalog");
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-    "content",
-    /noindex/,
-  );
-
-  await page.goto("/es/catalog");
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /^index/);
+test("both languages are offered to search engines", async ({ page, request }) => {
+  // Este test decia lo contrario hasta que el ingles quedo completo: /en se
+  // servia con `noindex` para no publicar espanol bajo `lang="en"`. El
+  // interruptor es `publishedLocales`, y esto verifica que lo que promete
+  // llegue a la pagina y al sitemap.
+  for (const locale of ["es", "en"] as const) {
+    await page.goto(`/${locale}/catalog`);
+    await expect(page.locator('meta[name="robots"][content*="noindex"]')).toHaveCount(0);
+  }
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
-
-  expect(urls.length).toBeGreaterThan(0);
-  expect(urls.filter((url) => new URL(url).pathname.startsWith("/en"))).toEqual([]);
-  // Los alternates si listan el otro idioma: le dicen al buscador que existe.
-  expect(sitemap).toContain('hreflang="en"');
+  expect(sitemap).toContain("/es/catalog");
+  expect(sitemap).toContain("/en/catalog");
+  expect(sitemap).toContain("/en/help");
 });
 
 test("the chrome and the status messages speak the language of the page", async ({ page }) => {
