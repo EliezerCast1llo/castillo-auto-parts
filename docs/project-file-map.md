@@ -193,6 +193,15 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/lib/i18n/middleware-composition.ts` | Re-emite la respuesta de next-intl preservando los headers forwardeados (nonce de CSP). |
 | `src/lib/i18n/revalidate.ts` | `revalidatePath` para rutas bajo `[locale]`. |
 | `src/lib/i18n/action-locale.ts` | Idioma dentro de una server action, leido del `Referer`. |
+| `src/lib/i18n/config.ts` | Idiomas del sitio y cuales estan publicados; `publishedLocales` decide indexacion y sitemap. |
+| `src/lib/i18n/status.ts` | Traduce los codigos de `?estado=` agrupados por area; el texto se resuelve en servidor. |
+| `src/lib/i18n/path.ts` | `localizePath` para rutas cuya grafia no cambia, con la lista que un test verifica. |
+| `src/lib/i18n/metadata.ts` | Canonical y `hreflang` juntos: Next combina metadata en superficie. |
+| `src/lib/i18n/params.ts` | Angosta el segmento a `Locale` y llama a `setRequestLocale`. |
+| `src/lib/i18n/messages.test.ts` | Paridad de claves entre idiomas y ninguna sin traducir. |
+| `src/lib/i18n/hardcoded-copy.test.ts` | Guarda contra texto de interfaz escrito a mano: atributos y texto entre etiquetas. |
+| `src/lib/slug.ts` | Unica definicion del slug; de ella depende que `?category=Frenos` encuentre la fila `frenos`. |
+| `tests/e2e/fixtures/products.ts` | Que producto usa cada spec y que le hace al inventario; `fixtures.spec.ts` lo verifica. |
 | `src/lib/actions/*` | Server actions compartidas por componentes, fuera del arbol de rutas. |
 | `src/lib/cookie-consent.ts` | Helpers puros del aviso de cookies: parseo, serializacion y versionado. |
 | `src/lib/cookie-consent-server.ts` | Lectura server-side del consentimiento. |

@@ -3,28 +3,8 @@ import { locales } from "./config";
 import en from "./messages/en";
 import es from "./messages/es";
 import { loadMessages } from "./messages";
+import { IDENTICAL_BY_DESIGN } from "./identical-by-design";
 
-/**
- * Claves cuyo texto es legítimamente idéntico en ambos idiomas (nombres de
- * marca, siglas, préstamos que no se traducen). Todo lo demás que salga igual
- * es una traducción olvidada.
- *
- * La lista se escribe a mano a propósito: agregar una clave acá es afirmar que
- * se miró y que la coincidencia es correcta, no que el test molestaba.
- */
-const IDENTICAL_BY_DESIGN = new Set<string>([
-  // "Subtotal", "Email" y "Total" son la misma palabra en los dos idiomas.
-  "Cart.summary.subtotal",
-  "Checkout.summary.subtotal",
-  "Checkout.form.email",
-  // Nombre propio del país: se escribe igual en los dos idiomas.
-  "Footer.country",
-  "Orders.detail.total",
-  // Nombre de la marca: no se traduce en ningún idioma.
-  "Account.header.brandEyebrow",
-  // "SKU" es la misma sigla en los dos idiomas.
-  "Orders.card.sku",
-]);
 
 /** Palabras de 3 letras o menos coinciden por casualidad demasiado seguido. */
 const MIN_LENGTH_FOR_TRANSLATION_CHECK = 4;

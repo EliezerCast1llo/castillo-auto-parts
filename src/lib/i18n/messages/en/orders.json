@@ -94,5 +94,6 @@
     "part": "Part: {part}",
     "viewProducts": "View products",
     "compatible": "Fits: {vehicle}"
-  }
+  },
+  "supportMessage": "Hi, I need help with my order {orderNumber}."
 }

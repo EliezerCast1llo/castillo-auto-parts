@@ -60,7 +60,7 @@ export async function AccountOrderCard({ locale, order }: AccountOrderCardProps)
   const tracking = getOrderTrackingState(order);
   const productCount = getOrderProductCount(order);
   const hasMultipleProducts = order.items.length > 1 || productCount > 1;
-  const supportMessage = `Hola, necesito ayuda con mi pedido ${order.orderNumber}.`;
+  const supportMessage = t("supportMessage", { orderNumber: order.orderNumber });
 
   return (
     <article className="grid gap-4 rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)] lg:grid-cols-[230px_minmax(0,1fr)_190px] lg:gap-0 lg:p-0">

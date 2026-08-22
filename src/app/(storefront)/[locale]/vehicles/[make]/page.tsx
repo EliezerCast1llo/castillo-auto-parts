@@ -36,10 +36,13 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
   const locale = await resolveAndPublishRouteLocale(params);
   const make = await resolveMake(slug);
 
-  if (!make) return { title: "Marca no encontrada | Castillo Auto Parts" };
+  // Sin sufijo: el template del layout ya agrega "| Castillo Auto Parts", y
+  // repetirlo acá lo duplicaba.
+  const tMeta = await getTranslations({ locale, namespace: "Vehicles" });
+  if (!make) return { title: tMeta("notFoundTitle") };
 
   return {
-    title: `Repuestos para ${make} | Castillo Auto Parts`,
+    title: tMeta("metadataTitle", { make }),
     description: `Explora repuestos automotrices para vehículos ${make}. Filtra por categoría y revisa los vehículos compatibles.`,
     alternates: localizedAlternates(
       { pathname: "/vehicles/[make]", params: { make: vehicleMakeSlug(make) } },
