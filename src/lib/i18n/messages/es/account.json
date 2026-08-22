@@ -37,7 +37,8 @@
     "emailHelper": "El correo está asociado a tu cuenta.",
     "phoneLabel": "Teléfono",
     "phoneHelper": "Este es tu número de contacto para pedidos y notificaciones.",
-    "save": "Guardar teléfono"
+    "save": "Guardar teléfono",
+    "nameLabel": "Nombre completo"
   },
   "password": {
     "description": "Cambia tu contraseña para mantener protegida tu cuenta.",
@@ -82,5 +83,6 @@
     "edit": "Editar",
     "verifyBeforeSaving": "Verifica que los datos sean correctos antes de guardar.",
     "selectCity": "Selecciona municipio"
-  }
+  },
+  "breadcrumbAriaLabel": "Ruta de la cuenta"
 }

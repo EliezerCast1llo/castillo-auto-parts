@@ -7,6 +7,8 @@ import { formatStockStatus } from "@/lib/stock-status";
 type ProductFiltersProps = {
   activeFilterCount: number;
   /** Textos ya resueltos: ver la nota de `SortDropdown`. */
+  availabilityLegend: string;
+  brandLegend: string;
   categoryLegend: string;
   searchLegend: string;
   searchPlaceholder: string;
@@ -21,6 +23,8 @@ type ProductFiltersProps = {
  */
 export function ProductFilters({
   activeFilterCount,
+  availabilityLegend,
+  brandLegend,
   categoryLegend,
   filters,
   options,
@@ -56,7 +60,7 @@ export function ProductFilters({
         ))}
       </FilterGroup>
 
-      <FilterGroup legend="Marca">
+      <FilterGroup legend={brandLegend}>
         {options.brands.map((brand) => (
           <FilterOption
             key={brand}
@@ -68,7 +72,7 @@ export function ProductFilters({
         ))}
       </FilterGroup>
 
-      <FilterGroup legend="Disponibilidad">
+      <FilterGroup legend={availabilityLegend}>
         {options.stockStatuses.map((status) => (
           <FilterOption
             key={status}

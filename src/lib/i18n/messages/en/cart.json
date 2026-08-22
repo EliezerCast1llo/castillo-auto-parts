@@ -57,5 +57,8 @@
   },
   "notice": {
     "dismiss": "Dismiss notice"
+  },
+  "quantityControl": {
+    "quantityAriaLabel": "Quantity"
   }
 }

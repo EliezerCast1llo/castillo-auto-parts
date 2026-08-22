@@ -61,10 +61,10 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
 
         <VehicleSelectField
           index="1"
-          label="Marca"
+          label={t("make")}
           name="vehicleMake"
           onChange={selection.handleMakeChange}
-          placeholder="Selecciona marca"
+          placeholder={t("selectMake")}
           value={selection.make}
         >
           {filterOptions.vehicleMakes.map((make) => (
@@ -76,10 +76,10 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         <VehicleSelectField
           disabled={!selection.make}
           index="2"
-          label="Modelo"
+          label={t("model")}
           name="vehicleModel"
           onChange={selection.handleModelChange}
-          placeholder={selection.make ? "Selecciona modelo" : "Elige la marca primero"}
+          placeholder={selection.make ? t("selectModel") : t("chooseMakeFirst")}
           value={selection.model}
         >
           {selection.models.map((model) => (
@@ -91,7 +91,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         <VehicleSelectField
           disabled={!selection.model}
           index="3"
-          label="Año"
+          label={t("year")}
           name="vehicleYear"
           onChange={selection.handleYearChange}
           placeholder={selection.model ? t("selectYear") : t("chooseModelFirst")}

@@ -48,5 +48,10 @@
   "railsEmptyTitle": "No products published yet",
   "railsUnavailableDescription": "We could not load the catalog right now. Try again in a few minutes.",
   "railsEmptyDescription": "No parts published in this category yet.",
-  "searchLegend": "Search for a part"
+  "searchLegend": "Search for a part",
+  "filters": "Filters",
+  "closeFilters": "Close filters",
+  "brandLegend": "Brand",
+  "availabilityLegend": "Availability",
+  "breadcrumbAriaLabel": "Breadcrumb"
 }

@@ -130,6 +130,8 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
       <VehicleSearchPanel filters={filters} options={filterOptions} />
       <ProductFilters
         activeFilterCount={activeFilterCount}
+        availabilityLegend={t("availabilityLegend")}
+        brandLegend={t("brandLegend")}
         categoryLegend={t("categoryLegend")}
         searchLegend={t("searchLegend")}
         searchPlaceholder={t("searchPlaceholder")}
@@ -145,7 +147,11 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Botón de filtros mobile + drawer */}
-        <FilterDrawer activeFilterCount={activeFilterCount}>
+        <FilterDrawer
+            activeFilterCount={activeFilterCount}
+            closeLabel={t("closeFilters")}
+            filtersLabel={t("filters")}
+          >
           {filterContent}
         </FilterDrawer>
 

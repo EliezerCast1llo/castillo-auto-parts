@@ -48,5 +48,10 @@
   "railsEmptyTitle": "Aún no hay productos publicados",
   "railsUnavailableDescription": "No pudimos cargar el catálogo en este momento. Intenta nuevamente en unos minutos.",
   "railsEmptyDescription": "Todavía no hay repuestos publicados en esta categoría.",
-  "searchLegend": "Buscar repuesto"
+  "searchLegend": "Buscar repuesto",
+  "filters": "Filtros",
+  "closeFilters": "Cerrar filtros",
+  "brandLegend": "Marca",
+  "availabilityLegend": "Disponibilidad",
+  "breadcrumbAriaLabel": "Ruta"
 }

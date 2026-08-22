@@ -57,5 +57,8 @@
   },
   "notice": {
     "dismiss": "Cerrar aviso"
+  },
+  "quantityControl": {
+    "quantityAriaLabel": "Cantidad"
   }
 }

@@ -11,5 +11,8 @@
   "heroSignal": "Search by vehicle",
   "heroImageAlt": "Modern sedan for finding compatible parts",
   "selectYear": "Select a year",
-  "chooseModelFirst": "Choose the model first"
+  "chooseModelFirst": "Choose the model first",
+  "selectMake": "Select a make",
+  "selectModel": "Select a model",
+  "chooseMakeFirst": "Choose the make first"
 }

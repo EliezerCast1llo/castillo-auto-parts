@@ -4,11 +4,14 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type FilterDrawerProps = {
+  /** Textos ya resueltos: `Catalog` no viaja al navegador. */
+  closeLabel: string;
+  filtersLabel: string;
  activeFilterCount: number;
  children: React.ReactNode;
 };
 
-export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps) {
+export function FilterDrawer({ activeFilterCount, children, closeLabel, filtersLabel }: FilterDrawerProps) {
  const [open, setOpen] = useState(false);
  const triggerRef = useRef<HTMLButtonElement>(null);
  const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -75,7 +78,7 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
  inert={!open}
  role="dialog"
  aria-modal
- aria-label="Filtros"
+ aria-label={filtersLabel}
  >
  {/* Handle */}
  <div className="flex items-center justify-between border-b border-ca-border px-5 py-4">
@@ -89,7 +92,7 @@ export function FilterDrawer({ activeFilterCount, children }: FilterDrawerProps)
  </p>
  <button
  type="button"
- aria-label="Cerrar filtros"
+ aria-label={closeLabel}
  onClick={() => setOpen(false)}
  className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-ca-background"
  ref={closeButtonRef}

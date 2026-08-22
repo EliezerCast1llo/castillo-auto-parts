@@ -11,5 +11,8 @@
   "heroSignal": "Busca por vehículo",
   "heroImageAlt": "Vehículo sedán moderno para búsqueda de repuestos compatibles",
   "selectYear": "Selecciona año",
-  "chooseModelFirst": "Elige el modelo primero"
+  "chooseModelFirst": "Elige el modelo primero",
+  "selectMake": "Selecciona marca",
+  "selectModel": "Selecciona modelo",
+  "chooseMakeFirst": "Elige la marca primero"
 }

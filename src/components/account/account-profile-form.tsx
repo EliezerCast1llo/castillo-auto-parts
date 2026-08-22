@@ -37,7 +37,7 @@ export async function AccountProfileForm({
         <div className="grid gap-4 md:grid-cols-2">
           <ReadOnlyField
             helper={t("nameHelper")}
-            label="Nombre completo"
+            label={t("nameLabel")}
             value={name || "Nombre no disponible"}
           />
           <ReadOnlyField
