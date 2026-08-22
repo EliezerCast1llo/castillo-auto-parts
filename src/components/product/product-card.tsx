@@ -29,7 +29,7 @@ export async function ProductCard({
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-white transition-colors hover:border-ca-navy-950/30">
       <Link
-        aria-label={`Ver detalles del repuesto ${product.name}`}
+        aria-label={t("viewDetailsFor", { name: product.name })}
         className="relative flex h-40 items-center justify-center border-b border-ca-border bg-white p-3"
         href={href}
       >
@@ -71,7 +71,7 @@ export async function ProductCard({
         </p>
 
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          <StockBadge status={product.stockStatus} />
+          <StockBadge locale={locale} status={product.stockStatus} />
           <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
         </div>
 

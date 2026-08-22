@@ -147,7 +147,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
               actionLabel={t("viewFullCatalog")}
               description={`Todavía no hay repuestos publicados para ${make}. Escríbenos y te ayudamos a ubicar el repuesto correcto.`}
               showWhatsApp
-              title={`Sin repuestos para ${make} por ahora`}
+              title={t("noPartsFor", { make })}
             />
           )}
         </section>

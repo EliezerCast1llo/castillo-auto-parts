@@ -18,5 +18,7 @@
   "home": "Inicio",
   "catalog": "Catálogo",
   "backToCatalog": "Volver al catálogo",
-  "compatibleVehicle": "Vehículo compatible: "
+  "compatibleVehicle": "Vehículo compatible: ",
+  "viewDetailsFor": "Ver detalles del repuesto {name}",
+  "viewImage": "Ver imagen {index}: {alt}"
 }

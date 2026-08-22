@@ -2,12 +2,14 @@ import { Link } from "@/lib/i18n/navigation";
 import { Search } from "lucide-react";
 import { categoryLabelOf } from "@/data/catalog-filters";
 import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filters";
-import { formatStockStatus } from "@/lib/stock-status";
+import type { CatalogProduct } from "@/data/products";
 
 type ProductFiltersProps = {
   activeFilterCount: number;
   /** Textos ya resueltos: ver la nota de `SortDropdown`. */
   availabilityLegend: string;
+  /** Etiquetas de disponibilidad ya traducidas. */
+  stockLabels: Record<CatalogProduct["stockStatus"], string>;
   brandLegend: string;
   categoryLegend: string;
   searchLegend: string;
@@ -25,6 +27,7 @@ export function ProductFilters({
   activeFilterCount,
   availabilityLegend,
   brandLegend,
+  stockLabels,
   categoryLegend,
   filters,
   options,
@@ -77,7 +80,7 @@ export function ProductFilters({
           <FilterOption
             key={status}
             defaultChecked={filters.stockStatuses.includes(status)}
-            label={formatStockStatus(status)}
+            label={stockLabels[status]}
             name="stock"
             value={status}
           />

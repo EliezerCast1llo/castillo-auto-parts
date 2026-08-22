@@ -102,6 +102,11 @@ export default function DesignPreviewPage() {
                   brandLegend="Marca"
                   categoryLegend="Categoría"
                   searchLegend="Buscar repuesto"
+                  stockLabels={{
+                    IN_STOCK: "Disponible",
+                    LOW_STOCK: "Últimas unidades",
+                    OUT_OF_STOCK: "No disponible",
+                  }}
                   searchPlaceholder="Nombre, SKU o número de parte"
                   activeFilterCount={countActiveCatalogFilters(sampleFilters)}
                   filters={sampleFilters}
@@ -111,7 +116,11 @@ export default function DesignPreviewPage() {
             </aside>
             <section className="space-y-4">
               <CatalogToolbar />
-              <CatalogActiveFilters filters={sampleFilters} options={filterOptions} />
+              <CatalogActiveFilters
+                filters={sampleFilters}
+                locale={defaultLocale}
+                options={filterOptions}
+              />
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {mockProducts.slice(0, 6).map((product) => (
                   <ProductCard key={product.sku} locale={defaultLocale} product={product} />
@@ -231,9 +240,9 @@ function ComponentFoundation() {
             Acción secundaria
           </button>
           <div className="flex flex-wrap gap-2">
-            <StockBadge status="IN_STOCK" />
-            <StockBadge status="LOW_STOCK" />
-            <StockBadge status="OUT_OF_STOCK" />
+            <StockBadge locale={defaultLocale} status="IN_STOCK" />
+            <StockBadge locale={defaultLocale} status="LOW_STOCK" />
+            <StockBadge locale={defaultLocale} status="OUT_OF_STOCK" />
           </div>
         </div>
       </div>
@@ -308,7 +317,7 @@ function ProductDetailPreview() {
             </p>
             <p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">SKU {sampleProduct.sku}</p>
           </div>
-          <StockBadge status={sampleProduct.stockStatus} />
+          <StockBadge locale={defaultLocale} status={sampleProduct.stockStatus} />
         </div>
 
         <div className="mt-5 rounded-md bg-background p-4">
@@ -355,7 +364,7 @@ function CartPreview() {
                 <p className="mt-2 text-sm text-muted-foreground">{product.compatibility}</p>
               </div>
               <div className="grid gap-3">
-                <StockBadge status={product.stockStatus} />
+                <StockBadge locale={defaultLocale} status={product.stockStatus} />
                 <QuantityStepper defaultValue={1} max={product.stockQuantity} />
                 <p className="text-lg font-bold text-primary">{formatCurrency(product.priceCents)}</p>
               </div>

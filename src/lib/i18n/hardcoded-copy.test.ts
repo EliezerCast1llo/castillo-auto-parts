@@ -14,8 +14,69 @@ import { describe, expect, it } from "vitest";
  * Este mira **atributos de interfaz** —los que siempre llevan copy— en vez de
  * adivinar por caracteres. Es más angosto y más confiable: no detecta texto
  * suelto en JSX, pero lo que promete lo cumple.
+ *
+ * Cubre las tres formas en que el copy llega a un atributo, y las tres están
+ * verificadas en rojo abajo:
+ *
+ * 1. `label="Marca"` — plana.
+ * 2. `placeholder={cond ? "Uno" : "Otro"}` — dentro de una expresión. Dos de
+ *    las seis cadenas del bug que originó este test tenían esta forma, así que
+ *    un detector que solo viera la primera habría dejado pasar justo lo que
+ *    motivó su existencia.
+ * 3. ``label={`Productos de ${x}`}`` — template literal.
  */
-const UI_ATTRIBUTES = /(?:aria-label|placeholder|title|label|legend|alt|actionLabel)="([^"]{3,})"/g;
+const UI_ATTRIBUTES = /(?:aria-label|placeholder|title|label|legend|alt|actionLabel)=/g;
+
+/** Literales de texto: comillas dobles o backticks. */
+const STRING_LITERALS = /"([^"]{3,})"|`([^`]{3,})`/g;
+
+/**
+ * Extrae los valores de los atributos de interfaz de un archivo.
+ *
+ * Se hace en dos pasos y no con un solo regex a propósito. Con uno solo, de
+ * `{direction === "left" ? "Anterior" : "Siguiente"}` se captura únicamente el
+ * primer literal —`"left"`, que no es copy— y las dos cadenas visibles pasan
+ * limpias. Ese fue el hueco real: dos de las seis cadenas del bug que originó
+ * este test tenían exactamente esa forma.
+ *
+ * Ahora se delimita el valor del atributo (plano o entre llaves, respetando
+ * anidamiento) y después se leen **todos** los literales que haya adentro.
+ */
+function extractAttributeCopy(source: string): string[] {
+  const values: string[] = [];
+
+  for (const match of source.matchAll(UI_ATTRIBUTES)) {
+    const start = match.index! + match[0].length;
+    const char = source[start];
+
+    if (char === '"') {
+      const end = source.indexOf('"', start + 1);
+      if (end > start) values.push(source.slice(start + 1, end));
+      continue;
+    }
+
+    if (char !== "{") continue;
+
+    // Recorre hasta cerrar la llave, contando anidamiento: un ternario puede
+    // contener objetos o template literals con sus propias llaves.
+    let depth = 0;
+    let end = start;
+    for (; end < source.length; end += 1) {
+      if (source[end] === "{") depth += 1;
+      else if (source[end] === "}") {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+
+    const expression = source.slice(start, end + 1);
+    for (const literal of expression.matchAll(STRING_LITERALS)) {
+      values.push(literal[1] ?? literal[2]!);
+    }
+  }
+
+  return values;
+}
 
 /**
  * Archivos que no se traducen, con su motivo. Cada uno está documentado en su
@@ -31,13 +92,35 @@ const EXCLUDED = [
   "components/account/add-address-form.tsx",
 ];
 
-/** Un valor que parece copy y no un identificador, clase CSS o slug. */
-function looksLikeCopy(value: string) {
+/**
+ * Un valor que parece copy y no un identificador, clase CSS o slug.
+ *
+ * La mayúscula inicial no alcanza como criterio: "cantidad de unidades" es copy
+ * y empieza en minúscula. Un espacio interior lo delata, porque los
+ * identificadores no los llevan.
+ */
+function looksLikeCopy(raw: string) {
+  // Las interpolaciones de un template se vacían antes de juzgar: lo que se
+  // evalúa es el texto fijo, no el nombre de la variable que se inserta.
+  const value = raw.replace(/\$\{[^}]*\}/g, "").trim();
+
+  if (value.length < 3) return false;
   if (/^[a-z][a-zA-Z0-9-]*$/.test(value)) return false;
   if (/^[A-Z_]+$/.test(value)) return false;
-  if (/[{}<>#]|^\d+$/.test(value)) return false;
+  if (/[<>#]|^\d+$/.test(value)) return false;
 
-  return /^[A-ZÁÉÍÓÚ¿¡]/.test(value);
+  // Listas de clases de Tailwind: varias palabras en minúscula donde al menos
+  // una trae guion, dos puntos, barra o corchete. Ese detalle es lo que las
+  // separa de una frase en minúscula como "cantidad de unidades", que sí es
+  // copy y antes quedaba excluida junto con ellas.
+  const tokens = value.split(/\s+/);
+  const looksLikeClassList =
+    tokens.length > 1 &&
+    tokens.every((token) => /^[a-z0-9:\/\[\]().,%_-]+$/.test(token)) &&
+    tokens.some((token) => /[-:\/\[]/.test(token));
+  if (looksLikeClassList) return false;
+
+  return /^[A-ZÁÉÍÓÚ¿¡]/.test(value) || /\s/.test(value);
 }
 
 function collectFiles(dir: string): string[] {
@@ -64,8 +147,7 @@ describe("copy sin traducir", () => {
       .flatMap((file) => {
         const source = fs.readFileSync(file, "utf8");
 
-        return [...source.matchAll(UI_ATTRIBUTES)]
-          .map((match) => match[1]!)
+        return extractAttributeCopy(source)
           .filter(looksLikeCopy)
           .map((value) => `${file}: ${JSON.stringify(value)}`);
       });

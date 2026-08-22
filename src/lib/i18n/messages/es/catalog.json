@@ -53,5 +53,17 @@
   "closeFilters": "Cerrar filtros",
   "brandLegend": "Marca",
   "availabilityLegend": "Disponibilidad",
-  "breadcrumbAriaLabel": "Ruta"
+  "breadcrumbAriaLabel": "Ruta",
+  "carouselPrevious": "Anterior",
+  "carouselNext": "Siguiente",
+  "railLabel": "Productos de {category}",
+  "noPartsFor": "Sin repuestos para {make} por ahora",
+  "pageNumber": "Página {page}",
+  "removeFilter": "Quitar filtro {filter}",
+  "stockStatus": {
+    "IN_STOCK": "Disponible",
+    "LOW_STOCK": "Últimas unidades",
+    "OUT_OF_STOCK": "No disponible"
+  },
+  "stockAriaLabel": "Disponibilidad del repuesto: {status}"
 }

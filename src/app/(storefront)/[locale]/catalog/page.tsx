@@ -31,6 +31,7 @@ import { SEARCH_SUGGESTIONS } from "@/data/search-suggestions";
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { localizePath } from "@/lib/i18n/path";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { stockStatuses, type StockStatus } from "@/lib/stock-status";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -123,6 +124,9 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
   const { products: filteredProducts, totalCount, totalPages, currentPage, status } = catalogResult;
   const activeFilterCount = countActiveCatalogFilters(filters);
   const filterKey = JSON.stringify(filters);
+  const stockLabels = Object.fromEntries(
+    stockStatuses.map((status) => [status, t(`stockStatus.${status}`)]),
+  ) as Record<StockStatus, string>;
 
   const filterContent = (
     <CatalogFilterForm key={filterKey}>
@@ -134,6 +138,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
         brandLegend={t("brandLegend")}
         categoryLegend={t("categoryLegend")}
         searchLegend={t("searchLegend")}
+        stockLabels={stockLabels}
         searchPlaceholder={t("searchPlaceholder")}
         filters={filters}
         options={filterOptions}
@@ -195,6 +200,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
 
             <CatalogActiveFilters
               filters={filters}
+              locale={locale}
               options={filterOptions}
               hideVehicleChips={Boolean(vehicleFromCookie)}
               sort={sort}

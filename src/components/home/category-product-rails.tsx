@@ -40,6 +40,7 @@ export async function CategoryProductRails({
   locale: Locale;
   options: CatalogFilterOptions;
 }) {
+  const t = await getTranslations({ locale, namespace: "Catalog" });
   const categories = [...options.categories]
     .sort(
       (a, b) =>
@@ -89,7 +90,12 @@ export async function CategoryProductRails({
             </Link>
           </div>
 
-          <ScrollCarousel autoPlay label={`Productos de ${rail.label}`}>
+          <ScrollCarousel
+            autoPlay
+            label={t("railLabel", { category: rail.label })}
+            nextLabel={t("carouselNext")}
+            previousLabel={t("carouselPrevious")}
+          >
             {rail.products.map((product) => (
               <div
                 className="w-[240px] shrink-0 snap-start sm:w-[264px] lg:w-[calc((100%-3rem)/4)]"

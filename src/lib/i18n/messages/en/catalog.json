@@ -53,5 +53,17 @@
   "closeFilters": "Close filters",
   "brandLegend": "Brand",
   "availabilityLegend": "Availability",
-  "breadcrumbAriaLabel": "Breadcrumb"
+  "breadcrumbAriaLabel": "Breadcrumb",
+  "carouselPrevious": "Previous",
+  "carouselNext": "Next",
+  "railLabel": "{category} products",
+  "noPartsFor": "No parts for {make} yet",
+  "pageNumber": "Page {page}",
+  "removeFilter": "Remove filter {filter}",
+  "stockStatus": {
+    "IN_STOCK": "In stock",
+    "LOW_STOCK": "Last units",
+    "OUT_OF_STOCK": "Out of stock"
+  },
+  "stockAriaLabel": "Part availability: {status}"
 }

@@ -18,5 +18,7 @@
   "home": "Home",
   "catalog": "Catalog",
   "backToCatalog": "Back to the catalog",
-  "compatibleVehicle": "Fits vehicle: "
+  "compatibleVehicle": "Fits vehicle: ",
+  "viewDetailsFor": "View details for {name}",
+  "viewImage": "View image {index}: {alt}"
 }

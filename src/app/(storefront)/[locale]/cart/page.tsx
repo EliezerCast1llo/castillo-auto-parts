@@ -195,7 +195,7 @@ function CartLineItem({
                 {line.product.name}
               </Link>
             </div>
-            <StockBadge status={line.product.stockStatus} />
+            <StockBadge locale={locale} status={line.product.stockStatus} />
           </div>
           <p className="mt-1.5 text-xs text-ca-text-secondary">
             {line.product.brand} · SKU {line.product.sku}

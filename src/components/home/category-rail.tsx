@@ -34,7 +34,12 @@ export async function CategoryQuickLinks({
       </h2>
 
       <div className="mt-3">
-        <ScrollCarousel autoPlay label={t("carouselLabel")}>
+        <ScrollCarousel
+          autoPlay
+          label={t("carouselLabel")}
+          nextLabel={t("carouselNext")}
+          previousLabel={t("carouselPrevious")}
+        >
           {options.categories.map((slug) => {
             const category = categoryLabelOf(options, slug);
 

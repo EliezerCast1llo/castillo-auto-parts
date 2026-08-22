@@ -113,7 +113,7 @@ export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProp
             {/* Cart — gold accent button */}
             <Link
               className={cn(buttonVariants({ variant: "primary" }), "relative w-10 px-0")}
-              aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
+              aria-label={tNav("viewCart", { count: cartItemCount })}
               href="/cart"
             >
               <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />
@@ -207,7 +207,7 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
           {/* Carrito */}
           <Link
             className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/[0.16]"
-            aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
+            aria-label={tNav("viewCart", { count: cartItemCount })}
             href="/cart"
           >
             <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />

@@ -101,7 +101,7 @@ export async function CatalogPagination({
             key={item}
             href={buildHref(item)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-ca-control border border-ca-border bg-white text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-background"
-            aria-label={`Página ${item}`}
+            aria-label={t("pageNumber", { page: item })}
           >
             {item}
           </Link>

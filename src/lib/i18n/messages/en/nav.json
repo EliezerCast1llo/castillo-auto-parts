@@ -13,5 +13,8 @@
   "searchPlaceholderShort": "Search by part, SKU or part number…",
   "search": "Search",
   "seeAllResults": "See all results for “{query}” →",
-  "advisory": "Advice"
+  "advisory": "Advice",
+  "myVehicle": "My vehicle: {vehicle}",
+  "viewPartsForVehicle": "View parts for your {vehicle}",
+  "viewCart": "View cart, {count, plural, one {# product} other {# products}}"
 }
