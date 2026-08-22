@@ -13,6 +13,7 @@ import Nav from "./nav.json";
 import Orders from "./orders.json";
 import Product from "./product.json";
 import Status from "./status.json";
+import Vehicles from "./vehicles.json";
 import VehicleSearch from "./vehicle-search.json";
 
 /**
@@ -39,6 +40,7 @@ const messages = {
   Orders,
   Product,
   Status,
+  Vehicles,
   VehicleSearch,
 } as const;
 

@@ -65,5 +65,15 @@
     "LOW_STOCK": "Últimas unidades",
     "OUT_OF_STOCK": "No disponible"
   },
-  "stockAriaLabel": "Disponibilidad del repuesto: {status}"
+  "stockAriaLabel": "Disponibilidad del repuesto: {status}",
+  "unavailableTitle": "Catálogo temporalmente no disponible",
+  "unavailableRetry": "Intenta nuevamente en unos minutos.",
+  "viewParts": "Ver repuestos",
+  "removeFilter2": "Quitar filtro",
+  "sort": "Ordenar",
+  "next": "Siguiente ›",
+  "shopByCategory": "Comprar por categoría",
+  "clearAll": "Limpiar todo",
+  "activeFiltersHint": "Quita un filtro específico o limpia todo para ampliar resultados.",
+  "applyFilters": "Aplicar filtros"
 }

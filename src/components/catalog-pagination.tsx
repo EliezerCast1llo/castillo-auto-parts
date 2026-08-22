@@ -115,11 +115,11 @@ export async function CatalogPagination({
           className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           aria-label={t("nextPage")}
         >
-          Siguiente ›
+          {t("next")}
         </Link>
       ) : (
         <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
-          Siguiente ›
+          {t("next")}
         </span>
       )}
     </nav>

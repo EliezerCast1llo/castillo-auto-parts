@@ -51,10 +51,10 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
           </span>
           <div className="min-w-0">
             <p className="font-display text-[0.95rem] font-extrabold leading-5 text-ca-navy-950">
-              Encuentra repuestos para tu vehículo
+              {t("heroTitle")}
             </p>
             <p className="mt-1 text-xs leading-5 text-ca-text-secondary">
-              Selecciona los datos de tu vehículo para encontrar opciones compatibles.
+              {t("heroDescription")}
             </p>
           </div>
         </div>

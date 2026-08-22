@@ -99,12 +99,15 @@ const EXCLUDED = [
  * y empieza en minúscula. Un espacio interior lo delata, porque los
  * identificadores no los llevan.
  */
+const BRAND_TEXT = new Set(["AUTO PARTS", "CASTILLO", "Castillo Auto Parts"]);
+
 function looksLikeCopy(raw: string) {
   // Las interpolaciones de un template se vacían antes de juzgar: lo que se
   // evalúa es el texto fijo, no el nombre de la variable que se inserta.
   const value = raw.replace(/\$\{[^}]*\}/g, "").trim();
 
   if (value.length < 3) return false;
+  if (BRAND_TEXT.has(value)) return false;
   if (/^[a-z][a-zA-Z0-9-]*$/.test(value)) return false;
   if (/^[A-Z_]+$/.test(value)) return false;
   if (/[<>#]|^\d+$/.test(value)) return false;
@@ -123,6 +126,43 @@ function looksLikeCopy(raw: string) {
   return /^[A-ZÁÉÍÓÚ¿¡]/.test(value) || /\s/.test(value);
 }
 
+/**
+ * Texto suelto entre etiquetas: `<p>Filtrar por modelo</p>`.
+ *
+ * Es la otra mitad del problema, y la que faltaba. Los atributos se detectaban
+ * y el texto visible de al lado no, así que varios archivos quedaron con el
+ * `aria-label` traducido y su etiqueta en español — incluida la landing de
+ * vehículo casi entera.
+ *
+ * La línea sola no alcanza para distinguir copy de código: `ArrowLeft,` y
+ * `locale: Locale;` también son líneas de una palabra. Lo que lo decide es el
+ * **contexto**: la línea anterior cierra una etiqueta de apertura y la
+ * siguiente abre una de cierre. Eso es JSX y no puede ser otra cosa.
+ */
+function extractJsxText(source: string): string[] {
+  const lines = source.split("\n");
+  const values: string[] = [];
+
+  lines.forEach((line, index) => {
+    const text = line.trim();
+    if (text.length < 4) return;
+    // Nada de sintaxis: llaves, etiquetas, comillas o terminadores de TS.
+    if (/[<>{}"`;,=]/.test(text)) return;
+    if (!/^[A-Za-zÁÉÍÓÚÑáéíóúñ¿¡]/.test(text)) return;
+
+    const previous = lines[index - 1]?.trim() ?? "";
+    const next = lines[index + 1]?.trim() ?? "";
+
+    // Entre el cierre de una etiqueta de apertura y una de cierre.
+    if (!/>$/.test(previous)) return;
+    if (!/^<\//.test(next)) return;
+
+    values.push(text);
+  });
+
+  return values;
+}
+
 function collectFiles(dir: string): string[] {
   const out: string[] = [];
 
@@ -137,7 +177,7 @@ function collectFiles(dir: string): string[] {
 }
 
 describe("copy sin traducir", () => {
-  it("ningún atributo de interfaz del storefront lleva texto escrito a mano", () => {
+  it("ningún texto de interfaz del storefront está escrito a mano", () => {
     const roots = ["src/app/(storefront)", "src/components"];
     const files = roots.flatMap(collectFiles);
     const excluded = new Set(EXCLUDED.map((f) => path.join("src", f)));
@@ -147,7 +187,7 @@ describe("copy sin traducir", () => {
       .flatMap((file) => {
         const source = fs.readFileSync(file, "utf8");
 
-        return extractAttributeCopy(source)
+        return [...extractAttributeCopy(source), ...extractJsxText(source)]
           .filter(looksLikeCopy)
           .map((value) => `${file}: ${JSON.stringify(value)}`);
       });

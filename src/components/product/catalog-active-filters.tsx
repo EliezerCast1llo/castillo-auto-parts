@@ -57,14 +57,14 @@ export async function CatalogActiveFilters({
         <div>
           <p className="text-sm font-black text-ca-navy-950">Filtros activos</p>
           <p className="mt-1 text-xs font-medium text-ca-text-secondary">
-            Quita un filtro específico o limpia todo para ampliar resultados.
+            {t("activeFiltersHint")}
           </p>
         </div>
         <Link
           className="inline-flex h-9 items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
           href={sort === "relevance" ? "/catalog" : { pathname: "/catalog", query: { sort } }}
         >
-          Limpiar todo
+          {t("clearAll")}
         </Link>
       </div>
 

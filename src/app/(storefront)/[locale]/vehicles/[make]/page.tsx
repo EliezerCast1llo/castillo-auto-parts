@@ -50,7 +50,8 @@ export async function generateMetadata({ params }: VehicleMakePageProps): Promis
 
 export default async function VehicleMakePage({ params, searchParams }: VehicleMakePageProps) {
   const locale = await resolveAndPublishRouteLocale(params);
-  const t = await getTranslations({ locale, namespace: "Catalog" });
+  const tCatalog = await getTranslations({ locale, namespace: "Catalog" });
+  const tVehicles = await getTranslations({ locale, namespace: "Vehicles" });
   const { make: slug } = await params;
   const make = await resolveMake(slug);
 
@@ -73,15 +74,15 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <nav
-          aria-label={t("breadcrumbAriaLabel")}
+          aria-label={tCatalog("breadcrumbAriaLabel")}
           className="flex flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
         >
           <Link className="transition hover:text-ca-navy-950" href="/">
-            Inicio
+            {tVehicles("home")}
           </Link>
           <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
           <Link className="transition hover:text-ca-navy-950" href="/catalog">
-            Catálogo
+            {tVehicles("catalogLink")}
           </Link>
           <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
           <span className="text-ca-navy-950">{make}</span>
@@ -95,14 +96,13 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
               </span>
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
-                  Repuestos por vehículo
+                  {tVehicles("eyebrow")}
                 </p>
                 <h1 className="mt-1 text-2xl font-black leading-tight text-ca-navy-950 sm:text-3xl">
-                  Repuestos para {make}
+                  {tVehicles("title", { make })}
                 </h1>
                 <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
-                  {totalCount} {totalCount === 1 ? "repuesto compatible" : "repuestos compatibles"} con
-                  vehículos {make}. Precio con IVA y disponibilidad visible.
+                  {tVehicles("summary", { count: totalCount, make })}
                 </p>
               </div>
             </div>
@@ -111,7 +111,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
               href={{ pathname: "/catalog", query: { vehicleMake: make } }}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Filtrar por modelo y año
+              {tVehicles("filterByModel")}
             </Link>
           </div>
         </section>
@@ -121,10 +121,10 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
             <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-ca-soft">
               <p className="text-sm font-black uppercase tracking-widest text-red-500">No disponible</p>
               <h2 className="mt-1 text-xl font-black text-ca-navy-950">
-                Catálogo temporalmente no disponible
+                {tCatalog("unavailableTitle")}
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">
-                Intenta nuevamente en unos minutos.
+                {tCatalog("unavailableRetry")}
               </p>
             </div>
           ) : products.length > 0 ? (
@@ -144,10 +144,10 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
           ) : (
             <EmptyState
               actionHref="/catalog"
-              actionLabel={t("viewFullCatalog")}
+              actionLabel={tCatalog("viewFullCatalog")}
               description={`Todavía no hay repuestos publicados para ${make}. Escríbenos y te ayudamos a ubicar el repuesto correcto.`}
               showWhatsApp
-              title={t("noPartsFor", { make })}
+              title={tCatalog("noPartsFor", { make })}
             />
           )}
         </section>

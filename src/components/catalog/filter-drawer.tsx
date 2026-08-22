@@ -4,6 +4,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type FilterDrawerProps = {
+  viewPartsLabel: string;
   /** Textos ya resueltos: `Catalog` no viaja al navegador. */
   closeLabel: string;
   filtersLabel: string;
@@ -11,7 +12,7 @@ type FilterDrawerProps = {
  children: React.ReactNode;
 };
 
-export function FilterDrawer({ activeFilterCount, children, closeLabel, filtersLabel }: FilterDrawerProps) {
+export function FilterDrawer({ viewPartsLabel, activeFilterCount, children, closeLabel, filtersLabel }: FilterDrawerProps) {
  const [open, setOpen] = useState(false);
  const triggerRef = useRef<HTMLButtonElement>(null);
  const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -113,7 +114,7 @@ export function FilterDrawer({ activeFilterCount, children, closeLabel, filtersL
  onClick={() => setOpen(false)}
  className="inline-flex h-12 w-full items-center justify-center rounded-ca-control bg-ca-navy-950 text-sm font-black text-white"
  >
- Ver repuestos
+ {viewPartsLabel}
  </button>
  </div>
  </div>

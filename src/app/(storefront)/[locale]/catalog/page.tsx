@@ -134,6 +134,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
       <VehicleSearchPanel filters={filters} options={filterOptions} />
       <ProductFilters
         activeFilterCount={activeFilterCount}
+        applyFiltersLabel={t("applyFilters")}
         availabilityLegend={t("availabilityLegend")}
         brandLegend={t("brandLegend")}
         categoryLegend={t("categoryLegend")}
@@ -155,6 +156,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
         <FilterDrawer
             activeFilterCount={activeFilterCount}
             closeLabel={t("closeFilters")}
+            viewPartsLabel={t("viewParts")}
             filtersLabel={t("filters")}
           >
           {filterContent}
@@ -190,12 +192,16 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
                     {t("pageOf", { current: currentPage, total: totalPages })}
                   </span>
                 ) : null}
-                <SortDropdown ariaLabel={t("sortAriaLabel")} value={sort} />
+                <SortDropdown
+                  ariaLabel={t("sortAriaLabel")}
+                  sortLabel={t("sort")}
+                  value={sort}
+                />
               </div>
             </div>
 
             {vehicleFromCookie ? (
-              <MyVehicleBanner vehicleLabel={formatMyVehicle(vehicleFromCookie)} />
+              <MyVehicleBanner removeFilterLabel={t("removeFilter2")} vehicleLabel={formatMyVehicle(vehicleFromCookie)} />
             ) : null}
 
             <CatalogActiveFilters

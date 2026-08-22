@@ -14,5 +14,9 @@
   "chooseModelFirst": "Elige el modelo primero",
   "selectMake": "Selecciona marca",
   "selectModel": "Selecciona modelo",
-  "chooseMakeFirst": "Elige la marca primero"
+  "chooseMakeFirst": "Elige la marca primero",
+  "heroTitle": "Encuentra repuestos para tu vehículo",
+  "heroDescription": "Selecciona los datos de tu vehículo para encontrar opciones compatibles.",
+  "heroTitleBefore": "Encuentra repuestos",
+  "heroTitleHighlight": "compatibles con tu vehículo"
 }

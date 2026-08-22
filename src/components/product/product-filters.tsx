@@ -5,6 +5,7 @@ import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filter
 import type { CatalogProduct } from "@/data/products";
 
 type ProductFiltersProps = {
+  applyFiltersLabel: string;
   activeFilterCount: number;
   /** Textos ya resueltos: ver la nota de `SortDropdown`. */
   availabilityLegend: string;
@@ -23,7 +24,7 @@ type ProductFiltersProps = {
  * el contenedor (aside en desktop, drawer en móvil) y aquí solo hay listas
  * separadas por reglas, que es lo que hace legible una columna de filtros.
  */
-export function ProductFilters({
+export function ProductFilters({ applyFiltersLabel,
   activeFilterCount,
   availabilityLegend,
   brandLegend,
@@ -90,7 +91,7 @@ export function ProductFilters({
       <div className="mt-4 grid gap-2 border-t border-ca-border pt-4">
         {/* Los filtros se aplican al cambiar; el botón es el camino sin JS. */}
         <button className="inline-flex h-10 items-center justify-center rounded-ca-control border border-ca-navy-950 bg-white px-4 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-navy-950 hover:text-white">
-          Aplicar filtros
+          {applyFiltersLabel}
         </button>
         {activeFilterCount > 0 ? (
           <Link

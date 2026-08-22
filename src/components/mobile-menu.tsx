@@ -138,10 +138,10 @@ export function MobileMenu({
                     </span>
                   ) : null}
                 </div>
-                Carrito
+                {t("cart")}
                 {cartItemCount > 0 ? (
                   <span className="ml-auto text-sm font-semibold text-ca-text-secondary">
-                    {cartItemCount} {cartItemCount === 1 ? "producto" : "productos"}
+                    {t("cartItemCount", { count: cartItemCount })}
                   </span>
                 ) : null}
               </Link>
@@ -154,7 +154,7 @@ export function MobileMenu({
                 onClick={() => setOpen(false)}
                 className="flex h-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white transition hover:bg-ca-navy-800"
               >
-                Ver catálogo completo
+                {t("viewFullCatalog")}
               </Link>
             </div>
           </div>

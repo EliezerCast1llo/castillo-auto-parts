@@ -30,7 +30,7 @@ export async function CategoryQuickLinks({
   return (
     <section>
       <h2 className="text-xs font-black uppercase tracking-[0.1em] text-ca-navy-950">
-        Comprar por categoría
+        {t("shopByCategory")}
       </h2>
 
       <div className="mt-3">

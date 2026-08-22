@@ -157,7 +157,7 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
   const tNav = await getTranslations({ locale, namespace: "Nav" });
   return (
     <header className="bg-ca-navy-950 text-white">
-      <UtilityBar />
+      <UtilityBar locale={locale} />
       <div className="ca-container flex min-h-16 items-center justify-between gap-5 py-3">
         {/* Logo */}
         <Link href="/" className="flex min-w-0 items-center gap-3">
@@ -233,7 +233,8 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
   );
 }
 
-function UtilityBar() {
+async function UtilityBar({ locale }: { locale: Locale }) {
+  const tNav = await getTranslations({ locale, namespace: "Nav" });
   return (
     <div className="border-b border-white/10 bg-ca-navy-950">
       <div className="ca-container flex min-h-9 items-center justify-between gap-4 py-1 text-xs font-bold text-white/78">
@@ -253,7 +254,7 @@ function UtilityBar() {
             target="_blank"
           >
             <MessageCircle className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
-            Asesoría por WhatsApp
+            {tNav("whatsappAdvice")}
           </a>
         ) : null}
       </div>

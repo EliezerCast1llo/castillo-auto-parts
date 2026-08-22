@@ -16,5 +16,10 @@
   "advisory": "Asesoría",
   "myVehicle": "Mi vehículo: {vehicle}",
   "viewPartsForVehicle": "Ver repuestos para tu vehículo {vehicle}",
-  "viewCart": "Ver carrito, {count, plural, one {# producto} other {# productos}}"
+  "viewCart": "Ver carrito, {count, plural, one {# producto} other {# productos}}",
+  "cart": "Carrito",
+  "viewFullCatalog": "Ver catálogo completo",
+  "whatsappAdvice": "Asesoría por WhatsApp",
+  "brandTagline": "Repuestos automotrices · El Salvador",
+  "cartItemCount": "{count, plural, one {# producto} other {# productos}}"
 }

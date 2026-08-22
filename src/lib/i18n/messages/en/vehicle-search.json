@@ -14,5 +14,9 @@
   "chooseModelFirst": "Choose the model first",
   "selectMake": "Select a make",
   "selectModel": "Select a model",
-  "chooseMakeFirst": "Choose the make first"
+  "chooseMakeFirst": "Choose the make first",
+  "heroTitle": "Find parts for your vehicle",
+  "heroDescription": "Select your vehicle details to find compatible options.",
+  "heroTitleBefore": "Find parts",
+  "heroTitleHighlight": "that fit your vehicle"
 }

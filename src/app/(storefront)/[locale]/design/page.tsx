@@ -98,6 +98,7 @@ export default function DesignPreviewPage() {
               <CatalogFilterForm key="design-filters">
                 <VehicleSearchPanel filters={sampleFilters} options={filterOptions} />
                 <ProductFilters
+                  applyFiltersLabel="Aplicar filtros"
                   availabilityLegend="Disponibilidad"
                   brandLegend="Marca"
                   categoryLegend="Categoría"

@@ -64,9 +64,9 @@ export async function SearchHero({
                   fontSize: "clamp(2.4rem, 5vw, 3.5rem)",
                 }}
               >
-                Encuentra repuestos{" "}
+                {t("heroTitleBefore")}{" "}
                 <span className="ca-gold-shimmer block">
-                  compatibles con tu vehículo
+                  {t("heroTitleHighlight")}
                 </span>
               </h1>
               <p className="animate-fade-up delay-400 mt-5 max-w-xl text-base leading-7 text-white/75">

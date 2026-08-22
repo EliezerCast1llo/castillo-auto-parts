@@ -8,6 +8,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { catalogSortOptions, type CatalogSort } from "@/data/catalog-filters";
 
 type SortDropdownProps = {
+  sortLabel: string;
   /**
    * Texto ya resuelto. Llega por prop y no de un `useTranslations` porque
    * `Catalog` no viaja al navegador: mandarlo entero por un aria-label
@@ -17,7 +18,7 @@ type SortDropdownProps = {
   value: CatalogSort;
 };
 
-export function SortDropdown({ ariaLabel, value }: SortDropdownProps) {
+export function SortDropdown({ sortLabel, ariaLabel, value }: SortDropdownProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,7 +26,7 @@ export function SortDropdown({ ariaLabel, value }: SortDropdownProps) {
   return (
     <label className="flex w-full flex-col gap-1.5 sm:w-auto">
       <span className="text-[11px] font-black uppercase tracking-[0.12em] text-ca-text-secondary">
-        Ordenar
+        {sortLabel}
       </span>
       <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition focus-within:border-ca-blue-700">
         <ArrowUpDown className="h-4 w-4 shrink-0 text-ca-blue-700" strokeWidth={1.9} />
