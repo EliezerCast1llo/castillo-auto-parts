@@ -31,6 +31,7 @@ import { SEARCH_SUGGESTIONS } from "@/data/search-suggestions";
 import { localizedAlternates } from "@/lib/i18n/metadata";
 import { localizePath } from "@/lib/i18n/path";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { stockStatuses, type StockStatus } from "@/lib/stock-status";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -123,6 +124,9 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
   const { products: filteredProducts, totalCount, totalPages, currentPage, status } = catalogResult;
   const activeFilterCount = countActiveCatalogFilters(filters);
   const filterKey = JSON.stringify(filters);
+  const stockLabels = Object.fromEntries(
+    stockStatuses.map((status) => [status, t(`stockStatus.${status}`)]),
+  ) as Record<StockStatus, string>;
 
   const filterContent = (
     <CatalogFilterForm key={filterKey}>
@@ -130,6 +134,13 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
       <VehicleSearchPanel filters={filters} options={filterOptions} />
       <ProductFilters
         activeFilterCount={activeFilterCount}
+        applyFiltersLabel={t("applyFilters")}
+        availabilityLegend={t("availabilityLegend")}
+        brandLegend={t("brandLegend")}
+        categoryLegend={t("categoryLegend")}
+        searchLegend={t("searchLegend")}
+        stockLabels={stockLabels}
+        searchPlaceholder={t("searchPlaceholder")}
         filters={filters}
         options={filterOptions}
       />
@@ -142,7 +153,12 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Botón de filtros mobile + drawer */}
-        <FilterDrawer activeFilterCount={activeFilterCount}>
+        <FilterDrawer
+            activeFilterCount={activeFilterCount}
+            closeLabel={t("closeFilters")}
+            viewPartsLabel={t("viewParts")}
+            filtersLabel={t("filters")}
+          >
           {filterContent}
         </FilterDrawer>
 
@@ -176,16 +192,21 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
                     {t("pageOf", { current: currentPage, total: totalPages })}
                   </span>
                 ) : null}
-                <SortDropdown value={sort} />
+                <SortDropdown
+                  ariaLabel={t("sortAriaLabel")}
+                  sortLabel={t("sort")}
+                  value={sort}
+                />
               </div>
             </div>
 
             {vehicleFromCookie ? (
-              <MyVehicleBanner vehicleLabel={formatMyVehicle(vehicleFromCookie)} />
+              <MyVehicleBanner removeFilterLabel={t("removeFilter2")} vehicleLabel={formatMyVehicle(vehicleFromCookie)} />
             ) : null}
 
             <CatalogActiveFilters
               filters={filters}
+              locale={locale}
               options={filterOptions}
               hideVehicleChips={Boolean(vehicleFromCookie)}
               sort={sort}
@@ -195,10 +216,10 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
               <>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredProducts.map((product) => (
-                    <ProductCard key={product.sku} product={product} />
+                    <ProductCard key={product.sku} locale={locale} product={product} />
                   ))}
                 </div>
-                <CatalogPagination
+                <CatalogPagination locale={locale}
                   currentPage={currentPage}
                   totalPages={totalPages}
                   searchParams={resolvedParams}

@@ -12,5 +12,14 @@
   "searchPlaceholderLong": "Search by part, SKU, part number or vehicle…",
   "searchPlaceholderShort": "Search by part, SKU or part number…",
   "search": "Search",
-  "seeAllResults": "See all results for “{query}” →"
+  "seeAllResults": "See all results for “{query}” →",
+  "advisory": "Advice",
+  "myVehicle": "My vehicle: {vehicle}",
+  "viewPartsForVehicle": "View parts for your {vehicle}",
+  "viewCart": "View cart, {count, plural, one {# product} other {# products}}",
+  "cart": "Cart",
+  "viewFullCatalog": "View the full catalog",
+  "whatsappAdvice": "Advice on WhatsApp",
+  "brandTagline": "Auto parts · El Salvador",
+  "cartItemCount": "{count, plural, one {# product} other {# products}}"
 }

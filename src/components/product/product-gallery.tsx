@@ -8,6 +8,15 @@ type GalleryImage = {
   id: string;
   url: string;
   alt: string;
+  /**
+   * Texto de la miniatura, ya resuelto.
+   *
+   * Viaja **dentro** de la imagen y no como función ni array paralelo: una
+   * función no cruza la frontera servidor→cliente —el runtime lo rechaza,
+   * TypeScript no— y dos arrays que deben coincidir en orden son la forma que
+   * esta serie viene sacando. Lo arma quien tiene el traductor.
+   */
+  label: string;
 };
 
 type ProductGalleryProps = {
@@ -16,7 +25,11 @@ type ProductGalleryProps = {
   productSku: string;
 };
 
-export function ProductGallery({ images, productName, productSku }: ProductGalleryProps) {
+export function ProductGallery({
+  images,
+  productName,
+  productSku,
+}: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeImage = images[activeIndex] ?? null;
 
@@ -37,7 +50,7 @@ export function ProductGallery({ images, productName, productSku }: ProductGalle
             key={image.id}
             type="button"
             onClick={() => setActiveIndex(index)}
-            aria-label={`Ver imagen ${index + 1}: ${image.alt}`}
+            aria-label={image.label}
             className={`relative aspect-square overflow-hidden rounded-md border-2 bg-background transition ${
               index === activeIndex
                 ? "border-primary shadow-sm"

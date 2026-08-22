@@ -1,4 +1,5 @@
 import { Link } from "@/lib/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowRight, PackageSearch } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { ScrollCarousel } from "@/components/ui/scroll-carousel";
@@ -39,6 +40,7 @@ export async function CategoryProductRails({
   locale: Locale;
   options: CatalogFilterOptions;
 }) {
+  const t = await getTranslations({ locale, namespace: "Catalog" });
   const categories = [...options.categories]
     .sort(
       (a, b) =>
@@ -66,7 +68,7 @@ export async function CategoryProductRails({
   const visible = rails.filter((rail) => rail.products.length > 0);
 
   if (visible.length === 0)
-    return <EmptyCatalogNotice status={catalogStatus} />;
+    return <EmptyCatalogNotice locale={locale} status={catalogStatus} />;
 
   return (
     <>
@@ -88,13 +90,18 @@ export async function CategoryProductRails({
             </Link>
           </div>
 
-          <ScrollCarousel autoPlay label={`Productos de ${rail.label}`}>
+          <ScrollCarousel
+            autoPlay
+            label={t("railLabel", { category: rail.label })}
+            nextLabel={t("carouselNext")}
+            previousLabel={t("carouselPrevious")}
+          >
             {rail.products.map((product) => (
               <div
                 className="w-[240px] shrink-0 snap-start sm:w-[264px] lg:w-[calc((100%-3rem)/4)]"
                 key={product.sku}
               >
-                <ProductCard product={product} />
+                <ProductCard locale={locale} product={product} />
               </div>
             ))}
           </ScrollCarousel>
@@ -104,11 +111,14 @@ export async function CategoryProductRails({
   );
 }
 
-function EmptyCatalogNotice({
+async function EmptyCatalogNotice({
+  locale,
   status,
 }: {
+  locale: Locale;
   status: CatalogProductsResult["status"];
 }) {
+  const t = await getTranslations({ locale, namespace: "Catalog" });
   return (
     <div className="rounded-ca-surface border border-ca-border bg-white p-8">
       <div className="flex items-start gap-4">
@@ -118,13 +128,13 @@ function EmptyCatalogNotice({
         <div>
           <h2 className="text-lg font-black text-ca-navy-950">
             {status === "unavailable"
-              ? "Catálogo temporalmente no disponible"
-              : "Aún no hay productos publicados"}
+              ? t("railsUnavailableTitle")
+              : t("railsEmptyTitle")}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">
             {status === "unavailable"
-              ? "No pudimos cargar el catálogo en este momento. Intenta nuevamente en unos minutos."
-              : "Todavía no hay repuestos publicados en esta categoría."}
+              ? t("railsUnavailableDescription")
+              : t("railsEmptyDescription")}
           </p>
         </div>
       </div>

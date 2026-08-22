@@ -1,0 +1,61 @@
+{
+  "metadataTitle": "Help buying auto parts | Castillo Auto Parts",
+  "metadataDescription": "We help you find the part that fits your vehicle and choose how to get it in San Salvador or Santa Tecla.",
+  "hero": {
+    "eyebrow": "Buying help",
+    "titleBefore": "Find",
+    "titleHighlight": "the right part",
+    "titleAfter": "for your vehicle",
+    "description": "Not sure which one you need? Send us your vehicle details, a photo or the part number. We will check compatibility with you before you buy.",
+    "whatsapp": "Ask on WhatsApp",
+    "browseCatalog": "Browse catalog"
+  },
+  "intake": {
+    "eyebrow": "Start your enquiry",
+    "title": "Send us these details so we can help",
+    "vehicle": "Make, model and year of the vehicle.",
+    "engine": "Engine or trim, if you know them.",
+    "photo": "A photo of the part, or its part number.",
+    "note": "You do not need to know the exact name of the part to ask us."
+  },
+  "delivery": {
+    "ariaLabel": "Delivery options",
+    "local": "Local delivery in San Salvador and Santa Tecla.",
+    "pickup": "Free pickup at the warehouse."
+  },
+  "steps": {
+    "eyebrow": "Assisted buying",
+    "title": "How we help you find it",
+    "description": "Clear guidance from your first question to delivery.",
+    "tellUsTitle": "Tell us what vehicle you have",
+    "tellUsDescription": "Share the make, the model, the year and anything else you know.",
+    "verifyTitle": "We check the part",
+    "verifyDescription": "We confirm fitment and availability before you buy.",
+    "chooseTitle": "Choose how to get it",
+    "chooseDescription": "Pick warehouse pickup or local delivery where available."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "description": "Fitment, pickup, delivery and VAT. If your case is not here, write to us and we will look at it with your vehicle details.",
+    "compatibilityQuestion": "How do I know a part fits my vehicle?",
+    "compatibilityAnswer": "Search by make, model and year in the catalog. On the part page check the compatible vehicles, and if you are unsure, message us on WhatsApp before buying.",
+    "pickupQuestion": "Can I pick up my order at the warehouse?",
+    "pickupAnswer": "Yes. Warehouse pickup is free. When you choose it at checkout you will see the address, the hours and how to collect your order.",
+    "deliveryQuestion": "Do you deliver to my address?",
+    "deliveryAnswer": "We deliver locally in San Salvador and Santa Tecla. The fee is calculated from the municipality you select at checkout.",
+    "taxQuestion": "Do prices include VAT?",
+    "taxAnswer": "Yes. Part prices already include the 13% VAT. At checkout you will see the subtotal, the delivery fee where it applies, and the estimated total.",
+    "notFoundQuestion": "What if I cannot find the part?",
+    "notFoundAnswer": "Message us on WhatsApp with the make, the model and the year of your vehicle. You can also send the engine, a photo, the name of the part or a part number.",
+    "ctaText": "Write to us with your vehicle details and we will help you find it.",
+    "ctaLabel": "Message on WhatsApp",
+    "ctaTitle": "Question not answered here?"
+  },
+  "policyNote": "To learn the conditions that apply to your purchase, ask us before confirming the order. We do not publish promises about warranties, exchanges or returns that are not defined yet.",
+  "closing": {
+    "title": "Ready to find your part?",
+    "description": "Filter the catalog by make, model and year, or write to us and we will look for it with you.",
+    "action": "Search parts"
+  },
+  "policyTitle": "Commercial policies"
+}

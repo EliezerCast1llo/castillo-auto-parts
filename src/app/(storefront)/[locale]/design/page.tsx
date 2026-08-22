@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { defaultLocale } from "@/lib/i18n/config";
 import { Link } from "@/lib/i18n/navigation";
 import {
   CheckCircle2,
@@ -41,6 +42,17 @@ const sampleFilters: CatalogFilters = {
   vehicleYear: "2018",
 };
 
+/**
+ * Esta página **no se traduce**, y es deliberado.
+ *
+ * Devuelve 404 en producción (ver el guard de abajo), así que no existe para
+ * ningún cliente ni para los buscadores, y tampoco está en el sitemap. Su
+ * lector es quien desarrolla, que trabaja en español.
+ *
+ * Traducirla no agregaría un lector y sí una obligación permanente: cada
+ * componente que se documente acá pediría dos textos en vez de uno, para
+ * siempre. Si algún día se publica, se traduce entonces.
+ */
 export const metadata = {
   title: "UI Kit | Castillo Auto Parts",
   description: "Componentes visuales implementables para el MVP.",
@@ -72,7 +84,7 @@ export default function DesignPreviewPage() {
           description="Home orienta, genera confianza y manda al catálogo. Los filtros viven únicamente en Catálogo."
         >
           <div className="space-y-5">
-            <HomeHero />
+            <HomeHero locale={defaultLocale} />
           </div>
         </DesignSection>
 
@@ -86,6 +98,17 @@ export default function DesignPreviewPage() {
               <CatalogFilterForm key="design-filters">
                 <VehicleSearchPanel filters={sampleFilters} options={filterOptions} />
                 <ProductFilters
+                  applyFiltersLabel="Aplicar filtros"
+                  availabilityLegend="Disponibilidad"
+                  brandLegend="Marca"
+                  categoryLegend="Categoría"
+                  searchLegend="Buscar repuesto"
+                  stockLabels={{
+                    IN_STOCK: "Disponible",
+                    LOW_STOCK: "Últimas unidades",
+                    OUT_OF_STOCK: "No disponible",
+                  }}
+                  searchPlaceholder="Nombre, SKU o número de parte"
                   activeFilterCount={countActiveCatalogFilters(sampleFilters)}
                   filters={sampleFilters}
                   options={filterOptions}
@@ -94,10 +117,14 @@ export default function DesignPreviewPage() {
             </aside>
             <section className="space-y-4">
               <CatalogToolbar />
-              <CatalogActiveFilters filters={sampleFilters} options={filterOptions} />
+              <CatalogActiveFilters
+                filters={sampleFilters}
+                locale={defaultLocale}
+                options={filterOptions}
+              />
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {mockProducts.slice(0, 6).map((product) => (
-                  <ProductCard key={product.sku} product={product} />
+                  <ProductCard key={product.sku} locale={defaultLocale} product={product} />
                 ))}
               </div>
             </section>
@@ -214,9 +241,9 @@ function ComponentFoundation() {
             Acción secundaria
           </button>
           <div className="flex flex-wrap gap-2">
-            <StockBadge status="IN_STOCK" />
-            <StockBadge status="LOW_STOCK" />
-            <StockBadge status="OUT_OF_STOCK" />
+            <StockBadge locale={defaultLocale} status="IN_STOCK" />
+            <StockBadge locale={defaultLocale} status="LOW_STOCK" />
+            <StockBadge locale={defaultLocale} status="OUT_OF_STOCK" />
           </div>
         </div>
       </div>
@@ -291,7 +318,7 @@ function ProductDetailPreview() {
             </p>
             <p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">SKU {sampleProduct.sku}</p>
           </div>
-          <StockBadge status={sampleProduct.stockStatus} />
+          <StockBadge locale={defaultLocale} status={sampleProduct.stockStatus} />
         </div>
 
         <div className="mt-5 rounded-md bg-background p-4">
@@ -338,7 +365,7 @@ function CartPreview() {
                 <p className="mt-2 text-sm text-muted-foreground">{product.compatibility}</p>
               </div>
               <div className="grid gap-3">
-                <StockBadge status={product.stockStatus} />
+                <StockBadge locale={defaultLocale} status={product.stockStatus} />
                 <QuantityStepper defaultValue={1} max={product.stockQuantity} />
                 <p className="text-lg font-bold text-primary">{formatCurrency(product.priceCents)}</p>
               </div>

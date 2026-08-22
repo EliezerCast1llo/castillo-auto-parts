@@ -37,7 +37,8 @@
     "emailHelper": "This email is tied to your account.",
     "phoneLabel": "Phone",
     "phoneHelper": "This is your contact number for orders and notifications.",
-    "save": "Save phone"
+    "save": "Save phone",
+    "nameLabel": "Full name"
   },
   "password": {
     "description": "Change your password to keep your account protected.",
@@ -82,5 +83,6 @@
     "edit": "Edit",
     "verifyBeforeSaving": "Check that everything is right before saving.",
     "selectCity": "Select a municipality"
-  }
+  },
+  "breadcrumbAriaLabel": "Account breadcrumb"
 }

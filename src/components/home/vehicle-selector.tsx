@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Car, Search } from "lucide-react";
 import type { ReactNode } from "react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
@@ -9,6 +10,7 @@ import { buildMyVehicleSetCookie } from "@/lib/my-vehicle";
 import { toLinkQuery } from "@/lib/url-utils";
 
 export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilterOptions }) {
+  const t = useTranslations("VehicleSearch");
   const router = useRouter();
   const selection = useVehicleSelection({ options: filterOptions });
 
@@ -49,20 +51,20 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
           </span>
           <div className="min-w-0">
             <p className="font-display text-[0.95rem] font-extrabold leading-5 text-ca-navy-950">
-              Encuentra repuestos para tu vehículo
+              {t("heroTitle")}
             </p>
             <p className="mt-1 text-xs leading-5 text-ca-text-secondary">
-              Selecciona los datos de tu vehículo para encontrar opciones compatibles.
+              {t("heroDescription")}
             </p>
           </div>
         </div>
 
         <VehicleSelectField
           index="1"
-          label="Marca"
+          label={t("make")}
           name="vehicleMake"
           onChange={selection.handleMakeChange}
-          placeholder="Selecciona marca"
+          placeholder={t("selectMake")}
           value={selection.make}
         >
           {filterOptions.vehicleMakes.map((make) => (
@@ -74,10 +76,10 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         <VehicleSelectField
           disabled={!selection.make}
           index="2"
-          label="Modelo"
+          label={t("model")}
           name="vehicleModel"
           onChange={selection.handleModelChange}
-          placeholder={selection.make ? "Selecciona modelo" : "Elige la marca primero"}
+          placeholder={selection.make ? t("selectModel") : t("chooseMakeFirst")}
           value={selection.model}
         >
           {selection.models.map((model) => (
@@ -89,10 +91,10 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         <VehicleSelectField
           disabled={!selection.model}
           index="3"
-          label="Año"
+          label={t("year")}
           name="vehicleYear"
           onChange={selection.handleYearChange}
-          placeholder={selection.model ? "Selecciona año" : "Elige el modelo primero"}
+          placeholder={selection.model ? t("selectYear") : t("chooseModelFirst")}
           value={selection.year}
         >
           {selection.years.map((year) => (

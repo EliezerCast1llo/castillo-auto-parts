@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { getTranslations } from "next-intl/server";
+import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 export const alt = SITE_NAME;
@@ -9,7 +11,9 @@ export const contentType = "image/png";
  * OG image genérica del sitio (home y páginas sin imagen propia).
  * Colores de marca: navy #061933 / gold #d9a21b.
  */
-export default function OpenGraphImage() {
+export default async function OpenGraphImage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveAndPublishRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Nav" });
   return new ImageResponse(
     (
       <div
@@ -36,7 +40,7 @@ export default function OpenGraphImage() {
             color: "#f2b72a",
           }}
         >
-          Repuestos automotrices · El Salvador
+          {t("brandTagline")}
         </div>
         <div
           style={{

@@ -8,10 +8,12 @@ import Consent from "./consent.json";
 import Email from "./email.json";
 import Errors from "./errors.json";
 import Footer from "./footer.json";
+import Help from "./help.json";
 import Nav from "./nav.json";
 import Orders from "./orders.json";
 import Product from "./product.json";
 import Status from "./status.json";
+import Vehicles from "./vehicles.json";
 import VehicleSearch from "./vehicle-search.json";
 
 /**
@@ -33,10 +35,12 @@ const messages = {
   Email,
   Errors,
   Footer,
+  Help,
   Nav,
   Orders,
   Product,
   Status,
+  Vehicles,
   VehicleSearch,
 } as const;
 

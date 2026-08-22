@@ -660,6 +660,24 @@ test("the product page and the footer speak the language of the page", async ({ 
 
 });
 
+test("the help page speaks the language of the page, including the FAQ", async ({ page }) => {
+  // La grafia de la ruta cambia con el idioma —/es/ayuda vs /en/help—, asi que
+  // este test tambien confirma que `pathnames` sigue aplicando.
+  await page.goto(ES("/help"));
+  await expect(page).toHaveURL(/\/es\/ayuda$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("el repuesto correcto");
+  await expect(page.getByText("Preguntas frecuentes")).toBeVisible();
+  await expect(page.getByText("¿Los precios incluyen IVA?")).toBeVisible();
+  await expect(page.getByText("Políticas comerciales")).toBeVisible();
+
+  await page.goto(EN("/help"));
+  await expect(page).toHaveURL(/\/en\/help$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("the right part");
+  await expect(page.getByText("Frequently asked questions")).toBeVisible();
+  await expect(page.getByText("Do prices include VAT?")).toBeVisible();
+  await expect(page.getByText("Commercial policies")).toBeVisible();
+});
+
 test("alternate links point search engines at the other language", async ({ request }) => {
   const response = await request.get("/es/catalog");
   const link = response.headers().link ?? "";

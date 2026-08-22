@@ -34,14 +34,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <JsonLd data={buildOrganizationJsonLd()} />
       <JsonLd data={buildWebSiteJsonLd(locale)} />
       <SiteHeader locale={locale} variant="hero" />
-      <SearchHero filterOptions={filterOptions} />
+      <SearchHero locale={locale} filterOptions={filterOptions} />
 
       <div className="ca-premium-shell">
         {/* La home es una sucesión de producto: un bloque por categoría. Las
             promesas del sitio se dicen una vez, en el hero, y la navegación
             por marca vive en el footer, que ya es el índice del sitio. */}
         <div className="ca-container space-y-10 pb-14 pt-8 lg:pt-28">
-          <CategoryQuickLinks options={filterOptions} />
+          <CategoryQuickLinks locale={locale} options={filterOptions} />
           <CategoryProductRails
             catalogStatus={featuredResult.status}
             locale={locale}

@@ -92,7 +92,7 @@ export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProp
 
             <div className="hidden xl:block">
               <WhatsAppCTA
-                label="Asesoría"
+                label={tNav("advisory")}
                 phone={SUPPORT_WHATSAPP_NUMBER}
                 variant="subtle"
               />
@@ -113,7 +113,7 @@ export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProp
             {/* Cart — gold accent button */}
             <Link
               className={cn(buttonVariants({ variant: "primary" }), "relative w-10 px-0")}
-              aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
+              aria-label={tNav("viewCart", { count: cartItemCount })}
               href="/cart"
             >
               <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />
@@ -157,7 +157,7 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
   const tNav = await getTranslations({ locale, namespace: "Nav" });
   return (
     <header className="bg-ca-navy-950 text-white">
-      <UtilityBar />
+      <UtilityBar locale={locale} />
       <div className="ca-container flex min-h-16 items-center justify-between gap-5 py-3">
         {/* Logo */}
         <Link href="/" className="flex min-w-0 items-center gap-3">
@@ -198,7 +198,7 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
 
           <div className="hidden xl:block">
             <WhatsAppCTA
-              label="Asesoría"
+              label={tNav("advisory")}
               phone={SUPPORT_WHATSAPP_NUMBER}
               variant="subtle"
             />
@@ -207,7 +207,7 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
           {/* Carrito */}
           <Link
             className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/[0.16]"
-            aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
+            aria-label={tNav("viewCart", { count: cartItemCount })}
             href="/cart"
           >
             <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />
@@ -233,7 +233,8 @@ async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: 
   );
 }
 
-function UtilityBar() {
+async function UtilityBar({ locale }: { locale: Locale }) {
+  const tNav = await getTranslations({ locale, namespace: "Nav" });
   return (
     <div className="border-b border-white/10 bg-ca-navy-950">
       <div className="ca-container flex min-h-9 items-center justify-between gap-4 py-1 text-xs font-bold text-white/78">
@@ -253,7 +254,7 @@ function UtilityBar() {
             target="_blank"
           >
             <MessageCircle className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
-            Asesoría por WhatsApp
+            {tNav("whatsappAdvice")}
           </a>
         ) : null}
       </div>

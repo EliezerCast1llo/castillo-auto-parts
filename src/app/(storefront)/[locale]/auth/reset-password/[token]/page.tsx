@@ -84,7 +84,7 @@ export default async function ResetPasswordPage({ params, searchParams }: ResetP
               />
             </label>
 
-            <p className="text-xs text-muted-foreground">Mínimo 8 caracteres.</p>
+            <p className="text-xs text-muted-foreground">{t("minLength")}</p>
 
             <button
               type="submit"

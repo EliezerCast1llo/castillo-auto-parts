@@ -204,7 +204,7 @@ export function AddAddressModal({ deliveryZones }: { deliveryZones: DeliveryZone
  {deliveryZones.length > 0 ? (
  <div>
  <label className="block text-sm font-bold text-ca-navy-950">
- Departamento
+ {t("departmentLabel")}
  </label>
  <input
  className={`mt-2 ${inputClass} cursor-default`}

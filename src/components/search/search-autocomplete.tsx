@@ -19,7 +19,7 @@ import { useRouter } from "@/lib/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SearchResponse, SearchResult } from "@/app/api/search/route";
 import { useLocale, useTranslations } from "next-intl";
-import { formatStockStatus, type StockStatus } from "@/lib/stock-status";
+import type { StockStatus } from "@/lib/stock-status";
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -344,7 +344,8 @@ function SearchDropdownItems({
 }
 
 function StockDot({ status }: { status: StockStatus }) {
-  const label = formatStockStatus(status);
+  const t = useTranslations("Catalog");
+  const label = t(`stockStatus.${status}`);
 
   if (status === "IN_STOCK") {
     return <span className="mt-0.5 block text-xs font-bold text-ca-success">{label}</span>;

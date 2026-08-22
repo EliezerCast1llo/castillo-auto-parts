@@ -112,7 +112,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="space-y-4">
             <div className="rounded-ca-surface border border-ca-border bg-white p-4">
               <ProductGallery
-                images={product.images}
+                images={product.images.map((image, index) => ({
+                  ...image,
+                  label: t("viewImage", { alt: image.alt, index: index + 1 }),
+                }))}
                 productName={product.name}
                 productSku={product.sku}
               />
@@ -170,7 +173,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {product.name}
                 </h1>
               </div>
-              <StockBadge status={product.stockStatus} />
+              <StockBadge locale={locale} status={product.stockStatus} />
             </div>
 
             {/* Datos del producto */}
@@ -242,7 +245,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <h2 className="text-xl font-black text-ca-navy-950">Productos relacionados</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {relatedProducts.map((item) => (
-                <ProductCard key={item.sku} product={item} />
+                <ProductCard key={item.sku} locale={locale} product={item} />
               ))}
             </div>
           </section>

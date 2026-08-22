@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import type { CatalogProduct } from "@/data/products";
-import { formatStockStatus } from "@/lib/stock-status";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 
 const badgeConfig = {
   IN_STOCK: {
@@ -17,13 +18,22 @@ const badgeConfig = {
   },
 } as const;
 
-export function StockBadge({ status }: { status: CatalogProduct["stockStatus"] }) {
+export async function StockBadge({
+  locale,
+  status,
+}: {
+  locale: Locale;
+  status: CatalogProduct["stockStatus"];
+}) {
+  const t = await getTranslations({ locale, namespace: "Catalog" });
   const { className, Icon } = badgeConfig[status];
-  const label = formatStockStatus(status);
+  // `formatStockStatus` se queda para el admin, que es solo en español; acá el
+  // enum ya era una clave independiente del idioma.
+  const label = t(`stockStatus.${status}`);
 
   return (
     <span
-      aria-label={`Disponibilidad del repuesto: ${label}`}
+      aria-label={t("stockAriaLabel", { status: label })}
       className={`inline-flex items-center gap-1 text-xs font-bold ${className}`}
     >
       <Icon aria-hidden className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
