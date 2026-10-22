@@ -1,6 +1,6 @@
 # Importación del catálogo por CSV
 
-Issue #94 (B8). Solo el rol **ADMIN** puede descargar la plantilla, preparar una
+Issues #94 (B8) y #103 (B15). Solo el rol **ADMIN** puede descargar la plantilla, preparar una
 vista previa y confirmar. Marketing y los demás roles no tienen permiso.
 
 ## Flujo del operador
@@ -17,7 +17,8 @@ vista previa y confirmar. Marketing y los demás roles no tienen permiso.
    se incluye en la vista previa y no cambia la base todavía.
 5. Pulsar **Validar y ver vista previa**. Corregir errores por fila y columna
    antes de continuar. No se importa una parte válida de un archivo con errores.
-6. Revisar altas/actualizaciones, precios, stock y detalles de cada fila, así como
+6. Revisar altas/actualizaciones, la lista de campos que cambian, precios, stock,
+   estado final activo/inactivo y detalles efectivos de cada fila, así como
    la lista de demo que se desactivaría. **Confirmar importación** guarda todo el
    lote en una única transacción o lo revierte si falla cualquier escritura,
    incluida la auditoría. Ningún dato se guarda solo por subir o previsualizar.
@@ -35,17 +36,17 @@ lógicas de la hoja de cálculo, aunque una descripción contenga saltos de lín
 
 | Encabezado | Regla |
 | --- | --- |
-| `sku` | Obligatorio, hasta 64 caracteres; letras/números, punto, guion, barra o guion bajo; empieza por letra/número. Coincidencia exacta y sensible a mayúsculas, igual que el catálogo actual. No repetir en el mismo archivo. |
+| `sku` | Obligatorio, hasta 64 caracteres; letras/números, punto, guion, barra o guion bajo; empieza por letra/número. Se convierte a mayúsculas y se eliminan espacios para comparar. `qa-fil/03` y `QA-FIL/03` identifican el mismo producto. No repetir la misma identidad en el archivo. Si varios productos existentes coinciden, se bloquea el lote para resolver el choque manualmente. |
 | `nombre` | Obligatorio, hasta 200 caracteres. |
 | `marca` | Obligatoria, hasta 100 caracteres. |
-| `numero_parte` | Opcional, hasta 100 caracteres. Vacío elimina el valor existente. |
+| `numero_parte` | Opcional, hasta 100 caracteres. Vacío conserva el valor existente; en productos nuevos queda sin valor. |
 | `categoria` | Nombre obligatorio, hasta 100 caracteres. Se usa la categoría por slug canónico o se crea si no existe. No se renombra/reactiva una categoría existente. |
 | `precio_iva` | USD con IVA incluido, mayor que cero, hasta dos decimales y 21474836.47 USD. Punto o coma decimal, sin separadores de miles. Una coma decimal debe estar entre comillas en CSV separado por comas. |
 | `stock` | Stock físico absoluto de MAIN (no una suma/incremento). Entero 0–2147483647 y no menor que las unidades reservadas. Se preservan reservas y otras bodegas. |
-| `descripcion` | Opcional, hasta 5000 caracteres. Vacío elimina el valor existente. |
+| `descripcion` | Opcional, hasta 5000 caracteres. Vacío conserva el valor existente; en productos nuevos queda sin valor. |
 | `peso_kg` | Mayor que cero, hasta 1000 kg, hasta tres decimales. |
 | `largo_cm`, `ancho_cm`, `alto_cm` | Cada medida mayor que cero, hasta 1000 cm, hasta un decimal. Son medidas del paquete para envío. |
-| `compatibilidades` | Hasta 20 entradas `Marca\|Modelo\|AñoDesde\|AñoHasta`, separadas por `;`. Años 1900–2100, desde ≤ hasta. Reemplaza la lista anterior; vacío elimina compatibilidades. No admite motor. |
+| `compatibilidades` | Hasta 20 entradas `Marca\|Modelo\|AñoDesde\|AñoHasta`, separadas por `;`. Años 1900–2100, desde ≤ hasta. Con contenido reemplaza la lista anterior; vacío conserva las compatibilidades existentes y en productos nuevos queda sin lista. No admite motor. |
 
 Si se indica algún peso/medida, completar los cuatro. Si están todos vacíos se
 conservan los de un producto existente; un nuevo producto queda sin medidas y
@@ -65,14 +66,31 @@ REP-001,Filtro de ejemplo,Proveedor,P-001,Filtros,12.99,8,"Descripción, con com
 La clave es SKU: reimportar no crea otro producto ni suma stock. Se conservan id,
 slug/URL, imágenes, traducciones, descripción corta, detalles técnicos, flags
 activo/destacado y punto de reposición de los productos existentes. Los nuevos
-se crean activos; los existentes inactivos permanecen inactivos. La categoría,
-nombre, marca, parte, descripción, precio, stock MAIN y compatibilidades se
-aplican según el archivo. El estado de stock se recalcula sobre unidades físicas
+se crean activos; los existentes inactivos permanecen inactivos y la vista previa
+lo advierte de forma visible. Para reactivarlos, editar su ficha manualmente;
+no se agrega una columna `activo` en esta versión. La categoría, nombre, marca,
+precio y stock MAIN se aplican según el archivo. Parte, descripción y
+compatibilidades solo cambian si tienen contenido. Una celda vacía no borra:
+para eliminar esos datos usar el editor manual de la ficha. Las columnas
+obligatorias siguen siendo obligatorias, incluso para actualizar solo precio
+/ stock: repetir nombre, marca y categoría actuales. El estado de stock se recalcula sobre unidades físicas
 menos reservadas y el umbral de reposición, sin alterar las reservas.
 
 Se invalidan el catálogo y los productos afectados para ambos idiomas. Si el
 lote se guardó pero falla el refresco de caché, el panel lo informa como guardado
 con aviso, sin sugerir que se revirtió la base. Revisar caché antes de publicar.
+
+La vista previa enumera los campos que realmente cambian y muestra los valores
+que quedarán, incluidos los opcionales conservados. No usa celdas vacías para
+presentar datos existentes como eliminados. La auditoría registra esa lista,
+la cantidad final de compatibilidades y el estado activo que se conserva.
+
+Los productos nuevos guardan el SKU canónico. Los existentes conservan su SKU
+original, id y referencias: no se renombra masivamente el catálogo ni se mezclan
+productos de un choque. La normalización aplica al importador; el editor manual
+puede contener variantes históricas, por lo que se vuelve a comprobar la
+ambigüedad al confirmar. Resolver los SKUs duplicados desde administración antes
+de revalidar; no basta con cambiar mayúsculas en el archivo.
 
 Cada archivo es un lote independiente. Los lotes ya confirmados no se revierten
 porque falle otro archivo posterior. No hay un modo de importar silenciosamente

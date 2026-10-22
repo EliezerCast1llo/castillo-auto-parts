@@ -14,10 +14,17 @@ export type CatalogCsvRow = {
   compatibilities: Array<{ make: string; model: string; yearFrom: number; yearTo: number }>;
 };
 
+/** Import identity only; existing stored SKUs and their references are preserved. */
+export function normalizeCatalogSku(value: string) {
+  return value.replace(/\s+/g, "").toUpperCase();
+}
+
+// Matches JavaScript's \s for the PostgreSQL identity lookup as well.
+export const SKU_WHITESPACE = " \t\r\n\f\v\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff";
+
 /** RFC 4180 quoting, including embedded newlines, with comma or Excel semicolon. */
-function readRecords(source: string): string[][] {
-  const firstLine = source.split(/\r?\n/, 1)[0];
-  const delimiter = firstLine.includes(";") && !firstLine.includes(",") ? ";" : ",";
+function readRecords(source: string, delimiter: string): string[][] {
+  const separator = delimiter === ";" ? "punto y coma" : "comas";
   const rows: string[][] = [];
   let row: string[] = [], cell = "", quoted = false, closed = false;
   for (let index = 0; index < source.length; index += 1) {
@@ -34,12 +41,12 @@ function readRecords(source: string): string[][] {
       row.push(cell); rows.push(row); row = []; cell = ""; closed = false;
     } else if (char === '"' && cell === "" && !closed) quoted = true;
     else {
-      if (closed || char === '"') throw new Error("Comillas CSV inválidas. Exporta el archivo como CSV UTF-8.");
+      if (closed || char === '"') throw new Error(`Comillas CSV inválidas. Encierra entre comillas los textos con ${separator} y duplica las comillas interiores. Exporta como CSV UTF-8.`);
       cell += char;
     }
     if (rows.length > MAX_CSV_ROWS + 1) throw new Error(`El lote admite hasta ${MAX_CSV_ROWS} filas.`);
   }
-  if (quoted) throw new Error("Hay un campo entre comillas sin cerrar.");
+  if (quoted) throw new Error(`Hay un campo entre comillas sin cerrar. Revisa el CSV separado por ${separator}.`);
   if (cell || row.length || closed) { row.push(cell); rows.push(row); }
   return rows;
 }
@@ -50,7 +57,11 @@ export function parseCatalogCsv(input: string): { rows: CatalogCsvRow[]; errors:
   if (new TextEncoder().encode(input).byteLength > MAX_CSV_BYTES) return fileError("El archivo supera 256 KiB.");
   if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(input)) return fileError("El archivo contiene caracteres de control no válidos.");
   let records: string[][];
-  try { records = readRecords(input.replace(/^\uFEFF/, "")); }
+  const source = input.replace(/^\uFEFF/, "");
+  const firstLine = source.split(/\r?\n/, 1)[0];
+  const delimiter = firstLine.includes(";") && !firstLine.includes(",") ? ";" : ",";
+  const separator = delimiter === ";" ? "punto y coma" : "comas";
+  try { records = readRecords(source, delimiter); }
   catch (error) { return fileError((error as Error).message); }
   const header = records.shift()?.map((cell) => cell.trim().toLowerCase()) || [];
   if (header.length !== CSV_COLUMNS.length || new Set(header).size !== header.length || CSV_COLUMNS.some((column) => !header.includes(column))) {
@@ -61,13 +72,13 @@ export function parseCatalogCsv(input: string): { rows: CatalogCsvRow[]; errors:
     if (record.every((cell) => !cell.trim())) return;
     const row = index + 2, initialErrors = errors.length;
     const issue = (column: string, message: string) => errors.push({ row, column, message });
-    if (record.length !== header.length) { issue("archivo", "La cantidad de columnas no coincide con la plantilla. Encierra entre comillas los textos con comas."); return; }
+    if (record.length !== header.length) { issue("archivo", `La cantidad de columnas no coincide con la plantilla. Encierra entre comillas los textos con ${separator}.`); return; }
     const get = (column: string) => record[header.indexOf(column)].trim();
-    const sku = get("sku"), name = get("nombre"), brand = get("marca"), category = get("categoria");
+    const sku = normalizeCatalogSku(get("sku")), name = get("nombre"), brand = get("marca"), category = get("categoria");
     for (const [column, value, max] of [["sku", sku, 64], ["nombre", name, 200], ["marca", brand, 100], ["categoria", category, 100]] as const) {
       if (!value || value.length > max) issue(column, `Es obligatorio y admite hasta ${max} caracteres.`);
     }
-    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(sku)) issue("sku", "Usa letras, números, punto, guion, barra o guion bajo; empieza por letra o número.");
+    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(get("sku").replace(/\s+/g, ""))) issue("sku", "Usa letras, números, punto, guion, barra o guion bajo; empieza por letra o número.");
     if (skus.has(sku)) issue("sku", "SKU repetido dentro del mismo archivo.");
     skus.add(sku);
     const categorySlug = slugifyValue(category);

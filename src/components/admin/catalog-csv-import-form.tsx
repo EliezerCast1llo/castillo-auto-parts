@@ -58,13 +58,17 @@ export function CatalogCsvImportForm() {
           <thead><tr>{["Fila", "Producto", "Acción", "Precio con IVA", "Stock MAIN", "Detalles"].map((label) => <th className="border-b border-border p-2" key={label} scope="col">{label}</th>)}</tr></thead>
           <tbody>{state.plan.items.map((item) => <tr key={item.source.row}>
             <td className="p-2">{item.source.row}</td><td className="p-2"><p className="font-semibold">{item.source.sku}</p><p>{item.source.name}</p></td>
-            <td className="p-2">{item.action}</td><td className="p-2">{item.previousPrice !== null ? `${formatCurrency(item.previousPrice)} → ` : ""}{formatCurrency(item.source.priceCents)}</td>
+            <td className="p-2"><p>{item.action}</p>
+              <p>Cambios: {item.changes.join(", ") || "ninguno"}.</p>
+              {item.isActive ? <p>Estado final: Activo.</p> : <p className="font-semibold text-warning">Estado final: Inactivo. Seguirá inactivo; reactívalo desde su ficha si debe aparecer en el catálogo.</p>}
+              {item.existingSku && item.existingSku !== item.source.sku ? <p>SKU existente: {item.existingSku}</p> : null}
+            </td><td className="p-2">{item.previousPrice !== null ? `${formatCurrency(item.previousPrice)} → ` : ""}{formatCurrency(item.source.priceCents)}</td>
             <td className="p-2">{item.previousStock !== null ? `${item.previousStock} → ` : ""}{item.source.stock}</td>
             <td className="p-2"><details><summary className="cursor-pointer font-semibold">Ver detalles de {item.source.sku}</summary>
-              <p>Marca: {item.source.brand}. Categoría: {item.source.category}. Número de parte: {item.source.partNumber || "vacío"}.</p>
-              <p className="whitespace-pre-wrap">Descripción: {item.source.description || "vacía"}</p>
+              <p>Marca: {item.source.brand}. Categoría: {item.source.category}. Número de parte: {item.partNumber || "vacío"}{item.action === "actualizar" && !item.source.partNumber ? " (vacío en CSV: se conserva)" : ""}.</p>
+              <p className="whitespace-pre-wrap">Descripción: {item.description || "vacía"}{item.action === "actualizar" && !item.source.description ? " (vacía en CSV: se conserva)" : ""}</p>
               <p>{item.measurements ? `${item.measurements.weightGrams / 1000} kg · ${item.measurements.lengthMm / 10} × ${item.measurements.widthMm / 10} × ${item.measurements.heightMm / 10} cm` : "Sin peso y medidas: pendiente para cotizar envíos."}</p>
-              <p>Compatibilidades: {item.source.compatibilities.map((vehicle) => `${vehicle.make} ${vehicle.model} ${vehicle.yearFrom}–${vehicle.yearTo}`).join("; ") || "ninguna (se eliminarán las existentes)"}</p>
+              <p>Compatibilidades: {item.compatibilities.map((vehicle) => `${vehicle.make} ${vehicle.model} ${vehicle.yearFrom}–${vehicle.yearTo}`).join("; ") || "ninguna"}{item.action === "actualizar" && !item.source.compatibilities.length ? " (vacías en CSV: se conservan)" : ""}</p>
             </details></td>
           </tr>)}</tbody>
         </table></div>
