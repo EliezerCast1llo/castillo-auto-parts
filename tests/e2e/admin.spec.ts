@@ -43,7 +43,7 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-test("admin can sign in with email and password", async ({ page }) => {
+test("admin can sign in and sign out with email and password", async ({ page }) => {
   await page.goto("/admin/login");
 
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
@@ -52,6 +52,11 @@ test("admin can sign in with email and password", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/admin\/orders/);
   await expect(page.getByRole("heading", { exact: true, name: "Órdenes" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Salir", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/login\?estado=logged_out/);
+  await page.goto("/admin/orders");
+  await expect(page).toHaveURL(/\/admin\/login/);
 });
 
 test("admin can open stock alert operations", async ({ page }) => {
