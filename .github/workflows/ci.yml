@@ -86,6 +86,14 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Build backup image and prove PostgreSQL restore
+        run: |
+          docker build -f ops/database-backup/Dockerfile -t castillo-backup:test .
+          docker run --rm --network host \
+            -e BACKUP_INTEGRATION_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/castillo_auto_parts?sslmode=disable \
+            -v "$PWD/scripts/database-backup.restore.test.mjs:/app/database-backup.restore.test.mjs:ro" \
+            castillo-backup:test node --test /app/database-backup.restore.test.mjs
+
       - name: Build
         run: npm run build
 

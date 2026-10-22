@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run && node --test scripts/expire-reservations.test.mjs",
+    "test": "vitest run && node --test scripts/expire-reservations.test.mjs scripts/database-backup.test.mjs",
     "test:e2e": "tsx scripts/run-e2e.ts",
     "test:e2e:raw": "playwright test",
     "test:watch": "vitest",

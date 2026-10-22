@@ -117,7 +117,10 @@ NODE_ENV=production SEED_ADMIN_ONLY=true npm run db:seed
 ```
 
 Antes, cargar temporalmente `ADMIN_SEED_EMAIL` y `ADMIN_SEED_PASSWORD` seguros en
-el servicio. Este modo solo hace upsert del administrador y no crea productos ni
+el servicio. La contraseña debe tener al menos 16 caracteres y no ser un valor
+de `.env.example`; el email debe ser válido y no el de ejemplo. Si falta una
+variable o la credencial es inválida, el comando termina en error antes de
+escribir. Este modo solo hace upsert del administrador y no crea productos ni
 inventario. Comprobar login; quitar las dos variables del servicio después.
 Repetir el comando con credenciales nuevas cambia la contraseña del mismo admin.
 El seed de demo se rechaza con `NODE_ENV=production`. El dueño debe cargar datos
@@ -191,67 +194,20 @@ Responsable: dueño/operador designado. Objetivos iniciales **RPO ≤24 h** y
 | Copia mensual | Mensual | 3 mensuales |
 | Snapshot nativo del volumen, si el plan lo admite | Habilitar diario/semanal/mensual en Railway | Verificar retención real en UI; complementar si es inferior |
 
-No asumir que crear Postgres habilita backups ni que un snapshot en el mismo
-proyecto cubre borrado de cuenta. Antes de ventas, el dueño configura un trabajo
-de respaldo fuera del contenedor web (scheduler del operador o servicio dedicado)
-y almacenamiento cifrado con control de acceso, verifica un éxito diario y
-alerta si pasan 24 h sin copia. Ese servicio/plan se contrata manualmente; el cron
-de reservas **no hace backups**. Registrar fecha, versión PG, tamaño, checksum,
-commit de aplicación y resultado, sin credenciales. Las copias contienen datos
-personales: no ponerlas en Git ni en artefactos públicos de CI.
+El mecanismo incluido es un servicio cron de Railway independiente, definido en
+`railway.backup.json`, que ejecuta `pg_dump` con PostgreSQL 16, cifra con AES-256-GCM
+y sube a un bucket S3 privado externo. Ejecuta diariamente a las 08:00 UTC (02:00
+El Salvador), conserva 7 fechas diarias, 4 domingos y 3 primeros de mes, y solo
+purga después de verificar las subidas. El cron de reservas **no hace backups**.
 
-### Backup lógico reproducible
-
-Desde una máquina administrativa con `pg_dump`, `pg_restore`, `psql` y espacio
-suficiente, todos de versión compatible con el servidor:
-
-1. Habilitar temporalmente el proxy TCP de Postgres en Railway → Networking y
-   obtener host/puerto de acceso público. La URL `.railway.internal` no resuelve
-   fuera del proyecto. Conservar la conexión privada en web.
-2. Crear un archivo de servicios libpq **fuera del checkout**, con permisos 600,
-   y una sección `castillo-production`. Completar localmente host, port, dbname,
-   user y password usando los datos de la cuenta. Fijar `connect_timeout=5` y
-   `sslmode` según las capacidades del endpoint contratado; usar verificación
-   TLS cuando el proveedor entregue certificado. No desactivar TLS sin evaluar
-   el transporte. El archivo es secreto y no se comparte ni se imprime.
-   Formato del archivo (sustituir marcadores solo en el archivo local privado):
-
-```ini
-[castillo-production]
-host=<host-del-proxy>
-port=<puerto-del-proxy>
-dbname=<nombre-de-base>
-user=<usuario>
-password=<contraseña>
-connect_timeout=5
-sslmode=<modo-TLS-confirmado-con-el-proveedor>
-```
-
-3. Definir rutas privadas, por ejemplo `export PGSERVICEFILE="$HOME/.config/castillo/pg_service.conf"`
-   y `export BACKUP_DIR="$HOME/backups/castillo"`, fuera del checkout y sobre disco
-   cifrado. Crear el directorio de configuración con permisos 700 y el archivo
-   anterior con permisos 600 (`chmod 600 "$PGSERVICEFILE"`). Luego ejecutar:
-
-```sh
-umask 077
-mkdir -p "$BACKUP_DIR"
-backup_file="$BACKUP_DIR/castillo-$(date -u +%Y%m%dT%H%M%SZ).dump"
-pg_dump --dbname=service=castillo-production --format=custom --no-owner \
-  --no-privileges --file="$backup_file"
-pg_restore --list "$backup_file" > "$backup_file.list"
-(cd "$BACKUP_DIR" && sha256sum "$(basename "$backup_file")" > "$(basename "$backup_file").sha256")
-```
-
-4. Solo si los comandos terminan en 0, copiar dump/checksum al almacenamiento
-   cifrado independiente, verificar checksum de destino y registrar evidencia.
-   Aplicar las retenciones anteriores sin borrar la última copia verificada.
-5. Cerrar el proxy público si no se requiere. Un scheduler externo necesita un
-   acceso autorizado estable; si se cierra, coordinar su reapertura o ejecutar
-   ese scheduler desde la red privada. No exponer la base solo para la app web.
-
-`pg_dump` toma un snapshot lógico consistente sin detener escrituras. No copia
-roles globales, configuración Railway ni objetos R2: conservar configuración y
-rotación de secretos por separado, y respaldar imágenes con su propia política.
+Seguir [Backups PostgreSQL en Railway y restauración](database-backups.md) para
+crear el servicio, configurar todas las variables `BACKUP_*` vacías de
+`.env.example`, hacer la copia inicial/manual, activar avisos, descargar y
+restaurar. No hay un scheduler externo implícito. El dueño configura recursos y
+hace el primer ensayo antes de ventas; los snapshots nativos son complementarios.
+El job CI `quality` construye la imagen y prueba dump/cifrado/descarga/restauración
+con Postgres 16 y almacenamiento simulado, sin credenciales reales. Las copias
+contienen datos personales: no ponerlas en Git ni en artefactos públicos de CI.
 
 ## 7. Restauración y simulacro mensual
 
@@ -259,46 +215,32 @@ Hacer el primer simulacro **antes de ventas**, luego cada mes y después de
 cambios de esquema/plan. Usar una base nueva aislada y datos restringidos; medir
 el tiempo desde recuperación de copia hasta healthcheck/validación completa.
 
-1. Elegir una copia, verificar su checksum en el mismo directorio con
-   `sha256sum -c <archivo>.sha256` y revisar `pg_restore --list <archivo>`.
-2. En Railway crear **PostgresRestore**, misma versión mayor y volumen con
-   capacidad suficiente. No restaurar encima de la única base original.
-3. Abrir su proxy TCP temporal. Añadir la sección `castillo-restore` al archivo
-   libpq privado con los datos de esta base nueva, y mantener `PGSERVICEFILE`.
-   La base destino debe estar vacía y pertenecer al usuario que restaurará.
-4. Restaurar sin imprimir credenciales ni ejecutar seed:
-
-```sh
-pg_restore --dbname=service=castillo-restore --exit-on-error \
-  --no-owner --no-privileges "$backup_file"
-psql 'service=castillo-restore' --set=ON_ERROR_STOP=1 \
-  --command='SELECT count(*) FROM "_prisma_migrations" WHERE finished_at IS NULL AND rolled_back_at IS NULL;'
-psql 'service=castillo-restore' --set=ON_ERROR_STOP=1 \
-  --command='SELECT count(*) FROM "Product"; SELECT count(*) FROM "Order"; SELECT count(*) FROM "InventoryStock";'
-```
-
-5. Exigir cero migraciones incompletas y comparar conteos/órdenes de control con
+1. Completar los apartados 3 y 4 de [la guía de backups](database-backups.md#3-descargar-y-autenticar-una-copia):
+   descarga autenticada, PostgresRestore nuevo, archivo libpq privado y comandos
+   Docker de restauración. No restaurar encima de la única base original ni
+   ejecutar seed. Las herramientas PG compatibles están en la imagen incluida.
+2. Exigir cero migraciones incompletas y comparar conteos/órdenes de control con
    los registros de la copia. Si algo falla, conservar evidencia y crear otra
    base vacía para repetir; no usar restauraciones parciales.
-6. En un **web de recuperación aislado**, referenciar las URL privadas de
+3. En un **web de recuperación aislado**, referenciar las URL privadas de
    PostgresRestore, ejecutar `npm run db:migrate:status` y luego
    `npm run db:migrate:deploy` para el commit seleccionado. Un dump antiguo
    requiere migraciones posteriores; si una migración es incompatible, usar el
    commit compatible y planear la recuperación, no borrar la historia Prisma.
-7. Validar `/api/health`, login cliente/admin, catálogo, stock y estados de órdenes.
+4. Validar `/api/health`, login cliente/admin, catálogo, stock y estados de órdenes.
    Mantener el cron pausado y aislar correo/pagos de operaciones reales durante
    el simulacro; no usar proveedores mock en un servidor público de producción.
    Para ensayos funcionales con simulación usar el runner E2E y otra base.
-8. En una recuperación real, antes de cambiar tráfico **detener cron y escrituras
+5. En una recuperación real, antes de cambiar tráfico **detener cron y escrituras
    de web** (detener su deployment desde Railway), anunciar mantenimiento y
    registrar la última transacción. Reconciliar pedidos/pagos/webhooks ocurridos
    después del backup con Wompi: restaurar la BD no revierte pagos externos.
-9. Cambiar `DATABASE_URL` y `DIRECT_DATABASE_URL` del web real a PostgresRestore,
+6. Cambiar `DATABASE_URL` y `DIRECT_DATABASE_URL` del web real a PostgresRestore,
    validar migraciones, desplegar el commit autorizado y exigir healthcheck 200.
    Verificar login, lectura y un flujo controlado; después reactivar cron,
    revisar reservas vencidas y monitorizar los siguientes ticks. No apuntar el
    cron a un entorno de recuperación por accidente.
-10. Mantener la base anterior sin escrituras hasta confirmar recuperación. Cerrar
+7. Mantener la base anterior sin escrituras hasta confirmar recuperación. Cerrar
     proxies temporales, recuperar la política de backups sobre la nueva base y
     registrar fecha de copia, RPO/RTO medidos, responsable e incidencias.
 
@@ -310,7 +252,7 @@ capacidades. Un botón de backup habilitado sin una restauración probada no bas
 
 ## Límites pendientes de operación
 
-El repo no crea infraestructura, tareas de backup, cuentas, DNS ni credenciales;
+El repo define el servicio de backup, pero no crea infraestructura, cuentas, DNS ni credenciales;
 el dueño debe completar esos pasos. Un healthcheck 200 no demuestra entregas de
 correo ni pagos reales. Las migraciones actuales no implementan rollback
 automático y los backups no eliminan la necesidad de reconciliar pagos externos.
