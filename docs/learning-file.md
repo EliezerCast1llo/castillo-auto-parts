@@ -604,3 +604,7 @@ QA:
 - El token de advertencia `#8a5a0c` mantiene contraste AA sobre blanco y los fondos de advertencia al 10% y 15%; comprobar esos fondos al cambiar el token.
 - `upgrade-insecure-requests` no se emite en CSP report-only porque el navegador la ignora y genera avisos. HSTS protege el dominio propio, pero no reemplaza una CSP aplicada ni actualiza recursos HTTP de terceros.
 - Las mejoras de Lighthouse del PR #69 se adaptaron a los layouts por idioma. Las puntuaciones de agosto son históricas: se requiere medir otra vez en producción antes de afirmar el cumplimiento de LCP ≤2500 ms.
+
+- Producción valida variables críticas al arrancar mediante `src/instrumentation.ts`; mock/consola solo se permiten al runner E2E con esquema desechable verificado. No usar banderas E2E para demos públicas.
+- Railway usa `/api/health` como readiness de PostgreSQL y un segundo servicio con `railway.cron.json` para expirar reservas cada cinco minutos. El dueño debe crearlo; el repo no programa servicios existentes.
+- El alta del primer admin en producción exige `SEED_ADMIN_ONLY=true`; no sembrar catálogo demo. Las copias PostgreSQL requieren retención, almacenamiento independiente y restauración ensayada según `docs/deploy-production-railway.md`.

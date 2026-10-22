@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "buildCommand": "node --check scripts/expire-reservations.mjs"
+  },
+  "deploy": {
+    "preDeployCommand": [],
+    "startCommand": "node scripts/expire-reservations.mjs",
+    "cronSchedule": "*/5 * * * *",
+    "restartPolicyType": "NEVER"
+  }
+}

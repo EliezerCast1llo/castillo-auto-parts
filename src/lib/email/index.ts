@@ -1,4 +1,5 @@
 import { consoleEmailProvider } from "./console-provider";
+import { isIsolatedE2EEnvironment } from "../production-environment";
 import { resendEmailProvider } from "./resend-provider";
 import type { EmailProvider } from "./provider";
 
@@ -25,5 +26,5 @@ export function getTransactionalEmailFrom() {
 }
 
 function canUseConsoleEmailProvider() {
-  return process.env.NODE_ENV !== "production" || process.env.E2E_ISOLATED_DATABASE === "true";
+  return process.env.NODE_ENV !== "production" || isIsolatedE2EEnvironment();
 }

@@ -1,4 +1,5 @@
 import { mockPaymentProvider } from "./mock-provider";
+import { isIsolatedE2EEnvironment } from "../production-environment";
 import { isPaymentProviderId, type PaymentProvider, type PaymentProviderId } from "./provider";
 import { createWompiPaymentProvider, getWompiConfig } from "./wompi-provider";
 
@@ -50,8 +51,5 @@ export function assertPaymentProviderAllowed(providerId: PaymentProviderId, envi
 }
 
 function isE2EMockPaymentAllowed() {
-  return (
-    process.env.E2E_ISOLATED_DATABASE === "true" &&
-    process.env.ALLOW_MOCK_PAYMENT_IN_E2E === "true"
-  );
+  return isIsolatedE2EEnvironment();
 }

@@ -23,6 +23,9 @@ describe("email provider selection", () => {
   it("allows console email in isolated E2E production runs", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("E2E_ISOLATED_DATABASE", "true");
+    vi.stubEnv("ALLOW_MOCK_PAYMENT_IN_E2E", "true");
+    vi.stubEnv("DATABASE_URL", "postgresql://localhost/fixture?schema=e2e_email");
+    vi.stubEnv("DIRECT_DATABASE_URL", "postgresql://localhost/fixture?schema=e2e_email");
     vi.stubEnv("EMAIL_PROVIDER", "console");
 
     expect(getEmailProvider().name).toBe("console");
