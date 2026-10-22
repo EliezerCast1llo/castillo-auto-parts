@@ -79,6 +79,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
               <AdminNav active="products" user={adminUser} />
+              {adminUser.role === "ADMIN" ? <Link className="inline-flex h-11 items-center rounded-md border border-border px-4 text-sm font-semibold" href="/admin/products/import">Importar CSV</Link> : null}
               <Link
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
                 href="/admin/products/new"

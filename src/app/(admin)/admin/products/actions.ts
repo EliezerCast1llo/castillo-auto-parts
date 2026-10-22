@@ -16,6 +16,7 @@ import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { formString, optionalFormStringOrNull } from "@/lib/form-utils";
 import { db } from "@/lib/db";
+import { parsePackageMeasurements } from "@/lib/package-measurements";
 
 const DEFAULT_LOCATION_CODE = "MAIN";
 
@@ -38,6 +39,7 @@ type AdminProductInput = {
   slug: string;
   status: InventoryStatus;
   technicalDetails: string[];
+  measurements: { weightGrams: number | null; lengthMm: number | null; widthMm: number | null; heightMm: number | null };
 };
 
 export async function createAdminProduct(formData: FormData) {
@@ -66,6 +68,7 @@ export async function createAdminProduct(formData: FormData) {
           sku: input.sku,
           slug: input.slug,
           technicalDetails: input.technicalDetails as Prisma.InputJsonValue,
+          ...input.measurements,
         },
         select: {
           id: true,
@@ -125,6 +128,7 @@ export async function updateAdminProduct(formData: FormData) {
       const categoryId = await resolveCategoryId(tx, input);
       const savedProduct = await tx.product.update({
         data: {
+          isDemo: false,
           brand: input.brand,
           categoryId,
           description: input.description,
@@ -137,6 +141,7 @@ export async function updateAdminProduct(formData: FormData) {
           sku: input.sku,
           slug: input.slug,
           technicalDetails: input.technicalDetails as Prisma.InputJsonValue,
+          ...input.measurements,
         },
         where: { id: productId },
         select: {
@@ -238,6 +243,7 @@ function parseAdminProductFormData(formData: FormData): AdminProductInput | null
   const reorderPoint = parseInteger(formString(formData, "reorderPoint"));
   const requestedStatus = parseInventoryStatus(formString(formData, "status"));
   const parsedCompatibilities = parseCompatibilityLines(formString(formData, "compatibilities"));
+  const measurements = parsePackageMeasurements(["weightKg", "lengthCm", "widthCm", "heightCm"].map((key) => formString(formData, key)));
 
   if (
     !name ||
@@ -248,7 +254,8 @@ function parseAdminProductFormData(formData: FormData): AdminProductInput | null
     quantityOnHand === null ||
     reorderPoint === null ||
     !requestedStatus ||
-    parsedCompatibilities.invalidLines.length > 0
+    parsedCompatibilities.invalidLines.length > 0 ||
+    measurements.errors.length > 0
   ) {
     return null;
   }
@@ -276,6 +283,7 @@ function parseAdminProductFormData(formData: FormData): AdminProductInput | null
     slug,
     status: normalizeAdminInventoryStatus({ quantityOnHand, requestedStatus }),
     technicalDetails: parseTechnicalDetails(formString(formData, "technicalDetails")),
+    measurements: measurements.values ?? { weightGrams: null, lengthMm: null, widthMm: null, heightMm: null },
   };
 }
 
@@ -400,6 +408,7 @@ function buildProductAuditMetadata(
     isActive: input.isActive,
     isFeatured: input.isFeatured,
     priceCents: input.priceCents,
+    measurements: input.measurements,
     stock: {
       quantityOnHand: input.quantityOnHand,
       reorderPoint: input.reorderPoint,

@@ -21,6 +21,7 @@ type AdminProductFormProduct = {
   }>;
   isActive: boolean;
   isFeatured: boolean;
+  isDemo?: boolean;
   name: string;
   partNumber: string | null;
   priceCents: number;
@@ -29,6 +30,10 @@ type AdminProductFormProduct = {
   sku: string;
   slug: string;
   technicalDetails: unknown;
+  weightGrams?: number | null;
+  lengthMm?: number | null;
+  widthMm?: number | null;
+  heightMm?: number | null;
 };
 
 type AdminProductFormProps = {
@@ -59,6 +64,7 @@ export function AdminProductForm({
 
       <section className="rounded-md border border-border bg-card p-5">
         <h2 className="text-lg font-bold text-primary">Producto</h2>
+        {product?.isDemo ? <p className="mt-2 text-sm text-warning">Producto de demostración. Guardar esta ficha lo marcará como real y lo excluirá de la limpieza de demo.</p> : null}
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <AdminTextField defaultValue={product?.name} label="Nombre" name="name" required />
           <AdminTextField defaultValue={product?.slug} label="Slug" name="slug" />
@@ -155,6 +161,17 @@ export function AdminProductForm({
               ))}
             </select>
           </label>
+        </div>
+      </section>
+
+      <section className="rounded-md border border-border bg-card p-5">
+        <h2 className="text-lg font-bold text-primary">Peso y medidas del paquete</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Completa los cuatro valores para preparar la cotización de envíos. Sin ellos no se podrá cotizar con Boxful.</p>
+        <div className="mt-4 grid gap-4 md:grid-cols-4">
+          <AdminTextField label="Peso (kg)" name="weightKg" type="number" min="0.001" step="0.001" defaultValue={product?.weightGrams ? String(product.weightGrams / 1000) : ""} />
+          <AdminTextField label="Largo (cm)" name="lengthCm" type="number" min="0.1" step="0.1" defaultValue={product?.lengthMm ? String(product.lengthMm / 10) : ""} />
+          <AdminTextField label="Ancho (cm)" name="widthCm" type="number" min="0.1" step="0.1" defaultValue={product?.widthMm ? String(product.widthMm / 10) : ""} />
+          <AdminTextField label="Alto (cm)" name="heightCm" type="number" min="0.1" step="0.1" defaultValue={product?.heightMm ? String(product.heightMm / 10) : ""} />
         </div>
       </section>
 

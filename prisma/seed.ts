@@ -263,6 +263,7 @@ async function main() {
     const savedProduct = await prisma.product.upsert({
       where: { sku: product.sku },
       update: {
+        isDemo: true,
         name: product.name,
         slug: product.slug,
         brand: product.brand,
@@ -277,6 +278,7 @@ async function main() {
         isFeatured: true,
       },
       create: {
+        isDemo: true,
         name: product.name,
         slug: product.slug,
         brand: product.brand,

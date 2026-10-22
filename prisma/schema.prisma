@@ -152,6 +152,11 @@ model Product {
   ivaRate            Decimal                @default(0.13)
   isActive           Boolean                @default(true)
   isFeatured         Boolean                @default(false)
+  isDemo             Boolean                @default(false)
+  weightGrams        Int?
+  lengthMm           Int?
+  widthMm            Int?
+  heightMm           Int?
   images             ProductImage[]
   compatibilities    VehicleCompatibility[]
   inventoryStocks    InventoryStock[]
