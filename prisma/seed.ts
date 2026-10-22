@@ -3,6 +3,7 @@ import type { StockStatus } from "../src/lib/stock-status";
 import { mockProducts } from "../src/data/mock-products";
 import { hashPassword } from "../src/lib/admin-credentials";
 import { slugifyValue as slugify } from "../src/lib/slug";
+import { isIsolatedE2EEnvironment } from "../src/lib/production-environment";
 
 const prisma = new PrismaClient();
 
@@ -112,7 +113,11 @@ async function seedAdminUser() {
 }
 
 async function main() {
+  if (process.env.NODE_ENV === "production" && process.env.SEED_ADMIN_ONLY !== "true" && !isIsolatedE2EEnvironment()) {
+    throw new Error("Production seed requires SEED_ADMIN_ONLY=true; demo catalog seeding is forbidden.");
+  }
   await seedAdminUser();
+  if (process.env.SEED_ADMIN_ONLY === "true") return;
 
   const location = await prisma.inventoryLocation.upsert({
     where: { code: DEFAULT_LOCATION_CODE },

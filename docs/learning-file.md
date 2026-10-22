@@ -608,3 +608,7 @@ QA:
 - La carga CSV del catálogo usa lotes de hasta 200 productos/256 KiB con vista previa firmada y transacción serializable completa, incluida auditoría; el stock importado es físico absoluto de MAIN y nunca puede quedar por debajo de las reservas.
 - Las medidas físicas viven en Product como `weightGrams` y `lengthMm/widthMm/heightMm` nullable; CSV/editor muestran kg/cm. B5 debe reutilizar esos campos y convertir unidades para Boxful.
 - El origen demo se distingue con `isDemo` y revisión explícita de la lista; no borrar productos referenciados por pedidos ni tratar todo prefijo MOCK como descartable. Importar o guardar manualmente una ficha la marca como real. Ver `docs/catalog-csv-import.md`.
+
+- Producción valida variables críticas al arrancar mediante `src/instrumentation.ts`; mock/consola solo se permiten al runner E2E con esquema desechable verificado. No usar banderas E2E para demos públicas.
+- Railway usa `/api/health` como readiness de PostgreSQL y un segundo servicio con `railway.cron.json` para expirar reservas cada cinco minutos. El dueño debe crearlo; el repo no programa servicios existentes.
+- El alta del primer admin en producción exige `SEED_ADMIN_ONLY=true`; no sembrar catálogo demo. Las copias PostgreSQL requieren retención, almacenamiento independiente y restauración ensayada según `docs/deploy-production-railway.md`.

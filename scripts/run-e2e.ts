@@ -35,6 +35,8 @@ const e2eEnv = {
   NEXTAUTH_URL: e2eBaseUrl,
   NEXT_PUBLIC_SITE_URL: process.env.E2E_SITE_URL || e2eBaseUrl,
   PAYMENT_PROVIDER: process.env.E2E_PAYMENT_PROVIDER || "mock",
+  RESERVATION_CRON_SECRET:
+    process.env.E2E_RESERVATION_CRON_SECRET || "e2e-reservation-cron-secret-at-least-32-characters-long",
   PLAYWRIGHT_BASE_URL: e2eBaseUrl,
   PLAYWRIGHT_PORT: e2ePort,
   PLAYWRIGHT_WEB_SERVER_COMMAND: `npm run start -- --port ${e2ePort}`,
