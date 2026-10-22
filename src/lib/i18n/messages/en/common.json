@@ -1,4 +1,9 @@
 {
   "retry": "Try again",
-  "backToHome": "Back to home"
+  "backToHome": "Back to home",
+  "whatsapp": {
+    "consult": "Ask us on WhatsApp",
+    "helpFind": "We can help you find it",
+    "message": "Hi, I need help finding a part that fits my vehicle."
+  }
 }

@@ -602,7 +602,7 @@ QA:
 
 - Los nombres accesibles de botones deben contener literalmente su texto visible traducido. `AddToCartForm` compone el contexto del producto después del label resuelto por idioma; los enlaces de soporte usan su texto visible como nombre.
 - El token de advertencia `#8a5a0c` mantiene contraste AA sobre blanco y los fondos de advertencia al 10% y 15%; comprobar esos fondos al cambiar el token.
-- `upgrade-insecure-requests` no se emite en CSP report-only porque el navegador la ignora y genera avisos. HSTS protege el dominio propio, pero no reemplaza una CSP aplicada ni actualiza recursos HTTP de terceros.
+- `upgrade-insecure-requests` se emite solo con `CSP_ENFORCE=true`, usando el mismo valor que selecciona el header en middleware; en report-only el navegador la ignora y genera avisos. HSTS protege el dominio propio, pero no reemplaza una CSP aplicada ni actualiza recursos HTTP de terceros.
 - Las mejoras de Lighthouse del PR #69 se adaptaron a los layouts por idioma. Las puntuaciones de agosto son históricas: se requiere medir otra vez en producción antes de afirmar el cumplimiento de LCP ≤2500 ms.
 
 - La carga CSV del catálogo usa lotes de hasta 200 productos/256 KiB con vista previa firmada y transacción serializable completa, incluida auditoría; el stock importado es físico absoluto de MAIN y nunca puede quedar por debajo de las reservas.

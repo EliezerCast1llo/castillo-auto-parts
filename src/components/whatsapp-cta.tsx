@@ -1,6 +1,6 @@
 import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle } from "lucide-react";
-import { DEFAULT_SUPPORT_MESSAGE } from "@/lib/contact";
+import { useTranslations } from "next-intl";
 
 type WhatsAppCtaVariant = "button" | "floating" | "inline" | "subtle";
 
@@ -14,16 +14,18 @@ type WhatsAppCtaProps = {
 
 export function WhatsAppCTA({
  className = "",
- label = "Consultar por WhatsApp",
- message = DEFAULT_SUPPORT_MESSAGE,
+ label,
+ message,
  phone,
  variant = "button",
 }: WhatsAppCtaProps) {
+ const t = useTranslations("Common.whatsapp");
+ const resolvedLabel = label ?? t("consult");
  // WhatsApp es un destino externo y no pasa por el ruteo de idiomas; el
  // fallback si, y su ruta interna se llama `/help` aunque en espanol se sirva
  // como `/ayuda`.
  const whatsappUrl = phone
- ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+ ? `https://wa.me/${phone}?text=${encodeURIComponent(message ?? t("message"))}`
  : null;
  // El texto visible da el nombre accesible, incluido el fallback localizado.
 
@@ -38,7 +40,7 @@ export function WhatsAppCTA({
  target="_blank"
  >
  <MessageCircle className={getIconClassName(variant)} strokeWidth={2} />
- <span>{label}</span>
+ <span>{resolvedLabel}</span>
  </a>
  );
  }
@@ -46,7 +48,7 @@ export function WhatsAppCTA({
  return (
  <Link className={`${baseClass} ${className}`} href="/help">
  <MessageCircle className={getIconClassName(variant)} strokeWidth={2} />
- <span>{variant === "inline" ? "Te ayudamos a encontrarlo" : label}</span>
+ <span>{variant === "inline" ? t("helpFind") : resolvedLabel}</span>
  </Link>
  );
 }

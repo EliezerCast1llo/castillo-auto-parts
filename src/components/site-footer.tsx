@@ -2,7 +2,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { MapPin, ShieldCheck, Truck, Wrench } from "lucide-react";
 import { getCatalogFacets } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
-import { DEFAULT_SUPPORT_MESSAGE, SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
+import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import type { Locale } from "@/lib/i18n/config";
 import { getTranslations } from "next-intl/server";
@@ -14,6 +14,7 @@ import type { LocaleHref } from "@/lib/i18n/navigation";
  */
 export async function SiteFooter({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Footer" });
+  const tWhatsApp = await getTranslations({ locale, namespace: "Common.whatsapp" });
   let vehicleMakes: string[] = [];
   let partBrands: string[] = [];
   try {
@@ -98,7 +99,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           {SUPPORT_WHATSAPP_NUMBER ? (
             <a
               className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"
-              href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(DEFAULT_SUPPORT_MESSAGE)}`}
+              href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(tWhatsApp("message"))}`}
               rel="noopener noreferrer"
               target="_blank"
             >
