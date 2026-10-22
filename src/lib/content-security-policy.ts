@@ -32,10 +32,16 @@ export function buildContentSecurityPolicy({
     ["worker-src", ["'self'", "blob:"]],
   ];
 
-  if (environment.NODE_ENV === "production") {
-    directives.push(["upgrade-insecure-requests", []]);
-  }
+  // Esta política se emite como report-only: el navegador ignora aquí
+  // `upgrade-insecure-requests` y genera un aviso de consola. Se omite esa
+  // directiva; las demás restricciones de la política se conservan.
+  // HSTS protege el dominio propio en producción, pero no sustituye una CSP
+  // aplicada ni actualiza recursos HTTP de terceros. Si se pasa a una política
+  // aplicada, reevaluar allí `upgrade-insecure-requests`.
+  return serializeDirectives(directives);
+}
 
+function serializeDirectives(directives: Array<[string, string[]]>) {
   return directives
     .map(([directive, values]) => [directive, ...values].join(" "))
     .join("; ");

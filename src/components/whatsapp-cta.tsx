@@ -25,14 +25,13 @@ export function WhatsAppCTA({
  const whatsappUrl = phone
  ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
  : null;
- const ariaLabel = phone ? label : "Ir a ayuda y contacto";
+ // El texto visible da el nombre accesible, incluido el fallback localizado.
 
  const baseClass = getVariantClassName(variant);
 
  if (whatsappUrl) {
  return (
  <a
- aria-label={ariaLabel}
  className={`${baseClass} ${className}`}
  href={whatsappUrl}
  rel="noopener noreferrer"
@@ -45,7 +44,7 @@ export function WhatsAppCTA({
  }
 
  return (
- <Link aria-label={ariaLabel} className={`${baseClass} ${className}`} href="/help">
+ <Link className={`${baseClass} ${className}`} href="/help">
  <MessageCircle className={getIconClassName(variant)} strokeWidth={2} />
  <span>{variant === "inline" ? "Te ayudamos a encontrarlo" : label}</span>
  </Link>

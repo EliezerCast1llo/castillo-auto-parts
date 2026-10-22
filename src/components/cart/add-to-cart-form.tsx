@@ -32,7 +32,8 @@ type AddToCartFormProps = {
   children?: ReactNode;
   /** Sobrescribe el texto del botón; sin esto se usa el traducido. */
   label?: string;
-  buttonAriaLabel?: string;
+  /** El nombre accesible conserva el texto visible traducido como prefijo. */
+  productName?: string;
   unavailableLabel?: string;
   className?: string;
   buttonClassName?: string;
@@ -48,13 +49,15 @@ export function AddToCartForm({
   available,
   children,
   label,
-  buttonAriaLabel,
+  productName,
   unavailableLabel,
   className,
   buttonClassName,
   buttonSize = "md",
 }: AddToCartFormProps) {
   const t = useTranslations("Cart.addToCart");
+  const visibleLabel = label ?? t("label");
+  const accessibleName = available && productName ? `${visibleLabel}: ${productName}` : undefined;
   const [state, formAction, pending] = useActionState(addCartItemInline, null);
   const lastHandledAtRef = useRef<number | null>(null);
   const router = useRouter();
@@ -78,7 +81,7 @@ export function AddToCartForm({
       <input name="sku" type="hidden" value={sku} />
       {children ?? <input name="quantity" type="hidden" value="1" />}
       <Button
-        aria-label={available ? buttonAriaLabel : undefined}
+        aria-label={accessibleName}
         type="submit"
         size={buttonSize}
         disabled={!available || pending}
@@ -89,7 +92,7 @@ export function AddToCartForm({
         ) : (
           <ShoppingCart className="h-4 w-4" strokeWidth={2} />
         )}
-        {available ? (label ?? t("label")) : (unavailableLabel ?? t("unavailable"))}
+        {available ? visibleLabel : (unavailableLabel ?? t("unavailable"))}
       </Button>
     </form>
   );

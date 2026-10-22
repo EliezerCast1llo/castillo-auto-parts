@@ -47,7 +47,11 @@
   --accent: var(--ca-gold-500);
   --accent-foreground: #1a1200;
   --success: var(--ca-success);
-  --warning: #b7791f;
+  /* Ámbar de advertencia. Mismo tono que el dorado de marca (~34°), oscurecido
+     para cumplir WCAG AA como texto: 5.92:1 sobre blanco, 5.16:1 sobre
+     `bg-warning/10` y 4.77:1 sobre `bg-warning/15`, que son los tres fondos
+     donde se usa. El valor anterior (#b7791f) daba 3.64:1 y fallaba. */
+  --warning: #8a5a0c;
   --danger: #b42318;
   --info: #0f766e;
   --muted: #eef3f8;
@@ -150,46 +154,9 @@ select {
   }
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
-}
-
-@keyframes slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 183, 42, 0.3); }
-  50%       { box-shadow: 0 0 0 8px rgba(242, 183, 42, 0); }
-}
-
-@keyframes shrink-bar {
-  from { transform: scaleX(1); }
-  to   { transform: scaleX(0); }
 }
 
 /* ── Animation utilities ─────────────────────────────────────── */
@@ -198,21 +165,11 @@ select {
   animation: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.animate-fade-in {
-  animation: fade-in 0.4s ease both;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .delay-100 { animation-delay: 0.10s; }
-.delay-150 { animation-delay: 0.15s; }
 .delay-200 { animation-delay: 0.20s; }
 .delay-300 { animation-delay: 0.30s; }
 .delay-400 { animation-delay: 0.40s; }
 .delay-500 { animation-delay: 0.50s; }
-.delay-600 { animation-delay: 0.60s; }
 
 /* ── Container ───────────────────────────────────────────────── */
 
@@ -281,20 +238,6 @@ select {
   color: var(--ca-gold-500);
 }
 
-/* ── Card hover lift ─────────────────────────────────────────── */
-
-.ca-card-lift {
-  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.22s ease;
-}
-
-.ca-card-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--ca-shadow-premium);
-  border-color: #c3cfdd;
-}
-
 /* ── Mechanical grid background pattern ──────────────────────── */
 
 .ca-grid-bg {
@@ -302,6 +245,25 @@ select {
     linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
+}
+
+/* ── Bloques de producto fuera del pliegue ───────────────────── */
+
+/* En movil (viewport ~915px) el primer riel arranca cerca de y=1745 y los seis
+   suman el 83% de los nodos de la home. El navegador los maquetaba y pintaba
+   antes de poder pintar el hero, que es el elemento LCP.
+
+   `content-visibility: auto` le deja saltarse ese trabajo hasta que el bloque
+   se acerca al viewport. No es ocultar contenido: el HTML se sirve entero, y
+   el contenido saltado sigue expuesto en el arbol de accesibilidad, en
+   find-in-page y para los rastreadores.
+
+   `contain-intrinsic-size: auto 469px` reserva la altura real medida de un
+   riel; el `auto` hace que, una vez pintado, el navegador recuerde su tamano
+   exacto, de modo que volver a alejarlo no mueve el scroll. */
+.ca-defer-offscreen {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 469px;
 }
 
 /* ── Track de carrusel ───────────────────────────────────────── */

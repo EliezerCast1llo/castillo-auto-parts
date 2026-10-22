@@ -9,9 +9,11 @@ import { loadMessages, pickClientMessages } from "@/lib/i18n/messages";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "../../globals.css";
 
+// Solo se usan los pesos 800 y 900 de la fuente display en el storefront.
+// Cada peso estático extra añade una descarga que compite con la imagen LCP.
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800", "900"],
+  weight: ["800", "900"],
   variable: "--font-display",
 });
 
