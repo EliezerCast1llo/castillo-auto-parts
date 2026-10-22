@@ -84,6 +84,8 @@ test("customer can log in and log out", async ({ page }) => {
   // Log out
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
   await expect(page).toHaveURL(ES("/"));
+  await page.goto(ES("/account"));
+  await expect(page).toHaveURL(/\/auth\/login/);
 
   // Log in again
   await loginUser(page, email);
