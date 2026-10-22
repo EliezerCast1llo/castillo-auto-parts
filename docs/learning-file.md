@@ -604,3 +604,7 @@ QA:
 - El token de advertencia `#8a5a0c` mantiene contraste AA sobre blanco y los fondos de advertencia al 10% y 15%; comprobar esos fondos al cambiar el token.
 - `upgrade-insecure-requests` no se emite en CSP report-only porque el navegador la ignora y genera avisos. HSTS protege el dominio propio, pero no reemplaza una CSP aplicada ni actualiza recursos HTTP de terceros.
 - Las mejoras de Lighthouse del PR #69 se adaptaron a los layouts por idioma. Las puntuaciones de agosto son históricas: se requiere medir otra vez en producción antes de afirmar el cumplimiento de LCP ≤2500 ms.
+
+- La carga CSV del catálogo usa lotes de hasta 200 productos/256 KiB con vista previa firmada y transacción serializable completa, incluida auditoría; el stock importado es físico absoluto de MAIN y nunca puede quedar por debajo de las reservas.
+- Las medidas físicas viven en Product como `weightGrams` y `lengthMm/widthMm/heightMm` nullable; CSV/editor muestran kg/cm. B5 debe reutilizar esos campos y convertir unidades para Boxful.
+- El origen demo se distingue con `isDemo` y revisión explícita de la lista; no borrar productos referenciados por pedidos ni tratar todo prefijo MOCK como descartable. Importar o guardar manualmente una ficha la marca como real. Ver `docs/catalog-csv-import.md`.

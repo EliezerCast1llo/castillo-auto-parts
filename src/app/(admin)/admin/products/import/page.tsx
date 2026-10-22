@@ -1,0 +1,27 @@
+import Link from "next/link";
+import { requireAdminRole } from "@/lib/admin-auth";
+import { AdminNav } from "@/components/admin/admin-nav";
+import { CatalogCsvImportForm } from "@/components/admin/catalog-csv-import-form";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Importar catálogo CSV | Castillo Auto Parts" };
+
+export default async function CatalogCsvImportPage() {
+  const adminUser = await requireAdminRole("ADMIN");
+  return <main className="mx-auto max-w-7xl space-y-5 px-4 py-8 text-foreground">
+    <Link className="text-sm font-semibold text-primary underline" href="/admin/products">Volver a productos</Link>
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <h1 className="text-2xl font-bold text-primary">Importar catálogo por CSV</h1>
+      <AdminNav active="products" user={adminUser} />
+    </div>
+    <section className="space-y-3 rounded-md border border-border bg-card p-5">
+      <h2 className="text-lg font-bold text-primary">1. Prepara el archivo</h2>
+      <a className="inline-flex rounded-md bg-primary px-4 py-3 font-semibold text-white" href="/api/admin/catalog-import-template" download>Descargar plantilla CSV</a>
+      <p>CSV UTF-8, separado por comas o punto y coma. Máximo 256 KiB y 200 productos por lote. El SKU identifica cada producto.</p>
+      <p>Precio en USD con IVA incluido; stock físico total en bodega MAIN, sin descontar las reservas. Peso en kg (hasta 3 decimales), medidas en cm (hasta 1 decimal).</p>
+      <p>Compatibilidades: <code>Toyota|Corolla|2010|2018;Honda|Civic|2016|2020</code>. Sin motores; hasta 20 por producto.</p>
+      <p className="text-sm text-muted-foreground">Se reemplazan descripción, número de parte y compatibilidades: si sus celdas están vacías, se borran esos valores. Las medidas vacías se conservan en productos existentes; completa las cuatro para cambiarlas. Se mantienen imágenes, traducciones, rutas y estado activo de los existentes; los nuevos se crean activos.</p>
+    </section>
+    <CatalogCsvImportForm />
+  </main>;
+}
