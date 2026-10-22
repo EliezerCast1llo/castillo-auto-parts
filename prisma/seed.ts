@@ -4,6 +4,7 @@ import { mockProducts } from "../src/data/mock-products";
 import { hashPassword } from "../src/lib/admin-credentials";
 import { slugifyValue as slugify } from "../src/lib/slug";
 import { isIsolatedE2EEnvironment } from "../src/lib/production-environment";
+import { AdminSeedConfigurationError, readAdminSeedCredentials } from "../src/lib/admin-seed";
 
 const prisma = new PrismaClient();
 
@@ -88,13 +89,12 @@ function toInventoryStatus(status: StockStatus) {
 }
 
 async function seedAdminUser() {
-  const email = process.env.ADMIN_SEED_EMAIL?.trim();
-  const password = process.env.ADMIN_SEED_PASSWORD?.trim();
-
-  if (!email || !password) {
+  const credentials = readAdminSeedCredentials();
+  if (!credentials) {
     console.log("ℹ  ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD no definidos — omitiendo seed de usuario admin.");
     return;
   }
+  const { email, password } = credentials;
 
   const passwordHash = await hashPassword(password);
   await prisma.user.upsert({
@@ -114,7 +114,7 @@ async function seedAdminUser() {
 
 async function main() {
   if (process.env.NODE_ENV === "production" && process.env.SEED_ADMIN_ONLY !== "true" && !isIsolatedE2EEnvironment()) {
-    throw new Error("Production seed requires SEED_ADMIN_ONLY=true; demo catalog seeding is forbidden.");
+    throw new AdminSeedConfigurationError("Production seed requires SEED_ADMIN_ONLY=true; demo catalog seeding is forbidden.");
   }
   await seedAdminUser();
   if (process.env.SEED_ADMIN_ONLY === "true") return;
@@ -347,7 +347,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (error) => {
-    console.error(error);
+    console.error(error instanceof AdminSeedConfigurationError ? error.message : "Seed failed; check database configuration and connectivity.");
     await prisma.$disconnect();
     process.exit(1);
   });
