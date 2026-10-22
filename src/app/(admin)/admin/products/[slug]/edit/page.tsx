@@ -12,6 +12,7 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { updateAdminProduct } from "../../actions";
 import { defaultLocale } from "@/lib/i18n/config";
+import { adminSkuConflictMessage } from "@/lib/admin-products";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,8 @@ export default async function EditAdminProductPage({
   const adminUser = await requireAdminRole("ADMIN");
 
   const query = searchParams ? await searchParams : {};
-  const statusMessage = getStatusMessage(firstValue(query.estado));
+  const actionStatus = firstValue(query.estado);
+  const statusMessage = getStatusMessage(actionStatus, firstValue(query.sku_existente));
   const [product, categories] = await Promise.all([
     db.product.findUnique({
       include: {
@@ -81,7 +83,7 @@ export default async function EditAdminProductPage({
           <AdminNav active="products" user={adminUser} />
         </div>
 
-        {statusMessage ? <AdminProductNotice message={statusMessage} /> : null}
+        {statusMessage ? <AdminProductNotice isError={!["created", "updated"].includes(actionStatus)} message={statusMessage} /> : null}
 
         <section className="mt-5 space-y-4">
           <AdminProductForm
@@ -109,21 +111,23 @@ export default async function EditAdminProductPage({
   );
 }
 
-function AdminProductNotice({ message }: { message: string }) {
+function AdminProductNotice({ message, isError }: { message: string; isError: boolean }) {
   return (
-    <div className="mt-5 rounded-md bg-success/10 p-3 text-sm font-semibold text-success">
+    <div role={isError ? "alert" : "status"} className={`mt-5 rounded-md p-3 text-sm font-semibold ${isError ? "bg-danger/10 text-danger" : "bg-success/10 text-success"}`}>
       {message}
     </div>
   );
 }
 
-function getStatusMessage(status: string) {
+function getStatusMessage(status: string, existingSku: string) {
+  if (status === "sku_conflict") return adminSkuConflictMessage(existingSku);
   const messages: Record<string, string> = {
     created: "Producto creado.",
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
     invalid: "Revisa los campos del producto.",
     updated: "Producto actualizado.",
+    conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
   };
 
   return messages[status] ?? "";

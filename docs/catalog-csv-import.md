@@ -87,9 +87,12 @@ la cantidad final de compatibilidades y el estado activo que se conserva.
 
 Los productos nuevos guardan el SKU canónico. Los existentes conservan su SKU
 original, id y referencias: no se renombra masivamente el catálogo ni se mezclan
-productos de un choque. La normalización aplica al importador; el editor manual
-puede contener variantes históricas, por lo que se vuelve a comprobar la
-ambigüedad al confirmar. Resolver los SKUs duplicados desde administración antes
+productos de un choque. El editor manual también normaliza al crear y guardar
+una ficha, usando la misma función y búsqueda que el importador. Rechaza choques
+con otro producto antes de escribir e indica el SKU existente; al editar excluye
+el propio producto. Guardar una ficha histórica normaliza únicamente su SKU,
+sin migrar o fusionar otros registros. Las variantes históricas duplicadas se
+reportan; la ambigüedad se vuelve a comprobar al confirmar un CSV. Resolver los SKUs duplicados desde administración antes
 de revalidar; no basta con cambiar mayúsculas en el archivo.
 
 Cada archivo es un lote independiente. Los lotes ya confirmados no se revierten

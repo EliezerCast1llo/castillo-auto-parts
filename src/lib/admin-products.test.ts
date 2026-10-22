@@ -1,6 +1,7 @@
 import { InventoryStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import {
+  adminSkuConflictMessage,
   formatAdminPriceInput,
   normalizeAdminInventoryStatus,
   parseAdminPriceCents,
@@ -10,6 +11,12 @@ import {
 } from "./admin-products";
 
 describe("admin product helpers", () => {
+  it("identifies the existing SKU and confirms no changes in collision notices", () => {
+    const message = adminSkuConflictMessage("ABC-1");
+    expect(message).toContain("ABC-1");
+    expect(message).toContain("mayúsculas y espacios");
+    expect(message).toContain("no se guardó ningún cambio");
+  });
   it("creates stable product slugs", () => {
     expect(slugifyProductValue("Bujía Iridio Hyundai/Kia 1.6L")).toBe(
       "bujia-iridio-hyundai-kia-1-6l",

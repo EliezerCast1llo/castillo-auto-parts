@@ -3,7 +3,8 @@ import { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { writeAdminAuditLog } from "./admin-audit";
 import type { AdminSessionUser } from "./admin-user";
-import { normalizeCatalogSku, parseCatalogCsv, SKU_WHITESPACE, type CatalogCsvRow, type CsvIssue } from "./catalog-csv";
+import { normalizeCatalogSku, parseCatalogCsv, type CatalogCsvRow, type CsvIssue } from "./catalog-csv";
+import { findCatalogSkuMatches } from "./catalog-sku";
 import { csvDigest } from "./catalog-import-proof";
 import { slugifyValue } from "./slug";
 import type { PackageMeasurements } from "./package-measurements";
@@ -29,9 +30,7 @@ async function buildPlan(tx: Prisma.TransactionClient, rows: CatalogCsvRow[], de
   const skus = rows.map((row) => row.sku);
   // Compare canonical identities in PostgreSQL without loading the whole catalog.
   // Do not rewrite legacy SKUs: carts/order snapshots may still use their spelling.
-  const matches = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
-    SELECT id FROM "Product" WHERE upper(translate(sku, ${SKU_WHITESPACE}, '')) IN (${Prisma.join(skus)})
-  `);
+  const matches = await findCatalogSkuMatches(tx, skus);
   const products = await tx.product.findMany({
     where: { OR: [{ id: { in: matches.map(({ id }) => id) } }, ...(deactivateDemo ? [{ isDemo: true, isActive: true }] : [])] },
     select: { id: true, sku: true, name: true, brand: true, partNumber: true, description: true, category: { select: { slug: true } },

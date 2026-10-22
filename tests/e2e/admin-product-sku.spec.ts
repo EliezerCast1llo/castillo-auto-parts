@@ -1,0 +1,88 @@
+import { randomUUID } from "node:crypto";
+import { expect, test, type Page } from "@playwright/test";
+import { prisma } from "./helpers";
+import { CSV_COLUMNS, exportCsv } from "../../src/lib/catalog-csv";
+
+const prefix = `E2E-SKU-${randomUUID().slice(0, 8)}`.toUpperCase();
+const slugPrefix = prefix.toLowerCase();
+let categoryId: string;
+const categoryName = `Categoría ${prefix}`;
+
+test.beforeAll(async () => {
+  categoryId = (await prisma.productCategory.create({ data: { name: categoryName, slug: `${slugPrefix}-category` } })).id;
+});
+test.beforeEach(async ({ page }, info) => {
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": `198.51.101.${100 + info.workerIndex}` });
+  await page.goto("/admin/login");
+  await page.getByLabel("Correo electrónico").fill(process.env.ADMIN_SEED_EMAIL || "admin@castilloautoparts.com");
+  await page.getByLabel("Contraseña").fill(process.env.ADMIN_SEED_PASSWORD || "admin123");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/orders/);
+});
+test.afterAll(async () => {
+  const products = await prisma.product.findMany({ where: { slug: { startsWith: slugPrefix } }, select: { id: true } });
+  const filter = { productId: { in: products.map(({ id }) => id) } };
+  await prisma.vehicleCompatibility.deleteMany({ where: filter });
+  await prisma.inventoryStock.deleteMany({ where: filter });
+  await prisma.productTranslation.deleteMany({ where: filter });
+  await prisma.product.deleteMany({ where: { id: filter.productId } });
+  if (categoryId) await prisma.productCategory.deleteMany({ where: { id: categoryId } });
+  await prisma.$disconnect();
+});
+
+async function prepareProduct(page: Page, sku: string, slug: string) {
+  await page.goto("/admin/products/new");
+  await page.getByLabel("Nombre", { exact: true }).fill(`Repuesto ${slug}`);
+  await page.getByLabel("Marca", { exact: true }).fill("Proveedor SKU");
+  await page.getByLabel("SKU", { exact: true }).fill(sku);
+  await page.getByLabel("Slug", { exact: true }).fill(slug);
+  await page.getByLabel("Precio USD", { exact: true }).fill("25.50");
+  await page.getByLabel(/^Categoría/).selectOption(categoryId);
+  await page.getByLabel("Cantidad", { exact: true }).fill("10");
+}
+
+test("manual creation normalizes SKU, self edits succeed and another-case CSV previews as update", async ({ page }) => {
+  const sku = `${prefix}-QA-FIL/03`, slug = `${slugPrefix}-normalized`;
+  await prepareProduct(page, ` ${prefix.toLowerCase()}-qa-fil/03 `, slug);
+  await page.getByRole("button", { name: "Crear producto", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/admin/products/${slug}/edit\\?estado=created$`));
+  await expect(page.getByLabel("SKU", { exact: true })).toHaveValue(sku);
+  const created = await prisma.product.findUniqueOrThrow({ where: { sku } });
+  for (const value of [sku, sku.toLowerCase()]) {
+    await page.getByLabel("SKU", { exact: true }).fill(value);
+    await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+    await expect(page).toHaveURL(/estado=updated$/);
+    await expect(page.getByLabel("SKU", { exact: true })).toHaveValue(sku);
+  }
+  expect(await prisma.product.count({ where: { sku } })).toBe(1);
+  await page.goto("/admin/products/import");
+  const contents = exportCsv([CSV_COLUMNS, [sku.toLowerCase(), created.name, created.brand, "", categoryName, "26.50", "12", "", "", "", "", "", ""]]);
+  await page.getByLabel("Archivo CSV").setInputFiles({ name: "manual-sku.csv", mimeType: "text/csv", buffer: Buffer.from(contents) });
+  await page.getByRole("button", { name: "Validar y ver vista previa" }).click();
+  await expect(page.getByText("0 productos nuevos; 1 existentes.")).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: sku })).toContainText("actualizar");
+  await expect(page.getByRole("button", { name: "Confirmar importación", exact: true })).toBeEnabled();
+  expect(await prisma.product.count({ where: { sku } })).toBe(1);
+});
+
+test("create and edit collisions report the existing SKU and preserve records", async ({ page }) => {
+  const sku = `${prefix}-ABC-1`, existingSlug = `${slugPrefix}-existing`, otherSku = `${prefix}-OTHER`, otherSlug = `${slugPrefix}-other`;
+  const existing = await prisma.product.create({ data: { sku, slug: existingSlug, name: "Existing SKU fixture", brand: "Fixture", categoryId, priceCents: 100 } });
+  await prepareProduct(page, sku.toLowerCase(), `${slugPrefix}-duplicate`);
+  await page.getByRole("button", { name: "Crear producto", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/products\/new\?estado=sku_conflict/);
+  const notice = page.getByRole("alert").filter({ hasText: "El SKU coincide" });
+  await expect(notice).toContainText(sku);
+  await expect(notice).toContainText("no se guardó ningún cambio");
+  expect(await prisma.product.count({ where: { sku } })).toBe(1);
+  expect(await prisma.product.count({ where: { slug: `${slugPrefix}-duplicate` } })).toBe(0);
+  const other = await prisma.product.create({ data: { sku: otherSku, slug: otherSlug, name: "Other SKU fixture", brand: "Fixture", categoryId, priceCents: 200 } });
+  await page.goto(`/admin/products/${otherSlug}/edit`);
+  await page.getByLabel("SKU", { exact: true }).fill(sku.toLowerCase());
+  await page.getByLabel("Nombre", { exact: true }).fill("Must not overwrite");
+  await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/products\?estado=sku_conflict/);
+  await expect(page.getByRole("alert").filter({ hasText: "El SKU coincide" })).toContainText(sku);
+  expect(await prisma.product.findUniqueOrThrow({ where: { id: existing.id } })).toEqual(existing);
+  expect(await prisma.product.findUniqueOrThrow({ where: { id: other.id } })).toEqual(other);
+});

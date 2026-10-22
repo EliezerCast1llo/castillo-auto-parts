@@ -616,3 +616,5 @@ QA:
 - `railway.backup.json` define un cron diario independiente: dump PG16, cifrado AES-256-GCM y S3 privado externo. La retención 7/4/3 solo purga tras verificar las subidas; conservar claves por `BACKUP_KEY_ID` fuera de Railway y ensayar recuperación según `docs/database-backups.md`.
 
 - En CSV, descripción/parte/compatibilidades vacías conservan datos existentes. La vista previa muestra valores efectivos, campos que cambian y si el SKU seguirá inactivo. La identidad del importador usa SKU sin espacios y en mayúsculas; conserva la escritura de SKUs históricos y bloquea choques ambiguos, también al confirmar.
+
+- El editor manual usa `normalizeCatalogSku` y la misma consulta de identidad que CSV. Crear/editar rechaza choques normalizados antes de escribir, excluye el propio id al editar y no fusiona duplicados históricos. Las escrituras son serializables; un conflicto concurrente identifica el SKU ganador o pide reintentar.
