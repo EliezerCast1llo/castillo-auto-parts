@@ -60,15 +60,21 @@ describe("mock payment provider", () => {
   it("allows the mock provider only for isolated E2E runs", () => {
     const originalE2EFlag = process.env.E2E_ISOLATED_DATABASE;
     const originalAllowFlag = process.env.ALLOW_MOCK_PAYMENT_IN_E2E;
+    const originalDatabase = process.env.DATABASE_URL;
+    const originalDirect = process.env.DIRECT_DATABASE_URL;
 
     process.env.E2E_ISOLATED_DATABASE = "true";
     process.env.ALLOW_MOCK_PAYMENT_IN_E2E = "true";
+    process.env.DATABASE_URL = "postgresql://localhost/fixture?schema=e2e_provider";
+    process.env.DIRECT_DATABASE_URL = process.env.DATABASE_URL;
 
     try {
       expect(getPaymentProvider("mock", "production")).toBe(mockPaymentProvider);
     } finally {
       restoreEnv("E2E_ISOLATED_DATABASE", originalE2EFlag);
       restoreEnv("ALLOW_MOCK_PAYMENT_IN_E2E", originalAllowFlag);
+      restoreEnv("DATABASE_URL", originalDatabase);
+      restoreEnv("DIRECT_DATABASE_URL", originalDirect);
     }
   });
 });

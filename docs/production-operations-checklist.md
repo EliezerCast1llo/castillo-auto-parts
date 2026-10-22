@@ -4,7 +4,14 @@ Fecha: 2026-06-24.
 
 Este documento cubre `T-043`: puntos que no se pueden confirmar solo leyendo el repo. Deben revisarse manualmente en Vercel, Cloudflare, Resend/DNS y el proveedor de base de datos.
 
-## Vercel
+## Railway (producción actual)
+
+Seguir [la guía de producción Railway](deploy-production-railway.md) para servicios,
+variables, cron, respaldos y recuperación. Los pasos Vercel siguientes se conservan
+como referencia de un alojamiento anterior. En producción mock/consola se rechazan
+al arrancar; solo el runner E2E aislado permite proveedores simulados.
+
+## Vercel (referencia histórica)
 
 - [ ] Proyecto conectado al repo correcto: `EliezerCast1llo/castillo-auto-parts`.
 - [ ] Production Branch configurada como `main`.
@@ -15,7 +22,7 @@ Este documento cubre `T-043`: puntos que no se pueden confirmar solo leyendo el 
 - [ ] Variables sensibles marcadas/protegidas cuando aplique.
 - [ ] `NEXT_PUBLIC_SITE_URL` en producción apunta al dominio final HTTPS.
 - [ ] `NEXTAUTH_URL` apunta al dominio final HTTPS.
-- [ ] `PAYMENT_PROVIDER` sigue en `mock` hasta validación Wompi real; nunca publicar ventas reales con mock.
+- [ ] `PAYMENT_PROVIDER=wompi` y credenciales reales validadas; nunca publicar con mock.
 - [ ] `WOMPI_ENVIRONMENT=production` solo cuando Wompi real esté validado.
 - [ ] `RESERVATION_CRON_SECRET` configurado y usado por el scheduler que llama `/api/internal/expire-payment-reservations`.
 - [ ] Checks de GitHub requeridos para merge a `main`: `quality` y `e2e`.
