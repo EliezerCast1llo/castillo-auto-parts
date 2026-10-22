@@ -12,10 +12,17 @@ describe("content security policy", () => {
     expect(policy).toContain("frame-ancestors 'none'");
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("base-uri 'self'");
-    // El navegador ignora `upgrade-insecure-requests` en una politica
-    // report-only y registra un error de consola por ella. HSTS con
-    // includeSubDomains+preload ya cubre el caso, asi que no se emite.
     expect(policy).not.toContain("upgrade-insecure-requests");
+  });
+
+  it.each([undefined, "false", "true"])("upgrades insecure requests only when CSP_ENFORCE=%s enables enforcement", (enforce) => {
+    const policy = buildContentSecurityPolicy({
+      environment: { NODE_ENV: "production", CSP_ENFORCE: enforce },
+      nonce: "nonce-value",
+    });
+
+    expect(policy.split("; ").includes("upgrade-insecure-requests")).toBe(enforce === "true");
+    expect(policy).toContain("script-src 'self' 'nonce-nonce-value'");
   });
 
   it("adds configured external origins without leaking invalid URLs", () => {

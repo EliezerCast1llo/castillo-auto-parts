@@ -1,4 +1,9 @@
 {
   "retry": "Reintentar",
-  "backToHome": "Volver al inicio"
+  "backToHome": "Volver al inicio",
+  "whatsapp": {
+    "consult": "Consultar por WhatsApp",
+    "helpFind": "Te ayudamos a encontrarlo",
+    "message": "Hola, necesito ayuda para encontrar un repuesto compatible con mi vehículo."
+  }
 }

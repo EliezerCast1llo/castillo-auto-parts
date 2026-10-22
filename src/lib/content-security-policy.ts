@@ -3,6 +3,7 @@ const DEFAULT_WOMPI_IDENTITY_BASE_URL = "https://id.wompi.sv";
 
 type CspEnvironmentKey =
   | "CLOUDFLARE_R2_PUBLIC_URL"
+  | "CSP_ENFORCE"
   | "NODE_ENV"
   | "UPSTASH_REDIS_REST_URL"
   | "WOMPI_API_BASE_URL"
@@ -32,12 +33,11 @@ export function buildContentSecurityPolicy({
     ["worker-src", ["'self'", "blob:"]],
   ];
 
-  // Esta política se emite como report-only: el navegador ignora aquí
-  // `upgrade-insecure-requests` y genera un aviso de consola. Se omite esa
-  // directiva; las demás restricciones de la política se conservan.
-  // HSTS protege el dominio propio en producción, pero no sustituye una CSP
-  // aplicada ni actualiza recursos HTTP de terceros. Si se pasa a una política
-  // aplicada, reevaluar allí `upgrade-insecure-requests`.
+  // El middleware usa el mismo valor para elegir el header aplicado.
+  // En report-only el navegador ignora esta directiva y genera un aviso.
+  if (environment.CSP_ENFORCE === "true") {
+    directives.push(["upgrade-insecure-requests", []]);
+  }
   return serializeDirectives(directives);
 }
 

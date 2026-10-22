@@ -12,11 +12,61 @@ for (const locale of ["es", "en"] as const) {
       })),
     );
     for (const name of names) {
-      expect(name.visible).toBeTruthy();
-      expect(name.accessible).toMatch(new RegExp(`^${name.visible}: .+`));
+      expectProductLabel(name);
       expect(name.visible).not.toContain("undefined");
     }
     expect(names[0].visible).toBe(locale === "es" ? "Agregar al carrito" : "Add to cart");
+  });
+}
+
+test("product accessible labels treat regex characters as literal text", () => {
+  for (const visible of ["Add (+) [1]?", "Buy for $5.00*", "Part \\ kit ^ special | end"]) {
+    expectProductLabel({ visible, accessible: `${visible}: Toyota Corolla` });
+  }
+});
+
+function expectProductLabel({ visible, accessible }: { visible: string | null | undefined; accessible: string | null }) {
+  expect(visible).toBeTruthy();
+  const prefix = `${visible}: `;
+  expect(accessible?.startsWith(prefix)).toBe(true);
+  expect(accessible?.slice(prefix.length).trim()).toBeTruthy();
+}
+
+test("CSP upgrades insecure requests only in the enforced response header", async ({ request }) => {
+  const response = await request.get("/en/catalog");
+  const enforced = process.env.CSP_ENFORCE === "true";
+  const header = enforced ? "content-security-policy" : "content-security-policy-report-only";
+  const otherHeader = enforced ? "content-security-policy-report-only" : "content-security-policy";
+  const policy = response.headers()[header];
+  expect(policy).toBeTruthy();
+  expect(policy.split("; ").includes("upgrade-insecure-requests")).toBe(enforced);
+  expect(response.headers()[otherHeader]).toBeUndefined();
+});
+
+for (const locale of ["es", "en"] as const) {
+  test(`WhatsApp support and empty-search fallback use ${locale} text`, async ({ page }) => {
+    const phone = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_NUMBER?.replace(/\D/g, "") ?? "";
+    const hasPhone = phone.length >= 8;
+    await page.goto(`/${locale}/catalog?q=no-match-issue-99`);
+    const label = hasPhone
+      ? (locale === "en" ? "Ask us on WhatsApp" : "Consultar por WhatsApp")
+      : (locale === "en" ? "We can help you find it" : "Te ayudamos a encontrarlo");
+    const link = page.getByRole("link", { name: label, exact: true });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAccessibleName(label);
+    if (hasPhone) {
+      const url = new URL((await link.getAttribute("href"))!);
+      expect(url.origin).toBe("https://wa.me");
+      expect(url.pathname).toBe(`/${phone}`);
+      expect(url.searchParams.get("text")).toBe(locale === "en"
+        ? "Hi, I need help finding a part that fits my vehicle."
+        : "Hola, necesito ayuda para encontrar un repuesto compatible con mi vehículo.");
+    } else {
+      await expect(link).toHaveAttribute("href", locale === "en" ? "/en/help" : "/es/ayuda");
+      await link.click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/${locale === "en" ? "help" : "ayuda"}$`));
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    }
   });
 }
 
