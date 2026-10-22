@@ -1,4 +1,9 @@
-/** Rutas seguras para redirigir después del login de cliente. */
+/**
+ * Rutas seguras para redirigir después del login de cliente.
+ *
+ * Devuelve un string y no el tipo de href: el valor también viaja dentro de
+ * query params (`?next=`), donde tiene que seguir siendo texto.
+ */
 export function getSafeCustomerNextPath(value: string | undefined): string {
   const allowed =
     value &&

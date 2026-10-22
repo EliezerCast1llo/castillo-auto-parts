@@ -1,9 +1,20 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { Search } from "lucide-react";
+import { categoryLabelOf } from "@/data/catalog-filters";
 import type { CatalogFilterOptions, CatalogFilters } from "@/data/catalog-filters";
+import type { CatalogProduct } from "@/data/products";
 
 type ProductFiltersProps = {
+  applyFiltersLabel: string;
   activeFilterCount: number;
+  /** Textos ya resueltos: ver la nota de `SortDropdown`. */
+  availabilityLegend: string;
+  /** Etiquetas de disponibilidad ya traducidas. */
+  stockLabels: Record<CatalogProduct["stockStatus"], string>;
+  brandLegend: string;
+  categoryLegend: string;
+  searchLegend: string;
+  searchPlaceholder: string;
   filters: CatalogFilters;
   options: CatalogFilterOptions;
 };
@@ -13,36 +24,47 @@ type ProductFiltersProps = {
  * el contenedor (aside en desktop, drawer en móvil) y aquí solo hay listas
  * separadas por reglas, que es lo que hace legible una columna de filtros.
  */
-export function ProductFilters({ activeFilterCount, filters, options }: ProductFiltersProps) {
+export function ProductFilters({ applyFiltersLabel,
+  activeFilterCount,
+  availabilityLegend,
+  brandLegend,
+  stockLabels,
+  categoryLegend,
+  filters,
+  options,
+  searchLegend,
+  searchPlaceholder,
+}: ProductFiltersProps) {
   return (
     <section className="border-t border-ca-border pt-4">
       <label className="block">
-        <FilterHeading>Buscar repuesto</FilterHeading>
+        <FilterHeading>{searchLegend}</FilterHeading>
         <div className="mt-2 flex h-10 items-center gap-2 rounded-ca-control border border-ca-border bg-white px-2.5 transition focus-within:border-ca-blue-700">
           <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" />
           <input
             className="w-full bg-transparent text-sm text-ca-navy-950 outline-none placeholder:text-ca-text-secondary"
             defaultValue={filters.query}
             name="q"
-            placeholder="Nombre, SKU o número de parte"
+            placeholder={searchPlaceholder}
             type="search"
           />
         </div>
       </label>
 
-      <FilterGroup legend="Categoría">
-        {options.categories.map((category) => (
+      <FilterGroup legend={categoryLegend}>
+        {options.categories.map((slug) => (
           <FilterOption
-            key={category}
-            count={options.categoryCounts[category]}
-            defaultChecked={filters.categories.includes(category)}
-            label={category}
+            key={slug}
+            count={options.categoryCounts[slug]}
+            defaultChecked={filters.categories.includes(slug)}
+            label={categoryLabelOf(options, slug)}
             name="category"
+            value={slug}
           />
         ))}
       </FilterGroup>
 
-      <FilterGroup legend="Marca">
+      <FilterGroup legend={brandLegend}>
         {options.brands.map((brand) => (
           <FilterOption
             key={brand}
@@ -54,13 +76,14 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
         ))}
       </FilterGroup>
 
-      <FilterGroup legend="Disponibilidad">
+      <FilterGroup legend={availabilityLegend}>
         {options.stockStatuses.map((status) => (
           <FilterOption
             key={status}
             defaultChecked={filters.stockStatuses.includes(status)}
-            label={status}
+            label={stockLabels[status]}
             name="stock"
+            value={status}
           />
         ))}
       </FilterGroup>
@@ -68,7 +91,7 @@ export function ProductFilters({ activeFilterCount, filters, options }: ProductF
       <div className="mt-4 grid gap-2 border-t border-ca-border pt-4">
         {/* Los filtros se aplican al cambiar; el botón es el camino sin JS. */}
         <button className="inline-flex h-10 items-center justify-center rounded-ca-control border border-ca-navy-950 bg-white px-4 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-navy-950 hover:text-white">
-          Aplicar filtros
+          {applyFiltersLabel}
         </button>
         {activeFilterCount > 0 ? (
           <Link
@@ -106,11 +129,18 @@ function FilterOption({
   defaultChecked,
   label,
   name,
+  value,
 }: {
   count?: number;
   defaultChecked: boolean;
+  /** Texto visible. */
   label: string;
   name: string;
+  /**
+   * Valor que viaja en el form. Se separa del label porque el estado de stock
+   * se envía como identificador (`LOW_STOCK`) pero se muestra traducido.
+   */
+  value?: string;
 }) {
   return (
     <label className="flex min-h-8 cursor-pointer items-center gap-2 text-sm text-ca-text-primary transition hover:text-ca-blue-700">
@@ -119,7 +149,7 @@ function FilterOption({
         defaultChecked={defaultChecked}
         name={name}
         type="checkbox"
-        value={label}
+        value={value ?? label}
       />
       <span className="flex-1">{label}</span>
       {typeof count === "number" ? (

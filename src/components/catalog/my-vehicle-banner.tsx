@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { Car, X } from "lucide-react";
 import { buildMyVehicleClearCookie } from "@/lib/my-vehicle";
 
@@ -13,7 +13,13 @@ import { buildMyVehicleClearCookie } from "@/lib/my-vehicle";
  * instante, pero atado a la transición: si el refresco no llega, el aviso
  * reaparece en vez de dejar el catálogo filtrado sin que nada lo indique.
  */
-export function MyVehicleBanner({ vehicleLabel }: { vehicleLabel: string }) {
+export function MyVehicleBanner({
+  removeFilterLabel,
+  vehicleLabel,
+}: {
+  removeFilterLabel: string;
+  vehicleLabel: string;
+}) {
   const router = useRouter();
   const [clearing, startClearing] = useTransition();
 
@@ -37,7 +43,7 @@ export function MyVehicleBanner({ vehicleLabel }: { vehicleLabel: string }) {
         type="button"
       >
         <X className="h-3.5 w-3.5" />
-        Quitar filtro
+        {removeFilterLabel}
       </button>
     </div>
   );

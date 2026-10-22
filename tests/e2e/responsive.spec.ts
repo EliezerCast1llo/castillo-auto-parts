@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { ES } from "./helpers";
+import { PRODUCT_CLAIMS } from "./fixtures/products";
 
 const viewports = [
   { height: 844, name: "mobile", width: 390 },
@@ -26,7 +28,10 @@ const customerPages = [
     heading: "Datos de entrega y pago",
     path: "/checkout",
     setup: async (page: Page) => {
-      await addProductToCart(page, "bujia-iridio-hyundai-kia-16l");
+      // No es el mismo producto que compra catalog-cart.spec.ts: ese test
+      // compara deltas de stock y una compra concurrente se los rompe. La
+      // reserva está en fixtures/products.ts.
+      await addProductToCart(page, PRODUCT_CLAIMS["responsive.spec.ts"].cartLayout.slug);
       await page.getByRole("link", { name: "Continuar al pago" }).click();
     },
   },
@@ -56,7 +61,7 @@ for (const viewport of viewports) {
         if (typeof customerPage.setup === "function") {
           await customerPage.setup(page);
         } else {
-          await page.goto(customerPage.path);
+          await page.goto(ES(customerPage.path));
         }
 
         await expect(
@@ -86,10 +91,10 @@ for (const viewport of viewports) {
 }
 
 async function addProductToCart(page: Page, slug: string) {
-  await page.goto(`/product/${slug}`);
+  await page.goto(ES(`/product/${slug}`));
   await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
-  await page.goto("/cart");
+  await page.goto(ES("/cart"));
 }
 
 async function signInAdmin(page: Page, nextPath: string) {

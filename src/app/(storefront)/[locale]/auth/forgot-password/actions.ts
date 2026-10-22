@@ -1,0 +1,69 @@
+"use server";
+
+import { headers } from "next/headers";
+import { getActionLocale } from "@/lib/i18n/action-locale";
+import { redirect } from "@/lib/i18n/navigation";
+import { getEmailProvider } from "@/lib/email";
+import { logError } from "@/lib/logger";
+import { formString } from "@/lib/form-utils";
+import { createPasswordResetToken } from "@/lib/auth-user";
+import { createForgotPasswordRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-redis";
+import { buildAbsoluteAppUrl, buildPasswordResetEmail } from "@/lib/email/templates";
+
+let _forgotPasswordRateLimiter: AsyncRateLimiter | undefined;
+
+export async function requestPasswordReset(formData: FormData) {
+  const locale = await getActionLocale();
+  const forgotPasswordRateLimiter = (_forgotPasswordRateLimiter ??= createForgotPasswordRateLimiter());
+  const email = formString(formData, "email").trim().toLowerCase();
+
+  if (!email) {
+    redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "missing_email" } }, locale });
+  }
+
+  // Rate limit por IP y por email objetivo (previene email bombing)
+  const ipKey = await getForgotPasswordIpKey();
+  const emailKey = `forgot-password:email:${email}`;
+
+  const [ipCheck, emailCheck] = await Promise.all([
+    forgotPasswordRateLimiter.check(ipKey),
+    forgotPasswordRateLimiter.check(emailKey),
+  ]);
+
+  if (!ipCheck.allowed || !emailCheck.allowed) {
+    redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "rate_limited" } }, locale });
+  }
+
+  // Registrar el intento en ambas claves independientemente del resultado
+  // (no revelamos si el email existe; el rate limit aplica igual)
+  const [ipAttempt, emailAttempt] = await Promise.all([
+    forgotPasswordRateLimiter.registerFailure(ipKey),
+    forgotPasswordRateLimiter.registerFailure(emailKey),
+  ]);
+
+  if (!ipAttempt.allowed || !emailAttempt.allowed) {
+    redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "rate_limited" } }, locale });
+  }
+
+  // Siempre mostrar éxito para no revelar si el email existe
+  const token = await createPasswordResetToken(email);
+
+  if (token) {
+    const resetUrl = buildAbsoluteAppUrl(`/auth/reset-password/${token}`, locale);
+
+    try {
+      const provider = getEmailProvider();
+      await provider.sendEmail(buildPasswordResetEmail({ email, resetUrl, locale }));
+    } catch (error) {
+      logError({ context: "sendPasswordResetEmail" }, error);
+    }
+  }
+
+  redirect({ href: { pathname: "/auth/forgot-password", query: { estado: "sent" } }, locale });
+}
+
+async function getForgotPasswordIpKey() {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip")?.trim();
+  return `forgot-password:ip:${ip ?? "local"}`;
+}

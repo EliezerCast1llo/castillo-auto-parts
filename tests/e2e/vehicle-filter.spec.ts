@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { ES } from "./helpers";
 
 // ---------------------------------------------------------------------------
 // Filtro por vehículo: selects dependientes, cookie "mi vehículo",
@@ -16,7 +17,7 @@ async function catalogTotal(page: Page) {
 }
 
 test("home vehicle selector narrows models without reload and filters catalog", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(ES("/"));
 
   const makeSelect = page.locator('select[name="vehicleMake"]');
   const modelSelect = page.locator('select[name="vehicleModel"]');
@@ -36,7 +37,7 @@ test("home vehicle selector narrows models without reload and filters catalog", 
   const modelOptions = await modelSelect.locator("option").allTextContents();
   expect(modelOptions).toContain("Corolla");
   expect(modelOptions).not.toContain("Sentra");
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL(ES("/"));
 
   await modelSelect.selectOption("Corolla");
   await expect(yearSelect).toBeEnabled();
@@ -52,7 +53,7 @@ test("home vehicle selector narrows models without reload and filters catalog", 
 });
 
 test("vehicle selection persists as cookie and pre-applies on catalog", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(ES("/"));
 
   await page.locator('select[name="vehicleMake"]').selectOption("Toyota");
   await page.locator('select[name="vehicleModel"]').selectOption("Corolla");
@@ -67,7 +68,7 @@ test("vehicle selection persists as cookie and pre-applies on catalog", async ({
   expect(decodeURIComponent(vehicleCookie!.value)).toContain("Toyota");
 
   // Visita limpia al catálogo: el filtro se pre-aplica desde la cookie
-  await page.goto("/catalog");
+  await page.goto(ES("/catalog"));
   await expect(page.getByText("Filtrando repuestos para tu vehículo")).toBeVisible();
 
   // El badge de compatibilidad aparece en las cards
@@ -86,13 +87,13 @@ test("vehicle selection persists as cookie and pre-applies on catalog", async ({
 });
 
 test("vehicle make landing page lists compatible products", async ({ page }) => {
-  await page.goto("/vehiculos/toyota");
+  await page.goto(ES("/vehiculos/toyota"));
 
   await expect(page.getByRole("heading", { name: "Repuestos para Toyota" })).toBeVisible();
   await expect(page.getByText("Filtro de aceite para Toyota 1.8L")).toBeVisible();
 
   // Marca inexistente → página 404 (el status llega 200 por streaming del
   // loading boundary; se asserta sobre el contenido renderizado)
-  await page.goto("/vehiculos/marca-inexistente");
+  await page.goto(ES("/vehiculos/marca-inexistente"));
   await expect(page.getByRole("heading", { name: "Página no encontrada" })).toBeVisible();
 });

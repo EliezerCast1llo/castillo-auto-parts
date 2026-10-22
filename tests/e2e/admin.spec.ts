@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
-import { PrismaClient, type UserRole } from "@prisma/client";
+import { prisma } from "./helpers";
+import { type UserRole } from "@prisma/client";
 import { hashPassword } from "../../src/lib/admin-credentials";
 
 const ADMIN_EMAIL = process.env.ADMIN_SEED_EMAIL || "admin@castilloautoparts.com";
 const ADMIN_PASSWORD = process.env.ADMIN_SEED_PASSWORD || "admin123";
 const ROLE_PASSWORD = "RolePassword123!";
-const prisma = new PrismaClient();
 const roleUserEmails: Partial<Record<UserRole, string>> = {};
 
 test.beforeAll(async () => {
@@ -43,7 +43,7 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-test("admin can sign in with email and password", async ({ page }) => {
+test("admin can sign in and sign out with email and password", async ({ page }) => {
   await page.goto("/admin/login");
 
   await page.getByLabel("Correo electrónico").fill(ADMIN_EMAIL);
@@ -52,6 +52,11 @@ test("admin can sign in with email and password", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/admin\/orders/);
   await expect(page.getByRole("heading", { exact: true, name: "Órdenes" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Salir", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/login\?estado=logged_out/);
+  await page.goto("/admin/orders");
+  await expect(page).toHaveURL(/\/admin\/login/);
 });
 
 test("admin can open stock alert operations", async ({ page }) => {

@@ -1,0 +1,19 @@
+{
+  "checkCompatibility": "Check compatibility",
+  "deliveryArea": "Delivery in San Salvador and Santa Tecla",
+  "country": "El Salvador",
+  "shop": "Shop",
+  "fullCatalog": "Full catalog",
+  "cart": "Cart",
+  "myAccount": "My account",
+  "myOrders": "My orders",
+  "byVehicle": "Parts by vehicle",
+  "partsFor": "{make} parts",
+  "searchByVehicle": "Search by vehicle",
+  "partBrands": "Part brands",
+  "support": "Support",
+  "whatsapp": "WhatsApp: parts advice",
+  "rights": "© {year} {siteName}. All rights reserved.",
+  "priceNotice": "Prices in USD, 13% VAT included.",
+  "helpCenter": "Help center"
+}

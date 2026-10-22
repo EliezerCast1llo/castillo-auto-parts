@@ -1,23 +1,88 @@
 import { InventoryStatus, PrismaClient } from "@prisma/client";
+import type { StockStatus } from "../src/lib/stock-status";
 import { mockProducts } from "../src/data/mock-products";
 import { hashPassword } from "../src/lib/admin-credentials";
+import { slugifyValue as slugify } from "../src/lib/slug";
 
 const prisma = new PrismaClient();
 
 const DEFAULT_LOCATION_CODE = "MAIN";
 
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
+/**
+ * El estado de la app tiene tres valores y el enum de Prisma cuatro; PREORDER
+ * no se siembra, así que el resto cae en OUT_OF_STOCK.
+ */
+/**
+ * Traducciones al ingles de las categorias. Todas, porque son once y se ven en
+ * los filtros de cada pagina del catalogo.
+ */
+/**
+ * Traducciones de categoria, indexadas por **slug** y no por nombre.
+ *
+ * El slug es el identificador desde que el filtro del catalogo dejo de usar el
+ * nombre; el nombre es texto que se edita. Con el mapa indexado por nombre,
+ * renombrar "Bujias" a "Bujias y encendido" desactivaba su traduccion en
+ * silencio: la categoria quedaba en espanol dentro del catalogo en ingles, sin
+ * error y sin log.
+ */
+const CATEGORY_EN: Record<string, string> = {
+  filtros: "Filters",
+  frenos: "Brakes",
+  bujias: "Spark plugs",
+  escobillas: "Wiper blades",
+  focos: "Bulbs",
+  fluidos: "Fluids",
+  suspension: "Suspension",
+  baterias: "Batteries",
+  correas: "Belts",
+  enfriamiento: "Cooling",
+  electrico: "Electrical",
+};
 
-function toInventoryStatus(status: string) {
-  if (status === "Disponible") return InventoryStatus.IN_STOCK;
-  if (status === "Últimas unidades") return InventoryStatus.LOW_STOCK;
+/**
+ * Traducciones de producto para un subconjunto representativo.
+ *
+ * A proposito no estan todos: sirve para que el smoke en ingles sea real y,
+ * sobre todo, para dejar vivo el caso de fallback —producto sin traduccion,
+ * que debe mostrarse en espanol dentro de una pagina en ingles— que es lo que
+ * hay que poder mirar en QA.
+ */
+const PRODUCT_EN: Record<string, { name: string; shortDescription?: string; description?: string }> = {
+  "filtro-aceite-toyota-18l": {
+    name: "Toyota 1.8L oil filter",
+    description:
+      "Oil filter for Toyota 1.8L engines. Replace it with every oil change to keep the lubrication circuit clean.",
+  },
+  "pastillas-delanteras-nissan-sentra": {
+    name: "Nissan Sentra front brake pads",
+    description: "Front brake pads for Nissan Sentra. Check the discs when you replace them.",
+  },
+  "bujia-iridio-hyundai-kia-16l": {
+    name: "Hyundai/Kia 1.6L iridium spark plug",
+    description: "Iridium spark plug for Hyundai and Kia 1.6L engines. Longer service life than copper.",
+  },
+  "refrigerante-premix-1-galon": {
+    name: "Pre-mixed coolant, 1 gallon",
+    description: "Ready-to-use pre-mixed coolant. No dilution needed.",
+  },
+  "escobilla-universal-22-pulgadas": {
+    name: "Universal wiper blade, 22 inches",
+    // Con descripcion corta a proposito: es el unico camino por el que ese
+    // campo se ve en la tienda —sustituye a la compatibilidad cuando el
+    // producto no tiene vehiculos cargados— y sin una fila asi la traduccion
+    // se guardaba y no se mostraba en ningun lado sin que nada avisara.
+    shortDescription: "Universal by size",
+    description: "Universal 22-inch wiper blade with a multi-adapter mount.",
+  },
+  "bateria-grupo-35-600cca": {
+    name: "Group 35 battery, 600 CCA",
+    description: "Sealed group 35 battery, 600 CCA, maintenance free.",
+  },
+};
+
+function toInventoryStatus(status: StockStatus) {
+  if (status === "IN_STOCK") return InventoryStatus.IN_STOCK;
+  if (status === "LOW_STOCK") return InventoryStatus.LOW_STOCK;
   return InventoryStatus.OUT_OF_STOCK;
 }
 
@@ -116,6 +181,46 @@ async function main() {
     },
   });
 
+  // Las dos validaciones van antes de cualquier escritura de **contenido**:
+  // categorias, productos y traducciones. Arriba ya corrieron el usuario admin,
+  // la ubicacion de inventario y las dos zonas de entrega, asi que la base no
+  // queda intacta; lo que se garantiza es que una clave mala corte antes de
+  // sembrar lo que esas claves describen.
+  //
+  // La de PRODUCT_EN ya quedaba antes de su bucle por casualidad; la de
+  // CATEGORY_EN corria despues del suyo, asi que abortaba con las once
+  // categorias ya escritas.
+
+  // Los dos mapas de traduccion tienen el mismo agujero: la clave que no
+  // corresponde a nada no hace nada y no falla. La traduccion queda escrita en
+  // el archivo, nadie la aplica, y el catalogo en ingles muestra ese contenido
+  // en espanol como si no estuviera traducido. Paso con dos de las seis claves
+  // de PRODUCT_EN.
+  const categorySlugs = new Set(
+    mockProducts.map((product) => slugify(product.category)),
+  );
+  const unknownCategories = Object.keys(CATEGORY_EN).filter(
+    (slug) => !categorySlugs.has(slug),
+  );
+  if (unknownCategories.length > 0) {
+    throw new Error(
+      `CATEGORY_EN tiene claves que no son slugs de categoria: ${unknownCategories.join(", ")}`,
+    );
+  }
+
+  // Una clave de PRODUCT_EN que no corresponda a ningun producto no hace nada
+  // y no falla: la traduccion queda escrita en el archivo, nadie la aplica, y
+  // el catalogo en ingles muestra ese producto en espanol como si no estuviera
+  // traducido. Paso con dos de las seis.
+  const unknownTranslations = Object.keys(PRODUCT_EN).filter(
+    (slug) => !mockProducts.some((product) => product.slug === slug),
+  );
+  if (unknownTranslations.length > 0) {
+    throw new Error(
+      `PRODUCT_EN tiene claves que no son slugs de producto: ${unknownTranslations.join(", ")}`,
+    );
+  }
+
   for (const [index, category] of Array.from(new Set(mockProducts.map((product) => product.category))).entries()) {
     await prisma.productCategory.upsert({
       where: { slug: slugify(category) },
@@ -131,6 +236,18 @@ async function main() {
         sortOrder: index,
       },
     });
+
+    const categoryEn = CATEGORY_EN[slugify(category)];
+    if (categoryEn) {
+      const stored = await prisma.productCategory.findUniqueOrThrow({
+        where: { slug: slugify(category) },
+      });
+      await prisma.productCategoryTranslation.upsert({
+        where: { categoryId_locale: { categoryId: stored.id, locale: "en" } },
+        update: { name: categoryEn },
+        create: { categoryId: stored.id, locale: "en", name: categoryEn },
+      });
+    }
   }
 
   for (const product of mockProducts) {
@@ -170,6 +287,15 @@ async function main() {
         isFeatured: true,
       },
     });
+
+    const productEn = PRODUCT_EN[product.slug];
+    if (productEn) {
+      await prisma.productTranslation.upsert({
+        where: { productId_locale: { productId: savedProduct.id, locale: "en" } },
+        update: productEn,
+        create: { productId: savedProduct.id, locale: "en", ...productEn },
+      });
+    }
 
     await prisma.vehicleCompatibility.deleteMany({
       where: { productId: savedProduct.id },

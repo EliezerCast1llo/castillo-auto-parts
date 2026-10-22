@@ -1,10 +1,25 @@
 import type { InventoryStatus, Prisma } from "@prisma/client";
+import {
+  isLegacyStockStatusParam,
+  parseStockStatusParam,
+  stockStatuses,
+  type StockStatus,
+} from "@/lib/stock-status";
+import { defaultLocale } from "@/lib/i18n/config";
+import { toIntlLocale } from "@/lib/i18n/intl-locale";
+import { slugifyValue } from "@/lib/slug";
 import type { CatalogProduct } from "./products";
 
 export type CatalogSearchParams = Record<string, string | string[] | undefined>;
 
 export type CatalogFilters = {
   query: string;
+  /**
+   * Slugs de categoría, no nombres. El nombre es texto que se traduce; el slug
+   * es el identificador con el que se filtra. Colapsarlos hacía imposible
+   * traducir la faceta: en cuanto el sidebar dijera "Brakes", el filtro por
+   * nombre dejaba de encontrar nada.
+   */
   categories: string[];
   brands: string[];
   stockStatuses: CatalogProduct["stockStatus"][];
@@ -14,8 +29,11 @@ export type CatalogFilters = {
 };
 
 export type CatalogFilterOptions = {
+  /** Slugs de categoría; el texto a mostrar sale de `categoryLabels`. */
   categories: string[];
   brands: string[];
+  /** Slug de categoría al nombre ya traducido que se muestra. */
+  categoryLabels: Record<string, string>;
   /** Productos activos por categoría/marca; alimenta los "(n)" de la UI. */
   categoryCounts: Record<string, number>;
   brandCounts: Record<string, number>;
@@ -42,22 +60,51 @@ export const catalogSortOptions: { label: string; value: CatalogSort }[] = [
   { label: "Más nuevos", value: "newest" },
 ];
 
-export const stockStatusOrder: CatalogProduct["stockStatus"][] = [
-  "Disponible",
-  "Últimas unidades",
-  "No disponible",
-];
+/** Orden de presentación de los filtros de stock. */
+export const stockStatusOrder: readonly StockStatus[] = stockStatuses;
 
 export function parseCatalogFilters(searchParams: CatalogSearchParams): CatalogFilters {
   return {
     query: firstValue(searchParams.q),
-    categories: valuesFor(searchParams.category),
+    categories: parseCategoryParams(searchParams.category),
     brands: valuesFor(searchParams.brand),
-    stockStatuses: valuesFor(searchParams.stock).filter(isCatalogStockStatus),
+    stockStatuses: parseStockStatusParams(searchParams.stock),
     vehicleMake: firstValue(searchParams.vehicleMake),
     vehicleModel: firstValue(searchParams.vehicleModel),
     vehicleYear: firstValue(searchParams.vehicleYear),
   };
+}
+
+/**
+ * Si `stock` o `category` traen los valores en español que la app publicó antes
+ * de separar identificador y etiqueta, devuelve el query string canónico para
+ * redirigir; `null` cuando no hay nada que migrar.
+ *
+ * El `null` es la guarda contra el loop: después del redirect los valores ya son
+ * identificadores canónicos, así que la segunda pasada no vuelve a disparar.
+ */
+export function buildCanonicalCatalogQuery(searchParams: CatalogSearchParams): string | null {
+  const rawStock = valuesFor(searchParams.stock);
+  const rawCategory = valuesFor(searchParams.category);
+  const needsMigration =
+    rawStock.some(isLegacyStockStatusParam) || rawCategory.some(isLegacyCategoryParam);
+  if (!needsMigration) return null;
+
+  const canonical = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (key === "stock" || key === "category" || value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) {
+      canonical.append(key, item);
+    }
+  }
+  for (const status of parseStockStatusParams(searchParams.stock)) {
+    canonical.append("stock", status);
+  }
+  for (const slug of parseCategoryParams(searchParams.category)) {
+    canonical.append("category", slug);
+  }
+
+  return canonical.toString();
 }
 
 export function parseCatalogSort(searchParams: CatalogSearchParams): CatalogSort {
@@ -79,15 +126,15 @@ export function getEmptyCatalogFilters(): CatalogFilters {
 
 export function filterCatalogProducts(products: CatalogProduct[], filters: CatalogFilters) {
   const query = normalize(filters.query);
-  const categories = normalizedSet(filters.categories);
+  const categories = new Set(filters.categories);
   const brands = normalizedSet(filters.brands);
-  const stockStatuses = normalizedSet(filters.stockStatuses);
+  const selectedStatuses = new Set<StockStatus>(filters.stockStatuses);
 
   return products.filter((product) => {
     if (query && !productMatchesQuery(product, query)) return false;
-    if (categories.size > 0 && !categories.has(normalize(product.category))) return false;
+    if (categories.size > 0 && !categories.has(categorySlugOf(product))) return false;
     if (brands.size > 0 && !brands.has(normalize(product.brand))) return false;
-    if (stockStatuses.size > 0 && !stockStatuses.has(normalize(product.stockStatus))) return false;
+    if (selectedStatuses.size > 0 && !selectedStatuses.has(product.stockStatus)) return false;
     if (!productMatchesVehicle(product, filters)) return false;
 
     return true;
@@ -97,10 +144,27 @@ export function filterCatalogProducts(products: CatalogProduct[], filters: Catal
 export function getCatalogFilterOptions(products: CatalogProduct[]): CatalogFilterOptions {
   const vehicles = products.flatMap((product) => product.vehicleCompatibilities);
 
+  const categoryLabels: Record<string, string> = Object.fromEntries(
+    products.map((product) => [categorySlugOf(product), product.category]),
+  );
+
   return {
-    categories: uniqueSorted(products.map((product) => product.category)),
+    // Ordenadas por la etiqueta que se lee, igual que las facetas de base: si
+    // el fallback ordenara por slug, activarlo reacomodaría el sidebar.
+    //
+    // El tag va explícito aunque acá no haya idioma del que sacarlo: sin
+    // argumento, `localeCompare` usa el del runtime, y el del contenedor no
+    // tiene por qué ser el de la máquina donde se probó. El contenido del mock
+    // está en español, así que el criterio de ordenamiento también.
+    categories: uniqueSorted(products.map(categorySlugOf)).sort((a, b) =>
+      (categoryLabels[a] ?? a).localeCompare(
+        categoryLabels[b] ?? b,
+        toIntlLocale(defaultLocale),
+      ),
+    ),
     brands: uniqueSorted(products.map((product) => product.brand)),
-    categoryCounts: countBy(products, (product) => product.category),
+    categoryLabels,
+    categoryCounts: countBy(products, categorySlugOf),
     brandCounts: countBy(products, (product) => product.brand),
     stockStatuses: stockStatusOrder.filter((status) =>
       products.some((product) => product.stockStatus === status),
@@ -176,17 +240,47 @@ function sortYearSets(record: Record<string, Set<string>>): Record<string, strin
  * directamente en la base de datos.
  *
  * Cobertura:
- * - query: busca por name, sku, partNumber y brand con modo insensible a case.
- *   La búsqueda full-text (descripción, compatibilidad) sigue haciéndose en
- *   memoria vía filterCatalogProducts cuando se necesita (mock/autocomplete).
- * - categories: filtra por nombre de categoría (OR entre múltiples).
+ * - query: busca por los campos de `DB_QUERY_FIELDS`, insensible a mayúsculas.
+ *   **No es el mismo conjunto que busca `filterCatalogProducts`**, y la
+ *   diferencia no es de cobertura sino de resultado: la misma consulta devuelve
+ *   cosas distintas según qué camino esté activo. Ver la nota de
+ *   `DB_QUERY_FIELDS`.
+ * - categories: filtra por slug de categoría (OR entre múltiples). Por slug y
+ *   no por nombre porque el nombre se traduce y el filtro no puede depender
+ *   del idioma en que se esté viendo el catálogo.
  * - brands: filtra por marca (OR entre múltiples).
- * - stockStatuses: traduce los labels de UI a InventoryStatus de Prisma.
+ * - stockStatuses: traduce el estado de la app a InventoryStatus de Prisma.
  * - vehicle: filtra por VehicleCompatibility con make, model y año.
  *
  * Nota: los filtros de stockStatus requieren JOIN con inventoryStocks.
  * Prisma genera la subquery automáticamente mediante `inventoryStocks: { some: ... }`.
  */
+/**
+ * Campos por los que busca la base de datos.
+ *
+ * `filterCatalogProducts` —el camino en memoria, que corre con el mock y en el
+ * autocompletado— busca además por `category`, `compatibility`, `description`,
+ * `compatibleVehicles` y `technicalDetails`. Eso no es "la memoria cubre más":
+ * es que **la misma consulta devuelve resultados distintos según qué camino
+ * esté activo**. Medido contra el seed de 63 productos:
+ *
+ * | consulta              | base | memoria |
+ * |-----------------------|------|---------|
+ * | `bujías`              | 0    | 6       |
+ * | `freno`               | 2    | 8       |
+ * | `pastillas de freno`  | 0    | 1       |
+ *
+ * O sea que si la base se cae y entra el fallback, la búsqueda encuentra *más*
+ * cosas que en operación normal. Cerrar la brecha pide sumar las relaciones al
+ * `where` —con el costo de join que eso trae— o mover la búsqueda a `tsvector`,
+ * que es lo que `docs/database-schema.md` ya anota como pendiente.
+ *
+ * La lista se exporta para que las pruebas que dependen de este conjunto lo
+ * lean de acá y no lo repitan: una copia que se desactualice haría pasar tests
+ * sobre campos que la base ya no consulta.
+ */
+export const DB_QUERY_FIELDS = ["name", "sku", "partNumber", "brand"] as const;
+
 export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereInput {
   const where: Prisma.ProductWhereInput = { isActive: true };
   const conditions: Prisma.ProductWhereInput[] = [];
@@ -195,19 +289,16 @@ export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereIn
   if (filters.query.trim()) {
     const q = filters.query.trim();
     conditions.push({
-      OR: [
-        { name: { contains: q, mode: "insensitive" } },
-        { sku: { contains: q, mode: "insensitive" } },
-        { partNumber: { contains: q, mode: "insensitive" } },
-        { brand: { contains: q, mode: "insensitive" } },
-      ],
+      OR: DB_QUERY_FIELDS.map((field) => ({
+        [field]: { contains: q, mode: "insensitive" },
+      })),
     });
   }
 
   // Categorías (OR entre seleccionadas)
   if (filters.categories.length > 0) {
     conditions.push({
-      category: { name: { in: filters.categories } },
+      category: { slug: { in: filters.categories } },
     });
   }
 
@@ -218,7 +309,7 @@ export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereIn
     });
   }
 
-  // Estado de stock: traduce labels de UI a InventoryStatus de Prisma
+  // Estado de stock: traduce el estado de la app a InventoryStatus de Prisma
   if (filters.stockStatuses.length > 0) {
     const prismaStatuses: InventoryStatus[] = filters.stockStatuses.flatMap(stockStatusToPrismaStatuses);
     if (prismaStatuses.length > 0) {
@@ -253,14 +344,13 @@ export function buildPrismaWhere(filters: CatalogFilters): Prisma.ProductWhereIn
 /**
  * Traduce un stockStatus de UI a los InventoryStatus equivalentes de Prisma.
  *
- * "Disponible"       → IN_STOCK
- * "Últimas unidades" → LOW_STOCK
- * "No disponible"    → OUT_OF_STOCK, PREORDER
+ * El estado de la app tiene tres valores; el enum de Prisma tiene cuatro:
+ * PREORDER se presenta al cliente como "sin stock".
  */
-export function stockStatusToPrismaStatuses(status: CatalogProduct["stockStatus"]): InventoryStatus[] {
-  if (status === "Disponible") return ["IN_STOCK"];
-  if (status === "Últimas unidades") return ["LOW_STOCK"];
-  if (status === "No disponible") return ["OUT_OF_STOCK", "PREORDER"];
+export function stockStatusToPrismaStatuses(status: StockStatus): InventoryStatus[] {
+  if (status === "IN_STOCK") return ["IN_STOCK"];
+  if (status === "LOW_STOCK") return ["LOW_STOCK"];
+  if (status === "OUT_OF_STOCK") return ["OUT_OF_STOCK", "PREORDER"];
   return [];
 }
 
@@ -328,12 +418,54 @@ function valuesFor(value: string | string[] | undefined) {
     .filter(Boolean);
 }
 
+/**
+ * Slug de la categoría de un producto.
+ *
+ * El mock no tiene columna de slug —no tiene tabla de categorías— así que se
+ * deriva del nombre con la misma regla del seed. Para los productos de base,
+ * `mapDbProduct` trae el slug real y esta función lo devuelve tal cual, sin
+ * re-derivarlo: si alguien renombra una categoría sin tocar su slug, el filtro
+ * tiene que seguir el slug y no el nombre nuevo.
+ */
+export function categorySlugOf(product: CatalogProduct): string {
+  return product.categorySlug ?? slugifyValue(product.category);
+}
+
+/** Nombre a mostrar para un slug; cae al slug si la faceta no lo conoce. */
+export function categoryLabelOf(options: CatalogFilterOptions, slug: string): string {
+  return options.categoryLabels[slug] ?? slug;
+}
+
+/**
+ * Lee el query param `category`, aceptando tanto slugs como los nombres en
+ * español que la app publicó antes de separar identificador y etiqueta.
+ *
+ * `?category=Frenos` y `?category=frenos` llegan al mismo slug porque
+ * `slugifyValue` es la regla con la que se sembraron las filas.
+ */
+function parseCategoryParams(value: string | string[] | undefined): string[] {
+  return uniqueSorted(valuesFor(value).map(slugifyValue)).filter(Boolean);
+}
+
+/** True si el valor del param no es ya su forma canónica. */
+export function isLegacyCategoryParam(value: string) {
+  return slugifyValue(value) !== value;
+}
+
 function normalizedSet(values: string[]) {
   return new Set(values.map(normalize));
 }
 
-function isCatalogStockStatus(value: string): value is CatalogProduct["stockStatus"] {
-  return stockStatusOrder.some((status) => status === value);
+/**
+ * Lee el query param `stock`, aceptando tanto los identificadores canónicos
+ * como los valores en español que la app publicó antes del refactor.
+ */
+function parseStockStatusParams(value: string | string[] | undefined): StockStatus[] {
+  const parsed = valuesFor(value)
+    .map(parseStockStatusParam)
+    .filter((status): status is StockStatus => status !== null);
+
+  return [...new Set(parsed)];
 }
 
 function isCatalogSort(value: string): value is CatalogSort {

@@ -1,21 +1,93 @@
 import { expect, test, type Page } from "@playwright/test";
-import { InventoryStatus, PrismaClient } from "@prisma/client";
+import { prisma, ES } from "./helpers";
+import { PRODUCT_CLAIMS } from "./fixtures/products";
 
-const prisma = new PrismaClient();
+// La reserva de productos de este spec; ver fixtures/products.ts.
+const CLAIMS = PRODUCT_CLAIMS["catalog-cart.spec.ts"];
+import { InventoryStatus } from "@prisma/client";
+
 
 test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
 test("catalog search filters products", async ({ page }) => {
-  await page.goto("/catalog?q=toyota");
+  await page.goto(ES("/catalog?q=toyota"));
 
   await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
   await expect(page.getByText("Filtro de aceite para Toyota 1.8L")).toBeVisible();
 });
 
+test("legacy Spanish stock URLs redirect to the canonical identifier", async ({ page }) => {
+  // `/catalog?stock=Últimas unidades` viajó en la navegación del sitio, así que
+  // sigue circulando en historiales, bookmarks y buscadores.
+  await page.goto(ES("/catalog?stock=Últimas unidades"));
+
+  await expect(page).toHaveURL(/\/catalog\?stock=LOW_STOCK$/);
+  await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
+});
+
+test("canonical stock URLs are served without redirecting", async ({ page }) => {
+  await page.goto(ES("/catalog?stock=IN_STOCK"));
+
+  await expect(page).toHaveURL(/\/catalog\?stock=IN_STOCK$/);
+  await expect(page.getByRole("heading", { name: "Catálogo de repuestos" })).toBeVisible();
+});
+
+test("the availability filter shows Spanish labels but submits identifiers", async ({ page }) => {
+  await page.goto(ES("/catalog"));
+
+  // El label es texto para el cliente; el value del checkbox es el
+  // identificador de dominio. Confundirlos rompe una de las dos cosas.
+  const availability = page.getByRole("group", { name: "Disponibilidad" });
+  await expect(availability.getByText("Disponible", { exact: true })).toBeVisible();
+  await expect(availability.getByText("IN_STOCK")).toHaveCount(0);
+
+  await availability.getByRole("checkbox", { name: "Disponible", exact: true }).check();
+  await expect(page).toHaveURL(/\/catalog\?.*stock=IN_STOCK/);
+
+  // Y el chip del filtro activo tambien se muestra traducido.
+  await expect(page.getByText("Disponibilidad: Disponible")).toBeVisible();
+  await expect(page.getByText("Disponibilidad: IN_STOCK")).toHaveCount(0);
+});
+
+test("multi-select filters keep every checked value", async ({ page }) => {
+  await page.goto(ES("/catalog"));
+
+  const categories = page.getByRole("group", { name: "Categoría" });
+  const boxes = categories.locator('input[name="category"]');
+  const first = (await boxes.nth(0).getAttribute("value"))!;
+  const second = (await boxes.nth(1).getAttribute("value"))!;
+
+  // El identificador y la etiqueta son dos cosas distintas: el checkbox manda
+  // el slug ("baterias") y el chip muestra el nombre ("Baterías"). Armar el
+  // texto del chip con el value hacia que este test buscara un enlace que no
+  // existe.
+  const firstLabel = (await categories.locator("label").nth(0).locator("span").first().textContent())!.trim();
+
+  // El form navega en cada cambio, asi que hay que esperar cada navegacion
+  // antes de tocar el siguiente checkbox: si no, el segundo click cae sobre un
+  // DOM que se esta reemplazando.
+  // Se localiza por el atributo `value`: el nombre accesible incluye el conteo
+  // de resultados ("Baterías (5)"), que cambia con los filtros activos.
+  await categories.locator(`input[value="${first}"]`).check();
+  await expect(page).toHaveURL(new RegExp(`category=${encodeURIComponent(first)}`));
+
+  await categories.locator(`input[value="${second}"]`).check();
+  await expect(page).toHaveURL(new RegExp(`category=${encodeURIComponent(second)}`));
+
+  // Aplanar la query con Object.fromEntries se queda solo con el ultimo valor
+  // de cada clave repetida: marcar dos categorias filtraria por una sola.
+  expect(new URL(page.url()).searchParams.getAll("category")).toEqual([first, second]);
+
+  // Y quitar un filtro no debe descartar el otro.
+  await page.getByRole("link", { name: `Quitar filtro Categoría: ${firstLabel}` }).click();
+  await expect(page).not.toHaveURL(new RegExp(`category=${encodeURIComponent(first)}`));
+  expect(new URL(page.url()).searchParams.getAll("category")).toEqual([second]);
+});
+
 test("customer can add an available product to the guest cart", async ({ page }) => {
-  await page.goto("/catalog");
+  await page.goto(ES("/catalog"));
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
 
@@ -32,7 +104,7 @@ test("customer can add an available product to the guest cart", async ({ page })
 });
 
 test("local delivery checkout exposes delivery zone and map fields", async ({ page }) => {
-  await page.goto("/catalog");
+  await page.goto(ES("/catalog"));
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
@@ -48,10 +120,10 @@ test("local delivery checkout exposes delivery zone and map fields", async ({ pa
 });
 
 test("guest can create a pickup order awaiting payment confirmation", async ({ page }) => {
-  const sku = "MOCK-SPK-HK-16";
+  const { sku, slug } = CLAIMS.pickupOrder;
   const initialStock = await getStockSnapshot(sku);
 
-  await addProductToCart(page, "bujia-iridio-hyundai-kia-16l");
+  await addProductToCart(page, slug);
   await page.getByRole("link", { name: "Continuar al pago" }).click();
 
   await fillCustomerFields(page, {
@@ -143,12 +215,12 @@ test("guest can complete local delivery checkout with zone and exact location", 
 });
 
 test("guest can request a stock alert when cart item becomes unavailable", async ({ page }) => {
-  const sku = "MOCK-FIL-TOY-18";
+  const { sku, slug } = CLAIMS.stockAlert;
   const alertEmail = "qa-stock-alert@example.com";
 
-  await addProductToCart(page, "filtro-aceite-toyota-18l");
+  await addProductToCart(page, slug);
   await makeProductUnavailable(sku);
-  await page.goto("/cart");
+  await page.goto(ES("/cart"));
 
   await expect(page.getByText("Este producto ya no está disponible.")).toBeVisible();
   await page.getByPlaceholder("Email para aviso").fill(alertEmail);
@@ -172,10 +244,10 @@ test("guest can request a stock alert when cart item becomes unavailable", async
 });
 
 async function addProductToCart(page: Page, slug: string) {
-  await page.goto(`/product/${slug}`);
+  await page.goto(ES(`/product/${slug}`));
   await page.getByRole("button", { exact: true, name: "Agregar al carrito" }).click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
-  await page.goto("/cart");
+  await page.goto(ES("/cart"));
 }
 
 async function fillCustomerFields(

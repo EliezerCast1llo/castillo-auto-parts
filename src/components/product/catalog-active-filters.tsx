@@ -1,18 +1,32 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { X } from "lucide-react";
-import type { CatalogFilters, CatalogSort } from "@/data/catalog-filters";
+import { categoryLabelOf } from "@/data/catalog-filters";
+import type { CatalogFilters, CatalogFilterOptions, CatalogSort } from "@/data/catalog-filters";
+import type { LocaleHref } from "@/lib/i18n/navigation";
+import { stockStatuses, type StockStatus } from "@/lib/stock-status";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
+import { toLinkQuery } from "@/lib/url-utils";
 
 type FilterChip = {
-  href: string;
+  href: LocaleHref;
   label: string;
 };
 
-export function CatalogActiveFilters({
+export async function CatalogActiveFilters({
   filters,
+  locale,
+  options,
   sort = "relevance",
   hideVehicleChips = false,
 }: {
   filters: CatalogFilters;
+  locale: Locale;
+  /**
+   * Las facetas, solo para resolver el nombre visible de cada categoría: el
+   * filtro guarda el slug y el chip tiene que mostrar el texto traducido.
+   */
+  options: CatalogFilterOptions;
   sort?: CatalogSort;
   /**
    * Cuando el filtro de vehículo viene de la cookie "mi vehículo" (no de la
@@ -21,9 +35,16 @@ export function CatalogActiveFilters({
    */
   hideVehicleChips?: boolean;
 }) {
+  const t = await getTranslations({ locale, namespace: "Catalog" });
+  const stockLabels = Object.fromEntries(
+    stockStatuses.map((status) => [status, t(`stockStatus.${status}`)]),
+  ) as Record<StockStatus, string>;
   const chips = getActiveFilterChips(
     hideVehicleChips ? { ...filters, vehicleMake: "", vehicleModel: "", vehicleYear: "" } : filters,
     sort,
+    options,
+    t("availabilityLegend"),
+    stockLabels,
   );
 
   if (chips.length === 0) {
@@ -36,22 +57,22 @@ export function CatalogActiveFilters({
         <div>
           <p className="text-sm font-black text-ca-navy-950">Filtros activos</p>
           <p className="mt-1 text-xs font-medium text-ca-text-secondary">
-            Quita un filtro específico o limpia todo para ampliar resultados.
+            {t("activeFiltersHint")}
           </p>
         </div>
         <Link
           className="inline-flex h-9 items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
-          href={sort === "relevance" ? "/catalog" : `/catalog?sort=${sort}`}
+          href={sort === "relevance" ? "/catalog" : { pathname: "/catalog", query: { sort } }}
         >
-          Limpiar todo
+          {t("clearAll")}
         </Link>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
         {chips.map((chip) => (
           <Link
-            key={`${chip.label}-${chip.href}`}
-            aria-label={`Quitar filtro ${chip.label}`}
+            key={chip.label}
+            aria-label={t("removeFilter", { filter: chip.label })}
             className="inline-flex min-h-9 items-center gap-2 rounded-full border border-ca-navy-950/10 bg-ca-navy-950/5 px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950/25 hover:bg-ca-background"
             href={chip.href}
           >
@@ -64,7 +85,13 @@ export function CatalogActiveFilters({
   );
 }
 
-function getActiveFilterChips(filters: CatalogFilters, sort: CatalogSort): FilterChip[] {
+function getActiveFilterChips(
+  filters: CatalogFilters,
+  sort: CatalogSort,
+  options: CatalogFilterOptions,
+  availabilityLabel: string,
+  stockLabels: Record<StockStatus, string>,
+): FilterChip[] {
   const chips: FilterChip[] = [];
 
   if (filters.query) {
@@ -99,11 +126,11 @@ function getActiveFilterChips(filters: CatalogFilters, sort: CatalogSort): Filte
     });
   }
 
-  filters.categories.forEach((category) => {
+  filters.categories.forEach((slug) => {
     chips.push({
-      label: `Categoría: ${category}`,
+      label: `Categoría: ${categoryLabelOf(options, slug)}`,
       href: buildCatalogHref(filters, sort, {
-        categories: filters.categories.filter((item) => item !== category),
+        categories: filters.categories.filter((item) => item !== slug),
       }),
     });
   });
@@ -119,7 +146,7 @@ function getActiveFilterChips(filters: CatalogFilters, sort: CatalogSort): Filte
 
   filters.stockStatuses.forEach((status) => {
     chips.push({
-      label: `Disponibilidad: ${status}`,
+      label: `${availabilityLabel}: ${stockLabels[status]}`,
       href: buildCatalogHref(filters, sort, {
         stockStatuses: filters.stockStatuses.filter((item) => item !== status),
       }),
@@ -136,7 +163,11 @@ type FilterPatch = Partial<
   >
 >;
 
-function buildCatalogHref(filters: CatalogFilters, sort: CatalogSort, patch: FilterPatch) {
+function buildCatalogHref(
+  filters: CatalogFilters,
+  sort: CatalogSort,
+  patch: FilterPatch,
+): LocaleHref {
   const next: CatalogFilters = {
     ...filters,
     categories: [...filters.categories],
@@ -155,8 +186,7 @@ function buildCatalogHref(filters: CatalogFilters, sort: CatalogSort, patch: Fil
   appendParam(params, "vehicleYear", next.vehicleYear);
   if (sort !== "relevance") appendParam(params, "sort", sort);
 
-  const query = params.toString();
-  return query ? `/catalog?${query}` : "/catalog";
+  return { pathname: "/catalog", query: toLinkQuery(params) } as const;
 }
 
 function appendParam(params: URLSearchParams, key: string, value: string) {

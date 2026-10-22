@@ -29,3 +29,26 @@ export function allValues(
     .map((item) => item.trim())
     .filter(Boolean);
 }
+
+/** Query serializable que aceptan el `Link` y el `redirect` con idioma. */
+export type LinkQuery = Record<string, string | string[]>;
+
+/**
+ * Convierte `URLSearchParams` en el objeto `query` que espera la navegación con
+ * idioma.
+ *
+ * **No usar `Object.fromEntries`**: se queda con el último valor de cada clave
+ * repetida. Los filtros del catálogo son multi-selección —categoría, marca y
+ * estado de stock— así que aplanarlo así hace que marcar dos categorías navegue
+ * con una sola, y que quitar un filtro descarte los demás del mismo tipo.
+ */
+export function toLinkQuery(params: URLSearchParams): LinkQuery {
+  const query: LinkQuery = {};
+
+  for (const key of new Set(params.keys())) {
+    const values = params.getAll(key);
+    query[key] = values.length > 1 ? values : values[0];
+  }
+
+  return query;
+}

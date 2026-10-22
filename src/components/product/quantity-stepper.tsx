@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 type QuantityStepperProps = {
@@ -18,6 +19,7 @@ export function QuantityStepper({
   min = 1,
   name = "quantity",
 }: QuantityStepperProps) {
+  const t = useTranslations("Cart");
   const safeMin = disabled ? 0 : Math.max(min, 0);
   const safeMax = Math.max(max, safeMin);
   const initialQuantity = disabled
@@ -48,7 +50,7 @@ export function QuantityStepper({
   return (
     <div className="flex h-11 overflow-hidden rounded-md border border-border bg-background">
       <button
-        aria-label="Disminuir cantidad"
+        aria-label={t("quantity.decrease")}
         className="flex w-11 items-center justify-center border-r border-border text-primary disabled:text-muted-foreground"
         disabled={disabled || quantity <= safeMin}
         onClick={() => updateQuantity(quantity - 1)}
@@ -57,7 +59,7 @@ export function QuantityStepper({
         <Minus className="h-4 w-4" />
       </button>
       <input
-        aria-label="Cantidad"
+        aria-label={t("quantityControl.quantityAriaLabel")}
         className="min-w-0 flex-1 bg-transparent px-2 text-center text-sm font-semibold outline-none"
         disabled={disabled}
         inputMode="numeric"
@@ -72,7 +74,7 @@ export function QuantityStepper({
         value={rawQuantity}
       />
       <button
-        aria-label="Aumentar cantidad"
+        aria-label={t("quantity.increase")}
         className="flex w-11 items-center justify-center border-l border-border text-primary disabled:text-muted-foreground"
         disabled={disabled || quantity >= safeMax}
         onClick={() => updateQuantity(quantity + 1)}

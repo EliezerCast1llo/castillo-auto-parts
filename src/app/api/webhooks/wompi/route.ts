@@ -6,6 +6,11 @@ import {
   InvalidWompiWebhookSignatureError,
 } from "@/lib/payments";
 
+// Sin rate limit por IP: el x-forwarded-for es controlable por el cliente, así que
+// limitar por IP permitiría a un atacante falsificar la IP de Wompi y bloquear con
+// 429 los webhooks de pago legítimos. La protección real es la verificación HMAC
+// (InvalidWompiWebhookSignatureError → 401), que rechaza floods inválidos barato y
+// ANTES de cualquier escritura en DB.
 export async function POST(request: Request) {
   try {
     const config = getWompiConfig();

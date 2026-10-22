@@ -32,20 +32,12 @@ export function buildContentSecurityPolicy({
     ["worker-src", ["'self'", "blob:"]],
   ];
 
-  // `upgrade-insecure-requests` se retiro por completo, no solo de aqui:
-  //
-  //   - En una politica report-only el navegador la ignora y ademas registra
-  //     un error en consola, asi que donde estaba no protegia nada.
-  //   - Emitirla en una politica aplicada aparte si funciona, pero Chrome
-  //     reporta entonces un ContentSecurityPolicyIssue en el panel Issues
-  //     (verificado: `inspector-issues` de Lighthouse pasaba a fallar 3/3).
-  //   - Es redundante en este sitio: en produccion se envia
-  //     `Strict-Transport-Security` con `includeSubDomains; preload`, que ya
-  //     impide cualquier peticion http:// al dominio, y todos los origenes de
-  //     terceros declarados abajo son https:// literales.
-  //
-  // Si en el futuro se pasa esta politica de report-only a aplicada, la
-  // directiva puede volver dentro de ella sin generar el issue.
+  // Esta política se emite como report-only: el navegador ignora aquí
+  // `upgrade-insecure-requests` y genera un aviso de consola. Se omite esa
+  // directiva; las demás restricciones de la política se conservan.
+  // HSTS protege el dominio propio en producción, pero no sustituye una CSP
+  // aplicada ni actualiza recursos HTTP de terceros. Si se pasa a una política
+  // aplicada, reevaluar allí `upgrade-insecure-requests`.
   return serializeDirectives(directives);
 }
 

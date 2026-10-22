@@ -8,7 +8,10 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: castillo_auto_parts
     ports:
-      - "5432:5432"
+      # Puerto host configurable. Default 5432 (coincide con .env.example y README);
+      # ante choque con otra instancia local, exportar POSTGRES_HOST_PORT (p.ej. 5433)
+      # y ajustar DATABASE_URL a ese puerto.
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:

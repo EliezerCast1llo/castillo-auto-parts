@@ -1,0 +1,61 @@
+{
+  "metadataTitle": "Ayuda para comprar repuestos | Castillo Auto Parts",
+  "metadataDescription": "Te ayudamos a encontrar el repuesto compatible con tu vehículo y a elegir cómo recibirlo en San Salvador o Santa Tecla.",
+  "hero": {
+    "eyebrow": "Ayuda para comprar",
+    "titleBefore": "Encuentra",
+    "titleHighlight": "el repuesto correcto",
+    "titleAfter": "para tu vehículo",
+    "description": "¿No estás seguro de cuál necesitas? Envíanos los datos de tu vehículo, una foto o el número de parte. Te ayudaremos a revisar la compatibilidad antes de comprar.",
+    "whatsapp": "Consultar por WhatsApp",
+    "browseCatalog": "Explorar catálogo"
+  },
+  "intake": {
+    "eyebrow": "Empieza tu consulta",
+    "title": "Para ayudarte, envíanos estos datos",
+    "vehicle": "Marca, modelo y año del vehículo.",
+    "engine": "Motor o versión, si los conoces.",
+    "photo": "Foto del repuesto o número de parte.",
+    "note": "No necesitas conocer el nombre exacto del repuesto para consultarnos."
+  },
+  "delivery": {
+    "ariaLabel": "Opciones de entrega",
+    "local": "Entregas locales en San Salvador y Santa Tecla.",
+    "pickup": "Retiro en bodega disponible sin costo."
+  },
+  "steps": {
+    "eyebrow": "Compra asistida",
+    "title": "Así te ayudamos a encontrarlo",
+    "description": "Acompañamiento claro desde la consulta hasta la entrega.",
+    "tellUsTitle": "Cuéntanos qué vehículo tienes",
+    "tellUsDescription": "Comparte la marca, el modelo, el año y cualquier dato que conozcas.",
+    "verifyTitle": "Verificamos el repuesto",
+    "verifyDescription": "Revisamos compatibilidad y disponibilidad antes de que compres.",
+    "chooseTitle": "Elige cómo recibirlo",
+    "chooseDescription": "Selecciona retiro en bodega o entrega local cuando esté disponible."
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "description": "Compatibilidad, retiro, entregas e IVA. Si tu caso no está aquí, escríbenos y lo revisamos con los datos de tu vehículo.",
+    "compatibilityQuestion": "¿Cómo sé si un repuesto es compatible con mi vehículo?",
+    "compatibilityAnswer": "Busca por marca, modelo y año en el catálogo. En la página del repuesto revisa los vehículos compatibles y, si tienes duda, escríbenos por WhatsApp antes de comprar.",
+    "pickupQuestion": "¿Puedo retirar mi pedido en bodega?",
+    "pickupAnswer": "Sí. El retiro en bodega no tiene costo. Al elegir esta opción en el proceso de compra verás la dirección, el horario y las indicaciones para recoger tu pedido.",
+    "deliveryQuestion": "¿Hacen entregas a domicilio?",
+    "deliveryAnswer": "Tenemos entregas locales en San Salvador y Santa Tecla. La tarifa se calcula según el municipio que selecciones durante el proceso de compra.",
+    "taxQuestion": "¿Los precios incluyen IVA?",
+    "taxAnswer": "Sí. Los precios de los repuestos ya incluyen el 13 % de IVA. En el proceso de compra verás el subtotal, el costo de entrega cuando corresponda y el total estimado.",
+    "notFoundQuestion": "¿Qué pasa si no encuentro el repuesto?",
+    "notFoundAnswer": "Escríbenos por WhatsApp con la marca, el modelo y el año de tu vehículo. También puedes enviarnos el motor, una foto, el nombre del repuesto o un número de parte.",
+    "ctaText": "Escríbenos con los datos de tu vehículo y te ayudamos a encontrarlo.",
+    "ctaLabel": "Escribir por WhatsApp",
+    "ctaTitle": "¿Tu pregunta no está aquí?"
+  },
+  "policyNote": "Para conocer las condiciones aplicables a tu compra, consúltanos antes de confirmar el pedido. No publicamos promesas sobre garantías, cambios o devoluciones que aún no estén definidas.",
+  "closing": {
+    "title": "¿Listo para buscar tu repuesto?",
+    "description": "Filtra el catálogo por marca, modelo y año, o escríbenos y lo buscamos contigo.",
+    "action": "Buscar repuestos"
+  },
+  "policyTitle": "Políticas comerciales"
+}

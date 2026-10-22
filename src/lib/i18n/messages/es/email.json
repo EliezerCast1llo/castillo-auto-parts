@@ -1,0 +1,15 @@
+{
+  "orderConfirmation": {
+    "subject": "Confirmación de orden {orderNumber}",
+    "greeting": "Hola {customerName},",
+    "received": "Recibimos tu orden {orderNumber} por {total}.",
+    "pending": "Tu compra quedó pendiente de preparación para entrega.",
+    "viewOrder": "Ver estado de la orden",
+    "signature": "Gracias por comprar en {siteName}."
+  },
+  "passwordReset": {
+    "subject": "Restablecer contraseña — {siteName}",
+    "intro": "Usa el siguiente enlace para restablecer tu contraseña (válido por 1 hora):",
+    "ignore": "Si no solicitaste esto, ignora este mensaje."
+  }
+}

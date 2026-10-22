@@ -186,11 +186,55 @@ export interface MapProvider {
 
 ## Internacionalizacion
 
+- Libreria: next-intl (decision cerrada). Peer valida Next 16 + React 19.
 - Idioma principal: espanol.
 - Idioma secundario: ingles.
-- Recomendacion inicial: centralizar textos de UI en archivos de mensajes.
-- El contenido de productos puede iniciar en espanol y tener campos opcionales para ingles.
-- Evitar textos hardcodeados en componentes cuando sean visibles al usuario.
+- Textos de UI centralizados en `src/lib/i18n/messages`, un JSON por namespace.
+- Contenido de producto traducido en base (`ProductTranslation`), con fallback
+  **por campo**: un producto con nombre en ingles y sin descripcion muestra el
+  nombre traducido y la descripcion en espanol.
+- Nada de texto visible escrito a mano: `hardcoded-copy.test.ts` lo verifica en
+  CI, mirando atributos y texto entre etiquetas.
+
+### Lo que deliberadamente no se traduce
+
+- `(admin)/**`: el panel es solo en espanol. Por eso `formatOrderStatus`,
+  `formatStockStatus` y `formatDateTime` se quedan con sus etiquetas en espanol
+  y un parametro de idioma opcional: el storefront lo pasa, el admin no tiene
+  cual pasar.
+- `[locale]/design`: devuelve 404 en produccion y no esta en el sitemap. Su
+  lector es quien desarrolla. Traducirla obligaria a escribir dos textos por
+  cada componente que se documente, para siempre.
+- `[locale]/payments/mock/[externalPaymentId]`: guardada por configuracion de
+  proveedor y se autodescribe como entorno de desarrollo.
+- Nombres propios: los 14 departamentos, marcas de vehiculo y de repuesto, y
+  los slugs de producto y categoria. Los departamentos ademas son valores
+  almacenados: traducirlos romperia el matching de direcciones.
+
+Las tres primeras estan declaradas en `hardcoded-copy.test.ts` con su motivo, y
+un segundo test verifica que cada archivo excluido siga existiendo.
+- Los dos idiomas estan publicados: `publishedLocales` en
+  `src/lib/i18n/config.ts` decide que `/en/*` sea indexable y entre al sitemap.
+  Agregar un idioma ahi es el ultimo paso de su traduccion, y un test exige que
+  su catalogo este completo antes de permitirlo.
+- Ruteo por prefijo: `/es` y `/en` siempre prefijados, asi que la URL es la
+  fuente de verdad del idioma. La cookie `castillo_locale` es solo la pista que
+  usa el middleware cuando la URL todavia no trae prefijo.
+- El panel `/admin` queda fuera del prefijo y solo en espanol. Aun asi monta
+  next-intl fijado a espanol porque reutiliza componentes del storefront que
+  navegan con el `Link` con prefijo.
+- `src/app` se divide en dos route groups con un root layout cada uno:
+  `(storefront)/[locale]` y `(admin)`. No hay `src/app/layout.tsx`.
+- El middleware compone en este orden: nonce y CSP, bypass de `/admin`, bypass
+  de endpoints y assets, redirect permanente de URLs viejas, y por ultimo el
+  ruteo de idiomas. La respuesta de next-intl se re-emite en los casos de
+  rewrite y passthrough para no perder los headers forwardeados, porque Next
+  lee la CSP de ahi para ponerle nonce a sus scripts.
+- Las URLs viejas sin prefijo redirigen con 308 a su equivalente en espanol. La
+  raiz es la excepcion: usa 307 con `Vary`, porque su destino depende de
+  `Accept-Language` y de la cookie, y un permanente se cachearia por URL.
+- `src/lib/i18n/intl-locale.ts` es la unica fuente de tags BCP-47: la moneda
+  (USD) y la zona horaria (America/El_Salvador) no cambian con el idioma.
 
 ## Facturacion electronica DTE
 
@@ -286,7 +330,6 @@ Documento operativo:
 - Hosting definitivo para webhooks si el proveedor requiere respuesta/tiempos especificos.
 - Tabla final de zonas/tarifas de San Salvador.
 - Google Maps vs alternativa de mapas.
-- Libreria i18n especifica.
 
 ## Referencias consultadas
 

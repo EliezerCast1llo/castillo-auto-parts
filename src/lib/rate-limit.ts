@@ -8,7 +8,13 @@ type RateLimitBucket = {
   attempts: number;
   lockedUntil: number;
   resetAt: number;
+  lastSeenMs: number;
 };
+
+// Cota dura del número de buckets vivos. Impide que, durante una caída de Redis
+// (cuando este limiter en memoria recibe todo el tráfico) un atacante con
+// x-forwarded-for único por request haga crecer el Map sin límite hasta OOM.
+const MAX_BUCKETS = 10_000;
 
 export type RateLimitResult =
   | {
@@ -72,21 +78,70 @@ function getActiveBucket(
   const existingBucket = buckets.get(key);
 
   if (existingBucket && existingBucket.resetAt > nowMs && existingBucket.lockedUntil <= nowMs) {
+    existingBucket.lastSeenMs = nowMs;
     return existingBucket;
   }
 
   if (existingBucket && existingBucket.lockedUntil > nowMs) {
+    existingBucket.lastSeenMs = nowMs;
     return existingBucket;
+  }
+
+  if (buckets.size >= MAX_BUCKETS) {
+    evictBuckets(buckets, nowMs);
   }
 
   const bucket = {
     attempts: 0,
     lockedUntil: 0,
     resetAt: nowMs + options.windowMs,
+    lastSeenMs: nowMs,
   };
 
   buckets.set(key, bucket);
   return bucket;
+}
+
+// Poda para acotar memoria. Baja siempre hasta un target con holgura (la mitad de
+// la cota) para no re-escanear en cada inserción posterior. Garantiza el límite
+// duro: la memoria queda acotada aunque TODOS los buckets estén bloqueados.
+function evictBuckets(buckets: Map<string, RateLimitBucket>, nowMs: number) {
+  const target = Math.floor(MAX_BUCKETS / 2);
+
+  // 1) Borra buckets totalmente expirados (ventana vencida y sin bloqueo activo).
+  for (const [key, bucket] of buckets) {
+    if (bucket.resetAt <= nowMs && bucket.lockedUntil <= nowMs) {
+      buckets.delete(key);
+    }
+  }
+
+  if (buckets.size <= target) return;
+
+  // 2) Desaloja los SIN bloqueo activo, por LRU (visto hace más tiempo primero),
+  //    no por orden de inserción: un bucket viejo pero activo se conserva sobre uno
+  //    reciente pero inactivo. Nunca toca lockouts activos (un flood de keys únicas
+  //    no debe poder borrarlos).
+  const unlocked = [...buckets.entries()]
+    .filter(([, bucket]) => bucket.lockedUntil <= nowMs)
+    .sort((a, b) => a[1].lastSeenMs - b[1].lastSeenMs);
+  for (const [key] of unlocked) {
+    if (buckets.size <= target) break;
+    buckets.delete(key);
+  }
+
+  if (buckets.size <= target) return;
+
+  // 3) Cota dura: si sigue por encima (p. ej. 50k IPs falsas todas bloqueadas),
+  //    desaloja los bloqueados cuyo lockout expira ANTES (menos protección
+  //    remanente que sacrificar). Garantiza el techo de memoria; el atacante solo
+  //    libera su propio bloqueo manteniendo >target IPs distintas, sin crecer memoria.
+  const lockedBySoonestExpiry = [...buckets.entries()].sort(
+    (a, b) => a[1].lockedUntil - b[1].lockedUntil,
+  );
+  for (const [key] of lockedBySoonestExpiry) {
+    if (buckets.size <= target) break;
+    buckets.delete(key);
+  }
 }
 
 function deny(lockedUntil: number, nowMs: number): RateLimitResult {

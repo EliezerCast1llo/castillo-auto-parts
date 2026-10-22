@@ -1,3 +1,4 @@
+import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 
 function getHostnameFromUrl(value: string | undefined) {
@@ -82,4 +83,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * `createNextIntlPlugin` es un **default export**, no nombrado: la doc oficial
+ * muestra `import {createNextIntlPlugin}` y está equivocada.
+ */
+const withNextIntl = createNextIntlPlugin("./src/lib/i18n/request.ts");
+
+export default withNextIntl(nextConfig);

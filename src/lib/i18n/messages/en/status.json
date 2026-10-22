@@ -1,0 +1,55 @@
+{
+  "auth": {
+    "email_exists": "An account with that email already exists. Would you like to sign in?",
+    "error": "Something went wrong. Please try again.",
+    "invalid": "Incorrect email or password.",
+    "missing_fields": "Please fill in every field.",
+    "oauth_error": "We could not connect to Google. Please try again.",
+    "password_mismatch": "The passwords do not match.",
+    "password_reset": "Your password was reset. Sign in with your new password.",
+    "rate_limited": "Too many attempts. Wait a few minutes and try again.",
+    "weak_password": "Your password must be at least 8 characters long."
+  },
+  "account": {
+    "success": {
+      "password_changed": "Your password was changed.",
+      "updated": "Your phone number was updated."
+    },
+    "error": {
+      "invalid_phone": "Enter a valid phone number or leave the field empty.",
+      "missing_name": "Name is required.",
+      "no_credentials": "Your account has no password of its own (you sign in with Google).",
+      "password_mismatch": "The passwords do not match.",
+      "weak_password": "Your password must be at least 8 characters long.",
+      "wrong_password": "Your current password is incorrect."
+    }
+  },
+  "checkout": {
+    "coverage_unavailable": "That area is not within our delivery coverage yet.",
+    "db_unavailable": "We could not create your order. Please try again.",
+    "duplicate_in_progress": "Your order is being processed. Wait a few seconds and confirm again: the same order is resumed, it is not duplicated.",
+    "invalid": "Please review the form details.",
+    "payment_unavailable": "We could not start the payment. Please try again."
+  },
+  "cart": {
+    "added": "Product added to your cart.",
+    "empty_cart": "Add products before continuing.",
+    "invalid": "We could not process that action. Try again.",
+    "quantity_adjusted": "We adjusted the quantity to the stock available.",
+    "removed": "Product removed from your cart.",
+    "stock_alert_created": "Done. We will let you know when it is back in stock.",
+    "stock_alert_db_unavailable": "We could not save the alert. Try again later.",
+    "stock_alert_invalid": "Enter a valid email or phone number.",
+    "stock_alert_not_found": "We could not find that product.",
+    "stock_alert_rate_limited": "Too many attempts. Try again in a few minutes.",
+    "stock_issue": "Check availability before continuing.",
+    "unavailable": "This product is no longer available.",
+    "updated": "Cart updated."
+  },
+  "addresses": {
+    "created": "Address saved successfully.",
+    "deleted": "Address removed.",
+    "missing_fields": "Fill in the required fields.",
+    "invalid_department": "Select a valid department."
+  }
+}

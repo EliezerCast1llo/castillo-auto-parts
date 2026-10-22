@@ -9,7 +9,7 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | Archivo | Responsabilidad |
 | --- | --- |
 | `README.md` | Entrada rapida del proyecto, setup local y documentos clave. |
-| `middleware.ts` | Edge Middleware que protege `/admin/**`. Verifica HMAC-SHA256 con Web Crypto API. |
+| `middleware.ts` | Edge Middleware: CSP con nonce, ruteo de idiomas y proteccion de `/admin/**` con HMAC-SHA256 via Web Crypto API. |
 | `package.json` | Scripts, dependencias y seed Prisma. |
 | `next.config.ts` | Configuracion Next.js y headers de seguridad base. |
 | `playwright.config.ts` | Configuracion E2E y servidor local para Playwright. |
@@ -87,7 +87,9 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 
 | Ruta de archivo | Responsabilidad |
 | --- | --- |
-| `src/app/layout.tsx` | Layout raiz, metadata y estilos globales. |
+| `src/app/(storefront)/[locale]/layout.tsx` | Root layout del storefront: `<html lang>`, fuentes, provider de next-intl y metadata con hreflang. |
+| `src/app/(admin)/layout.tsx` | Root layout del panel admin, sin prefijo de idioma y fijado a espanol. |
+| `src/app/not-found.tsx` | 404 global fuera de los route groups; importa `globals.css` porque Next lo monta con un layout builtin. |
 | `src/app/page.tsx` | Home. No debe tener filtros avanzados; esos viven en catalogo. |
 | `src/app/catalog/page.tsx` | Catalogo, query params, filtros y estados vacios. |
 | `src/app/product/[slug]/page.tsx` | Detalle de producto, compatibilidad y agregar al carrito. |
@@ -176,10 +178,34 @@ Este mapa ayuda a cualquier agente o colaborador a ubicarse rapido en el repo. N
 | `src/app/api/admin/delete-image/route.ts` | DELETE handler admin: borra ProductImage de DB y objeto de R2. |
 | `src/components/search/search-autocomplete.tsx` | Client Component de busqueda con debounce, dropdown y navegacion por teclado. |
 | `src/lib/stock-alerts.ts` | Parseo/deduplicacion de avisos de stock. |
+| `src/lib/stock-status.ts` | Identificador de estado de stock (`IN_STOCK`/`LOW_STOCK`/`OUT_OF_STOCK`), etiquetas y parseo con back-compat de los valores en espanol de las URLs viejas. |
 | `src/lib/payments/*` | Contrato y proveedor mock de pagos. |
 | `src/lib/email/*` | Contrato, provider console, plantillas y logs. |
 | `src/lib/invoices/provider.ts` | Contrato futuro para DTE. |
 | `src/lib/i18n/config.ts` | Base de idiomas soportados. |
+| `src/lib/i18n/routing.ts` | Config de ruteo de next-intl y nombre de la cookie de idioma. |
+| `src/lib/i18n/navigation.ts` | Link/redirect/usePathname con prefijo de idioma. |
+| `src/lib/i18n/request.ts` | Config por request: resuelve idioma (explicito, segmento, cookie, default) y carga mensajes. |
+| `src/lib/i18n/intl-locale.ts` | Mapeo a BCP-47, moneda y zona horaria de la app. |
+| `src/lib/i18n/formats.ts` | Formatos compartidos de fecha y numero. |
+| `src/lib/i18n/messages/*` | Catalogos por idioma, un JSON por namespace. |
+| `src/lib/i18n/legacy-redirects.ts` | Traduce URLs viejas sin prefijo a su equivalente en espanol; guarda contra loop. |
+| `src/lib/i18n/middleware-composition.ts` | Re-emite la respuesta de next-intl preservando los headers forwardeados (nonce de CSP). |
+| `src/lib/i18n/revalidate.ts` | `revalidatePath` para rutas bajo `[locale]`. |
+| `src/lib/i18n/action-locale.ts` | Idioma dentro de una server action, leido del `Referer`. |
+| `src/lib/i18n/config.ts` | Idiomas del sitio y cuales estan publicados; `publishedLocales` decide indexacion y sitemap. |
+| `src/lib/i18n/status.ts` | Traduce los codigos de `?estado=` agrupados por area; el texto se resuelve en servidor. |
+| `src/lib/i18n/path.ts` | `localizePath` para rutas cuya grafia no cambia, con la lista que un test verifica. |
+| `src/lib/i18n/metadata.ts` | Canonical y `hreflang` juntos: Next combina metadata en superficie. |
+| `src/lib/i18n/params.ts` | Angosta el segmento a `Locale` y llama a `setRequestLocale`. |
+| `src/lib/i18n/messages.test.ts` | Paridad de claves entre idiomas y ninguna sin traducir. |
+| `src/lib/i18n/hardcoded-copy.test.ts` | Guarda contra texto de interfaz escrito a mano: atributos y texto entre etiquetas. |
+| `src/lib/slug.ts` | Unica definicion del slug; de ella depende que `?category=Frenos` encuentre la fila `frenos`. |
+| `tests/e2e/fixtures/products.ts` | Que producto usa cada spec y que le hace al inventario; `fixtures.spec.ts` lo verifica. |
+| `src/lib/actions/*` | Server actions compartidas por componentes, fuera del arbol de rutas. |
+| `src/lib/cookie-consent.ts` | Helpers puros del aviso de cookies: parseo, serializacion y versionado. |
+| `src/lib/cookie-consent-server.ts` | Lectura server-side del consentimiento. |
+| `src/components/consent/*` | Slot server que decide si mostrar el aviso, y el banner cliente. |
 
 ## Datos
 

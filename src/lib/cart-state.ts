@@ -43,7 +43,7 @@ export function serializeStoredCart(items: StoredCartItem[]) {
 
 export function parseSignedStoredCart(
   value: string | undefined,
-  secret: string,
+  secret: string | string[],
   options: SignedCartParseOptions = {},
 ) {
   if (!value) return [];
@@ -53,7 +53,13 @@ export function parseSignedStoredCart(
     return options.allowUnsignedFallback ? parseStoredCart(value) : [];
   }
 
-  if (!verifyCartSignature(signedCart.payload, signedCart.signature, secret)) return [];
+  // Acepta varios secretos para permitir rotación sin invalidar cookies vivos:
+  // se firma con el secreto primario pero se verifica contra todos los aceptados.
+  const secrets = Array.isArray(secret) ? secret : [secret];
+  const isValid = secrets.some((candidate) =>
+    verifyCartSignature(signedCart.payload, signedCart.signature, candidate),
+  );
+  if (!isValid) return [];
 
   return parseStoredCart(decodeCartPayload(signedCart.payload));
 }

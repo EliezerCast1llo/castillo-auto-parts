@@ -1,24 +1,28 @@
 "use client";
 
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/lib/i18n/navigation";
 import { Loader2, ShoppingCart } from "lucide-react";
-import { addCartItemInline, type AddCartItemInlineState } from "@/app/cart/actions";
+import { addCartItemInline, type AddCartItemInlineState } from "@/lib/actions/cart";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
-const STATUS_MESSAGES: Record<
+/**
+ * Tono de cada resultado, y la clave con la que se busca su texto.
+ *
+ * El tono se queda acá y el texto no: el tono es comportamiento —decide de qué
+ * color sale el toast— y no cambia con el idioma.
+ */
+const STATUS_FEEDBACK: Record<
   NonNullable<AddCartItemInlineState>["status"],
-  { message: string; tone: "success" | "error" }
+  { key: "added" | "quantityAdjusted" | "notAvailable" | "failed"; tone: "success" | "error" }
 > = {
-  added: { message: "Repuesto agregado al carrito", tone: "success" },
-  quantity_adjusted: {
-    message: "Agregado; ajustamos la cantidad a la disponibilidad actual",
-    tone: "success",
-  },
-  unavailable: { message: "Este repuesto no está disponible por ahora", tone: "error" },
-  invalid: { message: "No pudimos agregar el repuesto al carrito", tone: "error" },
+  added: { key: "added", tone: "success" },
+  quantity_adjusted: { key: "quantityAdjusted", tone: "success" },
+  unavailable: { key: "notAvailable", tone: "error" },
+  invalid: { key: "failed", tone: "error" },
 };
 
 type AddToCartFormProps = {
@@ -26,14 +30,9 @@ type AddToCartFormProps = {
   available: boolean;
   /** Controles extra dentro del form (p.ej. QuantityStepper). Si no hay, se envía quantity=1. */
   children?: ReactNode;
+  /** Sobrescribe el texto del botón; sin esto se usa el traducido. */
   label?: string;
-  /**
-   * Nombre del producto, solo como contexto para lectores de pantalla. El
-   * nombre accesible lo compone este componente como `${label}: ${productName}`
-   * para que siempre empiece por el texto visible del botón; construirlo en
-   * cada card llevaba a nombres tipo "Agregar X al carrito", que no contienen
-   * el texto visible en orden y rompen `label-content-name-mismatch`.
-   */
+  /** El nombre accesible conserva el texto visible traducido como prefijo. */
   productName?: string;
   unavailableLabel?: string;
   className?: string;
@@ -49,17 +48,16 @@ export function AddToCartForm({
   sku,
   available,
   children,
-  label = "Agregar al carrito",
+  label,
   productName,
-  unavailableLabel = "No disponible por ahora",
+  unavailableLabel,
   className,
   buttonClassName,
   buttonSize = "md",
 }: AddToCartFormProps) {
-  // El texto visible va primero y literal; el producto queda como sufijo.
-  const accessibleName =
-    available && productName ? `${label}: ${productName}` : undefined;
-
+  const t = useTranslations("Cart.addToCart");
+  const visibleLabel = label ?? t("label");
+  const accessibleName = available && productName ? `${visibleLabel}: ${productName}` : undefined;
   const [state, formAction, pending] = useActionState(addCartItemInline, null);
   const lastHandledAtRef = useRef<number | null>(null);
   const router = useRouter();
@@ -69,14 +67,14 @@ export function AddToCartForm({
     if (!state || state.at === lastHandledAtRef.current) return;
     lastHandledAtRef.current = state.at;
 
-    const feedback = STATUS_MESSAGES[state.status];
-    showToast(feedback.message, feedback.tone);
+    const feedback = STATUS_FEEDBACK[state.status];
+    showToast(t(feedback.key), feedback.tone);
 
     if (feedback.tone === "success") {
       // Actualiza el badge del carrito en SiteHeader (server component)
       router.refresh();
     }
-  }, [state, router, showToast]);
+  }, [state, router, showToast, t]);
 
   return (
     <form action={formAction} className={className}>
@@ -94,7 +92,7 @@ export function AddToCartForm({
         ) : (
           <ShoppingCart className="h-4 w-4" strokeWidth={2} />
         )}
-        {available ? label : unavailableLabel}
+        {available ? visibleLabel : (unavailableLabel ?? t("unavailable"))}
       </Button>
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { LocateFixed, MapPin, Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const DEFAULT_CENTER = { latitude: 13.6929, longitude: -89.2182 };
 const TILE_SIZE = 256;
@@ -29,6 +30,7 @@ type Props = {
 };
 
 export function CheckoutLocationPicker({ onLocationFound }: Props) {
+  const t = useTranslations("Checkout.location");
   const mapRef = useRef<HTMLDivElement>(null);
   const latRef = useRef<HTMLInputElement>(null);
   const lngRef = useRef<HTMLInputElement>(null);
@@ -118,12 +120,12 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
 
   const statusText =
     geoStatus === "loading"
-      ? "Obteniendo tu ubicación..."
+      ? t("loading")
       : geoStatus === "ok"
-        ? "Ubicación capturada. Revisa los campos y ajusta si es necesario."
+        ? t("found")
         : geoStatus === "error"
-          ? "No pudimos obtener la ubicación. Puedes mover el pin manualmente."
-          : "Haz clic en el mapa o usa el botón para marcar el punto de entrega.";
+          ? t("error")
+          : t("idle");
 
   return (
     <div className="space-y-3">
@@ -136,7 +138,7 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
           type="button"
         >
           <LocateFixed className="h-4 w-4" />
-          Usar mi ubicación
+          {t("useMyLocation")}
         </button>
       </div>
 
@@ -160,7 +162,7 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
         </div>
         <div className="absolute right-3 top-3 grid gap-2">
           <button
-            aria-label="Acercar mapa"
+            aria-label={t("zoomIn")}
             className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-primary shadow"
             onClick={(e) => {
               e.stopPropagation();
@@ -171,7 +173,7 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
             <Plus className="h-4 w-4" />
           </button>
           <button
-            aria-label="Alejar mapa"
+            aria-label={t("zoomOut")}
             className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-primary shadow"
             onClick={(e) => {
               e.stopPropagation();

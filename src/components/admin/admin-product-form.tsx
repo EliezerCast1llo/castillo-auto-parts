@@ -25,6 +25,7 @@ type AdminProductFormProduct = {
   partNumber: string | null;
   priceCents: number;
   shortDescription: string | null;
+  translationEn: { name: string | null; shortDescription: string | null; description: string | null } | null;
   sku: string;
   slug: string;
   technicalDetails: unknown;
@@ -179,6 +180,35 @@ export function AdminProductForm({
             rows={4}
           />
           <CompatibilityEditor defaultCompatibilities={product?.compatibilities ?? []} />
+        </div>
+      </section>
+
+      {/* El panel admin es interno y va en español; lo que se edita acá es el
+          contenido que ve el cliente. Los campos vacíos caen al español, campo
+          por campo: se puede traducir solo el nombre y dejar la descripción. */}
+      <section className="rounded-md border border-border bg-card p-5">
+        <h2 className="text-lg font-bold text-primary">Traducción al inglés (opcional)</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Lo que dejes vacío se muestra en español dentro del sitio en inglés.
+        </p>
+        <div className="mt-4 space-y-4">
+          <AdminTextField
+            defaultValue={product?.translationEn?.name ?? ""}
+            label="Nombre en inglés"
+            name="nameEn"
+          />
+          <AdminTextarea
+            defaultValue={product?.translationEn?.shortDescription ?? ""}
+            label="Descripción corta en inglés"
+            name="shortDescriptionEn"
+            rows={2}
+          />
+          <AdminTextarea
+            defaultValue={product?.translationEn?.description ?? ""}
+            label="Descripción en inglés"
+            name="descriptionEn"
+            rows={4}
+          />
         </div>
       </section>
 

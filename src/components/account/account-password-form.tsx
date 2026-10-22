@@ -1,11 +1,20 @@
 import { KeyRound, Lock, ShieldCheck } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 
 type AccountPasswordFormProps = {
   action: (formData: FormData) => Promise<void>;
   hasPassword: boolean;
+  locale: Locale;
 };
 
-export function AccountPasswordForm({ action, hasPassword }: AccountPasswordFormProps) {
+export async function AccountPasswordForm({
+  action,
+  hasPassword,
+  locale,
+}: AccountPasswordFormProps) {
+  const t = await getTranslations({ locale, namespace: "Account.password" });
+
   return (
     <section className="h-full rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
       <div className="flex items-start gap-3">
@@ -13,9 +22,9 @@ export function AccountPasswordForm({ action, hasPassword }: AccountPasswordForm
           <Lock className="h-5 w-5" strokeWidth={1.8} />
         </span>
         <div>
-          <h2 className="text-xl font-black text-ca-navy-950">Seguridad de la cuenta</h2>
+          <h2 className="text-xl font-black text-ca-navy-950">{t("title")}</h2>
           <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
-            Cambia tu contraseña para mantener protegida tu cuenta.
+            {t("description")}
           </p>
         </div>
       </div>
@@ -24,20 +33,20 @@ export function AccountPasswordForm({ action, hasPassword }: AccountPasswordForm
         <form action={action} className="mt-6 space-y-5">
           <PasswordField
             autoComplete="current-password"
-            label="Contraseña actual"
+            label={t("currentLabel")}
             name="currentPassword"
           />
           <div className="grid gap-4 md:grid-cols-2">
             <PasswordField
               autoComplete="new-password"
-              helper="Mínimo 8 caracteres."
-              label="Nueva contraseña"
+              helper={t("newHelper")}
+              label={t("newLabel")}
               minLength={8}
               name="newPassword"
             />
             <PasswordField
               autoComplete="new-password"
-              label="Confirmar contraseña"
+              label={t("confirmLabel")}
               minLength={8}
               name="confirmPassword"
             />
@@ -47,7 +56,7 @@ export function AccountPasswordForm({ action, hasPassword }: AccountPasswordForm
             type="submit"
           >
             <KeyRound className="h-4 w-4" strokeWidth={2} />
-            Cambiar contraseña
+            {t("submit")}
           </button>
         </form>
       ) : (
@@ -58,10 +67,10 @@ export function AccountPasswordForm({ action, hasPassword }: AccountPasswordForm
             </span>
             <div>
               <p className="font-black text-ca-navy-950">
-                Tu cuenta usa acceso con proveedor externo.
+                {t("providerTitle")}
               </p>
               <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
-                Si deseas cambiar la forma de acceso, contacta soporte.
+                {t("providerDescription")}
               </p>
             </div>
           </div>

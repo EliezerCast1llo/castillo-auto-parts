@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle, ShoppingCart, Truck, User, UserRound, Wrench } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getGuestCartItemCount } from "@/lib/cart";
@@ -10,8 +10,18 @@ import { buttonVariants } from "@/components/ui/button";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { siteNavItems } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import type { LocaleHref } from "@/lib/i18n/navigation";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
 
 type SiteHeaderProps = {
+  /**
+   * Idioma del contenido. Se recibe y no se deduce: `getLocale()` resuelve el
+   * segmento de forma poco confiable en componentes anidados y cae al idioma
+   * por defecto sin avisar, así que el header terminaba en español dentro de
+   * páginas en inglés.
+   */
+  locale: Locale;
   /**
    * "default": header claro sticky con buscador (páginas internas).
    * "hero": header navy con utility bar (home).
@@ -19,7 +29,8 @@ type SiteHeaderProps = {
   variant?: "default" | "hero";
 };
 
-export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
+export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProps) {
+  const tNav = await getTranslations({ locale, namespace: "Nav" });
   const [cartItemCount, session] = await Promise.all([
     getGuestCartItemCount(),
     auth(),
@@ -33,6 +44,7 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
   if (variant === "hero") {
     return (
       <HeroHeader
+        locale={locale}
         accountHref={accountHref}
         accountLabel={accountLabel}
         cartItemCount={cartItemCount}
@@ -66,21 +78,21 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
           <div className="order-2 ml-auto flex shrink-0 items-center gap-2 sm:order-3 sm:ml-0">
             <MyVehicleChip />
 
-            <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
+            <nav aria-label={tNav("ariaLabel")} data-testid="site-nav" className="hidden items-center gap-1 lg:flex">
               {siteNavItems.map((item) => (
                 <Link
                   className="inline-flex h-10 items-center rounded-ca-control px-3 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
                   href={item.href}
-                  key={item.label}
+                  key={item.key}
                 >
-                  {item.label}
+                  {tNav(item.key)}
                 </Link>
               ))}
             </nav>
 
             <div className="hidden xl:block">
               <WhatsAppCTA
-                label="Asesoría"
+                label={tNav("advisory")}
                 phone={SUPPORT_WHATSAPP_NUMBER}
                 variant="subtle"
               />
@@ -101,7 +113,7 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
             {/* Cart — gold accent button */}
             <Link
               className={cn(buttonVariants({ variant: "primary" }), "relative w-10 px-0")}
-              aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
+              aria-label={tNav("viewCart", { count: cartItemCount })}
               href="/cart"
             >
               <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />
@@ -135,15 +147,17 @@ export async function SiteHeader({ variant = "default" }: SiteHeaderProps) {
 // ---------------------------------------------------------------------------
 
 type HeroHeaderProps = {
-  accountHref: string;
+  locale: Locale;
+  accountHref: LocaleHref;
   accountLabel: string;
   cartItemCount: number;
 };
 
-function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProps) {
+async function HeroHeader({ accountHref, accountLabel, cartItemCount, locale }: HeroHeaderProps) {
+  const tNav = await getTranslations({ locale, namespace: "Nav" });
   return (
     <header className="bg-ca-navy-950 text-white">
-      <UtilityBar />
+      <UtilityBar locale={locale} />
       <div className="ca-container flex min-h-16 items-center justify-between gap-5 py-3">
         {/* Logo */}
         <Link href="/" className="flex min-w-0 items-center gap-3">
@@ -159,14 +173,14 @@ function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProp
         </Link>
 
         {/* Nav desktop */}
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Navegación principal">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label={tNav("ariaLabel")} data-testid="site-nav">
           {siteNavItems.map((item) => (
             <Link
               className="inline-flex items-center gap-1 text-sm font-bold text-white/88 transition hover:text-ca-gold-400"
               href={item.href}
-              key={item.label}
+              key={item.key}
             >
-              {item.label}
+              {tNav(item.key)}
             </Link>
           ))}
         </nav>
@@ -184,7 +198,7 @@ function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProp
 
           <div className="hidden xl:block">
             <WhatsAppCTA
-              label="Asesoría"
+              label={tNav("advisory")}
               phone={SUPPORT_WHATSAPP_NUMBER}
               variant="subtle"
             />
@@ -193,7 +207,7 @@ function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProp
           {/* Carrito */}
           <Link
             className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/[0.16]"
-            aria-label={`Ver carrito, ${cartItemCount === 1 ? "1 producto" : `${cartItemCount} productos`}`}
+            aria-label={tNav("viewCart", { count: cartItemCount })}
             href="/cart"
           >
             <ShoppingCart className="h-5 w-5" strokeWidth={1.9} />
@@ -219,7 +233,8 @@ function HeroHeader({ accountHref, accountLabel, cartItemCount }: HeroHeaderProp
   );
 }
 
-function UtilityBar() {
+async function UtilityBar({ locale }: { locale: Locale }) {
+  const tNav = await getTranslations({ locale, namespace: "Nav" });
   return (
     <div className="border-b border-white/10 bg-ca-navy-950">
       <div className="ca-container flex min-h-9 items-center justify-between gap-4 py-1 text-xs font-bold text-white/78">
@@ -239,7 +254,7 @@ function UtilityBar() {
             target="_blank"
           >
             <MessageCircle className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
-            Asesoría por WhatsApp
+            {tNav("whatsappAdvice")}
           </a>
         ) : null}
       </div>

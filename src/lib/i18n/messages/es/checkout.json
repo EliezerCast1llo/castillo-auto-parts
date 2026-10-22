@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "title": "Finalizar compra | Castillo Auto Parts",
+    "description": "Completa tus datos de entrega y pago para confirmar tu pedido."
+  },
+  "backToCart": "Volver al carrito",
+  "eyebrow": "Finalizar compra",
+  "title": "Datos de entrega y pago",
+  "summary": {
+    "title": "Tu pedido",
+    "subtotal": "Subtotal",
+    "shippingTitle": "Envío",
+    "pickupFree": "Retiro gratis en {location}",
+    "pickupOrDelivery": "Retiro gratis en {location}; o envío {zones}.",
+    "taxNotice": "Precios con IVA incluido (13%)."
+  },
+  "form": {
+    "yourData": "Tus datos",
+    "fullName": "Nombre completo",
+    "name": "Nombre",
+    "email": "Email",
+    "phone": "Teléfono",
+    "noData": "Sin datos",
+    "deliveryMethod": "Método de entrega",
+    "payment": "Pago",
+    "card": "Tarjeta en línea",
+    "submit": "Confirmar y pagar"
+  },
+  "empty": {
+    "issuesTitle": "Ajusta tu carrito primero",
+    "issuesDescription": "Hay productos sin disponibilidad. Revisa tu carrito antes de continuar.",
+    "issuesAction": "Volver al carrito",
+    "emptyTitle": "Tu carrito está vacío",
+    "emptyDescription": "Agrega repuestos desde el catálogo para completar tu compra.",
+    "emptyAction": "Ver catálogo"
+  },
+  "delivery": {
+    "pickup": "Retiro en bodega",
+    "localDelivery": "Envío local",
+    "pickupCost": "Costo de retiro: {amount}",
+    "warehouseMapTitle": "Ubicación de bodega",
+    "address": "Dirección",
+    "addressLine2": "Casa, local o referencia",
+    "city": "Municipio",
+    "selectCity": "Selecciona municipio",
+    "department": "Departamento",
+    "notes": "Notas de entrega",
+    "notesPlaceholder": "Indicaciones, horario preferido o referencia del lugar",
+    "viewAddressSummary": "Ver resumen de dirección",
+    "savedAddress": "Dirección guardada",
+    "otherAddressQuestion": "¿Quieres enviar a otra dirección?",
+    "manageAddresses": "Administra tus direcciones",
+    "taxNotice": "Los precios de productos ya incluyen IVA.",
+    "totalsProducts": "Productos",
+    "totalsShipping": "Envío",
+    "totalsEstimated": "Total estimado"
+  },
+  "addressModal": {
+    "title": "Dirección de entrega",
+    "close": "Cerrar",
+    "address": "Dirección",
+    "reference": "Referencia",
+    "city": "Municipio",
+    "department": "Departamento",
+    "notes": "Notas",
+    "wrongQuestion": "¿Algo incorrecto?",
+    "edit": "Editar dirección"
+  },
+  "location": {
+    "loading": "Obteniendo tu ubicación...",
+    "found": "Ubicación capturada. Revisa los campos y ajusta si es necesario.",
+    "error": "No pudimos obtener la ubicación. Puedes mover el pin manualmente.",
+    "idle": "Haz clic en el mapa o usa el botón para marcar el punto de entrega.",
+    "zoomIn": "Acercar mapa",
+    "zoomOut": "Alejar mapa",
+    "useMyLocation": "Usar mi ubicación"
+  }
+}

@@ -44,10 +44,18 @@ export function ScrollCarousel({
   autoPlay = false,
   children,
   label,
+  nextLabel,
+  previousLabel,
 }: {
   autoPlay?: boolean;
   children: ReactNode;
   label: string;
+  /**
+   * Textos de las flechas. Llegan por prop porque este componente es genérico
+   * y de cliente: no elige idioma, igual que `SortDropdown` y `FilterDrawer`.
+   */
+  nextLabel: string;
+  previousLabel: string;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const hoveredRef = useRef(false);
@@ -149,19 +157,21 @@ export function ScrollCarousel({
       </div>
 
       {canScrollLeft ? (
-        <CarouselArrow direction="left" onClick={() => scrollByPage(-1)} />
+        <CarouselArrow ariaLabel={previousLabel} direction="left" onClick={() => scrollByPage(-1)} />
       ) : null}
       {canScrollRight ? (
-        <CarouselArrow direction="right" onClick={() => scrollByPage(1)} />
+        <CarouselArrow ariaLabel={nextLabel} direction="right" onClick={() => scrollByPage(1)} />
       ) : null}
     </div>
   );
 }
 
 function CarouselArrow({
+  ariaLabel,
   direction,
   onClick,
 }: {
+  ariaLabel: string;
   direction: "left" | "right";
   onClick: () => void;
 }) {
@@ -169,7 +179,7 @@ function CarouselArrow({
 
   return (
     <button
-      aria-label={direction === "left" ? "Anterior" : "Siguiente"}
+      aria-label={ariaLabel}
       className={`absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-ca-control border border-ca-border bg-white text-ca-navy-950 shadow-ca-overlay transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white sm:inline-flex ${
         direction === "left" ? "-left-3" : "-right-3"
       }`}

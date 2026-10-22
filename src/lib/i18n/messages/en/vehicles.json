@@ -1,0 +1,10 @@
+{
+  "eyebrow": "Parts by vehicle",
+  "title": "Parts for {make}",
+  "summary": "{count, plural, one {# compatible part} other {# compatible parts}} for {make} vehicles. Price with VAT and availability shown.",
+  "filterByModel": "Filter by model and year",
+  "home": "Home",
+  "catalogLink": "Catalog",
+  "notFoundTitle": "Make not found",
+  "metadataTitle": "Parts for {make}"
+}

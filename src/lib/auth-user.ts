@@ -12,6 +12,7 @@ import type { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/admin-credentials";
 import { auth } from "@/lib/auth";
+import { defaultLocale, type Locale } from "@/lib/i18n/config";
 
 // ---------------------------------------------------------------------------
 // Tipo de sesión del cliente
@@ -55,6 +56,8 @@ export async function registerCustomer(input: {
   email: string;
   password: string;
   phone?: string;
+  /** Idioma para los correos que no nacen de un request suyo, como los avisos de stock. */
+  locale?: Locale;
 }): Promise<RegisterResult> {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
@@ -72,6 +75,7 @@ export async function registerCustomer(input: {
       passwordHash,
       role: "CUSTOMER",
       isActive: true,
+      locale: input.locale ?? defaultLocale,
       phone: input.phone ?? null,
     },
   });

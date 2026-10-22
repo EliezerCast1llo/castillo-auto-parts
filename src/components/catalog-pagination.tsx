@@ -17,53 +17,58 @@
  *   - Las páginas anteriores/siguientes más lejanas se truncan con "…".
  */
 
-import Link from "next/link";
+import { Link, type LocaleHref } from "@/lib/i18n/navigation";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "@/lib/i18n/config";
+import type { LinkQuery } from "@/lib/url-utils";
 import type { CatalogSearchParams } from "@/data/catalog-filters";
 
 type CatalogPaginationProps = {
   currentPage: number;
   totalPages: number;
   searchParams: CatalogSearchParams;
-  /** Ruta base de los enlaces; por defecto el catálogo. */
-  basePath?: string;
+  /**
+   * Destino base de los enlaces; por defecto el catálogo. Con los pathnames
+   * localizados ya no alcanza un string: la ruta de vehículos es dinámica y hay
+   * que pasarla como `{ pathname, params }`.
+   */
+  basePath?: Extract<LocaleHref, { pathname: unknown }> | "/catalog";
 };
 
-export function CatalogPagination({
+export async function CatalogPagination({
   currentPage,
   totalPages,
   searchParams,
   basePath = "/catalog",
-}: CatalogPaginationProps) {
+  locale,
+}: CatalogPaginationProps & { locale: Locale }) {
+  const t = await getTranslations({ locale, namespace: "Catalog" });
   if (totalPages <= 1) return null;
 
-  const buildHref = (page: number) => {
-    const params = new URLSearchParams();
+  const buildHref = (page: number): LocaleHref => {
+    const query: LinkQuery = {};
 
     for (const [key, value] of Object.entries(searchParams)) {
       if (key === "page") continue; // se reemplaza abajo
-      if (Array.isArray(value)) {
-        for (const v of value) params.append(key, v);
-      } else if (value !== undefined) {
-        params.set(key, value);
-      }
+      if (value !== undefined) query[key] = value;
     }
 
-    if (page > 1) params.set("page", String(page));
+    if (page > 1) query.page = String(page);
 
-    const qs = params.toString();
-    return qs ? `${basePath}?${qs}` : basePath;
+    const base = typeof basePath === "string" ? { pathname: basePath } : basePath;
+    return { ...base, query } as LocaleHref;
   };
 
   const pageNumbers = buildPageNumbers(currentPage, totalPages);
 
   return (
-    <nav aria-label="Paginación del catálogo" className="flex flex-wrap items-center justify-center gap-1.5">
+    <nav aria-label={t("paginationAriaLabel")} className="flex flex-wrap items-center justify-center gap-1.5">
       {/* Anterior */}
       {currentPage > 1 ? (
         <Link
           href={buildHref(currentPage - 1)}
           className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
-          aria-label="Página anterior"
+          aria-label={t("previousPage")}
         >
           ‹ Anterior
         </Link>
@@ -96,7 +101,7 @@ export function CatalogPagination({
             key={item}
             href={buildHref(item)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-ca-control border border-ca-border bg-white text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-background"
-            aria-label={`Página ${item}`}
+            aria-label={t("pageNumber", { page: item })}
           >
             {item}
           </Link>
@@ -108,13 +113,13 @@ export function CatalogPagination({
         <Link
           href={buildHref(currentPage + 1)}
           className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
-          aria-label="Página siguiente"
+          aria-label={t("nextPage")}
         >
-          Siguiente ›
+          {t("next")}
         </Link>
       ) : (
         <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
-          Siguiente ›
+          {t("next")}
         </span>
       )}
     </nav>
