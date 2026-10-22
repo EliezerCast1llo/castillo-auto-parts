@@ -62,7 +62,7 @@ describe.skipIf(!process.env.DATABASE_URL)("catalog import with isolated Postgre
     await commit(csv([changed]));
     await commit(csv([changed]));
     const updated = await db.product.findUniqueOrThrow({ where: { sku: product.sku }, include: { compatibilities: true, inventoryStocks: true, translations: true } });
-    expect(updated).toMatchObject({ id: product.id, slug: product.slug, priceCents: 2000, weightGrams: 1250, description: null, isActive: false, isFeatured: true });
+    expect(updated).toMatchObject({ id: product.id, slug: product.slug, priceCents: 2000, weightGrams: 1250, description: "Descripción", isActive: false, isFeatured: true });
     expect(updated.compatibilities).toHaveLength(2);
     expect(updated.translations[0].name).toBe("Existing English");
     expect(updated.inventoryStocks.find((stock) => stock.locationId === main.id)).toMatchObject({ quantityOnHand: 12, quantityReserved: 2 });
@@ -108,11 +108,85 @@ describe.skipIf(!process.env.DATABASE_URL)("catalog import with isolated Postgre
     expect(await db.adminAuditLog.count({ where: { metadata: { path: ["sourceHash"], equals: csvDigest(source) } } })).toBe(1);
   });
 
+  it("preserves blank optional data and compatibility IDs while previewing only actual price/stock changes and inactive state", async () => {
+    const original = row("CSV-PRESERVE");
+    await commit(csv([original]));
+    const before = await db.product.update({ where: { sku: original[0] }, data: { isActive: false }, include: { compatibilities: true } });
+    const changed = [...original]; changed[3] = ""; changed[7] = ""; changed[12] = "";
+    changed.splice(8, 4, "", "", "", ""); changed[5] = "32.99"; changed[6] = "18";
+    const source = csv([changed]), preview = await previewCatalogImport(source, false, actor);
+    expect(preview.items[0]).toMatchObject({ action: "actualizar", productId: before.id, partNumber: "PARTE-1", description: "Descripción", isActive: false, changes: ["Precio con IVA", "Stock MAIN"] });
+    expect(preview.items[0].compatibilities).toEqual([{ make: "Toyota", model: "Corolla", yearFrom: 2010, yearTo: 2018 }]);
+    await commitCatalogImport(source, false, preview.revision, actor);
+    const after = await db.product.findUniqueOrThrow({ where: { id: before.id }, include: { compatibilities: true, inventoryStocks: true } });
+    expect(after).toMatchObject({ sku: before.sku, slug: before.slug, partNumber: before.partNumber, description: before.description, weightGrams: before.weightGrams, isActive: false, priceCents: 3299 });
+    expect(after.compatibilities).toEqual(before.compatibilities);
+    expect(after.inventoryStocks[0].quantityOnHand).toBe(18);
+    const audit = await db.adminAuditLog.findFirstOrThrow({ where: { metadata: { path: ["sourceHash"], equals: csvDigest(source) } } });
+    expect(audit.metadata).toMatchObject({ rows: [expect.objectContaining({ compatibilities: 1, changes: ["Precio con IVA", "Stock MAIN"], isActive: false })] });
+  });
+
+  it("still replaces nonempty optional fields and creates empty defaults on a new product", async () => {
+    const original = row("CSV-REPLACE"); await commit(csv([original]));
+    const changed = [...original]; changed[3] = "NEW-PART"; changed[7] = "Nueva descripción"; changed[12] = "Honda|Civic|2016|2020";
+    const source = csv([changed]), preview = await previewCatalogImport(source, false, actor);
+    expect(preview.items[0].changes).toEqual(["Número de parte", "Descripción", "Compatibilidades"]);
+    await commitCatalogImport(source, false, preview.revision, actor);
+    const product = await db.product.findUniqueOrThrow({ where: { sku: original[0] }, include: { compatibilities: true } });
+    expect(product).toMatchObject({ partNumber: "NEW-PART", description: "Nueva descripción" });
+    expect(product.compatibilities).toEqual([expect.objectContaining({ make: "Honda", model: "Civic" })]);
+    const empty = row("CSV-NEW-EMPTY"); empty[3] = ""; empty[7] = ""; empty[12] = ""; empty.splice(8, 4, "", "", "", "");
+    await commit(csv([empty]));
+    expect(await db.product.findUniqueOrThrow({ where: { sku: empty[0] }, include: { compatibilities: true } })).toMatchObject({ partNumber: null, description: null, weightGrams: null, compatibilities: [], isActive: true });
+  });
+
+  it("updates case-insensitive matches and preserves the stored spelling of legacy SKUs", async () => {
+    const original = row("QA-FIL/03"); await commit(csv([original]));
+    const product = await db.product.findUniqueOrThrow({ where: { sku: original[0] } });
+    const changed = [...original]; changed[0] = "qa-fil/03"; changed[5] = "28.50";
+    const source = csv([changed]), preview = await previewCatalogImport(source, false, actor);
+    expect(preview.items[0]).toMatchObject({ action: "actualizar", productId: product.id, source: { sku: "QA-FIL/03" } });
+    expect(await commitCatalogImport(source, false, preview.revision, actor)).toMatchObject({ created: 0, updated: 1 });
+    await db.product.update({ where: { id: product.id }, data: { sku: "qa-fil /03\u00a0" } });
+    const legacyPreview = await previewCatalogImport(source, false, actor);
+    expect(legacyPreview.items[0]).toMatchObject({ action: "actualizar", productId: product.id, existingSku: "qa-fil /03\u00a0" });
+    await commitCatalogImport(source, false, legacyPreview.revision, actor);
+    expect(await db.product.findUniqueOrThrow({ where: { id: product.id } })).toMatchObject({ sku: "qa-fil /03\u00a0", priceCents: 2850 });
+    expect(await db.product.count({ where: { OR: [{ sku: "QA-FIL/03" }, { sku: "qa-fil/03" }, { id: product.id }] } })).toBe(1);
+  });
+
+  it("blocks ambiguous existing SKU collisions without partial writes", async () => {
+    await commit(csv([row("QA-CLASH/03")]));
+    const existing = await db.product.findUniqueOrThrow({ where: { sku: "QA-CLASH/03" } });
+    await db.product.create({ data: { sku: "qa-clash/03", slug: "legacy-case-clash", name: "Legacy clash", brand: "Fixture", categoryId: existing.categoryId, priceCents: 99 } });
+    const source = csv([row("CSV-CLASH-NO-PARTIAL"), row("QA-CLASH/03")]);
+    const preview = await previewCatalogImport(source, false, actor);
+    expect(preview.errors).toContainEqual(expect.objectContaining({ row: 3, column: "sku", message: expect.stringContaining("varios productos") }));
+    const audits = await db.adminAuditLog.count();
+    await expect(commitCatalogImport(source, false, preview.revision, actor)).rejects.toThrow("cambiaron");
+    expect(await db.product.count({ where: { sku: "CSV-CLASH-NO-PARTIAL" } })).toBe(0);
+    expect((await db.product.findUniqueOrThrow({ where: { id: existing.id } })).priceCents).toBe(2550);
+    expect(await db.adminAuditLog.count()).toBe(audits);
+  });
+
+  it("invalidates previews after compatibility-only changes or a new canonical SKU match", async () => {
+    const original = row("CSV-STALE-COMPAT"); await commit(csv([original]));
+    const product = await db.product.findUniqueOrThrow({ where: { sku: original[0] }, include: { compatibilities: true } });
+    const unchanged = [...original]; unchanged[12] = "";
+    const source = csv([unchanged]), preview = await previewCatalogImport(source, false, actor);
+    await db.vehicleCompatibility.update({ where: { id: product.compatibilities[0].id }, data: { yearTo: 2019 } });
+    await expect(commitCatalogImport(source, false, preview.revision, actor)).rejects.toThrow("cambiaron");
+    const fresh = csv([row("CSV-LATE-MATCH")]), before = await previewCatalogImport(fresh, false, actor);
+    await db.product.create({ data: { sku: "csv-late-match", slug: "late-case-match", name: "Concurrent legacy match", brand: "Fixture", categoryId: product.categoryId, priceCents: 50 } });
+    await expect(commitCatalogImport(fresh, false, before.revision, actor)).rejects.toThrow("cambiaron");
+    expect(await db.product.count({ where: { sku: "CSV-LATE-MATCH" } })).toBe(0);
+  });
+
   it("deactivates only flagged demo products, preserving orders and imported conversions", async () => {
     const category = await db.productCategory.findFirstOrThrow();
     const create = (sku: string, isDemo: boolean) => db.product.create({ data: { sku, slug: sku.toLowerCase(), name: sku, brand: "Fixture", categoryId: category.id, priceCents: 1000, isDemo } });
     const demo = await create("CSV-SEED-OLD", true);
-    const converted = await create("CSV-SEED-CONVERTED", true);
+    const converted = await create("csv-seed-converted", true);
     const real = await create("MOCK-NOT-SEED", false);
     const order = await db.order.create({ data: {
       orderNumber: "CSV-DEMO-ORDER", customerName: "Fixture", customerEmail: "fixture@example.com", customerPhone: "7000-0000", currency: "USD", subtotalCents: 1000, taxCents: 115, shippingCents: 0, totalCents: 1000, status: "PAYMENT_PROCESSING",

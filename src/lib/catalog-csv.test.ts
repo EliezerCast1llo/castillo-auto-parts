@@ -22,7 +22,7 @@ describe("catalog CSV", () => {
     expect(parsed.rows[0].sku).toBe("CSV-001");
   });
   it.each([
-    [0, "=CMD()", "sku"], [1, "", "nombre"], [2, "", "marca"], [4, "!!!", "categoria"],
+    [0, "=CMD()", "sku"], [0, "ß-FIL", "sku"], [1, "", "nombre"], [2, "", "marca"], [4, "!!!", "categoria"],
     [5, "1.001", "precio_iva"], [5, "-1", "precio_iva"], [5, "0", "precio_iva"],
     [6, "-1", "stock"], [6, "1.5", "stock"], [6, "2147483648", "stock"],
     [8, "0", "peso_kg"], [9, "0.01", "largo_cm"],
@@ -40,6 +40,19 @@ describe("catalog CSV", () => {
     expect(parseCatalogCsv("sku,nombre\nONE,Producto").errors).not.toHaveLength(0);
     expect(parseCatalogCsv(`${CSV_COLUMNS.join(",")}\nONE,Producto`).errors[0].row).toBe(2);
     expect(parseCatalogCsv(exportCsv([CSV_COLUMNS])).errors[0].message).toContain("al menos");
+  });
+  it("normalizes SKU case and whitespace and rejects canonical duplicates in a batch", () => {
+    const mixed = [...base]; mixed[0] = "  qa-fil /03\u00a0";
+    const upper = [...base]; upper[0] = "QA-FIL/03";
+    expect(parseCatalogCsv(csv([mixed])).rows[0].sku).toBe("QA-FIL/03");
+    expect(parseCatalogCsv(csv([mixed, upper])).errors).toContainEqual(expect.objectContaining({ row: 3, column: "sku" }));
+  });
+  it.each([",", ";"])("names the actual separator in quoting and row-width errors (%s)", (delimiter) => {
+    const header = CSV_COLUMNS.join(delimiter);
+    const expected = delimiter === ";" ? "punto y coma" : "comas";
+    for (const bad of ['"unclosed', 'bad"quote', `ONE${delimiter}Producto`]) {
+      expect(parseCatalogCsv(`${header}\n${bad}`).errors[0].message).toContain(expected);
+    }
   });
   it("limits both bytes and rows before any database access", () => {
     expect(parseCatalogCsv("á".repeat(MAX_CSV_BYTES)).errors[0].message).toContain("256");

@@ -614,3 +614,5 @@ QA:
 - El alta del primer admin en producción exige `SEED_ADMIN_ONLY=true`; no sembrar catálogo demo. Las copias PostgreSQL requieren retención, almacenamiento independiente y restauración ensayada según `docs/deploy-production-railway.md`.
 - El seed de producción valida `ADMIN_SEED_EMAIL` y `ADMIN_SEED_PASSWORD` antes de escribir; no acepta contraseñas de menos de 16 caracteres ni ejemplos públicos. Los errores del seed no muestran credenciales ni errores crudos de Prisma.
 - `railway.backup.json` define un cron diario independiente: dump PG16, cifrado AES-256-GCM y S3 privado externo. La retención 7/4/3 solo purga tras verificar las subidas; conservar claves por `BACKUP_KEY_ID` fuera de Railway y ensayar recuperación según `docs/database-backups.md`.
+
+- En CSV, descripción/parte/compatibilidades vacías conservan datos existentes. La vista previa muestra valores efectivos, campos que cambian y si el SKU seguirá inactivo. La identidad del importador usa SKU sin espacios y en mayúsculas; conserva la escritura de SKUs históricos y bloquea choques ambiguos, también al confirmar.

@@ -17,10 +17,10 @@ export default async function CatalogCsvImportPage() {
     <section className="space-y-3 rounded-md border border-border bg-card p-5">
       <h2 className="text-lg font-bold text-primary">1. Prepara el archivo</h2>
       <a className="inline-flex rounded-md bg-primary px-4 py-3 font-semibold text-white" href="/api/admin/catalog-import-template" download>Descargar plantilla CSV</a>
-      <p>CSV UTF-8, separado por comas o punto y coma. Máximo 256 KiB y 200 productos por lote. El SKU identifica cada producto.</p>
+      <p>CSV UTF-8, separado por comas o punto y coma. Máximo 256 KiB y 200 productos por lote. El SKU identifica cada producto sin distinguir mayúsculas ni espacios. Los choques existentes deben resolverse antes de importar.</p>
       <p>Precio en USD con IVA incluido; stock físico total en bodega MAIN, sin descontar las reservas. Peso en kg (hasta 3 decimales), medidas en cm (hasta 1 decimal).</p>
       <p>Compatibilidades: <code>Toyota|Corolla|2010|2018;Honda|Civic|2016|2020</code>. Sin motores; hasta 20 por producto.</p>
-      <p className="text-sm text-muted-foreground">Se reemplazan descripción, número de parte y compatibilidades: si sus celdas están vacías, se borran esos valores. Las medidas vacías se conservan en productos existentes; completa las cuatro para cambiarlas. Se mantienen imágenes, traducciones, rutas y estado activo de los existentes; los nuevos se crean activos.</p>
+      <p className="text-sm text-muted-foreground">Descripción, número de parte, compatibilidades y medidas vacías conservan los valores de productos existentes. Para cambiarlos, proporciona valores; las medidas requieren las cuatro celdas. Se mantienen imágenes, traducciones, rutas y estado activo. Un producto inactivo seguirá inactivo: la vista previa lo advierte y puedes reactivarlo desde su ficha. Los nuevos se crean activos.</p>
     </section>
     <CatalogCsvImportForm />
   </main>;
