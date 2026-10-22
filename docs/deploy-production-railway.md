@@ -17,8 +17,9 @@ instrucciones contra producción durante la revisión del PR.
    clientes de esa misma versión mayor y restaurar a una versión compatible.
 4. Añadir el servicio **web** desde este repositorio, con Node.js 22, configuración
    `railway.json` y rama `main`. Instalar dependencias de desarrollo durante el build (incluye TypeScript).
-   Prisma CLI se mantiene como dependencia de producción para las migraciones
-   del predeploy, incluso si la imagen final omite dependencias de desarrollo.
+   Prisma CLI y tsx se mantienen como dependencias de producción para las
+   migraciones del predeploy y el alta inicial del administrador, incluso si la
+   imagen final omite dependencias de desarrollo.
 5. Añadir otro servicio **reservation-cron**, desde el mismo repo y commit, con
    Node.js 22. En Settings → Config-as-code, fijar **`/railway.cron.json`**.
    No añadir dominio ni volumen al cron. Si Railway permite añadir el servicio
