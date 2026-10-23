@@ -14,7 +14,7 @@ export function slugifyProductValue(value: string) {
 }
 
 export function adminSkuConflictMessage(existingSku: string) {
-  return `El SKU coincide con el producto existente «${existingSku || "SKU indicado"}» al ignorar mayúsculas y espacios. Usa otro SKU; no se guardó ningún cambio.`;
+  return `El SKU coincide con el producto existente «${existingSku || "SKU indicado"}» al ignorar mayúsculas y espacios. Usa otro SKU o renombra uno de los dos productos para resolver duplicados históricos; no se guardó ningún cambio.`;
 }
 
 export function parseAdminPriceCents(value: string) {

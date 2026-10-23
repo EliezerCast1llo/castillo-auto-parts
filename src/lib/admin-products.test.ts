@@ -16,6 +16,7 @@ describe("admin product helpers", () => {
     expect(message).toContain("ABC-1");
     expect(message).toContain("mayúsculas y espacios");
     expect(message).toContain("no se guardó ningún cambio");
+    expect(message).toContain("renombra uno de los dos productos");
   });
   it("creates stable product slugs", () => {
     expect(slugifyProductValue("Bujía Iridio Hyundai/Kia 1.6L")).toBe(

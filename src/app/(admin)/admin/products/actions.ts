@@ -17,7 +17,7 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { formString, optionalFormStringOrNull } from "@/lib/form-utils";
 import { db } from "@/lib/db";
 import { parsePackageMeasurements } from "@/lib/package-measurements";
-import { normalizeCatalogSku } from "@/lib/catalog-csv";
+import { isValidCatalogSku, normalizeCatalogSku } from "@/lib/product-sku";
 import { findCatalogSkuMatches } from "@/lib/catalog-sku";
 
 const DEFAULT_LOCATION_CODE = "MAIN";
@@ -46,6 +46,7 @@ type AdminProductInput = {
 
 export async function createAdminProduct(formData: FormData) {
   await requireAdminRole("ADMIN");
+  if (!isValidCatalogSku(formString(formData, "sku"))) redirect("/admin/products/new?estado=invalid_sku");
 
   const input = parseAdminProductFormData(formData);
   if (!input) redirect("/admin/products/new?estado=invalid");
@@ -113,9 +114,10 @@ export async function updateAdminProduct(formData: FormData) {
   await requireAdminRole("ADMIN");
 
   const input = parseAdminProductFormData(formData);
-  if (!productId || !input) redirect(`/admin/products?estado=invalid`);
+  if (!productId) redirect(`/admin/products?estado=invalid`);
 
   let redirectPath = "/admin/products";
+  let errorPath = "/admin/products";
 
   try {
     const product = await runProductWrite(async (tx) => {
@@ -128,6 +130,10 @@ export async function updateAdminProduct(formData: FormData) {
         throw new AdminProductDomainError("not_found");
       }
 
+      // Use the persisted slug, never the attempted slug from the form.
+      errorPath = `/admin/products/${encodeURIComponent(existingProduct.slug)}/edit`;
+      if (!isValidCatalogSku(formString(formData, "sku"))) throw new AdminProductDomainError("invalid_sku");
+      if (!input) throw new AdminProductDomainError("invalid");
       await assertSkuAvailable(tx, input.sku, productId);
 
       const categoryId = await resolveCategoryId(tx, input);
@@ -179,7 +185,7 @@ export async function updateAdminProduct(formData: FormData) {
     revalidateProductPaths(product.slug);
     redirectPath = `/admin/products/${product.slug}/edit?estado=updated`;
   } catch (error) {
-    await handleAdminProductError(error, "/admin/products", input.sku, productId);
+    await handleAdminProductError(error, errorPath, input?.sku ?? normalizeCatalogSku(formString(formData, "sku")), productId);
   }
 
   redirect(redirectPath);
@@ -485,7 +491,7 @@ function parseInteger(value: string) {
 }
 
 class AdminProductDomainError extends Error {
-  constructor(readonly code: "invalid" | "not_found" | "sku_conflict", readonly existingSku?: string) {
+  constructor(readonly code: "invalid" | "not_found" | "sku_conflict" | "invalid_sku", readonly existingSku?: string) {
     super(code);
   }
 }

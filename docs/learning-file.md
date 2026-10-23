@@ -618,3 +618,5 @@ QA:
 - En CSV, descripción/parte/compatibilidades vacías conservan datos existentes. La vista previa muestra valores efectivos, campos que cambian y si el SKU seguirá inactivo. La identidad del importador usa SKU sin espacios y en mayúsculas; conserva la escritura de SKUs históricos y bloquea choques ambiguos, también al confirmar.
 
 - El editor manual usa `normalizeCatalogSku` y la misma consulta de identidad que CSV. Crear/editar rechaza choques normalizados antes de escribir, excluye el propio id al editar y no fusiona duplicados históricos. Las escrituras son serializables; un conflicto concurrente identifica el SKU ganador o pide reintentar.
+
+- `product-sku.ts` concentra normalización, formato ASCII y mensaje compartidos por CSV y editor. La edición valida antes de escribir y toma el slug persistido para regresar a la ficha ante SKU inválido/choque; los duplicados históricos requieren renombrar uno, sin migración ni fusión automática.
