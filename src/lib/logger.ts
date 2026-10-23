@@ -1,55 +1,40 @@
-/**
- * logger.ts — Logger centralizado para errores de servidor.
- *
- * En desarrollo: imprime en consola con contexto.
- * En producción: estructura el error para integrarse con un proveedor externo
- * (Sentry, Datadog, etc.) cuando se configure. Por ahora escribe en consola
- * pero con el formato estructurado listo para ser redirigido.
- *
- * NUNCA loguear: contraseñas, tokens, secretos, datos de tarjeta.
- */
+import { AsyncLocalStorage } from "node:async_hooks";
+import { sanitizeMonitoringEvent, type MonitoringLevel, type MonitoringOperation } from "./monitoring-event";
+import { sendMonitoringEvent } from "./monitoring";
 
-type LogLevel = "error" | "warn" | "info";
+const observations = new AsyncLocalStorage<{ correlationId: string; operation: MonitoringOperation }>();
 
-type LogContext = {
-  context: string;
-  userId?: string;
-  orderId?: string;
-  [key: string]: unknown;
-};
-
-function sanitize(value: unknown): unknown {
-  if (value instanceof Error) {
-    return { message: value.message, name: value.name };
-  }
-  return value;
-}
-
-function log(level: LogLevel, context: LogContext, error?: unknown) {
-  const payload = {
-    level,
-    timestamp: new Date().toISOString(),
+async function log(level: MonitoringLevel, context: { context: string; [key: string]: unknown }) {
+  const observation = observations.getStore();
+  const payload = sanitizeMonitoringEvent(level, {
     ...context,
-    ...(error !== undefined ? { error: sanitize(error) } : {}),
-  };
-
-  if (level === "error") {
-    console.error(JSON.stringify(payload));
-  } else if (level === "warn") {
-    console.warn(JSON.stringify(payload));
-  } else {
-    console.log(JSON.stringify(payload));
-  }
+    ...(observation ? { correlationId: observation.correlationId, context: observation.operation } : {}),
+  });
+  if (level === "error") console.error(JSON.stringify(payload));
+  else if (level === "warn") console.warn(JSON.stringify(payload));
+  else console.log(JSON.stringify(payload));
+  if (level !== "info") await sendMonitoringEvent(payload);
+  return payload.correlationId;
 }
 
-export function logError(context: LogContext, error?: unknown) {
-  log("error", context, error);
+// Deliberately ignore error objects, including message/name/stack/cause.
+export function logError(context: { context: string; [key: string]: unknown }, _error?: unknown) {
+  void _error;
+  return log("error", context);
 }
-
-export function logWarn(context: LogContext, error?: unknown) {
-  log("warn", context, error);
+export function logWarn(context: { context: string; [key: string]: unknown }, _error?: unknown) {
+  void _error;
+  return log("warn", context);
 }
+export function logInfo(context: { context: string; [key: string]: unknown }) { return log("info", context); }
 
-export function logInfo(context: LogContext) {
-  log("info", context);
+export function observeOperation<T>(operation: MonitoringOperation, work: (correlationId: string) => Promise<T>, correlationId = crypto.randomUUID()): Promise<T> {
+  return observations.run({ operation, correlationId }, async () => {
+    await logInfo({ context: operation, outcome: "started" });
+    try { return await work(correlationId); }
+    catch (error) {
+      await logError({ context: operation, outcome: "failed" });
+      throw error;
+    }
+  });
 }

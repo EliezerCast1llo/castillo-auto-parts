@@ -1,5 +1,6 @@
 "use server";
 
+import { logInfo, logError, observeOperation } from "@/lib/logger";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getActionLocale } from "@/lib/i18n/action-locale";
@@ -34,7 +35,15 @@ export async function createGuestOrder(formData: FormData) {
   }
 
   const locale = await getActionLocale();
-  const result = await createGuestCheckoutFromCart(formData, userId, idempotencyKey, false, locale);
+  const result = await observeOperation("checkout", async () => {
+    const outcome = await createGuestCheckoutFromCart(formData, userId, idempotencyKey, false, locale);
+    if (outcome.status === "db_unavailable" || outcome.status === "payment_unavailable") {
+      await logError({ context: "checkout", outcome: "failed" });
+    } else {
+      await logInfo({ context: "checkout", outcome: "completed" });
+    }
+    return outcome;
+  });
   const cookieStore = await cookies();
 
   // La cookie de reintento se conserva SOLO en duplicate_in_progress. En cualquier

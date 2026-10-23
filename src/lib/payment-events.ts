@@ -53,6 +53,7 @@ export async function processPaymentWebhookEvent(
   if (validationError) {
     logWarn({
       context: "paymentWebhookRejected",
+      outcome: "rejected",
       orderId: payment.order.id,
       reason: validationError,
     });
@@ -175,6 +176,7 @@ export async function processPaymentWebhookEvent(
     if (result.status === "manual_review") {
       logWarn({
         context: "paidOrderRequiresManualReview",
+        outcome: "manual_review",
         orderId: payment.order.id,
       });
     }

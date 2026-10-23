@@ -1,12 +1,11 @@
+import { isValidCatalogSku } from "./product-sku";
 export const CART_MAX_LINE_QUANTITY = 99;
 export const CART_MAX_SKU_LENGTH = 64;
-
-const SKU_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 
 export function normalizeCartSku(value: string) {
   const sku = value.trim();
 
-  if (!sku || sku.length > CART_MAX_SKU_LENGTH || !SKU_PATTERN.test(sku)) {
+  if (sku !== sku.replace(/\s+/g, "") || !isValidCatalogSku(sku)) {
     return "";
   }
 

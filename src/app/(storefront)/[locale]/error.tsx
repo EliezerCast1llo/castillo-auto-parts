@@ -1,5 +1,6 @@
 "use client";
 
+import { reportClientError } from "@/lib/client-monitoring";
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
@@ -18,8 +19,7 @@ export default function GlobalError({
   const tCommon = useTranslations("Common");
 
   useEffect(() => {
-    // El error ya queda registrado por Next en servidor; aquí solo consola local.
-    console.error("Unhandled route error", error);
+    reportClientError("client_boundary");
   }, [error]);
 
   return (

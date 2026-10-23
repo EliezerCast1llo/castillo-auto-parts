@@ -127,3 +127,17 @@ test("historical duplicate collisions instruct the admin to rename one product o
   expect(await prisma.product.findUniqueOrThrow({ where: { id: existing.id } })).toEqual(existing);
   expect(await prisma.product.findUniqueOrThrow({ where: { id: duplicate.id } })).toEqual(duplicate);
 });
+
+
+test("historical invalid SKU requires correction before changing price and preserves the record", async ({ page }) => {
+  const slug = `${slugPrefix}-historical-invalid`;
+  const before = await prisma.product.create({ data: { sku: `${prefix}-OLD#1`, slug, name: "Legacy invalid SKU", brand: "Fixture", categoryId, priceCents: 100 } });
+  await page.goto(`/admin/products/${slug}/edit`);
+  await page.getByLabel("Precio USD", { exact: true }).fill("35.50");
+  await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+  await expect(page).toHaveURL(/estado=invalid_sku$/);
+  const error = page.getByRole("alert").filter({ hasText: "Primero corrige el SKU" });
+  await expect(error).toContainText("guardar este u otros cambios");
+  await expect(error).toContainText("punto, guion, barra o guion bajo");
+  expect(await prisma.product.findUniqueOrThrow({ where: { id: before.id } })).toEqual(before);
+});

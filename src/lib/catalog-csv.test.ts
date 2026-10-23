@@ -34,6 +34,12 @@ describe("catalog CSV", () => {
     const raw = [CSV_COLUMNS, row].map((cells) => cells.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(",")).join("\n");
     expect(parseCatalogCsv(raw).errors).toEqual(expect.arrayContaining([expect.objectContaining({ row: 2, column })]));
   });
+  it("reports exactly one SKU error for a 65-character SKU", () => {
+    const row = [...base]; row[0] = "A".repeat(65);
+    const result = parseCatalogCsv(csv([row]));
+    expect(result.rows).toHaveLength(0);
+    expect(result.errors).toEqual([expect.objectContaining({ row: 2, column: "sku", message: expect.stringContaining("64") })]);
+  });
   it("rejects duplicates, malformed quoting, unknown headers and mismatched rows", () => {
     expect(parseCatalogCsv(csv([base, base])).errors.some((error) => error.row === 3 && error.column === "sku")).toBe(true);
     expect(parseCatalogCsv(`${CSV_COLUMNS.join(",")}\n"unclosed`).errors[0].message).toContain("comillas");

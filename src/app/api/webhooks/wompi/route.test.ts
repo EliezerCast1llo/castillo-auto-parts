@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as payments from "@/lib/payments";
 import { POST } from "./route";
 
 const originalEnvironment = { ...process.env };
@@ -16,6 +17,23 @@ describe("Wompi webhook route", () => {
 
   afterEach(() => {
     process.env = { ...originalEnvironment };
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("logs an unexpected provider failure with the response correlation and no sensitive data", async () => {
+    const sensitive = "private@example.com token-secret signature-secret 4111111111111111";
+    process.env.SENTRY_DSN = "";
+    const output = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(payments, "getPaymentProvider").mockImplementation(() => { throw new Error(sensitive, { cause: { token: sensitive } }); });
+    const response = await POST(new Request("https://shop.test/api/webhooks/wompi", {
+      method: "POST", headers: { authorization: sensitive, "x-correlation-id": sensitive }, body: sensitive,
+    }));
+    expect(response.status).toBe(503);
+    const event = JSON.parse(output.mock.calls[0][0]);
+    expect(event).toMatchObject({ context: "wompi_webhook", outcome: "failed", correlationId: response.headers.get("x-correlation-id") });
+    expect(JSON.stringify(event)).not.toContain(sensitive);
+    expect(event.correlationId).toMatch(/^[a-f0-9-]{36}$/);
   });
 
   it("returns 401 before parsing a webhook with an invalid signature", async () => {

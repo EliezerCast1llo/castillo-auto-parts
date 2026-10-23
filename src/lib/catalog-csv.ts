@@ -69,7 +69,7 @@ export function parseCatalogCsv(input: string): { rows: CatalogCsvRow[]; errors:
     if (record.length !== header.length) { issue("archivo", `La cantidad de columnas no coincide con la plantilla. Encierra entre comillas los textos con ${separator}.`); return; }
     const get = (column: string) => record[header.indexOf(column)].trim();
     const sku = normalizeCatalogSku(get("sku")), name = get("nombre"), brand = get("marca"), category = get("categoria");
-    for (const [column, value, max] of [["sku", sku, 64], ["nombre", name, 200], ["marca", brand, 100], ["categoria", category, 100]] as const) {
+    for (const [column, value, max] of [["nombre", name, 200], ["marca", brand, 100], ["categoria", category, 100]] as const) {
       if (!value || value.length > max) issue(column, `Es obligatorio y admite hasta ${max} caracteres.`);
     }
     if (!isValidCatalogSku(get("sku"))) issue("sku", SKU_FORMAT_MESSAGE);

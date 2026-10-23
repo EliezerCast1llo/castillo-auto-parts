@@ -127,7 +127,7 @@ function getStatusMessage(status: string, existingSku: string) {
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
     invalid: "Revisa los campos del producto.",
-    invalid_sku: SKU_FORMAT_MESSAGE,
+    invalid_sku: `Primero corrige el SKU para guardar este u otros cambios. ${SKU_FORMAT_MESSAGE}`,
     updated: "Producto actualizado.",
     conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
   };
