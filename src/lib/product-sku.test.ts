@@ -1,3 +1,4 @@
+import { normalizeCartSku } from "./cart-validation";
 import { describe, expect, it } from "vitest";
 import { isValidCatalogSku, normalizeCatalogSku, SKU_FORMAT_MESSAGE } from "./product-sku";
 import { CSV_COLUMNS, exportCsv, parseCatalogCsv } from "./catalog-csv";
@@ -12,6 +13,12 @@ describe("shared SKU format", () => {
     const source = exportCsv([CSV_COLUMNS, [sku, "Filtro", "Marca", "", "Filtros", "12.00", "5", "", "", "", "", "", ""]]);
     expect(isValidCatalogSku(sku)).toBe(false);
     expect(parseCatalogCsv(source).errors).toContainEqual(expect.objectContaining({ column: "sku" }));
+  });
+  it("cart still enforces the shared size limit and preserves its case/whitespace behavior", () => {
+    expect(normalizeCartSku("a".repeat(64))).toBe("a".repeat(64));
+    expect(normalizeCartSku("a".repeat(65))).toBe("");
+    expect(normalizeCartSku(" ab.C-1 ")).toBe("ab.C-1");
+    expect(normalizeCartSku("ab C-1")).toBe("");
   });
   it("explains the allowed ASCII characters and the shared size limit", () => {
     for (const text of ["A-Z sin tildes", "números", "punto", "guion", "barra", "64"]) expect(SKU_FORMAT_MESSAGE).toContain(text);

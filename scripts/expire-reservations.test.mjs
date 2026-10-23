@@ -9,6 +9,7 @@ const environment = {
 
 test("cron posts the bearer token and drains full batches before exiting", async () => {
   const batches = [50, 2];
+  let correlationId;
   const released = await runReservationCron({
     environment,
     fetchImplementation: async (endpoint, options) => {
@@ -17,6 +18,9 @@ test("cron posts the bearer token and drains full batches before exiting", async
       assert.equal(options.redirect, "error");
       assert.equal(options.headers.authorization, `Bearer ${environment.RESERVATION_CRON_SECRET}`);
       assert.ok(options.signal instanceof AbortSignal);
+      assert.match(options.headers["x-correlation-id"], /^[a-f0-9-]{36}$/);
+      correlationId ??= options.headers["x-correlation-id"];
+      assert.equal(options.headers["x-correlation-id"], correlationId);
       return Response.json({ ok: true, released: batches.shift() });
     },
   });

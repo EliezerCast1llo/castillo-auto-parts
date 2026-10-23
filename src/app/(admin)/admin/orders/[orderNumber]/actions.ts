@@ -9,7 +9,7 @@ import {
 } from "@/lib/admin-orders";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { formString } from "@/lib/form-utils";
-import { logError } from "@/lib/logger";
+import { logInfo, observeOperation } from "@/lib/logger";
 import { db } from "@/lib/db";
 
 export async function updateAdminOrderStatus(formData: FormData) {
@@ -23,15 +23,17 @@ export async function updateAdminOrderStatus(formData: FormData) {
   }
 
   try {
-    await db.$transaction(async (tx) => {
-      await updateOrderStatusForAdmin(tx, { orderNumber, status });
-    });
+    await observeOperation("reconciliation", async () => {
+      await db.$transaction(async (tx) => {
+        await updateOrderStatusForAdmin(tx, { orderNumber, status });
+      });
+      await logInfo({ context: "reconciliation", outcome: "completed" });
+    }, undefined, { isExpectedError: (error) => error instanceof AdminOrderStatusError });
   } catch (error) {
     if (error instanceof AdminOrderStatusError) {
       redirect(`/admin/orders/${orderNumber}?estado=${error.code}`);
     }
 
-    logError({ context: "admin-action" }, error);
     redirect(`/admin/orders/${orderNumber}?estado=db_unavailable`);
   }
 

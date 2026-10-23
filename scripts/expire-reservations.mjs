@@ -1,7 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { pathToFileURL } from "node:url";
 
 /** A Railway cron process must exit after each invocation, not keep a timer alive. */
-export async function runReservationCron({ environment = process.env, fetchImplementation = fetch } = {}) {
+export async function runReservationCron({ environment = process.env, fetchImplementation = fetch, correlationId = randomUUID() } = {}) {
   const secret = environment.RESERVATION_CRON_SECRET?.trim();
   if (!secret || secret.length < 32 || secret.includes("replace-with")) {
     throw new Error("RESERVATION_CRON_SECRET: configure a secret of at least 32 characters");
@@ -23,7 +24,7 @@ export async function runReservationCron({ environment = process.env, fetchImple
     try {
       response = await fetchImplementation(endpoint, {
         method: "POST",
-        headers: { authorization: `Bearer ${secret}` },
+        headers: { authorization: `Bearer ${secret}`, "x-correlation-id": correlationId },
         redirect: "error",
         signal: AbortSignal.timeout(10_000),
       });
@@ -47,11 +48,14 @@ export async function runReservationCron({ environment = process.env, fetchImple
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  runReservationCron().then(
-    (released) => console.log(`Reservation cron completed: ${released} released`),
-    (error) => {
+  const correlationId = randomUUID();
+  const log = (level, outcome) => JSON.stringify({ level, context: "reservation_cron", outcome, correlationId, timestamp: new Date().toISOString() });
+  console.log(log("info", "started"));
+  runReservationCron({ correlationId }).then(
+    () => console.log(log("info", "completed")),
+    () => {
       // Our errors deliberately exclude tokens, URLs, response bodies and cause.
-      console.error(error.message);
+      console.error(log("error", "failed"));
       process.exitCode = 1;
     },
   );

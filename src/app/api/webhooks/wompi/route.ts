@@ -1,3 +1,4 @@
+import { logError, logInfo, logWarn, observeOperation } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { processPaymentWebhookEvent } from "@/lib/payment-events";
 import {
@@ -12,30 +13,40 @@ import {
 // (InvalidWompiWebhookSignatureError → 401), que rechaza floods inválidos barato y
 // ANTES de cualquier escritura en DB.
 export async function POST(request: Request) {
-  try {
-    const config = getWompiConfig();
-    const provider = getPaymentProvider("wompi");
-    const event = await provider.verifyWebhook(request);
-    const result = await processPaymentWebhookEvent(event, {
-      expectedProduction: config.environment === "production",
-    });
+  return observeOperation("wompi_webhook", async (correlationId) => {
+    const respond = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "x-correlation-id": correlationId } });
+    try {
+      const config = getWompiConfig();
+      const provider = getPaymentProvider("wompi");
+      const event = await provider.verifyWebhook(request);
+      const result = await processPaymentWebhookEvent(event, {
+        expectedProduction: config.environment === "production",
+      });
 
-    if (result.status === "invalid") {
-      return NextResponse.json({ ok: false, reason: result.reason }, { status: 400 });
-    }
-    if (result.status === "not_found") {
-      return NextResponse.json({ ok: false, reason: result.reason }, { status: 404 });
-    }
-    if (result.status === "rejected") {
-      return NextResponse.json({ ok: false, reason: result.reason }, { status: 422 });
-    }
+      if (["invalid", "not_found", "rejected", "manual_review"].includes(result.status)) {
+        await logWarn({ context: "wompi_webhook", outcome: result.status });
+      } else {
+        await logInfo({ context: "wompi_webhook", outcome: result.status });
+      }
+      if (result.status === "invalid") {
+        return respond({ ok: false, reason: result.reason }, 400);
+      }
+      if (result.status === "not_found") {
+        return respond({ ok: false, reason: result.reason }, 404);
+      }
+      if (result.status === "rejected") {
+        return respond({ ok: false, reason: result.reason }, 422);
+      }
 
-    return NextResponse.json({ ok: true, status: result.status });
-  } catch (error) {
-    if (error instanceof InvalidWompiWebhookSignatureError) {
-      return NextResponse.json({ ok: false, reason: "invalid_signature" }, { status: 401 });
-    }
+      return respond({ ok: true, status: result.status });
+    } catch (error) {
+      if (error instanceof InvalidWompiWebhookSignatureError) {
+        await logWarn({ context: "wompi_webhook", outcome: "invalid_signature" });
+        return respond({ ok: false, reason: "invalid_signature" }, 401);
+      }
 
-    return NextResponse.json({ ok: false, reason: "webhook_unavailable" }, { status: 503 });
-  }
+      await logError({ context: "wompi_webhook", outcome: "failed" }, error);
+      return respond({ ok: false, reason: "webhook_unavailable" }, 503);
+    }
+  });
 }

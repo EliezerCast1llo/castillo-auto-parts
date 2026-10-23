@@ -87,3 +87,10 @@ al arrancar; solo el runner E2E aislado permite proveedores simulados.
   - [ ] login/register.
 - [ ] Fuentes externas finales agregadas si se activa Google Maps/Places real.
 - [ ] Pasar de `Report-Only` a enforcement solo después de QA.
+
+## Monitoreo opcional
+
+Configurar y verificar las alertas de webhooks, pagos pendientes y guías según
+[observability.md](observability.md), después de la aprobación del propietario
+para la cuenta Sentry. Registrar el responsable de alertas y vigilar ejecución
+del cron; las alertas Boxful requieren completar B5.
