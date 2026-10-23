@@ -7,24 +7,31 @@ El Salvador. The current MVP supports product discovery, vehicle compatibility,
 guest and customer shopping flows, local fulfillment, inventory reservations, and
 back-office operations.
 
-The product is currently in local MVP validation. It is **not ready for public
+As of **23 October 2026**, the target for a real production purchase is
+**20 December 2026**. [Current status](docs/mvp-current-status.md) distinguishes
+implemented features from external integrations and business blockers. GitHub
+Issues and PRs coordinate the approved MVP work.
+
+The product is currently in local/CI MVP validation. It is **not ready for public
 commercial use** until the production gates in this README and
 [`docs/production-operations-checklist.md`](docs/production-operations-checklist.md)
 have been completed.
 
 ## Business Scope
 
-- Initial service area: San Salvador and Santa Tecla.
+- Market: El Salvador, with national shipping required at launch.
 - Currency: US dollars (USD).
 - Tax: displayed prices include El Salvador's 13% VAT.
-- Fulfillment: free warehouse pickup and configurable local delivery zones.
+- Approved launch fulfillment: free warehouse pickup and national shipping through
+  the Boxful API from day one. The current implementation still uses local delivery
+  zones; Boxful integration is pending in [B5/#91](https://github.com/EliezerCast1llo/castillo-auto-parts/issues/91).
 - Initial warehouse model: one active location, designed to support multiple locations.
 - Checkout: guest checkout is supported; registered customers also have account pages.
 - Target payment provider: Wompi El Salvador.
 - Initial electronic invoicing (DTE): manual or semi-automated process pending final
   validation with an accountant and the Ministry of Finance requirements.
-- Brand status: `Castillo Auto Parts` remains provisional until legal and commercial
-  name clearance is complete.
+- Final product brand: `Castillo Auto Parts`, confirmed in the 21–22 October plan.
+  This product decision does not establish legal registration or domain ownership.
 
 ## Current Features
 
@@ -80,7 +87,7 @@ have been completed.
 | Unit tests | Vitest |
 | End-to-end tests | Playwright |
 | CI | GitHub Actions |
-| Target hosting | Vercel with managed PostgreSQL |
+| Target hosting | Railway with managed PostgreSQL |
 
 ## Prerequisites
 
@@ -188,8 +195,9 @@ Do not enable real sales until all of the following are complete:
 - Refund, reversal, and operational reconciliation procedures.
 - Approved DTE workflow.
 
-See [`docs/phase-2-payments-inventory.md`](docs/phase-2-payments-inventory.md) for the
-implemented flow and remaining validation.
+See [current status](docs/mvp-current-status.md) and
+[B4/#90](https://github.com/EliezerCast1llo/castillo-auto-parts/issues/90) for the
+remaining Wompi validation and reconciliation work. Phase documents are historical.
 
 ## Quality Checks
 
@@ -253,23 +261,33 @@ docs/           Product, architecture, QA, audit, and operations documentation
 
 The following remain mandatory before a public commercial launch:
 
-- Managed PostgreSQL with pooled runtime and direct migration URLs.
+- Railway web/PostgreSQL/cron/backups configured and verified using the
+  [production guide](docs/deploy-production-railway.md).
 - Database outage monitoring, backups, and a tested restore procedure.
 - Wompi sandbox and production validation with real merchant credentials.
 - Production reservation-expiration scheduler.
 - Resend domain verification with SPF, DKIM, and DMARC.
 - Cloudflare R2 production bucket, custom public domain, and least-privilege token.
-- Distributed rate limiting for sensitive serverless flows.
+- Shared Redis rate limiting when scaling; the documented in-memory exception
+  applies only to one long-running process.
 - CSP review followed by enforcement.
+- Boxful API quoting, shipment creation and national tracking validated; approved
+  fixed-rate fallback and accurate product weights/dimensions.
 - Final Google Maps or address provider configuration and delivery-zone validation.
 - Approved DTE, refund, cancellation, warranty, and delivery policies.
-- Legal and commercial clearance for the final brand name.
+- Applicable legal brand/domain checks; the selected product brand is definitive.
+- Prelaunch regression and production smoke in
+  [B10/#96](https://github.com/EliezerCast1llo/castillo-auto-parts/issues/96).
 
 Do not treat a successful local mock checkout as production payment approval.
 
 ## Core Documentation
 
-- [`docs/mvp-current-status.md`](docs/mvp-current-status.md): current implementation status.
+- [`docs/mvp-current-status.md`](docs/mvp-current-status.md): current implementation status and business blockers.
+- [`docs/roadmap.md`](docs/roadmap.md): approved MVP issues and dated status.
+- [`docs/project-tracking.md`](docs/project-tracking.md): issue/PR workflow and approvals.
+- [`docs/deploy-production-railway.md`](docs/deploy-production-railway.md): production deployment guide.
+- [`docs/historical-phases.md`](docs/historical-phases.md): preserved phase documents.
 - [`docs/product-requirements.md`](docs/product-requirements.md): business and product rules.
 - [`docs/technical-architecture.md`](docs/technical-architecture.md): system architecture.
 - [`docs/project-file-map.md`](docs/project-file-map.md): repository ownership map.

@@ -1,10 +1,12 @@
 # Checklist operativo de producción
 
-Fecha: 2026-06-24.
+Actualizado: 23 de octubre de 2026.
 
-Este documento cubre `T-043`: puntos que no se pueden confirmar solo leyendo el repo. Deben revisarse manualmente en Vercel, Cloudflare, Resend/DNS y el proveedor de base de datos.
+Puntos que no se pueden confirmar solo leyendo el repo: revisar manualmente
+Railway, Cloudflare, Resend/DNS y PostgreSQL. Ninguna casilla acredita configuración
+real por sí sola; el lanzamiento requiere evidencia y aprobación del propietario.
 
-## Railway (producción actual)
+## Railway (destino aprobado; operación por verificar)
 
 Seguir [la guía de producción Railway](deploy-production-railway.md) para servicios,
 variables, cron, respaldos y recuperación. Los pasos Vercel siguientes se conservan
@@ -69,7 +71,7 @@ al arrancar; solo el runner E2E aislado permite proveedores simulados.
 - [ ] Contador confirma régimen y tipo de documentos.
 - [ ] Contador confirma si el envío se emite como línea gravada, servicio de transporte, cargo exento u otro tratamiento.
 - [ ] Definido si el DTE se emite al pago aprobado, despacho o cierre operativo.
-- [ ] Definidos datos mínimos para consumidor final y contribuyente.
+- [ ] Contador aprobó los datos mínimos del consumidor final y el tratamiento fiscal del envío para B6/#92.
 - [ ] Confirmado si se usará portal/manual, proveedor DTE con API o integración directa.
 - [ ] Sandbox de proveedor/Hacienda disponible antes de automatizar.
 - [ ] Proceso de contingencia documentado si DTE falla después del pago.
