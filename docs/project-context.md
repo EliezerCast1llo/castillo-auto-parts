@@ -1,152 +1,84 @@
-# Project Context - Repuestos Castillo / e-commerce automotriz
+# Contexto del proyecto — Castillo Auto Parts
 
-## Proposito
+Actualizado: **23 de octubre de 2026**. Fuente de estado y decisiones vigentes:
+[Estado actual del MVP](mvp-current-status.md); cola aprobada:
+[Roadmap e issues](roadmap.md). Meta: **compra real posible el 20 de diciembre de
+2026**. Las guías de fases de mayo/junio son [históricas](historical-phases.md).
 
-Este documento es el contexto maestro del proyecto. Debe permitir que cualquier IA o colaborador entienda rapidamente que se esta construyendo, por que, que decisiones ya se tomaron y que reglas no deben romperse.
+## Visión y alcance aprobado
 
-Actualizar este archivo cuando cambien decisiones importantes.
+E-commerce de repuestos propios para consumidor final en El Salvador. Catálogo
+con compatibilidad por marca/modelo/año, compra como invitado o con cuenta,
+precios en USD con IVA del 13% incluido y una bodega inicial. Retiro gratuito y
+**envíos nacionales con Boxful por API desde el día 1**: esta cobertura es el
+requisito aprobado, todavía no la capacidad de las tarifas locales actuales.
 
-## Vision
+Decisiones del 21–22 de octubre recogidas en #97 y el backlog del 22:
 
-Crear una plataforma web e-commerce para vender repuestos automotrices propios en El Salvador, empezando por San Salvador y Santa Tecla, con experiencia moderna, busqueda intuitiva, checkout confiable, pagos en linea, facturacion DTE y operacion admin clara.
+- **Marca definitiva:** Castillo Auto Parts. La decisión de nombre no acredita
+  registro legal ni compra del dominio.
+- **Pago completo en línea desde el día 1:** Wompi SV previsto, con validación de
+  credenciales reales y reconciliación pendientes en B4/#90.
+- **Railway:** web, PostgreSQL, cron y backups; preparación en código fusionada,
+  configuración y operación real pendientes de acreditar.
+- **Boxful por API:** cotización en checkout, creación de guías y rastreo nacional
+  en B5/#91. El equipo propio y las tarifas San Salvador/Santa Tecla del plan
+  antiguo no definen el alcance nacional aprobado.
+- **DTE manual inicial para consumidor final:** el contador define los datos y
+  tratamiento fiscal; el flujo de registro por pedido de B6/#92 está pendiente.
+- **GitHub Issues y PR:** coordinación y aceptación del trabajo. La configuración
+  de un GitHub Project es opcional y no se da por realizada.
 
-El sitio debe sentirse moderno y facil de usar, mas cercano a un retail digital como Siman que a catalogos antiguos y torpes. La prioridad no es una demo rapida, sino un MVP robusto en aproximadamente 3 meses.
+No volver a elegir marca, plataforma o proveedor sin una nueva decisión del
+propietario. Las alternativas del estudio inicial son contexto histórico.
 
-## Rol del humano
+## Estado de implementación y bloqueos
 
-El humano sera QA / Product Owner tecnico.
+Catálogo, búsqueda, compatibilidad, carrito, checkout invitado, cuentas, pedidos,
+admin con roles, retiro, SEO e i18n es/en están implementados y probados en CI.
+También existen importación CSV, preparación de Railway/backups y monitoreo
+opcional. Ver evidencia y límites en [Estado actual](mvp-current-status.md).
 
-Responsabilidades:
+No confundir eso con autorización de ventas reales. Quedan por resolver dominio
+y correo verificado (B3), validación/reconciliación Wompi (B4), Boxful (B5), DTE
+(B6), textos/páginas de políticas (B7), carga y validación del catálogo real y QA
+contra producción (B10). Sociedad, contador, acceso a proveedores y aprobación de
+políticas/datos corresponden al propietario. Este corte no verifica sus paneles
+externos ni un despliegue público real.
 
-- aprobar o rechazar entregables;
-- revisar alcance;
-- validar UX;
-- crear o aprobar casos de prueba;
-- priorizar features;
-- proteger el proyecto contra cambios innecesarios;
-- actuar como cliente final del producto.
+## Rol del propietario y forma de trabajo
 
-## Decisiones tomadas
+El propietario actúa como QA/Product Owner: prioriza, aprueba el alcance,
+responde decisiones de negocio, revisa PR y autoriza merge y despliegue. Codex
+implementa tareas en ramas `codex/<slug>` y presenta cambios revisables con
+pruebas y límites conocidos. Referencia: [Seguimiento](project-tracking.md).
 
-- Inventario: propio.
-- Mercado inicial: El Salvador.
-- Zonas iniciales: San Salvador y Santa Tecla.
-- Moneda: USD.
-- IVA: 13%, precios visibles con IVA incluido.
-- Pago MVP: pago completo en linea.
-- Proveedor de pago objetivo: Wompi SV.
-- Fallback de pago: BAC Compra Click.
-- Stripe: no es prioridad inicial.
-- Facturacion: DTE semiautomatico inicial, preparando datos para integracion futura.
-- Entrega inicial: equipo propio.
-- Entrega futura: tercerizada para cobertura departamental.
-- Retiro en bodega: gratis, con horarios/dias definidos.
-- Envio Santa Tecla: tarifa inicial de referencia USD 2.
-- Envio San Salvador: tarifa inicial de referencia USD 3 a USD 5.
-- Direccion: debe usar mapa, ubicacion actual y pin manual.
-- Compra guest: obligatoria desde MVP.
-- Admin MVP: usuario admin con todos los permisos.
-- Idioma: espanol principal, opcion/base para ingles.
-- Inventario inicial: se definira por estudio de mercado.
-- Compatibilidad inicial: marca, modelo y anio.
-- Variantes: una sola variante por producto en MVP.
-- Bodega: una bodega inicial, modelo preparado para mas.
-- Data inicial: mock data mientras se valida inventario real.
-- Marca: `Castillo Auto Parts` queda como codename/propuesta provisional; no esta aprobada como marca publica por coincidencias encontradas.
-- Repo: se inicio rama local `codex/project-foundation`.
+Las especialidades de producto, diseño, backend, frontend y QA del plan inicial
+sirven para organizar trabajo; no implican un equipo de agentes ejecutándose ni
+un permiso para publicar o contactar proveedores.
 
-## Reglas criticas
+## Reglas críticas
 
-- No almacenar datos de tarjeta.
-- No permitir comprar sin stock.
-- Validar stock antes de checkout y antes de pago.
-- Descontar inventario solo despues de pago confirmado.
-- Procesar webhooks de forma idempotente.
-- No descontar inventario dos veces por webhook duplicado.
-- No guardar solo coordenadas: guardar tambien direccion legible.
-- Si no hay stock en checkout, solicitar email o telefono para aviso.
-- Cada orden pagada debe tener estado fiscal claro.
-- Rutas admin deben estar protegidas.
-- Los cambios deben ser pequenos, revisables y documentados.
+- No almacenar tarjetas ni publicar secretos o datos personales en Git/issues.
+- Recalcular importes y comprobar stock en servidor; reservar inventario para el
+  pago pendiente y confirmar/descontar una sola vez al confirmar el pago.
+- Procesar eventos de pago y cambios de inventario de forma idempotente.
+- Guardar dirección legible además de coordenadas cuando hay envío.
+- Proteger admin por autenticación y roles; auditar cambios sensibles.
+- Cada pedido pagado debe tener un estado fiscal claro al completar B6; la
+  existencia del modelo DTE no prueba emisión ni cumplimiento fiscal.
+- No usar mock de pagos, correo console ni datos de demostración como evidencia
+  comercial. No eludir la validación de entorno productivo con banderas E2E.
+- CI `quality` y `e2e` aprobados, revisión y aprobación del propietario antes de
+  merge. No desplegar ni ejecutar una compra real sin su autorización.
 
-## MVP esperado
+## Referencias operativas
 
-El MVP debe permitir:
-
-- ver home funcional;
-- buscar productos;
-- filtrar productos;
-- ver detalle de producto;
-- revisar compatibilidad simple;
-- agregar al carrito;
-- comprar como invitado;
-- comprar como usuario registrado;
-- elegir retiro en bodega o envio local;
-- seleccionar direccion con mapa/pin;
-- pagar en linea con proveedor local;
-- crear orden;
-- recibir confirmacion;
-- descontar inventario;
-- ver orden en admin;
-- gestionar productos e inventario manualmente;
-- preparar estado fiscal DTE.
-
-## Equipo de agentes
-
-- Product Agent: requisitos, alcance y criterios.
-- Market Research Agent: demanda, categorias y SKUs.
-- Marketing/SEO Agent: marca, SEO, copy y posicionamiento.
-- UX/UI Agent: pantallas, flujos, responsive y sistema visual.
-- Frontend Agent: componentes, paginas y estados.
-- Backend Agent: DB, reglas, pagos, inventario y DTE.
-- QA Agent: checklist, Gherkin, pruebas y regresion.
-- Security / Compliance Agent: seguridad, privacidad, pagos, webhooks, admin y despliegue.
-- Procurement / Supply Chain Agent: proveedores, cotizaciones, MOQ, landed cost y calidad.
-- Codex: orquestador, implementador e integrador.
-
-## Documentos relacionados
-
-- `docs/product-requirements.md`
-- `docs/technical-architecture.md`
-- `docs/database-schema.md`
-- `docs/agent-workflow.md`
-- `docs/qa-strategy.md`
-- `docs/market-research-plan.md`
-- `docs/roadmap.md`
-- `docs/project-tracking.md`
-- `docs/learning-file.md`
-- `docs/phase-1-kickoff.md`
-- `docs/phase-1-market-research-report.md`
-- `docs/phase-1-payments-dte-analysis.md`
-- `docs/phase-1-brand-ux-direction.md`
-- `docs/phase-1-mvp-backlog.md`
-- `docs/phase-1-name-clearance.md`
-- `docs/phase-1-market-validation-protocol.md`
-- `docs/phase-1-sourcing-plan.md`
-- `docs/phase-2-technical-setup.md`
-- `docs/phase-3-catalog-product.md`
-- `docs/reused-agent-patterns.md`
-- `docs/commercial-validation-workflow.md`
-- `docs/templates/supplier-outreach.md`
-- `docs/templates/workshop-interview.md`
-- `docs/templates/sku-scorecard.csv`
-- `docs/templates/provider-scorecard.csv`
-
-## Recomendaciones actuales de Fase 1
-
-- Inventario: iniciar con filtros, frenos, bujias, escobillas, focos y fluidos.
-- Vehiculos foco: Corolla, Sentra, Hilux, Rogue, Accent, Elantra, Civic, Frontier, Forte, Soul, Rio, Versa, Yaris, Tacoma y Mirage.
-- Pagos: Wompi SV como primera opcion tecnica; BAC Compra Click como fallback operativo; Pagadito como alternativa regional.
-- DTE: modo semiautomatico inicial; preparar integracion con proveedor API para fase posterior.
-- Marca: no aprobar todavia `Castillo Auto Parts` ni `Repuestos Castillo` como nombre publico por coincidencias encontradas.
-- UX: fitment-first, con busqueda por vehiculo como elemento principal.
-
-## Preguntas pendientes
-
-- Nombre final de marca.
-- Direccion, horario y dias de retiro en bodega.
-- Tabla final de tarifas por zonas.
-- Proveedor de mapas.
-- Alcance exacto de contenido en ingles.
-- Tamano final del inventario inicial.
-- GitHub remoto y Project.
+- [Despliegue de producción Railway](deploy-production-railway.md).
+- [Backups y restauración](database-backups.md).
+- [Monitoreo y alertas](observability.md).
+- [Carga CSV del catálogo](catalog-csv-import.md).
+- [Checklist operativo](production-operations-checklist.md).
+- [CI y merge gates](ci-cd-quality-gates.md).
+- [Diseño histórico del DTE manual](phase-4-dte-manual-bridge.md), referencia para
+  el issue vigente B6/#92, no prueba de implementación.

@@ -1,5 +1,10 @@
 # Phase 2 Technical Setup
 
+> **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
+> Se conserva el contenido original para trazabilidad; sus estados y decisiones
+> no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)
+> y [Roadmap vigente](roadmap.md) antes de planificar o desplegar.
+
 ## Estado
 
 - Fecha: 2026-05-15.

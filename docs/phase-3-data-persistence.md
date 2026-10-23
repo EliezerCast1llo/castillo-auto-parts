@@ -1,5 +1,10 @@
 # Phase 3 - Data Persistence
 
+> **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
+> Se conserva el contenido original para trazabilidad; sus estados y decisiones
+> no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)
+> y [Roadmap vigente](roadmap.md) antes de planificar o desplegar.
+
 > Nota 2026-06-21: este documento conserva el contexto historico de la fase. El flujo operativo actual usa migraciones Prisma; consultar `docs/database-migrations.md`.
 
 ## Objetivo

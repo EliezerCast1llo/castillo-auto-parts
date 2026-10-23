@@ -1,5 +1,9 @@
 # Plan de trabajo — Castillo Auto Parts
 
+> **Histórico — plan por fases derivado de una auditoría anterior.**
+> Estados y prioridades vigentes: [Estado actual](mvp-current-status.md) y
+> [Roadmap con GitHub Issues](roadmap.md), actualizados al 23 de octubre de 2026.
+
 > Derivado de [docs/auditoria.md](auditoria.md). Organizado por fases en orden de prioridad.
 > Cada tarea indica: **objetivo**, **archivos**, **criterios de aceptación**, **cómo verificar**, **dependencias** y **modelo de IA recomendado** (con justificación de una línea).
 > **Fecha:** 2026-06-11.

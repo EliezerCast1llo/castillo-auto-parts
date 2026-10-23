@@ -1,5 +1,11 @@
 # Fase 4 - Puente manual DTE
 
+> **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
+> Se conserva el contenido original para trazabilidad; sus estados y decisiones
+> no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)
+> y [Roadmap vigente](roadmap.md) antes de planificar o desplegar.
+> El diseño de este puente sigue como referencia de B6/#92; el flujo por pedido aún está pendiente.
+
 Fecha: 2026-06-24.
 
 Este documento cubre `T-040` sin implementar emisión real de DTE.
