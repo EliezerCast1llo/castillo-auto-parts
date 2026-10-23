@@ -81,8 +81,49 @@ test("create and edit collisions report the existing SKU and preserve records", 
   await page.getByLabel("SKU", { exact: true }).fill(sku.toLowerCase());
   await page.getByLabel("Nombre", { exact: true }).fill("Must not overwrite");
   await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
-  await expect(page).toHaveURL(/\/admin\/products\?estado=sku_conflict/);
+  await expect(page).toHaveURL(new RegExp(`/admin/products/${otherSlug}/edit\\?estado=sku_conflict`));
   await expect(page.getByRole("alert").filter({ hasText: "El SKU coincide" })).toContainText(sku);
   expect(await prisma.product.findUniqueOrThrow({ where: { id: existing.id } })).toEqual(existing);
   expect(await prisma.product.findUniqueOrThrow({ where: { id: other.id } })).toEqual(other);
+});
+
+test("invalid SKU formats show allowed characters and return to the original edit form", async ({ page }) => {
+  for (const invalid of ["ABC#1", "AÑO-1"]) {
+    await prepareProduct(page, `${prefix}-${invalid}`, `${slugPrefix}-invalid`);
+    await page.getByRole("button", { name: "Crear producto", exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/products\/new\?estado=invalid_sku$/);
+    await expect(page.getByRole("alert").filter({ hasText: "El SKU es obligatorio" })).toContainText("A-Z sin tildes");
+    expect(await prisma.product.count({ where: { slug: `${slugPrefix}-invalid` } })).toBe(0);
+  }
+  const sku = `${prefix}-AB.C_1`, slug = `${slugPrefix}-valid-punctuation`;
+  await prepareProduct(page, sku.toLowerCase(), slug);
+  await page.getByRole("button", { name: "Crear producto", exact: true }).click();
+  await expect(page).toHaveURL(/estado=created$/);
+  const before = await prisma.product.findUniqueOrThrow({ where: { sku }, include: { inventoryStocks: true } });
+  for (const invalid of ["ABC#1", "AÑO-1"]) {
+    await page.getByLabel("SKU", { exact: true }).fill(invalid);
+    await page.getByLabel("Slug", { exact: true }).fill(`${slugPrefix}-attempted-slug`);
+    await page.getByLabel("Nombre", { exact: true }).fill("Do not overwrite");
+    await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/admin/products/${slug}/edit\\?estado=invalid_sku$`));
+    await expect(page.getByLabel("SKU", { exact: true })).toHaveValue(sku);
+    const error = page.getByRole("alert").filter({ hasText: "El SKU es obligatorio" });
+    await expect(error).toContainText("A-Z sin tildes");
+    await expect(error).toContainText("punto, guion, barra o guion bajo");
+    expect(await prisma.product.findUniqueOrThrow({ where: { id: before.id }, include: { inventoryStocks: true } })).toEqual(before);
+  }
+});
+
+test("historical duplicate collisions instruct the admin to rename one product on its own edit page", async ({ page }) => {
+  const sku = `${prefix}-DUP-1`, slug = `${slugPrefix}-legacy-one`;
+  const existing = await prisma.product.create({ data: { sku, slug, name: "Legacy uppercase", brand: "Fixture", categoryId, priceCents: 100 } });
+  const duplicate = await prisma.product.create({ data: { sku: `${prefix}-dup-1`, slug: `${slugPrefix}-legacy-two`, name: "Legacy lowercase", brand: "Fixture", categoryId, priceCents: 200 } });
+  await page.goto(`/admin/products/${slug}/edit`);
+  await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/admin/products/${slug}/edit\\?estado=sku_conflict`));
+  const error = page.getByRole("alert").filter({ hasText: "El SKU coincide" });
+  await expect(error).toContainText("renombra uno de los dos productos");
+  await expect(error).toContainText(duplicate.sku);
+  expect(await prisma.product.findUniqueOrThrow({ where: { id: existing.id } })).toEqual(existing);
+  expect(await prisma.product.findUniqueOrThrow({ where: { id: duplicate.id } })).toEqual(duplicate);
 });

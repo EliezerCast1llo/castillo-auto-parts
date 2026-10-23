@@ -1,6 +1,6 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
-import { SKU_WHITESPACE } from "./catalog-csv";
+import { SKU_WHITESPACE } from "./product-sku";
 
 /** Shared identity lookup for the editor and CSV; never rename/merge legacy rows here. */
 export async function findCatalogSkuMatches(

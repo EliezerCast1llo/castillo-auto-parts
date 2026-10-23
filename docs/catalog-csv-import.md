@@ -1,6 +1,6 @@
 # Importación del catálogo por CSV
 
-Issues #94 (B8) y #103 (B15). Solo el rol **ADMIN** puede descargar la plantilla, preparar una
+Issues #94 (B8), #103 (B15), #107 (B16) y #109 (B17). Solo el rol **ADMIN** puede descargar la plantilla, preparar una
 vista previa y confirmar. Marketing y los demás roles no tienen permiso.
 
 ## Flujo del operador
@@ -87,12 +87,16 @@ la cantidad final de compatibilidades y el estado activo que se conserva.
 
 Los productos nuevos guardan el SKU canónico. Los existentes conservan su SKU
 original, id y referencias: no se renombra masivamente el catálogo ni se mezclan
-productos de un choque. El editor manual también normaliza al crear y guardar
-una ficha, usando la misma función y búsqueda que el importador. Rechaza choques
+productos de un choque. El editor manual también normaliza y valida el formato al crear y guardar
+una ficha, usando la misma función, regla de formato y búsqueda que el importador.
+Solo admite letras ASCII A-Z sin tildes, dígitos 0-9 y los separadores `.`, `-`,
+`/`, `_`; empieza por letra/dígito y admite hasta 64 caracteres sin espacios. Rechaza choques
 con otro producto antes de escribir e indica el SKU existente; al editar excluye
 el propio producto. Guardar una ficha histórica normaliza únicamente su SKU,
-sin migrar o fusionar otros registros. Las variantes históricas duplicadas se
-reportan; la ambigüedad se vuelve a comprobar al confirmar un CSV. Resolver los SKUs duplicados desde administración antes
+sin migrar o fusionar otros registros. Un formato inválido o choque al editar vuelve a la ficha original
+con el mensaje de error, sin guardar el slug u otros cambios intentados. El aviso
+de duplicados históricos indica renombrar uno de los dos; no los modifica ni
+fusiona automáticamente. Las variantes históricas duplicadas se reportan; la ambigüedad se vuelve a comprobar al confirmar un CSV. Resolver los SKUs duplicados desde administración antes
 de revalidar; no basta con cambiar mayúsculas en el archivo.
 
 Cada archivo es un lote independiente. Los lotes ya confirmados no se revierten

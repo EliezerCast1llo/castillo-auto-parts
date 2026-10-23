@@ -2,6 +2,7 @@ import type { InventoryStatus, ProductCategory } from "@prisma/client";
 import { Save } from "lucide-react";
 import { CompatibilityEditor } from "@/components/admin/compatibility-editor";
 import { formatAdminPriceInput } from "@/lib/admin-products";
+import { SKU_FORMAT_MESSAGE } from "@/lib/product-sku";
 
 type AdminProductFormProduct = {
   brand: string;
@@ -71,7 +72,7 @@ export function AdminProductForm({
           <AdminTextField defaultValue={product?.brand} label="Marca" name="brand" required />
           <div>
             <AdminTextField aria-describedby="admin-product-sku-help" defaultValue={product?.sku} label="SKU" name="sku" required />
-            <p id="admin-product-sku-help" className="mt-1 text-xs text-muted-foreground">Se guardará en mayúsculas y sin espacios, igual que al importar CSV. No puede coincidir con otro producto.</p>
+            <p id="admin-product-sku-help" className="mt-1 text-xs text-muted-foreground">{SKU_FORMAT_MESSAGE} No puede coincidir con otro producto.</p>
           </div>
           <AdminTextField
             defaultValue={product?.partNumber ?? ""}

@@ -2,6 +2,8 @@ import { canonicalizeVehicle } from "@/data/vehicle-catalog";
 import { parseAdminPriceCents } from "./admin-products";
 import { slugifyValue } from "./slug";
 import { parsePackageMeasurements, type PackageMeasurements } from "./package-measurements";
+import { isValidCatalogSku, normalizeCatalogSku, SKU_FORMAT_MESSAGE } from "./product-sku";
+export { normalizeCatalogSku, SKU_WHITESPACE } from "./product-sku";
 
 export const MAX_CSV_BYTES = 256 * 1024;
 export const MAX_CSV_ROWS = 200;
@@ -13,14 +15,6 @@ export type CatalogCsvRow = {
   measurements: PackageMeasurements | null;
   compatibilities: Array<{ make: string; model: string; yearFrom: number; yearTo: number }>;
 };
-
-/** Import identity only; existing stored SKUs and their references are preserved. */
-export function normalizeCatalogSku(value: string) {
-  return value.replace(/\s+/g, "").toUpperCase();
-}
-
-// Matches JavaScript's \s for the PostgreSQL identity lookup as well.
-export const SKU_WHITESPACE = " \t\r\n\f\v\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff";
 
 /** RFC 4180 quoting, including embedded newlines, with comma or Excel semicolon. */
 function readRecords(source: string, delimiter: string): string[][] {
@@ -78,7 +72,7 @@ export function parseCatalogCsv(input: string): { rows: CatalogCsvRow[]; errors:
     for (const [column, value, max] of [["sku", sku, 64], ["nombre", name, 200], ["marca", brand, 100], ["categoria", category, 100]] as const) {
       if (!value || value.length > max) issue(column, `Es obligatorio y admite hasta ${max} caracteres.`);
     }
-    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(get("sku").replace(/\s+/g, ""))) issue("sku", "Usa letras, números, punto, guion, barra o guion bajo; empieza por letra o número.");
+    if (!isValidCatalogSku(get("sku"))) issue("sku", SKU_FORMAT_MESSAGE);
     if (skus.has(sku)) issue("sku", "SKU repetido dentro del mismo archivo.");
     skus.add(sku);
     const categorySlug = slugifyValue(category);

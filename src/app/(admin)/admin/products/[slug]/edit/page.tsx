@@ -13,6 +13,7 @@ import { db } from "@/lib/db";
 import { updateAdminProduct } from "../../actions";
 import { defaultLocale } from "@/lib/i18n/config";
 import { adminSkuConflictMessage } from "@/lib/admin-products";
+import { SKU_FORMAT_MESSAGE } from "@/lib/product-sku";
 
 export const dynamic = "force-dynamic";
 
@@ -126,6 +127,7 @@ function getStatusMessage(status: string, existingSku: string) {
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
     invalid: "Revisa los campos del producto.",
+    invalid_sku: SKU_FORMAT_MESSAGE,
     updated: "Producto actualizado.",
     conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
   };

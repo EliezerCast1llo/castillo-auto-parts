@@ -90,6 +90,7 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
     const audits = await db.adminAuditLog.count();
     const changes = form(" aBc-1 ", "must-not-rename", before.id); changes.set("name", "Must not change"); changes.set("quantityOnHand", "99");
     const result = await submit(updateAdminProduct, changes);
+    expect(result.pathname).toBe(`/admin/products/${before.slug}/edit`);
     expect(result.searchParams.get("estado")).toBe("sku_conflict");
     expect(result.searchParams.get("sku_existente")).toBe("ABC-1");
     expect(await db.product.findUniqueOrThrow({ where: { id: before.id }, include: { inventoryStocks: true } })).toEqual(before);
@@ -102,6 +103,7 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
     expect(result.searchParams.get("sku_existente")).toBe(legacy.sku);
     const duplicate = await db.product.create({ data: { sku: "LEGACY/SKU", slug: "legacy-upper", name: "Legacy 2", brand: "Fixture", categoryId, priceCents: 200 } });
     const edit = await submit(updateAdminProduct, form(legacy.sku, legacy.slug, legacy.id));
+    expect(edit.pathname).toBe(`/admin/products/${legacy.slug}/edit`);
     expect(edit.searchParams.get("estado")).toBe("sku_conflict");
     expect(edit.searchParams.get("sku_existente")).toBe(duplicate.sku);
     expect(await db.product.findUniqueOrThrow({ where: { id: legacy.id } })).toMatchObject({ sku: legacy.sku, priceCents: 100 });
@@ -121,7 +123,7 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
 
   it("normalization cannot turn a blank SKU into a valid product", async () => {
     const count = await db.product.count();
-    expect((await submit(createAdminProduct, form(" \u00a0 ", "empty-sku"))).searchParams.get("estado")).toBe("invalid");
+    expect((await submit(createAdminProduct, form(" \u00a0 ", "empty-sku"))).searchParams.get("estado")).toBe("invalid_sku");
     expect(await db.product.count()).toBe(count);
   });
 
@@ -132,5 +134,27 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
     ]);
     expect(results.map((url) => url.searchParams.get("estado"))).toEqual(["created", "created"]);
     expect(await db.product.count({ where: { sku: { in: ["DISTINCT-ONE", "DISTINCT-TWO"] } } })).toBe(2);
+  });
+
+  it.each(["ABC#1", "AÑO-1", "añ o-1", "ß-FIL", "X".repeat(65)])("rejects invalid SKU format on create and edit without changes (%#)", async (sku) => {
+    const existing = await db.product.findUniqueOrThrow({ where: { sku: "EDIT-SELF" }, include: { inventoryStocks: true } });
+    const counts = { products: await db.product.count(), audit: await db.adminAuditLog.count() };
+    const create = form(sku, "never-created-invalid"); create.set("newCategoryName", "Never created invalid category");
+    const rejectedCreate = await submit(createAdminProduct, create);
+    expect(rejectedCreate.pathname).toBe("/admin/products/new");
+    expect(rejectedCreate.searchParams.get("estado")).toBe("invalid_sku");
+    const edit = form(sku, "attempted-untrusted-slug", existing.id); edit.set("name", "Do not overwrite"); edit.set("quantityOnHand", "99");
+    const rejectedEdit = await submit(updateAdminProduct, edit);
+    expect(rejectedEdit.pathname).toBe(`/admin/products/${existing.slug}/edit`);
+    expect(rejectedEdit.searchParams.get("estado")).toBe("invalid_sku");
+    expect(await db.product.findUniqueOrThrow({ where: { id: existing.id }, include: { inventoryStocks: true } })).toEqual(existing);
+    expect({ products: await db.product.count(), audit: await db.adminAuditLog.count() }).toEqual(counts);
+    expect(await db.productCategory.count({ where: { name: "Never created invalid category" } })).toBe(0);
+  });
+
+  it("accepts dots and underscores used by valid CSV SKUs", async () => {
+    const result = await submit(createAdminProduct, form("ab.c_1", "valid-dot-underscore"));
+    expect(result.searchParams.get("estado")).toBe("created");
+    expect(await db.product.findUniqueOrThrow({ where: { sku: "AB.C_1" } })).toMatchObject({ slug: "valid-dot-underscore" });
   });
 });
