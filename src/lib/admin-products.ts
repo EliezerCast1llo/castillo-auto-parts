@@ -13,6 +13,10 @@ export function slugifyProductValue(value: string) {
   return slugifyValue(value);
 }
 
+export function adminSkuConflictMessage(existingSku: string) {
+  return `El SKU coincide con el producto existente «${existingSku || "SKU indicado"}» al ignorar mayúsculas y espacios. Usa otro SKU; no se guardó ningún cambio.`;
+}
+
 export function parseAdminPriceCents(value: string) {
   const normalized = value.trim().replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;

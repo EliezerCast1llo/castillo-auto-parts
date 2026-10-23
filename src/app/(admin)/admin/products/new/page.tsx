@@ -7,6 +7,7 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { createAdminProduct } from "../actions";
 import { defaultLocale } from "@/lib/i18n/config";
+import { adminSkuConflictMessage } from "@/lib/admin-products";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function NewAdminProductPage({ searchParams }: NewAdminProd
   const adminUser = await requireAdminRole("ADMIN");
 
   const params = searchParams ? await searchParams : {};
-  const statusMessage = getStatusMessage(firstValue(params.estado));
+  const statusMessage = getStatusMessage(firstValue(params.estado), firstValue(params.sku_existente));
   const categories = await db.productCategory.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   });
@@ -59,17 +60,19 @@ export default async function NewAdminProductPage({ searchParams }: NewAdminProd
 
 function AdminProductNotice({ message }: { message: string }) {
   return (
-    <div className="mt-5 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
+    <div role="alert" className="mt-5 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
       {message}
     </div>
   );
 }
 
-function getStatusMessage(status: string) {
+function getStatusMessage(status: string, existingSku: string) {
+  if (status === "sku_conflict") return adminSkuConflictMessage(existingSku);
   const messages: Record<string, string> = {
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
     invalid: "Revisa los campos del producto.",
+    conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
   };
 
   return messages[status] ?? "";

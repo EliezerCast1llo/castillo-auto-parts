@@ -69,7 +69,10 @@ export function AdminProductForm({
           <AdminTextField defaultValue={product?.name} label="Nombre" name="name" required />
           <AdminTextField defaultValue={product?.slug} label="Slug" name="slug" />
           <AdminTextField defaultValue={product?.brand} label="Marca" name="brand" required />
-          <AdminTextField defaultValue={product?.sku} label="SKU" name="sku" required />
+          <div>
+            <AdminTextField aria-describedby="admin-product-sku-help" defaultValue={product?.sku} label="SKU" name="sku" required />
+            <p id="admin-product-sku-help" className="mt-1 text-xs text-muted-foreground">Se guardará en mayúsculas y sin espacios, igual que al importar CSV. No puede coincidir con otro producto.</p>
+          </div>
           <AdminTextField
             defaultValue={product?.partNumber ?? ""}
             label="Número de parte"

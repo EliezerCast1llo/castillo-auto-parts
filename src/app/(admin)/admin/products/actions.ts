@@ -17,6 +17,8 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { formString, optionalFormStringOrNull } from "@/lib/form-utils";
 import { db } from "@/lib/db";
 import { parsePackageMeasurements } from "@/lib/package-measurements";
+import { normalizeCatalogSku } from "@/lib/catalog-csv";
+import { findCatalogSkuMatches } from "@/lib/catalog-sku";
 
 const DEFAULT_LOCATION_CODE = "MAIN";
 
@@ -51,7 +53,8 @@ export async function createAdminProduct(formData: FormData) {
   let redirectPath = "/admin/products";
 
   try {
-    const product = await db.$transaction(async (tx) => {
+    const product = await runProductWrite(async (tx) => {
+      await assertSkuAvailable(tx, input.sku);
       const categoryId = await resolveCategoryId(tx, input);
       const savedProduct = await tx.product.create({
         data: {
@@ -99,7 +102,7 @@ export async function createAdminProduct(formData: FormData) {
     revalidateProductPaths(product.slug);
     redirectPath = `/admin/products/${product.slug}/edit?estado=created`;
   } catch (error) {
-    handleAdminProductError(error, "/admin/products/new");
+    await handleAdminProductError(error, "/admin/products/new", input.sku);
   }
 
   redirect(redirectPath);
@@ -115,7 +118,7 @@ export async function updateAdminProduct(formData: FormData) {
   let redirectPath = "/admin/products";
 
   try {
-    const product = await db.$transaction(async (tx) => {
+    const product = await runProductWrite(async (tx) => {
       const existingProduct = await tx.product.findUnique({
         where: { id: productId },
         select: { name: true, sku: true, slug: true },
@@ -124,6 +127,8 @@ export async function updateAdminProduct(formData: FormData) {
       if (!existingProduct) {
         throw new AdminProductDomainError("not_found");
       }
+
+      await assertSkuAvailable(tx, input.sku, productId);
 
       const categoryId = await resolveCategoryId(tx, input);
       const savedProduct = await tx.product.update({
@@ -174,7 +179,7 @@ export async function updateAdminProduct(formData: FormData) {
     revalidateProductPaths(product.slug);
     redirectPath = `/admin/products/${product.slug}/edit?estado=updated`;
   } catch (error) {
-    handleAdminProductError(error, "/admin/products");
+    await handleAdminProductError(error, "/admin/products", input.sku, productId);
   }
 
   redirect(redirectPath);
@@ -236,7 +241,7 @@ export async function updateAdminProductInventory(formData: FormData) {
 function parseAdminProductFormData(formData: FormData): AdminProductInput | null {
   const name = formString(formData, "name");
   const brand = formString(formData, "brand");
-  const sku = formString(formData, "sku");
+  const sku = normalizeCatalogSku(formString(formData, "sku"));
   const slug = slugifyProductValue(formString(formData, "slug") || name);
   const priceCents = parseAdminPriceCents(formString(formData, "price"));
   const quantityOnHand = parseInteger(formString(formData, "quantityOnHand"));
@@ -417,9 +422,41 @@ function buildProductAuditMetadata(
   };
 }
 
-function handleAdminProductError(error: unknown, fallbackPath: string): never {
+async function assertSkuAvailable(tx: Prisma.TransactionClient, sku: string, productId?: string) {
+  const matches = await findCatalogSkuMatches(tx, [sku], productId);
+  if (matches.length) throw new AdminProductDomainError("sku_conflict", matches[0].sku);
+}
+
+async function runProductWrite<T>(operation: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  // Recheck the identity after a serialization retry. Even unrelated SKUs can
+  // conflict because the canonical lookup takes a PostgreSQL predicate lock.
+  for (let attempt = 0; ; attempt++) {
+    try { return await db.$transaction(operation, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }); }
+    catch (error) {
+      if (!isPrismaTransactionConflict(error) || attempt >= 2) throw error;
+    }
+  }
+}
+
+async function handleAdminProductError(error: unknown, fallbackPath: string, sku: string, productId?: string): Promise<never> {
   if (error instanceof AdminProductDomainError) {
-    redirect(`${fallbackPath}?estado=${error.code}`);
+    const query = new URLSearchParams({ estado: error.code });
+    if (error.existingSku) query.set("sku_existente", error.existingSku);
+    redirect(`${fallbackPath}?${query}`);
+  }
+
+  // A concurrent save may win after the check. Report its SKU just as clearly.
+  if (isPrismaUniqueError(error) || isPrismaTransactionConflict(error)) {
+    let matches: Array<{ id: string; sku: string }> = [];
+    try { matches = await findCatalogSkuMatches(db, [sku], productId); }
+    catch { /* Preserve the safe fallback if the database became unavailable. */ }
+    if (matches.length) {
+      redirect(`${fallbackPath}?${new URLSearchParams({ estado: "sku_conflict", sku_existente: matches[0].sku })}`);
+    }
+  }
+
+  if (isPrismaTransactionConflict(error)) {
+    redirect(`${fallbackPath}?estado=conflict`);
   }
 
   if (isPrismaUniqueError(error)) {
@@ -428,6 +465,10 @@ function handleAdminProductError(error: unknown, fallbackPath: string): never {
 
   console.error(error);
   redirect(`${fallbackPath}?estado=db_unavailable`);
+}
+
+function isPrismaTransactionConflict(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
 }
 
 function isPrismaUniqueError(error: unknown) {
@@ -444,7 +485,7 @@ function parseInteger(value: string) {
 }
 
 class AdminProductDomainError extends Error {
-  constructor(readonly code: "invalid" | "not_found") {
+  constructor(readonly code: "invalid" | "not_found" | "sku_conflict", readonly existingSku?: string) {
     super(code);
   }
 }

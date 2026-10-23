@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/money";
 import { db } from "@/lib/db";
 import { updateAdminProductInventory } from "./actions";
 import { defaultLocale } from "@/lib/i18n/config";
+import { adminSkuConflictMessage } from "@/lib/admin-products";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
   const query = firstValue(params.q);
   const status = parseInventoryStatus(firstValue(params.estado));
   const actionStatus = firstValue(params.estado_accion) || firstValue(params.estado);
-  const statusMessage = getStatusMessage(actionStatus);
+  const statusMessage = getStatusMessage(actionStatus, firstValue(params.sku_existente));
   const where = buildProductWhere(query, status);
 
   const [products, totalProducts, activeProducts, stockAlerts, stockTotal] = await Promise.all([
@@ -300,6 +301,7 @@ function InventoryBadge({ status }: { status: InventoryStatus }) {
 function AdminProductsNotice({ isError, message }: { isError: boolean; message: string }) {
   return (
     <div
+      role={isError ? "alert" : "status"}
       className={`mt-5 rounded-md p-3 text-sm font-semibold ${
         isError ? "bg-danger/10 text-danger" : "bg-success/10 text-success"
       }`}
@@ -368,20 +370,22 @@ function formatInventoryStatus(status: InventoryStatus) {
   return labels[status];
 }
 
-function getStatusMessage(status: string) {
+function getStatusMessage(status: string, existingSku: string) {
+  if (status === "sku_conflict") return adminSkuConflictMessage(existingSku);
   const messages: Record<string, string> = {
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
     invalid: "Revisa los datos del producto.",
     not_found: "No encontramos ese producto.",
     stock_updated: "Inventario actualizado.",
+    conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
   };
 
   return messages[status] ?? "";
 }
 
 function isErrorStatus(status: string) {
-  return ["db_unavailable", "duplicate", "invalid", "not_found"].includes(status);
+  return ["db_unavailable", "duplicate", "invalid", "not_found", "sku_conflict", "conflict"].includes(status);
 }
 
 function firstValue(value: string | string[] | undefined) {
