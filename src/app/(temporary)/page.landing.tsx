@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight, MapPin, MessageCircle, Phone, Wrench } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -8,7 +9,7 @@ export default async function LandingPage() {
   return (
     <div className="landing-shell">
       <header className="landing-header">
-        <a href="/" className="landing-brand"><span className="landing-mark" aria-hidden="true"><Wrench /></span>{t("brand")}</a>
+        <Link href="/" prefetch={false} className="landing-brand"><span className="landing-mark" aria-hidden="true"><Wrench /></span>{t("brand")}</Link>
         <span className="landing-country">El Salvador</span>
       </header>
       <main className="landing-main">
