@@ -1,0 +1,48 @@
+:root { color-scheme: light; font-family: Arial, Helvetica, sans-serif; color: #f7f8fb; background: #081b31; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: inherit; }
+.landing-shell { min-height: 100svh; display: flex; flex-direction: column; background: radial-gradient(ellipse at 18% 25%, #123b5b 0, transparent 52%), #081b31; }
+.landing-header, .landing-main, .landing-footer { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+.landing-header { padding-block: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid #ffffff24; }
+.landing-brand { font-size: 22px; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 12px; }
+.landing-mark { display: grid; place-items: center; color: #081b31; background: #f3bf4c; border-radius: 12px; width: 42px; height: 42px; flex: none; }
+.landing-country { font-size: 13px; color: #c4d1de; }
+.landing-main { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 72px; padding-block: 90px; }
+.landing-eyebrow { text-transform: uppercase; letter-spacing: .14em; color: #f3bf4c; font-weight: 700; font-size: 12px; line-height: 1.7; }
+h1 { font-size: clamp(40px, 5.3vw, 64px); line-height: 1.06; letter-spacing: -.045em; margin: 22px 0; max-width: 540px; }
+.landing-description { font-size: 19px; color: #c4d1de; line-height: 1.65; max-width: 490px; }
+.landing-status { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c4d1de; line-height: 1.5; margin-top: 38px; }
+.landing-status span { height: 7px; width: 7px; background: #f3bf4c; border-radius: 50%; flex: none; }
+.landing-contact { background: #fff; color: #0f2136; border-radius: 24px; padding: 36px; box-shadow: 0 24px 64px #0003; }
+.landing-contact-icon { width: 48px; height: 48px; background: #edf4f1; color: #206648; border-radius: 14px; display: grid; place-items: center; }
+h2 { font-size: 26px; letter-spacing: -.025em; line-height: 1.2; margin: 22px 0 10px; }
+.landing-contact > p { font-size: 15px; line-height: 1.65; color: #506071; margin-bottom: 24px; }
+.landing-whatsapp { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 17px 13px; background: #185c3d; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 10px; }
+.landing-whatsapp:hover { background: #10472e; }
+.landing-whatsapp svg { width: 18px; height: 18px; flex: none; }
+.landing-details { margin-top: 26px; border-top: 1px solid #e3e8ed; padding-top: 6px; }
+.landing-details > div { display: flex; align-items: flex-start; gap: 14px; margin-top: 21px; }
+.landing-details svg { width: 18px; height: 18px; color: #5c7185; flex: none; margin-top: 3px; }
+.landing-details p { margin: 0; font-size: 14px; line-height: 1.6; }
+.landing-details span { display: block; color: #607183; font-size: 12px; margin-bottom: 3px; }
+.landing-details a { font-weight: 700; text-decoration: none; font-size: 18px; }
+.landing-footer { display: flex; justify-content: space-between; gap: 32px; align-items: start; padding-block: 24px; border-top: 1px solid #ffffff24; color: #b3c3d2; font-size: 12px; line-height: 1.7; }
+.landing-footer p { margin: 0; }
+.landing-footer p:first-child { white-space: nowrap; font-weight: 700; }
+.landing-footer p:last-child { max-width: 540px; text-align: right; }
+a:focus-visible { outline: 3px solid #df9900; outline-offset: 5px; border-radius: 4px; }
+@media (max-width: 760px) {
+ .landing-header, .landing-main, .landing-footer { width: min(540px, calc(100% - 40px)); }
+ .landing-header { padding-block: 22px; }
+ .landing-brand { font-size: 19px; gap: 10px; }
+ .landing-country { display: none; }
+ .landing-main { grid-template-columns: 1fr; gap: 34px; padding-block: 44px; }
+ h1 { font-size: clamp(39px, 10vw, 53px); }
+ .landing-description { font-size: 17px; }
+ .landing-status { margin-top: 24px; }
+ .landing-contact { padding: 26px; border-radius: 20px; }
+ .landing-footer { flex-direction: column; gap: 8px; padding-block: 22px; }
+ .landing-footer p:last-child { text-align: left; }
+}
+@media (prefers-reduced-motion: no-preference) { a { transition: background-color .15s ease; } }
