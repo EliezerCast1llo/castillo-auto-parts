@@ -137,6 +137,9 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
 
+      - name: Landing smoke without application secrets
+        run: npm run test:landing
+
       - name: Run Playwright tests
         run: npm run test:e2e
 

@@ -9,6 +9,7 @@ import Email from "./email.json";
 import Errors from "./errors.json";
 import Footer from "./footer.json";
 import Help from "./help.json";
+import Landing from "./landing.json";
 import Nav from "./nav.json";
 import Orders from "./orders.json";
 import Product from "./product.json";
@@ -36,6 +37,7 @@ const messages = {
   Errors,
   Footer,
   Help,
+  Landing,
   Nav,
   Orders,
   Product,

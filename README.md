@@ -311,3 +311,12 @@ operations, and learning documents take precedence when older decisions conflict
 
 Never commit `.env`, production credentials, customer data, payment secrets, or exported
 database contents.
+
+## Temporary Vercel landing (B18)
+
+For the temporary public contact page requested in #113, set `SITE_MODE=landing`
+**at build and runtime**. It builds only the landing routes, without the store's
+services or credentials. The normal store remains the default and Railway remains
+its planned host. See [activation, verification and removal](docs/temporary-vercel-landing.md).
+`npm run test:landing` builds and smoke-tests the isolated mode without application
+secrets; it also runs in CI before the normal store E2E suite.
