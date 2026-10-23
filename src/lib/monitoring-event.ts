@@ -22,3 +22,18 @@ export function sanitizeMonitoringEvent(level: MonitoringLevel, input: Record<st
     outcome: typeof input.outcome === "string" && outcomes.includes(input.outcome) ? input.outcome : "failed",
   };
 }
+
+/** Local diagnostic codes only. Never emit a freely assignable error.name. */
+export function localErrorCode(error: unknown) {
+  if (error === undefined) return "UNCLASSIFIED_ERROR";
+  if (!(error instanceof Error)) return "NON_ERROR_THROWN";
+  switch (error.name) {
+    case "TypeError": return "TYPE_ERROR";
+    case "RangeError": return "RANGE_ERROR";
+    case "SyntaxError": return "SYNTAX_ERROR";
+    case "ReferenceError": return "REFERENCE_ERROR";
+    case "PrismaClientKnownRequestError": return "DATABASE_REQUEST_ERROR";
+    case "PrismaClientInitializationError": return "DATABASE_INITIALIZATION_ERROR";
+    default: return "INTERNAL_ERROR";
+  }
+}

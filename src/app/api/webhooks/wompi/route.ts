@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         return respond({ ok: false, reason: "invalid_signature" }, 401);
       }
 
-      await logError({ context: "wompi_webhook", outcome: "failed" });
+      await logError({ context: "wompi_webhook", outcome: "failed" }, error);
       return respond({ ok: false, reason: "webhook_unavailable" }, 503);
     }
   });

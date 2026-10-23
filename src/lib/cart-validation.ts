@@ -1,6 +1,5 @@
 import { isValidCatalogSku } from "./product-sku";
 export const CART_MAX_LINE_QUANTITY = 99;
-export const CART_MAX_SKU_LENGTH = 64;
 
 export function normalizeCartSku(value: string) {
   const sku = value.trim();

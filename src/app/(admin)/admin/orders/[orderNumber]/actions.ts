@@ -28,7 +28,7 @@ export async function updateAdminOrderStatus(formData: FormData) {
         await updateOrderStatusForAdmin(tx, { orderNumber, status });
       });
       await logInfo({ context: "reconciliation", outcome: "completed" });
-    });
+    }, undefined, { isExpectedError: (error) => error instanceof AdminOrderStatusError });
   } catch (error) {
     if (error instanceof AdminOrderStatusError) {
       redirect(`/admin/orders/${orderNumber}?estado=${error.code}`);

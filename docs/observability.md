@@ -12,7 +12,9 @@ suscripciones ni despliega nada. No habilitar cobro por exceso de cuota.
 2. Copiar su DSN HTTPS a `SENTRY_DSN` **solo en el servicio web de Railway**.
    Se admiten DSN de Sentry SaaS con clave pública hexadecimal de 32 caracteres,
    proyecto numérico y hosts `oNUMERO.ingest[.REGION].sentry.io`. Un DSN inválido
-   desactiva el envío. No se admiten hosts arbitrarios o Sentry autohospedado.
+   desactiva el envío y genera una advertencia local `INVALID_SENTRY_DSN` al arrancar,
+   sin imprimir su valor ni contactar al proveedor. Un DSN vacío no genera advertencias.
+   No se admiten hosts arbitrarios o Sentry autohospedado.
 3. Opcionalmente fijar `NEXT_PUBLIC_ERROR_MONITORING_ENABLED=true` y reconstruir
    el frontend para capturar errores del navegador. El DSN nunca se publica en
    `NEXT_PUBLIC_*`. El navegador envía únicamente un código fijo al relay del
@@ -30,8 +32,11 @@ suscripciones ni despliega nada. No habilitar cobro por exceso de cuota.
 
 `logger.ts` aplica una **lista permitida** antes de consola y del transporte:
 `level`, `timestamp`, `context` (operación conocida), `outcome` (resultado conocido)
-y `correlationId` (UUID aleatorio). Se descartan todos los demás campos. No se
-serializan mensajes, nombres, stacks o causas de errores, cuerpos, URLs,
+y `correlationId` (UUID aleatorio). Solo en consola se agrega un `errorCode` de una
+lista fija (por ejemplo `TYPE_ERROR`, `DATABASE_REQUEST_ERROR` o `INTERNAL_ERROR`)
+para diagnóstico. No se copia libremente `error.name`, que también puede contener
+datos sensibles. Ese código nunca se entrega al transporte ni a Sentry.
+Se descartan todos los demás campos. No se serializan mensajes, nombres, stacks o causas de errores, cuerpos, URLs,
 parámetros, cabeceras, cookies, firmas, emails, nombres, IDs de usuarios/pedidos,
 importes, tarjetas, tokens ni claves. No hay SDK con enriquecimiento automático,
 tracing, session replay, sourcemaps, perfiles o breadcrumbs. Sentry recibe un
@@ -47,8 +52,10 @@ producción. No copiar logs crudos a un colector externo sin revisión específi
 
 `observeOperation` conserva UUID mediante AsyncLocalStorage, aislado entre
 peticiones concurrentes. Checkout y actualización manual de estado del admin
-(`reconciliation`) comparten UUID con sus logs internos. Wompi genera su propio
-UUID (ignora IDs suministrados por terceros), que devuelve en `x-correlation-id`,
+(`reconciliation`) comparten UUID con sus logs internos. Las validaciones esperadas
+`AdminOrderStatusError` mantienen su redirección de negocio y solo generan un
+resultado informativo `rejected`; no son fallos ni producen envíos a Sentry.
+Wompi genera su propio UUID (ignora IDs suministrados por terceros), que devuelve en `x-correlation-id`,
 también en errores 401/400/404/422/503. El cron genera un UUID por ejecución y lo
 propaga entre lotes; el endpoint solo lo acepta tras autenticar Bearer y validar
 su formato. No se registran el Bearer, identificadores del proveedor o payloads.
@@ -58,11 +65,17 @@ Node: `uncaughtExceptionMonitor` sin sustituir el cierre normal. Cliente: evento
 `error`, `unhandledrejection`, boundary de storefront y boundary raíz. No se
 suprime el comportamiento normal de errores de Node o del navegador.
 
-El transporte permite como máximo **20 intentos/minuto/proceso**, dos simultáneos,
-un segundo de timeout, sin reintentos ni redirects. Solo warn/error salen del
-servidor; info queda en consola. El relay exige Origin del mismo origen, JSON con
+El transporte tiene **dos cupos independientes por proceso**: uno para
+`client_unhandled` (relay público) y otro para los eventos del servidor. Cada uno
+permite **20 intentos/minuto y dos envíos simultáneos** (máximo combinado de 40
+intentos/minuto y cuatro en vuelo). Tanto los contadores de volumen como los de
+concurrencia están separados: saturar el relay no consume los puestos del servidor.
+Cada envío tiene un segundo de timeout, sin reintentos ni redirects. Solo
+warn/error salen del servidor; info queda en consola. El relay exige Origin del mismo origen, JSON con
 un único código permitido, un máximo de 128 bytes y 20 peticiones/minuto/proceso.
-No es autenticación: un cliente puede falsificar Origin o consumir el presupuesto.
+No es autenticación: un cliente puede falsificar Origin o consumir el cupo del
+cliente, sin gastar el del servidor. La cuota remota del proyecto Sentry sigue
+siendo la que permita el proveedor.
 El límite es local a cada proceso, no global al despliegue; mantener cuotas del
 proveedor, revisar volumen y contemplar un límite distribuido al escalar. Eventos
 pueden perderse por cuota, concurrencia, caída del proveedor o terminación del
@@ -109,7 +122,8 @@ su propia alerta. Sin ese control, silencio no significa ausencia de pendientes.
   generar un warning `invalid_signature` sin copiar la firma/payload. Nunca
   reproducir webhooks reales ni insertar tarjetas/emails reales para probar esto.
 - Las pruebas de transporte usan fetch simulado y datos sensibles sintéticos;
-  comprueban el sobre Sentry, aislamiento de correlación, límites, fallos de
+  comprueban el sobre Sentry, aislamiento de correlación y de cupos/concurrencia,
+  códigos solo locales, validaciones de negocio sin alertas, advertencias de DSN, fallos de
   red, autorización y tamaño del relay y errores reales del handler de Wompi.
 - Desactivar: vaciar DSN; vaciar flag y reconstruir para detener también los POST
   del navegador. No se cambia el resultado comercial de checkout/webhooks.

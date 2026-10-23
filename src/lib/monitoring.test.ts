@@ -20,6 +20,19 @@ describe("strict telemetry allowlist", () => {
     const output = vi.spyOn(console, "error").mockImplementation(() => {});
     await logError({ context: "checkout", error, customerEmail: secret, signature: secret }, error);
     expect(output.mock.calls.flat().join("")).not.toContain(secret);
+    expect(JSON.parse(output.mock.calls[0][0])).toMatchObject({ errorCode: "INTERNAL_ERROR" });
+  });
+  it("keeps fixed diagnostic codes in local logs and out of Sentry, including forged context codes", async () => {
+    vi.stubEnv("SENTRY_DSN", dsn);
+    const output = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 })); vi.stubGlobal("fetch", fetch);
+    await logError({ context: "checkout", errorCode: secret }, new TypeError(secret));
+    expect(JSON.parse(output.mock.calls[0][0])).toMatchObject({ errorCode: "TYPE_ERROR" });
+    expect(output.mock.calls[0][0]).not.toContain(secret);
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch.mock.calls[0][1].body).not.toContain("TYPE_ERROR");
+    expect(fetch.mock.calls[0][1].body).not.toContain("errorCode");
+    expect(fetch.mock.calls[0][1].body).not.toContain(secret);
   });
   it("does not send anything with monitoring disabled (server and browser)", async () => {
     vi.stubEnv("SENTRY_DSN", ""); vi.stubEnv("NEXT_PUBLIC_ERROR_MONITORING_ENABLED", "");
