@@ -65,6 +65,8 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
     db.inventoryStock.aggregate({ _sum: { quantityOnHand: true } }),
   ]);
 
+  const incompletePackages = await db.product.findMany({ where: { isActive: true, OR: ["weightGrams", "lengthMm", "widthMm", "heightMm"].flatMap((key) => [{ [key]: null }, { [key]: { lte: 0 } }]) }, select: { name: true, sku: true, slug: true }, orderBy: { name: "asc" } });
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader locale={defaultLocale} />
@@ -100,6 +102,11 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
           <MetricCard label="Unidades" value={String(stockTotal._sum.quantityOnHand ?? 0)} />
         </section>
 
+        {incompletePackages.length ? <section role="alert" className="mt-5 rounded-md bg-warning/15 p-4">
+          <h2 className="font-bold">Productos activos sin peso o medidas ({incompletePackages.length})</h2>
+          <p>Completa las cuatro medidas para cotizar envíos. No se estiman pesos de productos reales.</p>
+          <ul className="mt-2 list-inside list-disc">{incompletePackages.map((product) => <li key={product.sku}><Link className="underline" href={`/admin/products/${product.slug}/edit`}>{product.sku} · {product.name}</Link></li>)}</ul>
+        </section> : null}
         {statusMessage ? (
           <AdminProductsNotice isError={isErrorStatus(actionStatus)} message={statusMessage} />
         ) : null}

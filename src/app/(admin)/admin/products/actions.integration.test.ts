@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { db } from "@/lib/db";
 import { createAdminProduct, updateAdminProduct } from "./actions";
 import { previewCatalogImport } from "@/lib/catalog-import";
+import { updateShippingPromotion } from "../settings/actions";
 import { CSV_COLUMNS, exportCsv } from "@/lib/catalog-csv";
 
 const isolation = vi.hoisted(() => {
@@ -35,7 +36,7 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
   let categoryId: string;
   const form = (sku: string, slug: string, productId?: string) => {
     const data = new FormData();
-    for (const [name, value] of Object.entries({ sku, slug, name: `Fixture ${slug}`, brand: "Proveedor", categoryId, price: "25.50", quantityOnHand: "10", reorderPoint: "2", status: "IN_STOCK", isActive: "true", ...(productId ? { productId } : {}) })) data.set(name, value);
+    for (const [name, value] of Object.entries({ sku, slug, name: `Fixture ${slug}`, brand: "Proveedor", categoryId, price: "25.50", quantityOnHand: "10", reorderPoint: "2", status: "IN_STOCK", isActive: "true", weightKg: "1", lengthCm: "20", widthCm: "15", heightCm: "10", ...(productId ? { productId } : {}) })) data.set(name, value);
     return data;
   };
   beforeAll(async () => {
@@ -46,6 +47,36 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
   afterAll(async () => {
     try { await db.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${isolation.schema}" CASCADE`); }
     finally { await db.$disconnect(); }
+  });
+
+  it("saves the opt-in shipping promotion through an audited admin action", async () => {
+    const data = new FormData(); data.set("enabled", "true"); data.set("minimumSubtotal", "75.50");
+    expect((await submit(updateShippingPromotion, data)).searchParams.get("estado")).toBe("promotion_updated");
+    expect(await db.shippingPromotion.findUniqueOrThrow({ where: { id: "national" } })).toMatchObject({ enabled: true, minimumSubtotalCents: 7550 });
+    expect(await db.adminAuditLog.count({ where: { action: "shipping_promotion.updated" } })).toBe(1);
+    data.set("minimumSubtotal", "-1");
+    expect((await submit(updateShippingPromotion, data)).searchParams.get("estado")).toBe("invalid_promotion");
+    expect((await db.shippingPromotion.findUniqueOrThrow({ where: { id: "national" } })).minimumSubtotalCents).toBe(7550);
+  });
+
+  it("requires all package measurements for activation while allowing drafts", async () => {
+    const incomplete = form("DRAFT-PACKAGE", "draft-package");
+    for (const name of ["weightKg", "lengthCm", "widthCm", "heightCm"]) incomplete.delete(name);
+    expect((await submit(createAdminProduct, incomplete)).searchParams.get("estado")).toBe("invalid");
+    expect(await db.product.count({ where: { sku: "DRAFT-PACKAGE" } })).toBe(0);
+    incomplete.set("isActive", "false");
+    expect((await submit(createAdminProduct, incomplete)).searchParams.get("estado")).toBe("created");
+    const product = await db.product.findUniqueOrThrow({ where: { sku: "DRAFT-PACKAGE" } });
+    incomplete.set("productId", product.id); incomplete.set("isActive", "true");
+    expect((await submit(updateAdminProduct, incomplete)).searchParams.get("estado")).toBe("invalid");
+    expect((await db.product.findUniqueOrThrow({ where: { id: product.id } })).isActive).toBe(false);
+  });
+
+  it("rejects CSV activation without all four measurements", async () => {
+    const source = exportCsv([CSV_COLUMNS, ["CSV-NO-MEASURES", "Sin medidas", "QA", "", "Manual SKU Fixtures", "25", "5", "", "", "", "", "", ""]]);
+    const preview = await previewCatalogImport(source, false, actor);
+    expect(preview.errors).toEqual(expect.arrayContaining([expect.objectContaining({ column: "peso_kg", message: expect.stringContaining("cuatro medidas") })]));
+    expect(await db.product.count({ where: { sku: "CSV-NO-MEASURES" } })).toBe(0);
   });
 
   it("rejects creating abc-1 when ABC-1 exists, before categories, stock or audit writes", async () => {

@@ -262,6 +262,7 @@ model Address {
   formattedAddress String
   addressLine1     String
   addressLine2     String?
+  landmark         String?
   city             String
   department       String
   country          String   @default("SV")
@@ -399,6 +400,13 @@ model Shipment {
   method              String
   status              String    @default("PENDING")
   deliveryZone        String?
+  provider            String?
+  courierId           String?
+  courierName         String?
+  serviceType         String?
+  quotedCents         Int?
+  chargedCents        Int?
+  totalWeightGrams    Int?
   estimatedDeliveryAt DateTime?
   deliveredAt         DateTime?
   notes               String?
@@ -512,4 +520,12 @@ model ProductCategoryTranslation {
 
   @@unique([categoryId, locale])
   @@index([locale])
+}
+
+// Singleton, opt-in owner promotion. Quoted carrier cost is retained per order.
+model ShippingPromotion {
+  id                   String @id @default("national")
+  enabled              Boolean @default(false)
+  minimumSubtotalCents Int @default(0)
+  updatedAt            DateTime @updatedAt
 }

@@ -1,6 +1,6 @@
 {
   "metadataTitle": "Ayuda para comprar repuestos | Castillo Auto Parts",
-  "metadataDescription": "Te ayudamos a encontrar el repuesto compatible con tu vehículo y a elegir cómo recibirlo en San Salvador o Santa Tecla.",
+  "metadataDescription": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis.",
   "hero": {
     "eyebrow": "Ayuda para comprar",
     "titleBefore": "Encuentra",
@@ -20,7 +20,7 @@
   },
   "delivery": {
     "ariaLabel": "Opciones de entrega",
-    "local": "Entregas locales en San Salvador y Santa Tecla.",
+    "local": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis.",
     "pickup": "Retiro en bodega disponible sin costo."
   },
   "steps": {
@@ -32,7 +32,7 @@
     "verifyTitle": "Verificamos el repuesto",
     "verifyDescription": "Revisamos compatibilidad y disponibilidad antes de que compres.",
     "chooseTitle": "Elige cómo recibirlo",
-    "chooseDescription": "Selecciona retiro en bodega o entrega local cuando esté disponible."
+    "chooseDescription": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis."
   },
   "faq": {
     "title": "Preguntas frecuentes",
@@ -42,7 +42,7 @@
     "pickupQuestion": "¿Puedo retirar mi pedido en bodega?",
     "pickupAnswer": "Sí. El retiro en bodega no tiene costo. Al elegir esta opción en el proceso de compra verás la dirección, el horario y las indicaciones para recoger tu pedido.",
     "deliveryQuestion": "¿Hacen entregas a domicilio?",
-    "deliveryAnswer": "Tenemos entregas locales en San Salvador y Santa Tecla. La tarifa se calcula según el municipio que selecciones durante el proceso de compra.",
+    "deliveryAnswer": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis.",
     "taxQuestion": "¿Los precios incluyen IVA?",
     "taxAnswer": "Sí. Los precios de los repuestos ya incluyen el 13 % de IVA. En el proceso de compra verás el subtotal, el costo de entrega cuando corresponda y el total estimado.",
     "notFoundQuestion": "¿Qué pasa si no encuentro el repuesto?",

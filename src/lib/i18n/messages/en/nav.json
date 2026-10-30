@@ -21,5 +21,6 @@
   "viewFullCatalog": "View the full catalog",
   "whatsappAdvice": "Advice on WhatsApp",
   "brandTagline": "Auto parts · El Salvador",
-  "cartItemCount": "{count, plural, one {# product} other {# products}}"
+  "cartItemCount": "{count, plural, one {# product} other {# products}}",
+  "nationalDelivery": "Shipping throughout El Salvador"
 }

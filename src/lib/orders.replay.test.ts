@@ -176,11 +176,21 @@ describe("buildIntentFingerprint", () => {
     const base = buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 1" }));
     expect(base).not.toBe(buildIntentFingerprint(baseCart, input({ addressLine1: "Calle 2" })));
     expect(buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "PICKUP" }))).not.toBe(
-      buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "LOCAL_DELIVERY" })),
+      buildIntentFingerprint(baseCart, input({ fulfillmentMethod: "NATIONAL_SHIPPING" })),
     );
     expect(buildIntentFingerprint(baseCart, input({ latitude: 13.7 }))).not.toBe(
       buildIntentFingerprint(baseCart, input({ latitude: 13.8 })),
     );
+  });
+
+  it("changes identity with the selected courier, server quote, promotion charge or landmark", () => {
+    const data = input({ fulfillmentMethod: "NATIONAL_SHIPPING", shippingOption: "express", landmark: "Parque" });
+    const rate = { priceCents: 500, chargedCents: 500 };
+    const fingerprint = buildIntentFingerprint(baseCart, data, rate);
+    expect(buildIntentFingerprint(baseCart, { ...data, shippingOption: "standard" }, rate)).not.toBe(fingerprint);
+    expect(buildIntentFingerprint(baseCart, data, { priceCents: 600, chargedCents: 600 })).not.toBe(fingerprint);
+    expect(buildIntentFingerprint(baseCart, data, { ...rate, chargedCents: 0 })).not.toBe(fingerprint);
+    expect(buildIntentFingerprint(baseCart, { ...data, landmark: "Iglesia" }, rate)).not.toBe(fingerprint);
   });
 
   it("difiere si cambian email, nombre o teléfono del cliente", () => {

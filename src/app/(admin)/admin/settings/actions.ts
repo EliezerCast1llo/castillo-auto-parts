@@ -201,3 +201,17 @@ function parseInteger(value: string) {
   return Number(value);
 }
 
+
+export async function updateShippingPromotion(formData: FormData) {
+  const actor = await requireAdminRole("ADMIN");
+  const minimumSubtotalCents = parseAdminPriceCents(formString(formData, "minimumSubtotal"));
+  if (minimumSubtotalCents === null || !Number.isSafeInteger(minimumSubtotalCents) || minimumSubtotalCents > 2147483647) redirect("/admin/settings?estado=invalid_promotion");
+  const data = { enabled: formData.get("enabled") === "true", minimumSubtotalCents };
+  await db.$transaction(async (tx) => {
+    const previous = await tx.shippingPromotion.findUnique({ where: { id: "national" } });
+    await tx.shippingPromotion.upsert({ where: { id: "national" }, create: { id: "national", ...data }, update: data });
+    await writeAdminAuditLog(tx, { action: "shipping_promotion.updated", adminUserId: actor.id, adminUserEmail: actor.email, entityId: "national", entityType: "ShippingPromotion", metadata: { previous: previous ? { enabled: previous.enabled, minimumSubtotalCents: previous.minimumSubtotalCents } : null, next: data } });
+  });
+  revalidateFulfillmentPaths();
+  redirect("/admin/settings?estado=promotion_updated");
+}

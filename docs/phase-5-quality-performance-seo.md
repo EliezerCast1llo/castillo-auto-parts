@@ -1,5 +1,10 @@
 # Fase 5 - Calidad, performance, testing y SEO
 
+## Actualización vigente — 30 oct 2026 / #115
+
+Cobertura nacional en textos es/en, metadata y JSON-LD (`areaServed: "El Salvador"`). El smoke de landing comprueba el mensaje nacional y aislamiento de rutas sin secretos. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 > **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
 > Se conserva el contenido original para trazabilidad; sus estados y decisiones
 > no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)

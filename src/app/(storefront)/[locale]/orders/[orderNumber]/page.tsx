@@ -110,9 +110,12 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
                   value={t(`method.${shipmentMethodKey(order.shipment?.method)}`)}
                 />
                 <InfoItem
-                  label={t("detail.zone")}
-                  value={order.shipment?.deliveryZone ?? t("detail.pending")}
+                  label={t("detail.courier")}
+                  value={order.shipment?.courierName ?? t("detail.pending")}
                 />
+                <InfoItem label={t("detail.shippingCost")} value={formatCurrency(order.shipment?.chargedCents ?? order.shippingCents, locale)} />
+                <InfoItem label={t("detail.estimatedDelivery")} value={order.shipment?.estimatedDeliveryAt ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "America/El_Salvador" }).format(order.shipment.estimatedDeliveryAt) : t("detail.pending")} />
+                {order.address?.landmark ? <InfoItem label={t("detail.landmark")} value={order.address.landmark} /> : null}
                 {order.address ? (
                   <InfoItem label={t("detail.address")} value={order.address.formattedAddress} />
                 ) : (
@@ -182,7 +185,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
 
 /** El método puede venir nulo en órdenes sin envío todavía asignado. */
 function shipmentMethodKey(method: string | null | undefined) {
-  return method === "PICKUP" || method === "LOCAL_DELIVERY" ? method : "PENDING";
+  return method === "PICKUP" || method === "LOCAL_DELIVERY" || method === "NATIONAL_SHIPPING" ? method : "PENDING";
 }
 
 function InfoItem({ label, value }: { label: string; value: string }) {

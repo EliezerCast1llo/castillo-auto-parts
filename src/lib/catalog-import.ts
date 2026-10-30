@@ -64,6 +64,7 @@ async function buildPlan(tx: Prisma.TransactionClient, rows: CatalogCsvRow[], de
     const description = row.description ?? product?.description ?? null;
     const compatibilities = row.compatibilities.length ? row.compatibilities : product?.compatibilities ?? [];
     const measurements = row.measurements ?? existingMeasurements;
+    if ((product?.isActive ?? true) && !measurements) errors.push({ row: row.row, column: "peso_kg", message: "Para activar un producto se requieren peso, largo, ancho y alto. Completa las cuatro medidas o conserva el producto como borrador." });
     const changes = product ? [
       ...(row.name !== product.name ? ["Nombre"] : []),
       ...(row.brand !== product.brand ? ["Marca"] : []),

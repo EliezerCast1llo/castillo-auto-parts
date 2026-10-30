@@ -1,5 +1,12 @@
 # MVP Change Log
 
+## 2026-10-30 — B19 / #115: cobertura nacional
+
+Decisión del dueño: reemplazar entrega propia por zonas con envío a todo El Salvador vía Boxful. Retiro en bodega gratis; envío cobrado, salvo promoción expresa del dueño. Solo tarjeta. Costo/tiempo según courier al pagar, sin garantizar mismo día y sin reajustar la tarifa del pedido.
+
+#115 prepara cotización asíncrona, dirección nacional con referencia, peso/medidas obligatorios al activar, promoción auditada y snapshot de costos con migración aditiva. `SHIPPING_PROVIDER` vacío bloquea pago de envíos y ofrece WhatsApp, sin afectar retiro. `fake` solo en desarrollo/pruebas aisladas. Boxful real, IDs, saldo, guías y rastreo quedan en #91. No se hizo merge ni despliegue.
+
+
 Fecha de creacion: 2026-05-21.
 
 Este documento resume cambios funcionales y tecnicos importantes. Para detalle historico por fase, revisar los documentos `docs/phase-*`.

@@ -1,5 +1,10 @@
 # Portada temporal en Vercel — B18 / #113
 
+## Actualización vigente — 30 oct 2026 / #115
+
+La portada temporal anuncia envíos a todo El Salvador en es/en; no ofrece checkout ni tarifas ni promete plazos. SITE_MODE=landing sigue compilando/arrancando sin DB, pagos, correo o secretos. SHIPPING_PROVIDER no es necesario para la portada. La tienda completa requiere #91 para habilitar pago de envíos nacionales. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 Aprobada el 23 de octubre de 2026 para disponer de una URL final pública al crear
 la cuenta de Google Ads/Keyword Planner. La campaña permanece pausada: este PR
 no crea cuentas de Ads ni activa publicidad. **Railway sigue siendo el destino

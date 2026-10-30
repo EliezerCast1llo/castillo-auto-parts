@@ -18,5 +18,7 @@
   "heroTitle": "Encuentra repuestos para tu vehículo",
   "heroDescription": "Selecciona los datos de tu vehículo para encontrar opciones compatibles.",
   "heroTitleBefore": "Encuentra repuestos",
-  "heroTitleHighlight": "compatibles con tu vehículo"
+  "heroTitleHighlight": "compatibles con tu vehículo",
+  "visibleAvailability": "Disponibilidad visible",
+  "nationalShipping": "Envíos a todo El Salvador"
 }

@@ -12,13 +12,6 @@ export type DeliveryZoneOption = {
   slug: string;
 };
 
-type DeliveryZoneCoordinateBounds = {
-  maxLatitude: number;
-  maxLongitude: number;
-  minLatitude: number;
-  minLongitude: number;
-};
-
 export type PickupLocationOption = {
   address: string;
   code: string;
@@ -30,26 +23,8 @@ export type PickupLocationOption = {
   pickupInstructions: string;
 };
 
-export const defaultDeliveryZones: DeliveryZoneOption[] = [
-  {
-    city: "Santa Tecla",
-    department: "La Libertad",
-    feeCents: 200,
-    id: "fallback-santa-tecla",
-    isActive: true,
-    name: "Santa Tecla",
-    slug: "santa-tecla",
-  },
-  {
-    city: "San Salvador",
-    department: "San Salvador",
-    feeCents: 300,
-    id: "fallback-san-salvador",
-    isActive: true,
-    name: "San Salvador",
-    slug: "san-salvador",
-  },
-];
+// Retained for legacy consumers; no local tariffs in new checkout.
+export const defaultDeliveryZones: DeliveryZoneOption[] = [];
 
 export const defaultPickupLocation: PickupLocationOption = {
   address: "Bodega principal, San Salvador, El Salvador",
@@ -67,15 +42,7 @@ export const defaultPickupLocation: PickupLocationOption = {
 };
 
 export async function getFulfillmentOptions() {
-  const [pickupLocation, deliveryZones] = await Promise.all([
-    getPickupLocation(),
-    getActiveDeliveryZones(),
-  ]);
-
-  return {
-    deliveryZones,
-    pickupLocation,
-  };
+  return { pickupLocation: await getPickupLocation() };
 }
 
 export async function getPickupLocation(): Promise<PickupLocationOption> {
@@ -149,28 +116,6 @@ export function getDeliveryZoneBySlug(
   );
 }
 
-export function isCoordinateInsideDeliveryZone({
-  latitude,
-  longitude,
-  zone,
-}: {
-  latitude: number | undefined;
-  longitude: number | undefined;
-  zone: DeliveryZoneOption;
-}) {
-  if (typeof latitude !== "number" || typeof longitude !== "number") return false;
-
-  const bounds = deliveryZoneCoordinateBounds[zone.slug];
-  if (!bounds) return true;
-
-  return (
-    latitude >= bounds.minLatitude &&
-    latitude <= bounds.maxLatitude &&
-    longitude >= bounds.minLongitude &&
-    longitude <= bounds.maxLongitude
-  );
-}
-
 export function normalizeCoverageValue(value: string) {
   return value
     .normalize("NFD")
@@ -195,18 +140,3 @@ export function buildGoogleMapsEmbedUrl({
 
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
 }
-
-const deliveryZoneCoordinateBounds: Record<string, DeliveryZoneCoordinateBounds> = {
-  "san-salvador": {
-    maxLatitude: 13.76,
-    maxLongitude: -89.12,
-    minLatitude: 13.62,
-    minLongitude: -89.29,
-  },
-  "santa-tecla": {
-    maxLatitude: 13.73,
-    maxLongitude: -89.22,
-    minLatitude: 13.62,
-    minLongitude: -89.37,
-  },
-};

@@ -20,7 +20,7 @@ export default async function CatalogCsvImportPage() {
       <p>CSV UTF-8, separado por comas o punto y coma. Máximo 256 KiB y 200 productos por lote. El SKU identifica cada producto sin distinguir mayúsculas ni espacios. Los choques existentes deben resolverse antes de importar.</p>
       <p>Precio en USD con IVA incluido; stock físico total en bodega MAIN, sin descontar las reservas. Peso en kg (hasta 3 decimales), medidas en cm (hasta 1 decimal).</p>
       <p>Compatibilidades: <code>Toyota|Corolla|2010|2018;Honda|Civic|2016|2020</code>. Sin motores; hasta 20 por producto.</p>
-      <p className="text-sm text-muted-foreground">Descripción, número de parte, compatibilidades y medidas vacías conservan los valores de productos existentes. Para cambiarlos, proporciona valores; las medidas requieren las cuatro celdas. Se mantienen imágenes, traducciones, rutas y estado activo. Un producto inactivo seguirá inactivo: la vista previa lo advierte y puedes reactivarlo desde su ficha. Los nuevos se crean activos.</p>
+      <p className="text-sm text-muted-foreground">Descripción, número de parte, compatibilidades y medidas vacías conservan los valores de productos existentes. Para cambiarlos, proporciona valores; las medidas requieren las cuatro celdas. Se mantienen imágenes, traducciones, rutas y estado activo. Un producto inactivo seguirá inactivo: la vista previa lo advierte y puedes reactivarlo desde su ficha. Los nuevos se crean activos y requieren peso, largo, ancho y alto. También se rechazan actualizaciones de productos activos si faltan medidas; los borradores pueden conservarlas vacías.</p>
     </section>
     <CatalogCsvImportForm />
   </main>;

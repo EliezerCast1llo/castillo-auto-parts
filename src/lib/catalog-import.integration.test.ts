@@ -135,9 +135,9 @@ describe.skipIf(!process.env.DATABASE_URL)("catalog import with isolated Postgre
     const product = await db.product.findUniqueOrThrow({ where: { sku: original[0] }, include: { compatibilities: true } });
     expect(product).toMatchObject({ partNumber: "NEW-PART", description: "Nueva descripción" });
     expect(product.compatibilities).toEqual([expect.objectContaining({ make: "Honda", model: "Civic" })]);
-    const empty = row("CSV-NEW-EMPTY"); empty[3] = ""; empty[7] = ""; empty[12] = ""; empty.splice(8, 4, "", "", "", "");
+    const empty = row("CSV-NEW-EMPTY"); empty[3] = ""; empty[7] = ""; empty[12] = ""; empty.splice(8, 4, "1", "20", "10", "5");
     await commit(csv([empty]));
-    expect(await db.product.findUniqueOrThrow({ where: { sku: empty[0] }, include: { compatibilities: true } })).toMatchObject({ partNumber: null, description: null, weightGrams: null, compatibilities: [], isActive: true });
+    expect(await db.product.findUniqueOrThrow({ where: { sku: empty[0] }, include: { compatibilities: true } })).toMatchObject({ partNumber: null, description: null, weightGrams: 1000, compatibilities: [], isActive: true });
   });
 
   it("updates case-insensitive matches and preserves the stored spelling of legacy SKUs", async () => {

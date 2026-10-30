@@ -1,5 +1,10 @@
 # Fase 5 - Checkout y órdenes
 
+## Actualización vigente — 30 oct 2026 / #115
+
+El checkout nuevo ofrece PICKUP ($0) y NATIONAL_SHIPPING. Requiere tarifa válida antes de pagar, re-cotiza en servidor, incluye costo en total/huella de idempotencia y conserva costo real/cobrado. Sin tarifa ofrece WhatsApp y permite retiro. LOCAL_DELIVERY sigue legible solo en históricos. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 > **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
 > Se conserva el contenido original para trazabilidad; sus estados y decisiones
 > no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)

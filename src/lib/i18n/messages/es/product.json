@@ -13,7 +13,7 @@
   "addToCart": "Agregar al carrito",
   "quantity": "Cantidad",
   "validateWithAdvisor": "Validar con asesor",
-  "deliveryNotice": "Entrega en San Salvador y Santa Tecla. Tarifa confirmada al pagar.",
+  "deliveryNotice": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis.",
   "breadcrumbAriaLabel": "Ruta del producto",
   "home": "Inicio",
   "catalog": "Catálogo",
@@ -22,5 +22,6 @@
   "viewDetailsFor": "Ver detalles del repuesto {name}",
   "viewImage": "Ver imagen {index}: {alt}",
   "ogAlt": "Repuesto de {siteName}",
-  "supportMessage": "Hola, necesito validar compatibilidad del repuesto {name} (SKU {sku}, parte {partNumber})."
+  "supportMessage": "Hola, necesito validar compatibilidad del repuesto {name} (SKU {sku}, parte {partNumber}).",
+  "deliveryTitle": "Envío nacional o retiro en bodega"
 }

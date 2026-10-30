@@ -1,0 +1,19 @@
+# Envío nacional — B19 / #115
+
+## Envío nacional — decisión vigente del 30 de octubre de 2026 (#115)
+
+- `PICKUP` es retiro en bodega a $0. `NATIONAL_SHIPPING` usa cotización de paquetería. Solo tarjeta; sin contra entrega. `LOCAL_DELIVERY` se conserva exclusivamente en pedidos históricos. No hay tarifas locales de $2/$3 ni cajas geográficas por ciudad.
+- Cobertura comercial: todo El Salvador. Costo y tiempo se calculan al pagar según la paquetería; mismo día es una posibilidad según disponibilidad, sin plazo garantizado. El retiro es lo único gratuito salvo promoción del dueño.
+- Checkout y Mis direcciones comparten el catálogo estático de 14 departamentos y 44 municipios de `src/data/el-salvador.ts` (Decreto 762, artículo 1: [fuente oficial](https://www.transparenciafiscal.gob.sv/downloads/pdf/700-DGCG-LY-2024-001.pdf)). Se requiere dirección, municipio, departamento, punto de referencia y pin. El control de coordenadas es una envolvente nacional, incluyendo islas; no certifica fronteras ni disponibilidad de courier. Direcciones antiguas se pueden seleccionar y completar con el municipio vigente y la referencia.
+- Cada producto activo necesita peso en gramos y largo/ancho/alto en milímetros positivos. El editor acepta kg/cm y permite borradores sin medidas. CSV conserva medidas existentes; rechaza nuevos productos activos o actualizaciones de activos sin ellas. El admin lista activos incompletos. Los datos de paquete del seed son artificiales y solo corresponden a productos demo; no estimar medidas de inventario real.
+- `ShippingRateProvider.getRates` recibe destino, paquetes por SKU con cantidad y peso total (peso × cantidad). Devuelve proveedor, courier, precio en centavos, servicio y fecha estimada opcional. `SHIPPING_PROVIDER` vacío usa `unavailable`; `fake` se permite solo en desarrollo, pruebas o el esquema desechable `e2e_*` validado por el runner. No hay credenciales ni llamadas Boxful en #115.
+- `/api/shipping/rates` cotiza el carrito del servidor. Al crear el pedido se vuelven a consultar productos/precios/medidas y proveedor; nunca se usa un monto enviado por el navegador. Se incluye opción, precio real, precio cobrado y dirección/referencia en la huella de idempotencia. Se conserva la cotización del pedido, sin reajustes posteriores.
+- Sin tarifa, por error o sin configuración: mensaje de ayuda y enlace a `https://wa.me/50378907671`, con detalle del carrito cuando está disponible. Se deshabilita pagar envío nacional; el servidor también lo bloquea. Retiro sigue funcionando.
+- Promoción en `/admin/settings`, apagada por defecto: el ADMIN puede activarla con compra mínima (subtotal con IVA, sin envío). La tienda absorbe la tarifa; `Shipment.quotedCents` registra el costo real y `chargedCents` lo cobrado ($0 si califica). Hay auditoría del cambio. Se conservan las tablas/filas de zonas históricas, sin gestión en pantalla ni nuevas tarifas del seed.
+- Migración aditiva `20261030210000_national_shipping`: referencia nullable en Address (también snapshot independiente de la dirección del pedido), datos de proveedor/courier/servicio/costos/peso nullable en Shipment y singleton ShippingPromotion. Se reutiliza `estimatedDeliveryAt`. Los históricos siguen legibles.
+- #91 completa mapeos verificados `stateId`/`cityId`, Boxful real, cuenta prepagada, guías, rastreo, webhooks y saldo. El mapa de IDs queda vacío; no inventar identificadores. Con el proveedor por defecto, solo retiro se puede pagar hasta conectar un proveedor real.
+- Desplegar primero la migración y generar Prisma. La portada temporal `SITE_MODE=landing` sigue independiente de DB/credenciales y publica cobertura nacional en es/en. No habilita checkout. Este cambio no autoriza merge ni despliegue.
+
+## Verificación
+
+Consultar los escenarios B19 en [checklist QA](qa-checklists.md#validación-b19--115). Las pruebas nuevas usan proveedores fake y PostgreSQL desechable; no prueban integración real con Boxful.

@@ -144,51 +144,12 @@ async function main() {
     },
   });
 
-  await prisma.deliveryZone.upsert({
-    where: { slug: "santa-tecla" },
-    update: {
-      city: "Santa Tecla",
-      department: "La Libertad",
-      feeCents: 200,
-      isActive: true,
-      name: "Santa Tecla",
-      sortOrder: 1,
-    },
-    create: {
-      city: "Santa Tecla",
-      department: "La Libertad",
-      feeCents: 200,
-      isActive: true,
-      name: "Santa Tecla",
-      slug: "santa-tecla",
-      sortOrder: 1,
-    },
-  });
-
-  await prisma.deliveryZone.upsert({
-    where: { slug: "san-salvador" },
-    update: {
-      city: "San Salvador",
-      department: "San Salvador",
-      feeCents: 300,
-      isActive: true,
-      name: "San Salvador",
-      sortOrder: 2,
-    },
-    create: {
-      city: "San Salvador",
-      department: "San Salvador",
-      feeCents: 300,
-      isActive: true,
-      name: "San Salvador",
-      slug: "san-salvador",
-      sortOrder: 2,
-    },
-  });
+  // Local delivery zones remain historical data. Never re-enable local tariffs.
+  await prisma.shippingPromotion.upsert({ where: { id: "national" }, update: {}, create: { id: "national", enabled: false, minimumSubtotalCents: 0 } });
 
   // Las dos validaciones van antes de cualquier escritura de **contenido**:
   // categorias, productos y traducciones. Arriba ya corrieron el usuario admin,
-  // la ubicacion de inventario y las dos zonas de entrega, asi que la base no
+  // la ubicacion de inventario y la promoción de envío, asi que la base no
   // queda intacta; lo que se garantiza es que una clave mala corte antes de
   // sembrar lo que esas claves describen.
   //
@@ -263,6 +224,8 @@ async function main() {
     const savedProduct = await prisma.product.upsert({
       where: { sku: product.sku },
       update: {
+        // Artificial package fixtures for demo products only.
+        weightGrams: 1000, lengthMm: 200, widthMm: 150, heightMm: 100,
         isDemo: true,
         name: product.name,
         slug: product.slug,
@@ -278,6 +241,8 @@ async function main() {
         isFeatured: true,
       },
       create: {
+        // Artificial package fixtures for demo products only.
+        weightGrams: 1000, lengthMm: 200, widthMm: 150, heightMm: 100,
         isDemo: true,
         name: product.name,
         slug: product.slug,

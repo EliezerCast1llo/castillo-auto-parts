@@ -49,8 +49,7 @@ lógicas de la hoja de cálculo, aunque una descripción contenga saltos de lín
 | `compatibilidades` | Hasta 20 entradas `Marca\|Modelo\|AñoDesde\|AñoHasta`, separadas por `;`. Años 1900–2100, desde ≤ hasta. Con contenido reemplaza la lista anterior; vacío conserva las compatibilidades existentes y en productos nuevos queda sin lista. No admite motor. |
 
 Si se indica algún peso/medida, completar los cuatro. Si están todos vacíos se
-conservan los de un producto existente; un nuevo producto queda sin medidas y
-la vista previa lo advierte. No se inventa peso cero ni se deriva de texto libre.
+conservan los de un producto existente. Desde #115, los productos nuevos (activos) y las actualizaciones de activos necesitan las cuatro medidas; si no existen, la vista previa bloquea el lote con un error. Los borradores existentes pueden conservar medidas vacías y su estado inactivo. No se inventa peso cero ni se deriva de texto libre.
 Las compatibilidades repetidas se deduplican y las marcas/modelos usan la misma
 normalización del editor manual.
 

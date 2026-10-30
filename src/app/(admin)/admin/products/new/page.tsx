@@ -72,7 +72,7 @@ function getStatusMessage(status: string, existingSku: string) {
   const messages: Record<string, string> = {
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
-    invalid: "Revisa los campos del producto.",
+    invalid: "Revisa los campos. Para activar el producto completa peso, largo, ancho y alto; sin medidas puedes guardarlo como borrador.",
     invalid_sku: SKU_FORMAT_MESSAGE,
     conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
   };

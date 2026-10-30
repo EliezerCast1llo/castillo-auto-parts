@@ -1,5 +1,10 @@
 # Fase 7B - Admin de productos e inventario
 
+## Actualización vigente — 30 oct 2026 / #115
+
+Activación manual/CSV requiere peso y las tres medidas positivas. Se permiten borradores sin medidas; CSV conserva valores existentes y no activa borradores implícitamente. El admin lista productos activos incompletos. Los paquetes del seed son fixtures artificiales de productos demo. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 > **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
 > Se conserva el contenido original para trazabilidad; sus estados y decisiones
 > no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)

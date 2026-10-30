@@ -1,10 +1,10 @@
-import { MapPin, Plus, Truck } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { SiteHeader } from "@/components/site-header";
 import { requireAdminRole } from "@/lib/admin-auth";
-import { defaultDeliveryZones, defaultPickupLocation, DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
+import { defaultPickupLocation, DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
 import { db } from "@/lib/db";
-import { createDeliveryZone, updateDeliveryZone, updatePickupSettings } from "./actions";
+import { updateShippingPromotion, updatePickupSettings } from "./actions";
 import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
@@ -24,9 +24,9 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
-  const [pickupLocation, deliveryZones] = await Promise.all([
+  const [pickupLocation, promotion] = await Promise.all([
     db.inventoryLocation.findUnique({ where: { code: DEFAULT_LOCATION_CODE } }),
-    db.deliveryZone.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
+    db.shippingPromotion.findUnique({ where: { id: "national" } }),
   ]);
 
   return (
@@ -40,7 +40,7 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
             <div>
               <h1 className="text-2xl font-bold text-primary">Ajustes de entrega</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Configura retiro en bodega, horarios y zonas de envío local para el checkout.
+                Configura el retiro en bodega y la promoción de envío nacional. El costo de paquetería lo absorbe la tienda cuando la promoción está activa.
               </p>
             </div>
             <AdminNav active="settings" user={adminUser} />
@@ -105,96 +105,18 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
             </section>
 
             <section className="rounded-md border border-border bg-card p-5">
-              <div className="flex items-center gap-2">
-                <Truck className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-bold text-primary">Zonas de envío</h2>
-              </div>
-
-              <div className="mt-4 space-y-4">
-                {deliveryZones.map((zone) => (
-                  <DeliveryZoneForm
-                    action={updateDeliveryZone}
-                    key={zone.id}
-                    submitLabel="Guardar zona"
-                    zone={{
-                      city: zone.city,
-                      department: zone.department,
-                      fee: formatPriceInput(zone.feeCents),
-                      id: zone.id,
-                      isActive: zone.isActive,
-                      name: zone.name,
-                      slug: zone.slug,
-                      sortOrder: zone.sortOrder,
-                    }}
-                  />
-                ))}
-              </div>
+              <h2 className="text-lg font-bold text-primary">Promoción de envío gratis</h2>
+              <p className="mt-2 text-sm">Apagada por defecto. La tienda paga la tarifa real y el cliente paga $0 cuando cumple el mínimo de productos.</p>
+              <form action={updateShippingPromotion} className="mt-4 space-y-4">
+                <label className="flex min-h-11 items-center gap-3"><input type="checkbox" name="enabled" value="true" defaultChecked={promotion?.enabled ?? false} /> Activar promoción</label>
+                <SettingsField label="Compra mínima USD (con IVA, sin envío)" name="minimumSubtotal" type="number" min="0" step="0.01" defaultValue={((promotion?.minimumSubtotalCents ?? 0) / 100).toFixed(2)} required />
+                <button className="min-h-11 rounded-md bg-primary px-4 font-semibold text-white">Guardar promoción</button>
+              </form>
             </section>
           </div>
-
-          <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-ca-card">
-            <div className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold text-primary">Nueva zona</h2>
-            </div>
-            <DeliveryZoneForm action={createDeliveryZone} submitLabel="Crear zona" />
-          </aside>
         </section>
       </div>
     </main>
-  );
-}
-
-function DeliveryZoneForm({
-  action,
-  submitLabel,
-  zone,
-}: {
-  action: (formData: FormData) => Promise<void>;
-  submitLabel: string;
-  zone?: {
-    city: string;
-    department: string;
-    fee: string;
-    id: string;
-    isActive: boolean;
-    name: string;
-    slug: string;
-    sortOrder: number;
-  };
-}) {
-  return (
-    <form action={action} className="rounded-md bg-background p-4">
-      {zone ? <input name="zoneId" type="hidden" value={zone.id} /> : null}
-      <div className="grid gap-3 md:grid-cols-2">
-        <SettingsField defaultValue={zone?.name} label="Nombre" name="name" required />
-        <SettingsField defaultValue={zone?.slug} label="Slug" name="slug" />
-        <SettingsField defaultValue={zone?.city} label="Municipio" name="city" required />
-        <SettingsField defaultValue={zone?.department} label="Departamento" name="department" required />
-        <SettingsField defaultValue={zone?.fee} label="Tarifa USD" name="fee" required />
-        <SettingsField
-          defaultValue={String(zone?.sortOrder ?? 10)}
-          label="Orden"
-          min="0"
-          name="sortOrder"
-          required
-          type="number"
-        />
-      </div>
-      <label className="mt-3 flex items-center gap-3 text-sm font-semibold">
-        <input
-          className="h-4 w-4 accent-primary"
-          defaultChecked={zone?.isActive ?? true}
-          name="isActive"
-          type="checkbox"
-          value="true"
-        />
-        Activa
-      </label>
-      <button className="mt-4 inline-flex h-10 items-center justify-center rounded-md border border-primary bg-card px-3 text-sm font-semibold text-primary">
-        {submitLabel}
-      </button>
-    </form>
   );
 }
 
@@ -285,32 +207,16 @@ async function ensureFulfillmentDefaults() {
     });
   }
 
-  const zoneCount = await db.deliveryZone.count();
-  if (zoneCount > 0) return;
-
-  await db.deliveryZone.createMany({
-    data: defaultDeliveryZones.map((zone, index) => ({
-      city: zone.city,
-      department: zone.department,
-      feeCents: zone.feeCents,
-      isActive: zone.isActive,
-      name: zone.name,
-      slug: zone.slug,
-      sortOrder: index + 1,
-    })),
-  });
 }
 
 function decimalToString(value: { toString: () => string } | null | undefined) {
   return value ? value.toString() : undefined;
 }
 
-function formatPriceInput(cents: number) {
-  return (cents / 100).toFixed(2);
-}
-
 function getStatusMessage(status: string) {
   const messages: Record<string, string> = {
+    promotion_updated: "Promoción actualizada.",
+    invalid_promotion: "Indica un monto mínimo válido.",
     duplicate: "Ya existe una zona con ese slug.",
     invalid_pickup: "Revisa los datos de retiro.",
     invalid_zone: "Revisa los datos de la zona.",
@@ -325,7 +231,7 @@ function getStatusMessage(status: string) {
 }
 
 function isErrorStatus(status: string) {
-  return ["duplicate", "invalid_pickup", "invalid_zone", "pickup_error", "zone_error"].includes(status);
+  return ["invalid_promotion", "duplicate", "invalid_pickup", "invalid_zone", "pickup_error", "zone_error"].includes(status);
 }
 
 function firstValue(value: string | string[] | undefined) {

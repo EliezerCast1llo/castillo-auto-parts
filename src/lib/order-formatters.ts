@@ -53,7 +53,8 @@ export function getOrderStatusClassName(status: OrderStatus): string {
  */
 export function formatShipmentMethod(method: string | undefined): string {
   if (method === "PICKUP") return "Retiro en bodega";
-  if (method === "LOCAL_DELIVERY") return "Envío local";
+  if (method === "NATIONAL_SHIPPING") return "Envío nacional";
+  if (method === "LOCAL_DELIVERY") return "Entrega a domicilio";
   return "Pendiente";
 }
 

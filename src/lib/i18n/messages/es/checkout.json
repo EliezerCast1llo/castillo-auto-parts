@@ -12,7 +12,8 @@
     "shippingTitle": "Envío",
     "pickupFree": "Retiro gratis en {location}",
     "pickupOrDelivery": "Retiro gratis en {location}; o envío {zones}.",
-    "taxNotice": "Precios con IVA incluido (13%)."
+    "taxNotice": "Precios con IVA incluido (13%).",
+    "nationalShipping": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis."
   },
   "form": {
     "yourData": "Tus datos",
@@ -36,7 +37,6 @@
   },
   "delivery": {
     "pickup": "Retiro en bodega",
-    "localDelivery": "Envío local",
     "pickupCost": "Costo de retiro: {amount}",
     "warehouseMapTitle": "Ubicación de bodega",
     "address": "Dirección",
@@ -53,7 +53,20 @@
     "taxNotice": "Los precios de productos ya incluyen IVA.",
     "totalsProducts": "Productos",
     "totalsShipping": "Envío",
-    "totalsEstimated": "Total estimado"
+    "totalsEstimated": "Total estimado",
+    "nationalShipping": "Envío nacional",
+    "landmark": "Punto de referencia",
+    "selectDepartment": "Selecciona departamento",
+    "newAddress": "Nueva dirección",
+    "quote": "Calcular envío",
+    "quoting": "Calculando…",
+    "sameDay": "Mismo día (según disponibilidad)",
+    "nextDay": "Día siguiente (estimado)",
+    "promotion": "Promoción de envío gratis",
+    "unavailable": "No pudimos calcular el envío a tu dirección en este momento. Escríbenos por WhatsApp y te ayudamos",
+    "selectRate": "Selecciona una tarifa antes de pagar",
+    "pendingQuote": "Pendiente de cotización",
+    "whatsappRequest": "Necesito ayuda para cotizar este carrito:"
   },
   "addressModal": {
     "title": "Dirección de entrega",

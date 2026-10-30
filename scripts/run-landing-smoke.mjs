@@ -64,7 +64,7 @@ try {
     assert.equal(await page.locator("html").getAttribute("lang"), "es");
     assert.match(await page.title(), /Castillo Autoparts/);
     assert(await page.getByRole("link", { name: "Castillo Autoparts", exact: true }).isVisible());
-    assert(await page.getByText("Repuestos automotrices en línea para Santa Tecla, San Salvador y alrededores.", { exact: true }).isVisible());
+    assert(await page.getByText("Repuestos automotrices en línea con envíos a todo El Salvador.", { exact: true }).isVisible());
     assert.equal(await page.getByRole("link", { name: "Escríbenos por WhatsApp" }).getAttribute("href"), "https://wa.me/50378907671");
     assert.equal(await page.getByRole("link", { name: "+503 7890 7671", exact: true }).getAttribute("href"), "tel:+50378907671");
     assert.equal(await page.locator("form,input").count(), 0);

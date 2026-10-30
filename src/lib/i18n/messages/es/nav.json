@@ -21,5 +21,6 @@
   "viewFullCatalog": "Ver catálogo completo",
   "whatsappAdvice": "Asesoría por WhatsApp",
   "brandTagline": "Repuestos automotrices · El Salvador",
-  "cartItemCount": "{count, plural, one {# producto} other {# productos}}"
+  "cartItemCount": "{count, plural, one {# producto} other {# productos}}",
+  "nationalDelivery": "Envíos a todo El Salvador"
 }

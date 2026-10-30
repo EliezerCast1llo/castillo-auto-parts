@@ -1,5 +1,10 @@
 # Fase 7 - Admin básico de órdenes
 
+## Actualización vigente — 30 oct 2026 / #115
+
+Detalles del cliente/admin muestran método, courier, cobro y fecha estimada opcional, más punto de referencia. El admin también ve costo real para reconciliar promociones. Los pedidos históricos LOCAL_DELIVERY siguen abriendo. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 > **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
 > Se conserva el contenido original para trazabilidad; sus estados y decisiones
 > no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)

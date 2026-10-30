@@ -1,466 +1,89 @@
 "use client";
 
-import { Info, MapPin, X } from "lucide-react";
-import { useState } from "react";
+import { useCheckoutShippingState } from "./checkout-form-state";
+import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/navigation";
 import { formatCurrency } from "@/lib/money";
-import type { FulfillmentMethod } from "@/lib/checkout";
-import type { DeliveryZoneOption, PickupLocationOption } from "@/lib/fulfillment";
-import { CheckoutLocationPicker, type LocationInfo } from "./checkout-location-picker";
+import type { PickupLocationOption } from "@/lib/fulfillment";
+import { shippingRateKey, type ShippingRate } from "@/lib/shipping";
+import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
+import { CheckoutLocationPicker } from "./checkout-location-picker";
+import { emptyNationalAddress, NationalAddressInputs, type NationalAddressFields } from "./national-address-fields";
 
-type SavedAddress = {
-  id: string;
-  formattedAddress: string;
-  addressLine1: string;
-  addressLine2: string | null;
-  city: string;
-  department: string;
-  deliveryNotes: string | null;
-  latitude: string | null;
-  longitude: string | null;
-};
+type SavedAddress = { id: string; addressLine1: string; addressLine2: string | null; city: string; department: string; landmark: string | null; deliveryNotes: string | null; latitude: string | null; longitude: string | null };
+type Rate = ShippingRate & { chargedCents: number };
 
-type DeliveryFields = {
-  addressLine1: string;
-  addressLine2: string;
-  deliveryZoneSlug: string;
-  deliveryNotes: string;
-};
-
-export function CheckoutDeliveryFields({
-  deliveryZones,
-  isGuest,
-  pickupLocation,
-  savedAddresses,
-  subtotalCents,
-}: {
-  deliveryZones: DeliveryZoneOption[];
-  isGuest: boolean;
-  pickupLocation: PickupLocationOption;
-  savedAddresses: SavedAddress[];
-  subtotalCents: number;
+export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtotalCents, cartDetail, shippingConfigured }: {
+  shippingConfigured: boolean; pickupLocation: PickupLocationOption; savedAddresses: SavedAddress[]; subtotalCents: number; cartDetail: string;
 }) {
   const t = useTranslations("Checkout.delivery");
-  // El idioma sale del contexto y no de una prop: acá solo alimenta el formato
-  // del monto, no decide a dónde va nadie. Donde el idioma elige un destino
-  // —redirects, URLs de correo— se pasa explícito.
   const locale = useLocale();
-  const [method, setMethod] = useState<FulfillmentMethod>("PICKUP");
-  const [selectedAddressId, setSelectedAddressId] = useState(
-    savedAddresses.length > 0 ? savedAddresses[0].id : "",
-  );
-  const [guestFields, setGuestFields] = useState<DeliveryFields>({
-    addressLine1: "",
-    addressLine2: "",
-    deliveryZoneSlug: "",
-    deliveryNotes: "",
-  });
-  const [showAddressModal, setShowAddressModal] = useState(false);
-
-  const isDelivery = method === "LOCAL_DELIVERY";
-  const hasSavedAddresses = !isGuest && savedAddresses.length > 0;
-
-  const selectedZone = deliveryZones.find((z) => z.slug === guestFields.deliveryZoneSlug);
-  const selectedSavedAddress = savedAddresses.find((a) => a.id === selectedAddressId);
-  const savedZone = hasSavedAddresses
-    ? deliveryZones.find(
-        (z) => z.city.toLowerCase() === (selectedSavedAddress?.city ?? "").toLowerCase(),
-      )
-    : undefined;
-
-  const activeZone = hasSavedAddresses ? savedZone : selectedZone;
-  const shippingCents = isDelivery ? (activeZone ? activeZone.feeCents : null) : 0;
-  const totalCents = subtotalCents + (shippingCents ?? 0);
-
-  function selectMethod(nextMethod: FulfillmentMethod) {
-    setMethod(nextMethod);
+  const { setBlocked } = useCheckoutShippingState();
+  const [method, setMethod] = useState("PICKUP");
+  const [address, setAddress] = useState<NationalAddressFields>(emptyNationalAddress);
+  const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number }>();
+  const [rates, setRates] = useState<Rate[]>([]);
+  const [option, setOption] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
+  const [mapKey, setMapKey] = useState(0);
+  const revision = useRef(0);
+  const selectedRate = rates.find((rate) => shippingRateKey(rate) === option);
+  const canQuote = shippingConfigured && Boolean(address.addressLine1.trim() && address.landmark.trim() && isNationalAddress(address.department, address.city) && isNationalCoordinate(coordinates?.latitude, coordinates?.longitude));
+  function invalidate(nextMethod = method) { setBlocked(nextMethod !== "PICKUP"); revision.current++; setRates([]); setOption(""); setStatus("idle"); }
+  async function quote() {
+    const current = ++revision.current;
+    setStatus("loading"); setOption(""); setRates([]);
+    try {
+      const response = await fetch("/api/shipping/rates", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...address, ...coordinates }) });
+      const data = await response.json();
+      if (revision.current !== current) return;
+      const next: Rate[] = response.ok && Array.isArray(data.rates) ? data.rates : [];
+      setRates(next); setStatus(next.length ? "ready" : "unavailable");
+    } catch { if (revision.current === current) setStatus("unavailable"); }
   }
-
-  function setGuestField(key: keyof DeliveryFields) {
-    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-      setGuestFields((prev) => ({ ...prev, [key]: e.target.value }));
-  }
-
-  function handleLocationFound(info: LocationInfo) {
-    setGuestFields((prev) => {
-      const matchedZone = deliveryZones.find(
-        (z) =>
-          z.city.toLowerCase() === info.city.toLowerCase() ||
-          z.name.toLowerCase() === info.city.toLowerCase(),
-      );
-      return {
-        ...prev,
-        addressLine1: info.road || prev.addressLine1,
-        deliveryZoneSlug: matchedZone?.slug ?? prev.deliveryZoneSlug,
-      };
-    });
-  }
-
-  return (
-    <>
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <label
-          className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold"
-          onClick={() => selectMethod("PICKUP")}
-        >
-          <input
-            checked={method === "PICKUP"}
-            className="h-4 w-4 accent-primary"
-            name="fulfillmentMethod"
-            onChange={() => selectMethod("PICKUP")}
-            type="radio"
-            value="PICKUP"
-          />
-          {t("pickup")}
-        </label>
-        <label
-          className="flex min-h-12 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm font-semibold"
-          onClick={() => selectMethod("LOCAL_DELIVERY")}
-        >
-          <input
-            checked={method === "LOCAL_DELIVERY"}
-            className="h-4 w-4 accent-primary"
-            name="fulfillmentMethod"
-            onChange={() => selectMethod("LOCAL_DELIVERY")}
-            type="radio"
-            value="LOCAL_DELIVERY"
-          />
-          {t("localDelivery")}
-        </label>
+  const whatsapp = `https://wa.me/50378907671?text=${encodeURIComponent(`${t("whatsappRequest")}\n${cartDetail}\n${address.city}, ${address.department}`)}`;
+  return <div className="mt-4 space-y-4">
+    <div className="grid gap-3 sm:grid-cols-2">
+      {(["PICKUP", "NATIONAL_SHIPPING"] as const).map((value) => <label className="flex min-h-12 items-center gap-3 rounded-xl border border-ca-border px-3 font-semibold" key={value}>
+        <input type="radio" name="fulfillmentMethod" value={value} checked={method === value} onChange={() => { setMethod(value); invalidate(value); }} />
+        {t(value === "PICKUP" ? "pickup" : "nationalShipping")}
+      </label>)}
+    </div>
+    {method === "PICKUP" ? <div className="rounded-xl bg-ca-background p-4 text-sm">
+      <h3 className="font-bold">{t("pickup")}</h3>
+      <p className="font-bold">{pickupLocation.name} · {t("pickupCost", { amount: formatCurrency(0, locale) })}</p>
+      <p>{pickupLocation.address}</p><p>{pickupLocation.pickupHours}</p><p>{pickupLocation.pickupInstructions}</p>
+      <iframe title={t("warehouseMapTitle")} src={pickupLocation.mapUrl} className="mt-3 h-56 w-full rounded-xl border-0" loading="lazy" />
+    </div> : <>
+      {savedAddresses.length ? <label className="block text-sm font-semibold">{t("savedAddress")}
+        <select className="mt-2 min-h-11 w-full rounded-xl border p-2" defaultValue="" onChange={(e) => {
+          const saved = savedAddresses.find((item) => item.id === e.target.value);
+          invalidate();
+          setAddress(saved ? { addressLine1: saved.addressLine1, addressLine2: saved.addressLine2 ?? "", city: isNationalAddress(saved.department, saved.city) ? saved.city : "", department: saved.department, landmark: saved.landmark ?? "", deliveryNotes: saved.deliveryNotes ?? "" } : emptyNationalAddress);
+          setCoordinates(saved?.latitude && saved.longitude ? { latitude: Number(saved.latitude), longitude: Number(saved.longitude) } : undefined);
+          setMapKey((key) => key + 1);
+        }}><option value="">{t("newAddress")}</option>{savedAddresses.map((item) => <option key={item.id} value={item.id}>{item.addressLine1}, {item.city}</option>)}</select>
+      </label> : null}
+      <NationalAddressInputs value={address} onChange={(next) => { invalidate(); setAddress(next); }} />
+      <CheckoutLocationPicker key={mapKey} initialCoordinates={coordinates} onCoordinatesChange={(next) => { invalidate(); setCoordinates(next); }} />
+      <button type="button" disabled={!canQuote || status === "loading"} onClick={quote} className="min-h-11 rounded-xl bg-ca-navy-950 px-4 font-bold text-white disabled:opacity-50">{t(status === "loading" ? "quoting" : "quote")}</button>
+      <input type="hidden" name="shippingOption" value={option} />
+      <div aria-live="polite" className="space-y-3">
+        {rates.map((rate) => <label key={shippingRateKey(rate)} className="flex min-h-12 items-center gap-3 rounded-xl border p-3">
+          <input type="radio" name="shippingRateChoice" required checked={option === shippingRateKey(rate)} onChange={() => { setOption(shippingRateKey(rate)); setBlocked(false); }} />
+          <span>{rate.courierName} · {t(rate.serviceType === "same-day" ? "sameDay" : "nextDay")} · {formatCurrency(rate.chargedCents, locale)}
+            {rate.chargedCents === 0 ? ` (${t("promotion")})` : ""}
+            {rate.estimatedDeliveryAt ? ` · ${new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "America/El_Salvador" }).format(new Date(rate.estimatedDeliveryAt))}` : ""}
+          </span>
+        </label>)}
+        {status === "unavailable" || !shippingConfigured ? <p role="alert">{t("unavailable")} <a className="font-bold underline" href={whatsapp} target="_blank" rel="noreferrer">WhatsApp</a></p> : null}
       </div>
 
-      {isDelivery ? (
-        <div className="mt-4 space-y-4">
-          {hasSavedAddresses ? (
-            <SavedAddressSelector
-              addresses={savedAddresses}
-              selectedAddressId={selectedAddressId}
-              selectedSavedAddress={selectedSavedAddress}
-              savedZone={savedZone}
-              setSelectedAddressId={setSelectedAddressId}
-            />
-          ) : (
-            <>
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block text-sm font-semibold md:col-span-2">
-                  {t("address")}
-                  <input
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-                    name="addressLine1"
-                    onChange={setGuestField("addressLine1")}
-                    required
-                    type="text"
-                    value={guestFields.addressLine1}
-                  />
-                </label>
-                <label className="block text-sm font-semibold">
-                  {t("addressLine2")}
-                  <input
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-                    name="addressLine2"
-                    onChange={setGuestField("addressLine2")}
-                    type="text"
-                    value={guestFields.addressLine2}
-                  />
-                </label>
-                <label className="block text-sm font-semibold">
-                  {t("city")}
-                  <select
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-                    name="deliveryZoneSlug"
-                    onChange={setGuestField("deliveryZoneSlug")}
-                    required
-                    value={guestFields.deliveryZoneSlug}
-                  >
-                    <option value="">{t("selectCity")}</option>
-                    {deliveryZones.map((zone) => (
-                      <option key={zone.id} value={zone.slug}>
-                        {zone.name} · {formatCurrency(zone.feeCents, locale)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block text-sm font-semibold">
-                  {t("department")}
-                  <input
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
-                    readOnly
-                    type="text"
-                    value={selectedZone?.department ?? ""}
-                  />
-                </label>
-              </div>
-
-              <label className="block text-sm font-semibold">
-                {t("notes")}
-                <textarea
-                  className="mt-2 min-h-24 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-                  name="deliveryNotes"
-                  onChange={setGuestField("deliveryNotes")}
-                  placeholder={t("notesPlaceholder")}
-                  value={guestFields.deliveryNotes}
-                />
-              </label>
-
-              {isGuest ? <CheckoutLocationPicker onLocationFound={handleLocationFound} /> : null}
-
-              {/* Botón que abre el modal de confirmación antes de continuar al pago */}
-              {isGuest && guestFields.addressLine1 && selectedZone ? (
-                <button
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-ca-border bg-ca-background text-sm font-bold text-ca-navy-950 transition hover:bg-white"
-                  onClick={() => setShowAddressModal(true)}
-                  type="button"
-                >
-                  <MapPin className="h-4 w-4" />
-                  {t("viewAddressSummary")}
-                </button>
-              ) : null}
-            </>
-          )}
-        </div>
-      ) : (
-        <div className="mt-4 overflow-hidden rounded-md border border-border bg-background">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="p-4">
-              <div className="flex items-start gap-3">
-                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <div>
-                  <h3 className="font-bold text-primary">{t("pickup")}</h3>
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    {pickupLocation.address}.
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {pickupLocation.pickupHours}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {pickupLocation.pickupInstructions}
-                  </p>
-                  <p className="mt-3 text-sm font-semibold text-success">
-                    {t("pickupCost", { amount: formatCurrency(0, locale) })}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <iframe
-              className="h-56 w-full border-0 lg:h-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              src={pickupLocation.mapUrl}
-              title={t("warehouseMapTitle")}
-            />
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 rounded-md bg-primary/5 p-4 text-sm">
-        <div className="flex gap-2 font-semibold text-primary">
-          <Info className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{t("taxNotice")}</span>
-        </div>
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <DeliveryTotal
-            label={t("totalsProducts")}
-            value={formatCurrency(subtotalCents, locale)}
-          />
-          <DeliveryTotal
-            label={t("totalsShipping")}
-            value={
-              shippingCents === null ? t("selectCity") : formatCurrency(shippingCents, locale)
-            }
-          />
-          <DeliveryTotal
-            label={t("totalsEstimated")}
-            value={formatCurrency(totalCents, locale)}
-            strong
-          />
-        </div>
-      </div>
-
-      {showAddressModal ? (
-        <DeliveryAddressModal
-          addressLine1={guestFields.addressLine1}
-          addressLine2={guestFields.addressLine2}
-          city={selectedZone?.city ?? ""}
-          department={selectedZone?.department ?? ""}
-          deliveryNotes={guestFields.deliveryNotes}
-          onClose={() => setShowAddressModal(false)}
-        />
-      ) : null}
-    </>
-  );
-}
-
-function SavedAddressSelector({
-  addresses,
-  selectedAddressId,
-  selectedSavedAddress,
-  savedZone,
-  setSelectedAddressId,
-}: {
-  addresses: SavedAddress[];
-  selectedAddressId: string;
-  selectedSavedAddress: SavedAddress | undefined;
-  savedZone: DeliveryZoneOption | undefined;
-  setSelectedAddressId: (id: string) => void;
-}) {
-  const t = useTranslations("Checkout.delivery");
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-sm font-semibold text-ca-navy-950">{t("savedAddress")}</p>
-        <div className="mt-2 space-y-2">
-          {addresses.map((address) => (
-            <label
-              key={address.id}
-              className={`flex cursor-pointer items-start gap-3 rounded-md border px-4 py-3 text-sm transition ${
-                selectedAddressId === address.id
-                  ? "border-ca-navy-950 bg-ca-navy-950/5"
-                  : "border-border bg-background"
-              }`}
-            >
-              <input
-                checked={selectedAddressId === address.id}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-                name="_savedAddressId"
-                onChange={() => setSelectedAddressId(address.id)}
-                type="radio"
-                value={address.id}
-              />
-              <div className="min-w-0">
-                <p className="font-semibold text-ca-navy-950">{address.formattedAddress}</p>
-                {address.addressLine2 ? (
-                  <p className="text-muted-foreground">{address.addressLine2}</p>
-                ) : null}
-                <p className="text-muted-foreground">
-                  {address.city}, {address.department}
-                </p>
-              </div>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {selectedSavedAddress ? (
-        <>
-          <input type="hidden" name="addressLine1" value={selectedSavedAddress.addressLine1} />
-          {selectedSavedAddress.addressLine2 ? (
-            <input type="hidden" name="addressLine2" value={selectedSavedAddress.addressLine2} />
-          ) : null}
-          <input type="hidden" name="deliveryZoneSlug" value={savedZone?.slug ?? ""} />
-          {selectedSavedAddress.latitude ? (
-            <input type="hidden" name="latitude" value={selectedSavedAddress.latitude} />
-          ) : null}
-          {selectedSavedAddress.longitude ? (
-            <input type="hidden" name="longitude" value={selectedSavedAddress.longitude} />
-          ) : null}
-          {selectedSavedAddress.deliveryNotes ? (
-            <input type="hidden" name="deliveryNotes" value={selectedSavedAddress.deliveryNotes} />
-          ) : null}
-        </>
-      ) : null}
-
-      <p className="text-sm text-muted-foreground">
-        {t("otherAddressQuestion")}{" "}
-        <Link className="font-semibold text-ca-navy-950 underline" href="/account/addresses">
-          {t("manageAddresses")}
-        </Link>
-      </p>
+    </>}
+    <div className="rounded-xl bg-ca-background p-4 text-sm" aria-live="polite">
+      <p>{t("totalsProducts")}: {formatCurrency(subtotalCents, locale)}</p>
+      <p>{t("totalsShipping")}: {method === "PICKUP" ? formatCurrency(0, locale) : selectedRate ? formatCurrency(selectedRate.chargedCents, locale) : t("pendingQuote")}</p>
+      <p className="mt-2 font-bold">{t("totalsEstimated")}: {method === "PICKUP" || selectedRate ? formatCurrency(subtotalCents + (selectedRate?.chargedCents ?? 0), locale) : t("pendingQuote")}</p>
     </div>
-  );
-}
-
-function DeliveryAddressModal({
-  addressLine1,
-  addressLine2,
-  city,
-  department,
-  deliveryNotes,
-  onClose,
-}: {
-  addressLine1: string;
-  addressLine2: string;
-  city: string;
-  department: string;
-  deliveryNotes: string;
-  onClose: () => void;
-}) {
-  const t = useTranslations("Checkout.addressModal");
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
-      <div className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 shrink-0 text-ca-navy-950" />
-            <h2 className="text-lg font-black text-ca-navy-950">{t("title")}</h2>
-          </div>
-          <button
-            aria-label={t("close")}
-            className="rounded-md p-1 text-ca-text-secondary hover:bg-ca-background"
-            onClick={onClose}
-            type="button"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="mt-5 space-y-3 rounded-xl bg-ca-background p-4 text-sm">
-          <ModalRow label={t("address")} value={addressLine1} />
-          {addressLine2 ? <ModalRow label={t("reference")} value={addressLine2} /> : null}
-          <ModalRow label={t("city")} value={city} />
-          <ModalRow label={t("department")} value={department} />
-          {deliveryNotes ? <ModalRow label={t("notes")} value={deliveryNotes} /> : null}
-        </div>
-
-        <p className="mt-3 text-sm text-muted-foreground">
-          {t("wrongQuestion")}{" "}
-          <button
-            className="font-semibold text-ca-navy-950 underline"
-            onClick={onClose}
-            type="button"
-          >
-            {t("edit")}
-          </button>
-        </p>
-
-        <button
-          className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-[14px] border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
-          onClick={onClose}
-          type="button"
-        >
-          {t("close")}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function DeliveryTotal({
-  label,
-  strong,
-  value,
-}: {
-  label: string;
-  strong?: boolean;
-  value: string;
-}) {
-  return (
-    <div className="rounded-md bg-card p-3">
-      <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
-      <p className={strong ? "mt-1 text-lg font-bold text-primary" : "mt-1 font-semibold"}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function ModalRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-2">
-      <span className="w-24 shrink-0 font-semibold text-ca-text-secondary">{label}</span>
-      <span className="font-medium text-ca-navy-950">{value}</span>
-    </div>
-  );
+  </div>;
 }

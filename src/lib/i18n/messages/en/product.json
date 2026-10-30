@@ -13,7 +13,7 @@
   "addToCart": "Add to cart",
   "quantity": "Quantity",
   "validateWithAdvisor": "Check with an advisor",
-  "deliveryNotice": "Delivery in San Salvador and Santa Tecla. Fee confirmed at checkout.",
+  "deliveryNotice": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup.",
   "breadcrumbAriaLabel": "Product breadcrumb",
   "home": "Home",
   "catalog": "Catalog",
@@ -22,5 +22,6 @@
   "viewDetailsFor": "View details for {name}",
   "viewImage": "View image {index}: {alt}",
   "ogAlt": "Part from {siteName}",
-  "supportMessage": "Hi, I need to check whether {name} fits my vehicle (SKU {sku}, part {partNumber})."
+  "supportMessage": "Hi, I need to check whether {name} fits my vehicle (SKU {sku}, part {partNumber}).",
+  "deliveryTitle": "National shipping or warehouse pickup"
 }
