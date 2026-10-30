@@ -18,6 +18,7 @@ export const IDENTICAL_BY_DESIGN = new Set<string>([
   "Orders.detail.total",
   // Nombre de la marca: no se traduce en ningún idioma.
   "Account.header.brandEyebrow",
+  "Landing.brand",
   // "SKU" es la misma sigla en los dos idiomas.
   "Orders.card.sku",
   // Nombre propio del país: se escribe igual en los dos idiomas.

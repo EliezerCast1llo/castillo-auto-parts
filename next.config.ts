@@ -1,5 +1,6 @@
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
+import { sitePageExtensions } from "./src/lib/site-mode";
 
 function getHostnameFromUrl(value: string | undefined) {
   if (!value) return null;
@@ -63,6 +64,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  pageExtensions: sitePageExtensions(),
   // Fija la raíz del workspace: evita que Turbopack infiera una raíz incorrecta
   // por lockfiles ajenos en directorios superiores.
   turbopack: {
