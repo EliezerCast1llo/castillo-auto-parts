@@ -458,7 +458,7 @@ test("the checkout form speaks the language of the page", async ({ page }) => {
 
   // Los campos de entrega son un componente de cliente: si sus mensajes no
   // viajaran al navegador, esto saldria como MISSING_MESSAGE en vez de texto.
-  await expect(page.getByText("Local delivery")).toBeVisible();
+  await expect(page.getByText("National shipping", { exact: true })).toBeVisible();
   await expect(page.getByText("Pickup at the warehouse").first()).toBeVisible();
 });
 

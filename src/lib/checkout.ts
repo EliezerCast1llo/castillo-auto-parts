@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
-import { getDeliveryFeeCents, type DeliveryZoneOption } from "./fulfillment";
+import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
 
-export const fulfillmentMethods = ["PICKUP", "LOCAL_DELIVERY"] as const;
+export const fulfillmentMethods = ["PICKUP", "NATIONAL_SHIPPING"] as const;
 
 export type FulfillmentMethod = (typeof fulfillmentMethods)[number];
 
@@ -10,6 +10,8 @@ export const checkoutSchema = z
   .object({
     addressLine1: optionalLimitedString(160),
     addressLine2: optionalLimitedString(120),
+    landmark: optionalLimitedString(200),
+    shippingOption: optionalLimitedString(300),
     city: optionalLimitedString(80),
     customerEmail: z.string().trim().email("Ingresa un email válido.").max(254, "El email es demasiado largo."),
     customerName: z
@@ -33,7 +35,7 @@ export const checkoutSchema = z
     placeId: optionalLimitedString(160),
   })
   .superRefine((data, context) => {
-    if (data.fulfillmentMethod !== "LOCAL_DELIVERY") return;
+    if (data.fulfillmentMethod !== "NATIONAL_SHIPPING") return;
 
     if (!data.addressLine1) {
       context.addIssue({
@@ -43,15 +45,17 @@ export const checkoutSchema = z
       });
     }
 
-    if (!data.deliveryZoneSlug) {
+    if (!isNationalAddress(data.department, data.city)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Selecciona la zona de entrega.",
-        path: ["deliveryZoneSlug"],
+        message: "Selecciona un departamento y municipio válidos.",
+        path: ["city"],
       });
     }
 
-    if (typeof data.latitude !== "number" || typeof data.longitude !== "number") {
+    if (!data.landmark) context.addIssue({ code: z.ZodIssueCode.custom, message: "Ingresa un punto de referencia.", path: ["landmark"] });
+
+    if (!isNationalCoordinate(data.latitude, data.longitude)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Selecciona la ubicación exacta en el mapa.",
@@ -66,6 +70,8 @@ export function parseCheckoutFormData(formData: FormData) {
   return checkoutSchema.safeParse({
     addressLine1: optionalFormString(formData, "addressLine1"),
     addressLine2: optionalFormString(formData, "addressLine2"),
+    landmark: optionalFormString(formData, "landmark"),
+    shippingOption: optionalFormString(formData, "shippingOption"),
     city: optionalFormString(formData, "city"),
     customerEmail: formString(formData, "customerEmail"),
     customerName: formString(formData, "customerName"),
@@ -80,15 +86,6 @@ export function parseCheckoutFormData(formData: FormData) {
     paymentMethod: formString(formData, "paymentMethod"),
     placeId: optionalFormString(formData, "placeId"),
   });
-}
-
-export function calculateShippingCents(
-  method: FulfillmentMethod,
-  city?: string,
-  zones?: DeliveryZoneOption[],
-) {
-  if (method === "PICKUP") return 0;
-  return getDeliveryFeeCents(city, zones);
 }
 
 export function calculateIncludedTaxCents(totalCents: number) {
@@ -118,7 +115,7 @@ export function buildOrderNumber(date = new Date(), suffix = randomOrderSuffix()
 }
 
 export function getFulfillmentLabel(method: FulfillmentMethod) {
-  return method === "PICKUP" ? "Retiro en bodega" : "Envío local";
+  return method === "PICKUP" ? "Retiro en bodega" : "Envío nacional";
 }
 
 export function buildFormattedAddress(input: CheckoutInput) {

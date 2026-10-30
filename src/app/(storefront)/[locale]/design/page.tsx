@@ -225,7 +225,7 @@ function ComponentFoundation() {
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <FoundationTile icon={<ShieldCheck className="h-5 w-5" />} label="Pago en línea" />
-          <FoundationTile icon={<Truck className="h-5 w-5" />} label="Entrega local" />
+          <FoundationTile icon={<Truck className="h-5 w-5" />} label="Envío nacional" />
           <FoundationTile icon={<MapPin className="h-5 w-5" />} label="Retiro gratis" />
         </div>
       </div>

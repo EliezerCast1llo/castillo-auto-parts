@@ -266,7 +266,8 @@ function parseAdminProductFormData(formData: FormData): AdminProductInput | null
     reorderPoint === null ||
     !requestedStatus ||
     parsedCompatibilities.invalidLines.length > 0 ||
-    measurements.errors.length > 0
+    measurements.errors.length > 0 ||
+    (formData.get("isActive") === "true" && !measurements.values)
   ) {
     return null;
   }

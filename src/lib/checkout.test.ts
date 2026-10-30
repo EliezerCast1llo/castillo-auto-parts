@@ -3,17 +3,13 @@ import {
   buildOrderNumber,
   calculateIncludedTaxCents,
   calculateOrderTaxCents,
-  calculateShippingCents,
   checkoutSchema,
   parseCheckoutFormData,
 } from "./checkout";
 
 describe("checkout helpers", () => {
-  it("calculates delivery fee by coverage city", () => {
-    expect(calculateShippingCents("PICKUP")).toBe(0);
-    expect(calculateShippingCents("LOCAL_DELIVERY", "Santa Tecla")).toBe(200);
-    expect(calculateShippingCents("LOCAL_DELIVERY", "San Salvador")).toBe(300);
-    expect(calculateShippingCents("LOCAL_DELIVERY", "Soyapango")).toBeNull();
+  it("rejects the historical method in new checkouts", () => {
+    expect(checkoutSchema.safeParse({ fulfillmentMethod: "LOCAL_DELIVERY", paymentMethod: "online_card", customerName: "Cliente", customerEmail: "a@b.com", customerPhone: "77777777" }).success).toBe(false);
   });
 
   it("calculates included IVA from total", () => {
@@ -51,53 +47,53 @@ describe("checkout helpers", () => {
     expect(calculateIncludedTaxCents(productACents + productBCents + shippingCents)).toBe(298);
   });
 
-  it("requires address fields for local delivery", () => {
+  it("requires address fields for national shipping", () => {
     const parsed = checkoutSchema.safeParse({
       customerEmail: "cliente@example.com",
       customerName: "Cliente Demo",
       customerPhone: "7777-7777",
-      fulfillmentMethod: "LOCAL_DELIVERY",
+      fulfillmentMethod: "NATIONAL_SHIPPING",
       paymentMethod: "online_card",
     });
 
     expect(parsed.success).toBe(false);
   });
 
-  it("requires a configured delivery zone for local delivery", () => {
+  it("requires a configured delivery zone for national shipping", () => {
     const parsed = checkoutSchema.safeParse({
       addressLine1: "Calle principal",
       customerEmail: "cliente@example.com",
       customerName: "Cliente Demo",
       customerPhone: "7777-7777",
-      fulfillmentMethod: "LOCAL_DELIVERY",
+      fulfillmentMethod: "NATIONAL_SHIPPING",
       paymentMethod: "online_card",
     });
 
     expect(parsed.success).toBe(false);
   });
 
-  it("requires map coordinates for local delivery", () => {
+  it("requires map coordinates for national shipping", () => {
     const parsed = checkoutSchema.safeParse({
       addressLine1: "Calle principal",
       customerEmail: "cliente@example.com",
       customerName: "Cliente Demo",
       customerPhone: "7777-7777",
-      deliveryZoneSlug: "santa-tecla",
-      fulfillmentMethod: "LOCAL_DELIVERY",
+      department: "La Libertad", city: "La Libertad Sur", landmark: "Frente al parque",
+      fulfillmentMethod: "NATIONAL_SHIPPING",
       paymentMethod: "online_card",
     });
 
     expect(parsed.success).toBe(false);
   });
 
-  it("accepts local delivery with address, delivery zone and map coordinates", () => {
+  it("accepts national shipping with address, delivery zone and map coordinates", () => {
     const parsed = checkoutSchema.safeParse({
       addressLine1: "Calle principal",
       customerEmail: "cliente@example.com",
       customerName: "Cliente Demo",
       customerPhone: "7777-7777",
-      deliveryZoneSlug: "santa-tecla",
-      fulfillmentMethod: "LOCAL_DELIVERY",
+      department: "La Libertad", city: "La Libertad Sur", landmark: "Frente al parque",
+      fulfillmentMethod: "NATIONAL_SHIPPING",
       latitude: "13.676900",
       longitude: "-89.279700",
       paymentMethod: "online_card",

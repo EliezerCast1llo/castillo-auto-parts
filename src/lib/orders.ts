@@ -16,13 +16,9 @@ import {
   type CheckoutInput,
 } from "./checkout";
 import { db } from "./db";
-import {
-  DEFAULT_LOCATION_CODE,
-  getActiveDeliveryZones,
-  getDeliveryZoneBySlug,
-  isCoordinateInsideDeliveryZone,
-  type DeliveryZoneOption,
-} from "./fulfillment";
+import { DEFAULT_LOCATION_CODE } from "./fulfillment";
+import { quoteCartShipping } from "./shipping-checkout";
+import { shippingRateKey } from "./shipping";
 import { buildAbsoluteAppUrl } from "./email/templates";
 import { deriveScopedIdempotencyKey, hashCheckoutIntent } from "./checkout-idempotency";
 import {
@@ -80,7 +76,14 @@ export async function createGuestCheckoutFromCart(
 
   // Huella del intento completo: items + método de entrega + dirección/coords. Dos
   // submits con los mismos items pero DISTINTA dirección son intentos distintos.
-  const intentFingerprint = buildIntentFingerprint(cart, parsed.data);
+  const shippingQuote = parsed.data.fulfillmentMethod === "NATIONAL_SHIPPING" && cart.lines.length
+    ? await quoteCartShipping(cart.lines, {
+        addressLine1: parsed.data.addressLine1!, addressLine2: parsed.data.addressLine2,
+        city: parsed.data.city!, department: parsed.data.department!, landmark: parsed.data.landmark!,
+        latitude: parsed.data.latitude!, longitude: parsed.data.longitude!,
+      }) : null;
+  const selectedRate = shippingQuote?.rates.find((rate) => shippingRateKey(rate) === parsed.data.shippingOption);
+  const intentFingerprint = buildIntentFingerprint(cart, parsed.data, selectedRate);
   const intentHash = hashCheckoutIntent(intentFingerprint);
 
   // Idempotencia: se resuelve tras leer el carrito pero ANTES de los guards, para
@@ -130,23 +133,8 @@ export async function createGuestCheckoutFromCart(
   if (deadKeyToRelease) await releaseIdempotencyKey(deadKeyToRelease);
 
   try {
-    const deliveryZones = await getActiveDeliveryZones();
-    const deliveryZone = resolveCheckoutDeliveryZone(parsed.data, deliveryZones);
-    if (parsed.data.fulfillmentMethod === "LOCAL_DELIVERY" && !deliveryZone) {
-      return { status: "coverage_unavailable" };
-    }
-    if (
-      deliveryZone &&
-      !isCoordinateInsideDeliveryZone({
-        latitude: parsed.data.latitude,
-        longitude: parsed.data.longitude,
-        zone: deliveryZone,
-      })
-    ) {
-      return { status: "coverage_unavailable" };
-    }
-
-    const shippingCents = getCheckoutShippingCents(parsed.data, deliveryZone);
+    if (parsed.data.fulfillmentMethod === "NATIONAL_SHIPPING" && !selectedRate) return { status: "coverage_unavailable" };
+    const shippingCents = selectedRate?.chargedCents ?? 0;
 
     const paymentProvider = getPaymentProvider();
     const order = await db.$transaction(async (tx) => {
@@ -171,6 +159,12 @@ export async function createGuestCheckoutFromCart(
         const product = productBySku.get(line.product.sku);
         if (!product) throw new CheckoutDomainError("stock_issue");
 
+        // Rates were calculated from fresh DB package data, not the cached cart.
+        // If an admin changed the package or price meanwhile, ask for a new quote.
+        if (selectedRate) {
+          const quotedProduct = shippingQuote?.products.find((item) => item.sku === product.sku);
+          if (!quotedProduct || ["priceCents", "weightGrams", "lengthMm", "widthMm", "heightMm"].some((key) => product[key as keyof typeof product] !== quotedProduct[key as keyof typeof quotedProduct])) throw new CheckoutDomainError("coverage_unavailable");
+        }
         const stock = product.inventoryStocks[0];
         const availableQuantity = stock
           ? Math.max(stock.quantityOnHand - stock.quantityReserved, 0)
@@ -222,7 +216,7 @@ export async function createGuestCheckoutFromCart(
         itemTaxCents: orderLines.map((line) => line.taxCents),
         shippingCents,
       });
-      const addressId = await createDeliveryAddress(tx, parsed.data, deliveryZone);
+      const addressId = await createDeliveryAddress(tx, parsed.data);
       const orderNumber = buildOrderNumber();
       const accessToken = createOrderAccessToken();
       const savedOrder = await tx.order.create({
@@ -246,10 +240,14 @@ export async function createGuestCheckoutFromCart(
           orderNumber,
           shipment: {
             create: {
-              deliveryZone:
-                parsed.data.fulfillmentMethod === "LOCAL_DELIVERY"
-                  ? getDeliveryZoneName(deliveryZone)
-                  : "Bodega principal",
+              provider: selectedRate?.provider,
+              courierId: selectedRate?.courierId,
+              courierName: selectedRate?.courierName,
+              serviceType: selectedRate?.serviceType,
+              quotedCents: selectedRate?.priceCents ?? 0,
+              chargedCents: shippingCents,
+              totalWeightGrams: shippingQuote?.totalWeightGrams,
+              estimatedDeliveryAt: selectedRate?.estimatedDeliveryAt ? new Date(selectedRate.estimatedDeliveryAt) : undefined,
               method: parsed.data.fulfillmentMethod,
               notes: parsed.data.deliveryNotes,
             },
@@ -425,10 +423,14 @@ export function isSameCheckoutIntent(
 // Huella del intento completo: items + entrega + dirección + coords + datos del
 // cliente. Un email/teléfono con typo corregido cambia la huella → no se reproduce
 // la orden vieja (la confirmación no se manda al dato equivocado).
-export function buildIntentFingerprint(cart: GuestCart, input: CheckoutInput): string {
+export function buildIntentFingerprint(cart: GuestCart, input: CheckoutInput, rate?: { priceCents: number; chargedCents: number }): string {
   return [
     cartFingerprint(cart),
     `fm:${input.fulfillmentMethod}`,
+    `so:${input.shippingOption ?? ""}`,
+    `sq:${rate?.priceCents ?? ""}`,
+    `sc:${rate?.chargedCents ?? ""}`,
+    `lm:${input.landmark ?? ""}`,
     `em:${input.customerEmail}`,
     `nm:${input.customerName}`,
     `ph:${input.customerPhone}`,
@@ -562,23 +564,22 @@ async function cancelPendingOrderAfterPaymentFailure(orderNumber: string) {
 async function createDeliveryAddress(
   tx: Prisma.TransactionClient,
   input: CheckoutInput,
-  deliveryZone: DeliveryZoneOption | undefined,
 ) {
   if (input.fulfillmentMethod === "PICKUP") return undefined;
-  if (!deliveryZone) throw new CheckoutDomainError("coverage_unavailable");
 
   const address = await tx.address.create({
     data: {
       addressLine1: input.addressLine1 ?? "",
+      landmark: input.landmark,
       addressLine2: input.addressLine2 || undefined,
-      city: deliveryZone.city,
+      city: input.city!,
       country: "SV",
       deliveryNotes: input.deliveryNotes || undefined,
-      department: deliveryZone.department,
+      department: input.department!,
       formattedAddress: buildFormattedAddress({
         ...input,
-        city: deliveryZone.city,
-        department: deliveryZone.department,
+        city: input.city!,
+        department: input.department!,
       }),
       latitude: input.latitude,
       longitude: input.longitude,
@@ -590,28 +591,6 @@ async function createDeliveryAddress(
   });
 
   return address.id;
-}
-
-function resolveCheckoutDeliveryZone(input: CheckoutInput, zones: DeliveryZoneOption[]) {
-  if (input.fulfillmentMethod !== "LOCAL_DELIVERY") return undefined;
-
-  return getDeliveryZoneBySlug(input.deliveryZoneSlug, zones);
-}
-
-function getCheckoutShippingCents(
-  input: CheckoutInput,
-  deliveryZone: DeliveryZoneOption | undefined,
-) {
-  if (input.fulfillmentMethod !== "LOCAL_DELIVERY") return 0;
-  if (!deliveryZone) throw new CheckoutDomainError("coverage_unavailable");
-
-  return deliveryZone.feeCents;
-}
-
-function getDeliveryZoneName(deliveryZone: DeliveryZoneOption | undefined) {
-  if (!deliveryZone) throw new CheckoutDomainError("coverage_unavailable");
-
-  return deliveryZone.name;
 }
 
 function buildOrderNotes(input: CheckoutInput) {

@@ -72,7 +72,12 @@
     "units": "{count, plural, one {# unit} other {# units}}",
     "taxNotice": "Prices already include VAT.",
     "backToCatalog": "Back to the catalog",
-    "andMore": "{names} and more"
+    "andMore": "{names} and more",
+    "courier": "Courier",
+    "shippingCost": "Shipping cost",
+    "quotedCost": "Courier cost",
+    "estimatedDelivery": "Estimated delivery",
+    "landmark": "Landmark"
   },
   "status": {
     "CANCELLED": "Cancelled",
@@ -84,8 +89,9 @@
   },
   "method": {
     "PICKUP": "Pickup at the warehouse",
-    "LOCAL_DELIVERY": "Local delivery",
-    "PENDING": "Pending"
+    "LOCAL_DELIVERY": "Home delivery",
+    "PENDING": "Pending",
+    "NATIONAL_SHIPPING": "National shipping"
   },
   "card": {
     "orderLabel": "Order",

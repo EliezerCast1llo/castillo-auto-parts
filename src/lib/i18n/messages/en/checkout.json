@@ -12,7 +12,8 @@
     "shippingTitle": "Shipping",
     "pickupFree": "Free pickup at {location}",
     "pickupOrDelivery": "Free pickup at {location}; or delivery {zones}.",
-    "taxNotice": "Prices include 13% VAT."
+    "taxNotice": "Prices include 13% VAT.",
+    "nationalShipping": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup."
   },
   "form": {
     "yourData": "Your details",
@@ -36,7 +37,6 @@
   },
   "delivery": {
     "pickup": "Pickup at the warehouse",
-    "localDelivery": "Local delivery",
     "pickupCost": "Pickup cost: {amount}",
     "warehouseMapTitle": "Warehouse location",
     "address": "Address",
@@ -53,7 +53,20 @@
     "taxNotice": "Product prices already include VAT.",
     "totalsProducts": "Products",
     "totalsShipping": "Shipping",
-    "totalsEstimated": "Estimated total"
+    "totalsEstimated": "Estimated total",
+    "nationalShipping": "National shipping",
+    "landmark": "Landmark",
+    "selectDepartment": "Select department",
+    "newAddress": "New address",
+    "quote": "Calculate shipping",
+    "quoting": "Calculating…",
+    "sameDay": "Same day (subject to availability)",
+    "nextDay": "Next day (estimated)",
+    "promotion": "Free shipping promotion",
+    "unavailable": "We could not calculate shipping to your address right now. Message us on WhatsApp and we will help you",
+    "selectRate": "Select a shipping rate before paying",
+    "pendingQuote": "Pending quote",
+    "whatsappRequest": "Please help me quote this cart:"
   },
   "addressModal": {
     "title": "Delivery address",

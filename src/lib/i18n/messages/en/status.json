@@ -25,7 +25,7 @@
     }
   },
   "checkout": {
-    "coverage_unavailable": "That area is not within our delivery coverage yet.",
+    "coverage_unavailable": "We could not calculate shipping to your address right now. Message us on WhatsApp and we will help you",
     "db_unavailable": "We could not create your order. Please try again.",
     "duplicate_in_progress": "Your order is being processed. Wait a few seconds and confirm again: the same order is resumed, it is not duplicated.",
     "invalid": "Please review the form details.",
@@ -49,7 +49,8 @@
   "addresses": {
     "created": "Address saved successfully.",
     "deleted": "Address removed.",
-    "missing_fields": "Fill in the required fields.",
-    "invalid_department": "Select a valid department."
+    "missing_fields": "Complete the address, department, municipality and landmark.",
+    "invalid_department": "Select a valid department and municipality.",
+    "invalid_location": "Select a delivery point on the map of El Salvador."
   }
 }

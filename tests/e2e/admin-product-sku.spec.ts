@@ -39,6 +39,10 @@ async function prepareProduct(page: Page, sku: string, slug: string) {
   await page.getByLabel("Precio USD", { exact: true }).fill("25.50");
   await page.getByLabel(/^Categoría/).selectOption(categoryId);
   await page.getByLabel("Cantidad", { exact: true }).fill("10");
+  await page.getByLabel("Peso (kg)", { exact: true }).fill("1");
+  await page.getByLabel("Largo (cm)", { exact: true }).fill("20");
+  await page.getByLabel("Ancho (cm)", { exact: true }).fill("15");
+  await page.getByLabel("Alto (cm)", { exact: true }).fill("10");
 }
 
 test("manual creation normalizes SKU, self edits succeed and another-case CSV previews as update", async ({ page }) => {
@@ -67,7 +71,7 @@ test("manual creation normalizes SKU, self edits succeed and another-case CSV pr
 
 test("create and edit collisions report the existing SKU and preserve records", async ({ page }) => {
   const sku = `${prefix}-ABC-1`, existingSlug = `${slugPrefix}-existing`, otherSku = `${prefix}-OTHER`, otherSlug = `${slugPrefix}-other`;
-  const existing = await prisma.product.create({ data: { sku, slug: existingSlug, name: "Existing SKU fixture", brand: "Fixture", categoryId, priceCents: 100 } });
+  const existing = await prisma.product.create({ data: { sku, slug: existingSlug, name: "Existing SKU fixture", brand: "Fixture", weightGrams: 1000, lengthMm: 200, widthMm: 100, heightMm: 80, categoryId, priceCents: 100 } });
   await prepareProduct(page, sku.toLowerCase(), `${slugPrefix}-duplicate`);
   await page.getByRole("button", { name: "Crear producto", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/products\/new\?estado=sku_conflict/);
@@ -76,7 +80,7 @@ test("create and edit collisions report the existing SKU and preserve records", 
   await expect(notice).toContainText("no se guardó ningún cambio");
   expect(await prisma.product.count({ where: { sku } })).toBe(1);
   expect(await prisma.product.count({ where: { slug: `${slugPrefix}-duplicate` } })).toBe(0);
-  const other = await prisma.product.create({ data: { sku: otherSku, slug: otherSlug, name: "Other SKU fixture", brand: "Fixture", categoryId, priceCents: 200 } });
+  const other = await prisma.product.create({ data: { sku: otherSku, slug: otherSlug, name: "Other SKU fixture", brand: "Fixture", weightGrams: 1000, lengthMm: 200, widthMm: 100, heightMm: 80, categoryId, priceCents: 200 } });
   await page.goto(`/admin/products/${otherSlug}/edit`);
   await page.getByLabel("SKU", { exact: true }).fill(sku.toLowerCase());
   await page.getByLabel("Nombre", { exact: true }).fill("Must not overwrite");
@@ -116,8 +120,8 @@ test("invalid SKU formats show allowed characters and return to the original edi
 
 test("historical duplicate collisions instruct the admin to rename one product on its own edit page", async ({ page }) => {
   const sku = `${prefix}-DUP-1`, slug = `${slugPrefix}-legacy-one`;
-  const existing = await prisma.product.create({ data: { sku, slug, name: "Legacy uppercase", brand: "Fixture", categoryId, priceCents: 100 } });
-  const duplicate = await prisma.product.create({ data: { sku: `${prefix}-dup-1`, slug: `${slugPrefix}-legacy-two`, name: "Legacy lowercase", brand: "Fixture", categoryId, priceCents: 200 } });
+  const existing = await prisma.product.create({ data: { sku, slug, name: "Legacy uppercase", brand: "Fixture", weightGrams: 1000, lengthMm: 200, widthMm: 100, heightMm: 80, categoryId, priceCents: 100 } });
+  const duplicate = await prisma.product.create({ data: { sku: `${prefix}-dup-1`, slug: `${slugPrefix}-legacy-two`, name: "Legacy lowercase", brand: "Fixture", weightGrams: 1000, lengthMm: 200, widthMm: 100, heightMm: 80, categoryId, priceCents: 200 } });
   await page.goto(`/admin/products/${slug}/edit`);
   await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/admin/products/${slug}/edit\\?estado=sku_conflict`));
@@ -131,7 +135,7 @@ test("historical duplicate collisions instruct the admin to rename one product o
 
 test("historical invalid SKU requires correction before changing price and preserves the record", async ({ page }) => {
   const slug = `${slugPrefix}-historical-invalid`;
-  const before = await prisma.product.create({ data: { sku: `${prefix}-OLD#1`, slug, name: "Legacy invalid SKU", brand: "Fixture", categoryId, priceCents: 100 } });
+  const before = await prisma.product.create({ data: { sku: `${prefix}-OLD#1`, slug, name: "Legacy invalid SKU", brand: "Fixture", weightGrams: 1000, lengthMm: 200, widthMm: 100, heightMm: 80, categoryId, priceCents: 100 } });
   await page.goto(`/admin/products/${slug}/edit`);
   await page.getByLabel("Precio USD", { exact: true }).fill("35.50");
   await page.getByRole("button", { name: "Guardar producto", exact: true }).click();

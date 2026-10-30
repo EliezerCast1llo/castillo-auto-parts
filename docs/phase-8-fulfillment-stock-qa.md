@@ -1,5 +1,10 @@
 # Phase 8 - Fulfillment, Stock Alerts and QA Automation
 
+## Actualización vigente — 30 oct 2026 / #115
+
+Catálogo estático de 14 departamentos y 44 municipios compartido entre checkout/Mis direcciones. Campo de referencia requerido. Coordenadas con envolvente nacional, sin cajas por ciudad; disponibilidad decide el proveedor. La integración de pruebas usa PostgreSQL desechable y verifica precio manipulado, reserva idempotente, peso y promoción. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 > **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
 > Se conserva el contenido original para trazabilidad; sus estados y decisiones
 > no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)

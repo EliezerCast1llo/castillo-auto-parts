@@ -1,5 +1,10 @@
 # Fase 7C - Ajustes de retiro y zonas
 
+## Actualización vigente — 30 oct 2026 / #115
+
+La gestión de zonas queda oculta; no se eliminan sus tablas/filas. El admin configura retiro y una promoción de envío gratis desactivada por defecto, con mínimo de subtotal e historial de auditoría. La tienda absorbe el costo real, que queda guardado junto al cobro del cliente. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 > **Histórico — plan y evidencia de fase anterior al 21–22 de octubre de 2026.**
 > Se conserva el contenido original para trazabilidad; sus estados y decisiones
 > no describen necesariamente el MVP actual. Consultar [Estado actual](mvp-current-status.md)

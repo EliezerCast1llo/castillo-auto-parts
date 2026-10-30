@@ -242,8 +242,7 @@ async function UtilityBar({ locale }: { locale: Locale }) {
             pago seguro" ya se dicen en el hero y se repetían aquí. */}
         <p className="inline-flex items-center gap-1.5 tracking-[0.01em] text-white/76">
           <Truck className="h-4 w-4 shrink-0 text-ca-gold-400" strokeWidth={1.9} />
-          <span className="hidden sm:inline">Entrega en San Salvador y Santa Tecla</span>
-          <span className="sm:hidden">San Salvador y Santa Tecla</span>
+          <span>{tNav("nationalDelivery")}</span>
         </p>
 
         {SUPPORT_WHATSAPP_NUMBER ? (

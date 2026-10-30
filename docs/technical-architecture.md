@@ -1,5 +1,10 @@
 # Technical Architecture - E-commerce de repuestos
 
+## Actualización vigente — 30 oct 2026 / #115
+
+`ShippingRateProvider` asíncrono recibe destino, paquetes y peso total. Re-cotización con datos actuales del servidor antes de reservar/cobrar; identidad de courier y precios real/cobrado en huella de idempotencia. Snapshot nullable aditivo en Shipment/Address y promoción auditada. `SHIPPING_PROVIDER` vacío es unavailable; fake solo en desarrollo/test o E2E aislado. Sin credenciales ni llamadas Boxful; mapeos de IDs pendientes de #91. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 ## Objetivo tecnico
 
 Construir una aplicacion modular y mantenible, iniciando con un monolito Next.js bien separado por dominios. La arquitectura debe permitir vender pronto sin bloquear el crecimiento hacia multi-bodega, facturacion electronica, pagos alternativos, chat, analytics y automatizacion.
@@ -158,17 +163,15 @@ El dominio de órdenes no debe depender directamente de APIs externas. Debe cons
 El MVP debe soportar dos metodos:
 
 - Retiro en bodega: gratis, disponible solo en dias/horarios configurados.
-- Envio local propio: San Salvador y Santa Tecla.
+- Envío nacional por paquetería con tarifa cotizada; retiro gratis en bodega.
 
-Tarifas iniciales de referencia:
-
-- Santa Tecla: USD 2.
-- San Salvador: USD 3 a USD 5, pendiente de tabla por zona.
+`ShippingRateProvider` recibe destino, paquetes y peso total. Las opciones se cotizan por courier y servicio; nunca hay una tarifa local fija. #115 incluye unavailable/fake; #91 conecta Boxful real. Se recalcula antes de crear el pedido y se persisten quotedCents/chargedCents sin reajustes posteriores.
 
 La direccion debe guardar:
 
 - direccion legible;
-- municipio/departamento;
+- municipio/departamento del catálogo nacional;
+- punto de referencia requerido;
 - notas de entrega;
 - `placeId` si existe;
 - latitud/longitud;

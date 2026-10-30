@@ -1,5 +1,10 @@
 # Contexto del proyecto — Castillo Auto Parts
 
+## Actualización vigente — 30 oct 2026 / #115
+
+#115 prepara envío nacional con dirección, referencia, paquetes, proveedor asíncrono, promoción y snapshot. Con SHIPPING_PROVIDER vacío solo se puede pagar retiro; nacional ofrece WhatsApp. Boxful real sigue bloqueado por #91 (IDs, credenciales, guías, rastreo y saldo). La migración es aditiva y los históricos siguen legibles. No se autoriza merge/despliegue. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 Actualizado: **23 de octubre de 2026**. Fuente de estado y decisiones vigentes:
 [Estado actual del MVP](mvp-current-status.md); cola aprobada:
 [Roadmap e issues](roadmap.md). Meta: **compra real posible el 20 de diciembre de

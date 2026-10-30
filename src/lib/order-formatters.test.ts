@@ -43,7 +43,7 @@ describe("getOrderStatusClassName", () => {
 describe("formatShipmentMethod", () => {
   it("formatea métodos conocidos", () => {
     expect(formatShipmentMethod("PICKUP")).toBe("Retiro en bodega");
-    expect(formatShipmentMethod("LOCAL_DELIVERY")).toBe("Envío local");
+    expect(formatShipmentMethod("LOCAL_DELIVERY")).toBe("Entrega a domicilio");
   });
 
   it("retorna Pendiente para método desconocido o undefined", () => {

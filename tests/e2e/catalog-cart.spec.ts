@@ -103,20 +103,21 @@ test("customer can add an available product to the guest cart", async ({ page })
   await expect(page.getByText("1 producto").first()).toBeVisible();
 });
 
-test("local delivery checkout exposes delivery zone and map fields", async ({ page }) => {
+test("national shipping checkout exposes national address and map fields", async ({ page }) => {
   await page.goto(ES("/catalog"));
 
   await page.getByRole("button", { name: "Agregar" }).first().click();
   await expect(page.getByText("Repuesto agregado al carrito")).toBeVisible();
   await page.getByRole("link", { name: /Ver carrito, 1 producto/ }).click();
   await page.getByRole("link", { name: "Continuar al pago" }).click();
-  await page.locator('input[value="LOCAL_DELIVERY"]').click();
-  await page.locator('select[name="deliveryZoneSlug"]').selectOption("santa-tecla");
+  await page.locator('input[value="NATIONAL_SHIPPING"]').click();
+  await page.getByLabel("Departamento", { exact: true }).selectOption("La Libertad");
+  await page.getByLabel("Municipio", { exact: true }).selectOption("La Libertad Sur");
   await page.locator('input[name="addressLine1"]').fill("Residencial prueba, Santa Tecla");
 
   await expect(page.getByRole("button", { name: "Usar mi ubicación" })).toBeVisible();
-  await expect(page.locator('select[name="deliveryZoneSlug"]')).toHaveValue("santa-tecla");
-  await expect(page.locator('input[readonly]').first()).toHaveValue("La Libertad");
+  await expect(page.getByLabel("Municipio", { exact: true })).toHaveValue("La Libertad Sur");
+  await expect(page.getByLabel("Departamento", { exact: true })).toHaveValue("La Libertad");
 });
 
 test("guest can create a pickup order awaiting payment confirmation", async ({ page }) => {
@@ -170,7 +171,9 @@ test("guest can create a pickup order awaiting payment confirmation", async ({ p
   expect(confirmedStock.quantityReserved).toBe(initialStock.quantityReserved);
 });
 
-test("guest can complete local delivery checkout with zone and exact location", async ({ page }) => {
+test("guest can complete national shipping checkout with courier and exact location", async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({ latitude: 13.48, longitude: -88.18 });
   await addProductToCart(page, "refrigerante-premix-1-galon");
   await page.getByRole("link", { name: "Continuar al pago" }).click();
 
@@ -179,18 +182,16 @@ test("guest can complete local delivery checkout with zone and exact location", 
     name: "Cliente QA Envío",
     phone: "7777-2000",
   });
-  await page.locator('input[value="LOCAL_DELIVERY"]').check();
-  await page.getByLabel("Dirección").fill("Colonia Escalón, San Salvador");
-  await page.getByLabel("Municipio").selectOption("san-salvador");
+  await page.locator('input[value="NATIONAL_SHIPPING"]').check();
+  await page.getByLabel("Dirección", { exact: true }).fill("Colonia Escalón, San Salvador");
+  await page.getByLabel("Departamento", { exact: true }).selectOption("San Miguel");
+  await page.getByLabel("Municipio", { exact: true }).selectOption("San Miguel Centro");
+  await page.getByLabel("Punto de referencia", { exact: true }).fill("Frente al parque");
   await page.getByLabel("Notas de entrega").fill("Entregar en recepción.");
-  // Coordenadas seteadas directamente en los hidden inputs (el mapa las escribe via ref)
-  await page.evaluate(() => {
-    const lat = document.querySelector('input[name="latitude"]') as HTMLInputElement | null;
-    const lng = document.querySelector('input[name="longitude"]') as HTMLInputElement | null;
-    if (lat) lat.value = "13.700000";
-    if (lng) lng.value = "-89.220000";
-  });
-
+  await page.getByRole("button", { name: "Usar mi ubicación" }).click();
+  await expect(page.locator('input[name="latitude"]')).toHaveValue(/^13\.48(?:0*)$/);
+  await page.getByRole("button", { name: "Calcular envío" }).click();
+  await page.getByRole("radio", { name: /Paquetería de prueba Express/ }).check();
   await expect(page.getByRole("button", { name: "Usar mi ubicación" })).toBeVisible();
   await expect(page.getByText("Total estimado")).toBeVisible();
 
@@ -200,9 +201,9 @@ test("guest can complete local delivery checkout with zone and exact location", 
   await page.getByRole("button", { name: "Simular pago aprobado" }).click();
   await expect(page).toHaveURL(/\/orders\/CAP-\d{8}-[A-Z0-9]{6}\?token=/);
   await expect(page.getByText("Orden creada")).toBeVisible();
-  await expect(page.getByText("Envío local")).toBeVisible();
-  await expect(page.getByText("San Salvador").first()).toBeVisible();
-  await expect(page.getByText("$3.00")).toBeVisible();
+  await expect(page.getByText("Envío nacional", { exact: true })).toBeVisible();
+  await expect(page.getByText(/San Miguel Centro/).first()).toBeVisible();
+  await expect(page.getByText("$5.00").first()).toBeVisible();
   await expect(page.getByText("Estado actual: pendiente de entrega.")).toBeVisible();
 
   const paidOrder = await prisma.order.findFirstOrThrow({

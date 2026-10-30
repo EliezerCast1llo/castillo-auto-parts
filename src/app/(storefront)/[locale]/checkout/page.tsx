@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { Link } from "@/lib/i18n/navigation";
-import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin, PackageCheck } from "lucide-react";
+import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin } from "lucide-react";
+import { CheckoutFormState, CheckoutPayButton } from "@/components/checkout/checkout-form-state";
 import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
@@ -10,15 +11,15 @@ import {
   createCheckoutIdempotencyKey,
   normalizeCheckoutIdempotencyKey,
 } from "@/lib/checkout-idempotency";
+import { getShippingProvider, unavailableShippingProvider } from "@/lib/shipping";
 import { db } from "@/lib/db";
-import { getFulfillmentOptions, type DeliveryZoneOption, type PickupLocationOption } from "@/lib/fulfillment";
+import { getFulfillmentOptions, type PickupLocationOption } from "@/lib/fulfillment";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
 import { createGuestOrder } from "./actions";
 import { getStatusMessage } from "@/lib/i18n/status";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getTranslations } from "next-intl/server";
-import type { Locale } from "@/lib/i18n/config";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveAndPublishRouteLocale(params);
@@ -66,12 +67,12 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
   const idempotencyKey = retryKey ?? createCheckoutIdempotencyKey();
 
   let userDefaults: { name: string; email: string; phone: string } | null = null;
-  let savedAddresses: { id: string; formattedAddress: string; addressLine1: string; addressLine2: string | null; city: string; department: string; deliveryNotes: string | null; latitude: string | null; longitude: string | null }[] = [];
+  let savedAddresses: { id: string; formattedAddress: string; addressLine1: string; addressLine2: string | null; city: string; department: string; landmark: string | null; deliveryNotes: string | null; latitude: string | null; longitude: string | null }[] = [];
 
   if (session?.user?.id) {
     const [dbUser, addresses] = await Promise.all([
       db.user.findUnique({ where: { id: session.user.id }, select: { name: true, email: true, phone: true } }),
-      db.address.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "desc" }, select: { id: true, formattedAddress: true, addressLine1: true, addressLine2: true, city: true, department: true, deliveryNotes: true, latitude: true, longitude: true } }),
+      db.address.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "desc" }, select: { id: true, formattedAddress: true, addressLine1: true, addressLine2: true, city: true, department: true, landmark: true, deliveryNotes: true, latitude: true, longitude: true } }),
     ]);
     if (dbUser) {
       userDefaults = {
@@ -111,13 +112,15 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
             </div>
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
+            {status === "coverage_unavailable" ? <a className="block rounded-xl border p-3 font-bold underline" href="https://wa.me/50378907671">WhatsApp</a> : null}
 
             {/* El form se muestra siempre que haya carrito utilizable. En
                 duplicate_in_progress el reintento reusa la key de la cookie
                 (reproduce, no duplica), así que no hace falta ocultarlo. */}
             {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
-                deliveryZones={fulfillmentOptions.deliveryZones}
+                cartDetail={cart.lines.map((line) => `${line.quantity} × ${line.product.sku} ${line.product.name}`).join("; ")}
+                shippingConfigured={getShippingProvider() !== unavailableShippingProvider}
                 idempotencyKey={idempotencyKey}
                 pickupLocation={fulfillmentOptions.pickupLocation}
                 savedAddresses={savedAddresses}
@@ -165,12 +168,7 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
             <div className="mt-3 rounded-xl bg-ca-background p-3 text-sm">
               <p className="font-bold text-ca-navy-950">{t("summary.shippingTitle")}</p>
               <p className="mt-0.5 text-ca-text-secondary">
-                {fulfillmentOptions.deliveryZones.length > 0
-                  ? t("summary.pickupOrDelivery", {
-                      location: fulfillmentOptions.pickupLocation.name,
-                      zones: formatDeliveryZoneSummary(fulfillmentOptions.deliveryZones, locale),
-                    })
-                  : `${t("summary.pickupFree", { location: fulfillmentOptions.pickupLocation.name })}.`}
+                {t("summary.nationalShipping")}
               </p>
             </div>
 
@@ -192,22 +190,24 @@ type SavedAddress = {
   addressLine2: string | null;
   city: string;
   department: string;
-  deliveryNotes: string | null;
+  landmark: string | null; deliveryNotes: string | null;
   latitude: string | null;
   longitude: string | null;
 };
 
 function CheckoutForm({
-  deliveryZones,
+  cartDetail,
   idempotencyKey,
+  shippingConfigured,
   pickupLocation,
   savedAddresses,
   subtotalCents,
   t,
   userDefaults,
 }: {
-  deliveryZones: DeliveryZoneOption[];
+  cartDetail: string;
   idempotencyKey: string;
+  shippingConfigured: boolean;
   pickupLocation: PickupLocationOption;
   savedAddresses: SavedAddress[];
   subtotalCents: number;
@@ -217,7 +217,7 @@ function CheckoutForm({
   const isGuest = userDefaults === null;
 
   return (
-    <form action={createGuestOrder} className="space-y-4">
+    <CheckoutFormState action={createGuestOrder}>
       <input name="idempotencyKey" type="hidden" value={idempotencyKey} />
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">{t("form.yourData")}</h2>
@@ -264,8 +264,8 @@ function CheckoutForm({
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">{t("form.deliveryMethod")}</h2>
         <CheckoutDeliveryFields
-          deliveryZones={deliveryZones}
-          isGuest={isGuest}
+          cartDetail={cartDetail}
+          shippingConfigured={shippingConfigured}
           pickupLocation={pickupLocation}
           savedAddresses={savedAddresses}
           subtotalCents={subtotalCents}
@@ -286,11 +286,8 @@ function CheckoutForm({
         </label>
       </section>
 
-      <button className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800">
-        <PackageCheck className="h-4 w-4" strokeWidth={2} />
-        {t("form.submit")}
-      </button>
-    </form>
+      <CheckoutPayButton>{t("form.submit")}</CheckoutPayButton>
+    </CheckoutFormState>
   );
 }
 
@@ -378,9 +375,5 @@ function CheckoutNotice({ message, status }: { message: string; status: string }
       {message}
     </div>
   );
-}
-
-function formatDeliveryZoneSummary(zones: DeliveryZoneOption[], locale: Locale) {
-  return zones.map((zone) => `${zone.name} ${formatCurrency(zone.feeCents, locale)}`).join(", ");
 }
 

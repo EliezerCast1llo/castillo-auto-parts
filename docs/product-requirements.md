@@ -1,5 +1,10 @@
 # Product Requirements - E-commerce de repuestos automotrices
 
+## Actualización vigente — 30 oct 2026 / #115
+
+Cobertura comercial nacional. Retiro gratis; envío cotizado por courier, solo tarjeta, promoción optativa del dueño. Destino con departamento, municipio, referencia y pin; productos activos con peso y medidas. La interfaz de tarifas está preparada en #115, y la conexión real con Boxful depende de #91. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 ## Estado del documento
 
 - Proyecto: plataforma web para venta en linea de repuestos automotrices en El Salvador.
@@ -10,7 +15,7 @@
 
 ## Objetivo
 
-Crear una tienda en linea rapida, confiable y responsive para vender repuestos automotrices propios, iniciando en San Salvador y Santa Tecla, con capacidad de crecer hacia mas zonas, mas bodegas, mas metodos de pago, facturacion electronica y automatizacion operativa.
+Crear una tienda en linea rapida, confiable y responsive para vender repuestos automotrices propios, con envíos a todo El Salvador y capacidad de crecer hacia mas bodegas, mas metodos de pago, facturacion electronica y automatizacion operativa.
 
 El primer objetivo real del MVP es:
 
@@ -20,14 +25,14 @@ El primer objetivo real del MVP es:
 
 - Inventario: propio.
 - Mercado inicial: El Salvador.
-- Cobertura inicial: San Salvador y Santa Tecla.
+- Cobertura: todo El Salvador, costo y tiempo cotizados al pagar.
 - Moneda: dolares estadounidenses (`USD`).
 - Precio: mostrar precios con IVA incluido, usando IVA 13%.
 - Facturacion: debe prepararse para Documento Tributario Electronico (DTE) segun el esquema vigente del Ministerio de Hacienda.
 - Pago: Wompi SV como primera opcion tecnica; BAC Compra Click como fallback operativo.
 - Metodo de pago MVP: pago completo en linea.
-- Entrega MVP: retiro gratis en bodega y envio local con equipo propio.
-- Envio futuro: tercerizado para cobertura departamental.
+- Entrega MVP: retiro gratis en bodega y envío nacional por Boxful con tarifa cotizada.
+- Integración real Boxful: #91; la infraestructura de cotización está en #115.
 - Marca: `Castillo Auto Parts` es codename/propuesta provisional, pendiente de validacion por posibles coincidencias comerciales en El Salvador.
 - Idioma: interfaz principal en espanol, con base tecnica para ingles.
 - Horizonte de MVP: 3 meses, priorizando robustez sobre velocidad de demo.
@@ -114,7 +119,7 @@ Necesidades:
 - Precio con IVA incluido.
 - Moneda USD.
 - Retiro en bodega gratis en dias/horarios definidos.
-- Envio local por zona: Santa Tecla con tarifa inicial de referencia de USD 2; San Salvador con tarifa inicial de referencia de USD 3 a USD 5.
+- Envío nacional: tarifa por paquetería al pagar, cobrada al cliente salvo promoción del dueño.
 - Direccion con mapa: usar ubicacion actual del cliente cuando sea posible y permitir mover/escoger pin manualmente.
 - Orden en estado `PAID_PENDING_SHIPMENT` despues del pago web confirmado o simulado.
 - Integracion con proveedor de pagos local mediante abstraccion.
@@ -169,13 +174,13 @@ Necesidades:
   - telefono;
   - direccion legible;
   - municipio/departamento;
-  - ubicacion en mapa cuando sea envio local;
+  - ubicación en mapa y punto de referencia cuando sea envío nacional;
   - notas de entrega;
   - metodo de pago.
-- El cliente puede escoger retiro en bodega o envio local.
+- El cliente puede escoger retiro en bodega o envío nacional cotizado.
 - Retiro en bodega no tiene costo de envio.
-- Envio en Santa Tecla tiene tarifa inicial de referencia de USD 2.
-- Envio en San Salvador tiene tarifa inicial de referencia de USD 3 a USD 5, pendiente de definir por zona exacta.
+- Costo y tiempo de entrega según paquetería al pagar; mismo día sujeto a disponibilidad.
+- La tarifa del pedido queda fija y se conservan costo real y monto cobrado.
 
 ### Pago
 
@@ -197,7 +202,7 @@ Necesidades:
 - Si el cliente no concede permiso, debe poder buscar o seleccionar ubicacion manualmente.
 - El cliente debe poder mover el pin antes de confirmar.
 - No guardar solo coordenadas: tambien se debe guardar direccion legible y notas de referencia.
-- Si la direccion cae fuera de cobertura inicial, el sistema debe bloquear envio local y ofrecer retiro en bodega o aviso de cobertura futura.
+- Si no hay tarifa, el sistema bloquea pago de envío nacional, ofrece ayuda por WhatsApp y mantiene retiro gratis disponible.
 
 ### Idioma
 
@@ -289,6 +294,6 @@ Necesidades:
 3. Nombre de marca definitivo.
 4. Tamano de inventario inicial segun estudio de mercado.
 5. Direccion exacta, horarios y dias de retiro en bodega.
-6. Tabla final de zonas/tarifas para San Salvador.
+6. Cuenta prepagada, mapeos de destino y tarifas reales Boxful (#91).
 7. Proveedor de mapas final y costos esperados.
 8. ~~Alcance exacto del ingles en MVP.~~ **Resuelto: contenido completo.** UI, correos y contenido de producto, con traducciones por campo en base y fallback al espanol. `/en` esta publicado e indexado desde que el catalogo de mensajes quedo completo.

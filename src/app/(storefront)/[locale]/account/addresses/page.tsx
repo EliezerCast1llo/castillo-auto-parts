@@ -4,7 +4,6 @@ import { SiteHeader } from "@/components/site-header";
 import { AddAddressModal } from "@/components/account/add-address-modal";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getFulfillmentOptions } from "@/lib/fulfillment";
 import { firstValue } from "@/lib/url-utils";
 import { deleteAddress } from "@/lib/actions/account-addresses";
 
@@ -53,13 +52,10 @@ export default async function AccountAddressesPage({
   const noticeIsSuccess = NOTICE_IS_SUCCESS[estado] ?? false;
   const t = await getTranslations({ locale, namespace: "Account.addresses" });
 
-  const [addresses, fulfillmentOptions] = await Promise.all([
-    db.address.findMany({
+  const addresses = await db.address.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
-    }),
-    getFulfillmentOptions(),
-  ]);
+    });
 
   return (
     <main className="min-h-screen bg-ca-background text-ca-text-primary">
@@ -76,7 +72,7 @@ export default async function AccountAddressesPage({
 
         <div className="mt-4 flex items-center justify-between gap-4">
           <h1 className="text-2xl font-black text-ca-navy-950">{t("title")}</h1>
-          <AddAddressModal deliveryZones={fulfillmentOptions.deliveryZones} />
+          <AddAddressModal />
         </div>
 
         {noticeMessage ? (
@@ -102,7 +98,7 @@ export default async function AccountAddressesPage({
                 {t("emptyDescription")}
               </p>
             </div>
-            <AddAddressModal deliveryZones={fulfillmentOptions.deliveryZones} />
+            <AddAddressModal />
           </div>
         ) : (
           <div className="mt-5 space-y-3">
@@ -124,6 +120,7 @@ export default async function AccountAddressesPage({
                       <p className="mt-0.5 text-xs text-ca-text-secondary">
                         {address.city}, {address.department} · El Salvador
                       </p>
+                      {address.landmark ? <p className="text-sm text-ca-text-secondary">{address.landmark}</p> : null}
                       {address.deliveryNotes ? (
                         <p className="mt-1 text-xs italic text-ca-text-secondary">
                           &ldquo;{address.deliveryNotes}&rdquo;

@@ -27,15 +27,16 @@ export type LocationInfo = {
 
 type Props = {
   onLocationFound?: (info: LocationInfo) => void;
+  initialCoordinates?: { latitude: number; longitude: number };
+  onCoordinatesChange?: (coordinates: { latitude: number; longitude: number }) => void;
 };
 
-export function CheckoutLocationPicker({ onLocationFound }: Props) {
+export function CheckoutLocationPicker({ onLocationFound, initialCoordinates, onCoordinatesChange }: Props) {
   const t = useTranslations("Checkout.location");
   const mapRef = useRef<HTMLDivElement>(null);
-  const latRef = useRef<HTMLInputElement>(null);
-  const lngRef = useRef<HTMLInputElement>(null);
-  const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
-  const [zoom, setZoom] = useState(14);
+  const [selectedCoordinates, setSelectedCoordinates] = useState(initialCoordinates);
+  const [mapCenter, setMapCenter] = useState(initialCoordinates ?? DEFAULT_CENTER);
+  const [zoom, setZoom] = useState(initialCoordinates ? 14 : 8);
   const [mapSize, setMapSize] = useState<MapSize>({ height: 280, width: 640 });
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const center = mapCenter;
@@ -113,9 +114,9 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
   }
 
   function updateLocation(nextLatitude: number, nextLongitude: number) {
-    if (latRef.current) latRef.current.value = formatCoordinate(nextLatitude);
-    if (lngRef.current) lngRef.current.value = formatCoordinate(nextLongitude);
+    setSelectedCoordinates({ latitude: nextLatitude, longitude: nextLongitude });
     setMapCenter({ latitude: nextLatitude, longitude: nextLongitude });
+    onCoordinatesChange?.({ latitude: nextLatitude, longitude: nextLongitude });
   }
 
   const statusText =
@@ -177,7 +178,7 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
             className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-primary shadow"
             onClick={(e) => {
               e.stopPropagation();
-              setZoom((z) => Math.max(z - 1, 11));
+              setZoom((z) => Math.max(z - 1, 7));
             }}
             type="button"
           >
@@ -189,9 +190,9 @@ export function CheckoutLocationPicker({ onLocationFound }: Props) {
         </p>
       </div>
 
-      {/* Uncontrolled hidden inputs — valor escrito por updateLocation via ref */}
-      <input ref={latRef} name="latitude" type="hidden" defaultValue="" />
-      <input ref={lngRef} name="longitude" type="hidden" defaultValue="" />
+      {/* Persist the selected point across renders and confirmation steps. */}
+      <input value={selectedCoordinates ? formatCoordinate(selectedCoordinates.latitude) : ""} name="latitude" type="hidden" readOnly />
+      <input value={selectedCoordinates ? formatCoordinate(selectedCoordinates.longitude) : ""} name="longitude" type="hidden" readOnly />
       <input name="formattedAddress" type="hidden" value="" readOnly />
       <input name="placeId" type="hidden" value="" readOnly />
     </div>

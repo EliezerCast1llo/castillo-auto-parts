@@ -10,6 +10,7 @@ export type CatalogVehicleCompatibility = {
 };
 
 export type MockProduct = {
+  weightGrams?: number; lengthMm?: number; widthMm?: number; heightMm?: number;
   slug: string;
   name: string;
   category: string;

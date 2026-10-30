@@ -72,7 +72,12 @@
     "units": "{count, plural, one {# unidad} other {# unidades}}",
     "taxNotice": "Los precios ya incluyen IVA.",
     "backToCatalog": "Volver al catálogo",
-    "andMore": "{names} y más"
+    "andMore": "{names} y más",
+    "courier": "Paquetería",
+    "shippingCost": "Costo de envío",
+    "quotedCost": "Costo de paquetería",
+    "estimatedDelivery": "Fecha estimada",
+    "landmark": "Punto de referencia"
   },
   "status": {
     "CANCELLED": "Cancelada",
@@ -84,8 +89,9 @@
   },
   "method": {
     "PICKUP": "Retiro en bodega",
-    "LOCAL_DELIVERY": "Envío local",
-    "PENDING": "Pendiente"
+    "LOCAL_DELIVERY": "Entrega a domicilio",
+    "PENDING": "Pendiente",
+    "NATIONAL_SHIPPING": "Envío nacional"
   },
   "card": {
     "orderLabel": "Pedido",

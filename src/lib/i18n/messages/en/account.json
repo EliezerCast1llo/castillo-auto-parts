@@ -75,7 +75,7 @@
     "addressLine2Label": "Landmark",
     "addressLine2Placeholder": "Apt, unit, building",
     "cityLabel": "Municipality",
-    "cityPlaceholder": "e.g. Santa Tecla",
+    "cityPlaceholder": "Select municipality",
     "departmentLabel": "Department",
     "notesLabel": "Delivery directions",
     "notesLabelShort": "Notes",

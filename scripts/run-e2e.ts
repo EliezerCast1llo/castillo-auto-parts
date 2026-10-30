@@ -28,6 +28,7 @@ const e2eEnv = {
   DIRECT_DATABASE_URL: isolatedDatabaseUrl,
   EMAIL_PROVIDER: process.env.E2E_EMAIL_PROVIDER || "console",
   E2E_ISOLATED_DATABASE: "true",
+  SHIPPING_PROVIDER: "fake",
   GUEST_CART_SECRET:
     process.env.E2E_GUEST_CART_SECRET ||
     process.env.GUEST_CART_SECRET ||

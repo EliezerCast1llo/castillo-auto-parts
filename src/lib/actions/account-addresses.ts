@@ -5,17 +5,14 @@ import { redirect } from "@/lib/i18n/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-const SV_DEPARTMENTS = [
-  "Ahuachapán", "Cabañas", "Chalatenango", "Cuscatlán", "La Libertad",
-  "La Paz", "La Unión", "Morazán", "San Miguel", "San Salvador",
-  "San Vicente", "Santa Ana", "Sonsonate", "Usulután",
-];
+import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
 
 export async function createAddress(formData: FormData) {
   const locale = await getActionLocale();
   const session = await auth();
   if (!session?.user) return redirect({ href: "/auth/login", locale });
 
+  const landmark = String(formData.get("landmark") ?? "").trim();
   const addressLine1 = String(formData.get("addressLine1") ?? "").trim();
   const addressLine2 = String(formData.get("addressLine2") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
@@ -24,16 +21,18 @@ export async function createAddress(formData: FormData) {
   const latitudeRaw = String(formData.get("latitude") ?? "").trim();
   const longitudeRaw = String(formData.get("longitude") ?? "").trim();
 
-  if (!addressLine1 || !city || !department) {
+  if (!addressLine1 || !city || !department || !landmark || addressLine1.length > 160 || addressLine2.length > 120 || landmark.length > 200 || deliveryNotes.length > 500) {
     redirect({ href: { pathname: "/account/addresses", query: { estado: "missing_fields" } }, locale });
   }
 
-  if (!SV_DEPARTMENTS.includes(department)) {
+  if (!isNationalAddress(department, city)) {
     redirect({ href: { pathname: "/account/addresses", query: { estado: "invalid_department" } }, locale });
   }
 
-  const latitude = latitudeRaw ? parseFloat(latitudeRaw) : undefined;
-  const longitude = longitudeRaw ? parseFloat(longitudeRaw) : undefined;
+  const latitude = latitudeRaw ? Number(latitudeRaw) : undefined;
+  const longitude = longitudeRaw ? Number(longitudeRaw) : undefined;
+
+  if (!isNationalCoordinate(latitude, longitude)) redirect({ href: { pathname: "/account/addresses", query: { estado: "invalid_location" } }, locale });
 
   const formattedAddress = [addressLine1, addressLine2, city, department, "El Salvador"]
     .filter(Boolean)
@@ -43,6 +42,7 @@ export async function createAddress(formData: FormData) {
     data: {
       userId: session.user.id,
       addressLine1,
+      landmark,
       addressLine2: addressLine2 || null,
       city,
       department,

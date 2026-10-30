@@ -81,7 +81,7 @@ export function buildOrganizationJsonLd(): WithContext<Thing> {
     name: SITE_NAME,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
-    areaServed: ["San Salvador", "Santa Tecla"],
+    areaServed: "El Salvador",
     currenciesAccepted: "USD",
   });
 }

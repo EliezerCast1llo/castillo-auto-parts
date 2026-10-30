@@ -18,5 +18,7 @@
   "heroTitle": "Find parts for your vehicle",
   "heroDescription": "Select your vehicle details to find compatible options.",
   "heroTitleBefore": "Find parts",
-  "heroTitleHighlight": "that fit your vehicle"
+  "heroTitleHighlight": "that fit your vehicle",
+  "visibleAvailability": "Visible availability",
+  "nationalShipping": "Shipping throughout El Salvador"
 }

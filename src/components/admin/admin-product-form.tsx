@@ -170,6 +170,7 @@ export function AdminProductForm({
 
       <section className="rounded-md border border-border bg-card p-5">
         <h2 className="text-lg font-bold text-primary">Peso y medidas del paquete</h2>
+        <p className="text-sm text-muted-foreground">Obligatorios para activar el producto. Sin medidas, guárdalo como borrador.</p>
         <p className="mt-2 text-sm text-muted-foreground">Completa los cuatro valores para preparar la cotización de envíos. Sin ellos no se podrá cotizar con Boxful.</p>
         <div className="mt-4 grid gap-4 md:grid-cols-4">
           <AdminTextField label="Peso (kg)" name="weightKg" type="number" min="0.001" step="0.001" defaultValue={product?.weightGrams ? String(product.weightGrams / 1000) : ""} />

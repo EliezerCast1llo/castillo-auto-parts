@@ -1,3 +1,4 @@
+import { departments, municipalitiesByDepartment } from "../../src/data/el-salvador";
 import { expect, test, type Page } from "@playwright/test";
 import { prisma, ES } from "./helpers";
 
@@ -125,7 +126,9 @@ test("customer can view empty orders list", async ({ page }) => {
   await expect(page.getByText("Todavía no tienes pedidos")).toBeVisible();
 });
 
-test("customer can save an address after reviewing it", async ({ page }) => {
+test("customer can save an address after reviewing it", async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({ latitude: 13.48, longitude: -88.18 });
   const email = uniqueEmail("address");
   await registerUser(page, email);
 
@@ -133,9 +136,17 @@ test("customer can save an address after reviewing it", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Mis direcciones" })).toBeVisible();
   await page.getByRole("button", { name: "Nueva dirección" }).first().click();
 
-  await page.getByLabel("Dirección").fill("12 avenida sur");
-  await page.getByLabel("Referencia").fill("Casa 12");
-  await page.getByLabel("Municipio").selectOption({ label: "Santa Tecla" });
+  await page.getByLabel("Dirección", { exact: true }).fill("12 avenida sur");
+  await page.getByLabel("Casa, local o referencia", { exact: true }).fill("Casa 12");
+  await page.getByLabel("Punto de referencia", { exact: true }).fill("Frente al parque");
+  for (const department of departments) {
+    await page.getByLabel("Departamento", { exact: true }).selectOption(department);
+    await page.getByLabel("Municipio", { exact: true }).selectOption(municipalitiesByDepartment[department][0]);
+  }
+  await page.getByLabel("Departamento", { exact: true }).selectOption("San Miguel");
+  await page.getByLabel("Municipio", { exact: true }).selectOption("San Miguel Centro");
+  await page.getByRole("button", { name: "Usar mi ubicación" }).click();
+  await expect(page.locator('input[name="latitude"]')).toHaveValue(/^13\.48(?:0*)$/);
   await page.getByRole("button", { name: "Revisar dirección" }).click();
 
   await expect(page.getByRole("heading", { name: "Confirma tu dirección" })).toBeVisible();
@@ -150,8 +161,9 @@ test("customer can save an address after reviewing it", async ({ page }) => {
   expect(address).toMatchObject({
     addressLine1: "12 avenida sur",
     addressLine2: "Casa 12",
-    city: "Santa Tecla",
-    department: "La Libertad",
+    city: "San Miguel Centro",
+    department: "San Miguel",
+    landmark: "Frente al parque",
   });
 });
 

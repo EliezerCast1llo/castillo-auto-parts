@@ -141,7 +141,11 @@ export default async function AdminOrderDetailPage({
               <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
                 <InfoBlock label="Método" value={formatShipmentMethod(order.shipment?.method)} />
                 <InfoBlock label="Estado envío" value={formatShipmentStatus(order.shipment?.status)} />
-                <InfoBlock label="Zona" value={order.shipment?.deliveryZone ?? "Pendiente"} />
+                <InfoBlock label="Paquetería" value={order.shipment?.courierName ?? "Pendiente"} />
+                <InfoBlock label="Cobro de envío" value={formatCurrency(order.shipment?.chargedCents ?? order.shippingCents)} />
+                <InfoBlock label="Costo de paquetería" value={order.shipment?.quotedCents == null ? "Pendiente" : formatCurrency(order.shipment.quotedCents)} />
+                <InfoBlock label="Fecha estimada" value={order.shipment?.estimatedDeliveryAt ? order.shipment.estimatedDeliveryAt.toLocaleDateString("es-SV", { timeZone: "America/El_Salvador" }) : "Pendiente"} />
+                {order.address?.landmark ? <InfoBlock label="Punto de referencia" value={order.address.landmark} /> : null}
                 <InfoBlock label="Cliente" value={order.customerName} />
                 {order.address ? (
                   <InfoBlock label="Dirección" value={order.address.formattedAddress} />

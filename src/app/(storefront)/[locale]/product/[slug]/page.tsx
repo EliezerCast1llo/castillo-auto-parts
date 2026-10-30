@@ -236,7 +236,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="mt-4 flex items-start gap-3 rounded-ca-control bg-ca-background p-4 text-sm">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
               <div>
-                <p className="font-bold text-ca-navy-950">Retiro en bodega o entrega local</p>
+                <p className="font-bold text-ca-navy-950">{t("deliveryTitle")}</p>
                 <p className="mt-1 text-ca-text-secondary">
                   {t("deliveryNotice")}
                 </p>

@@ -14,13 +14,13 @@ const heroSignals = [
   },
   {
     icon: PackageSearch,
-    label: "Disponibilidad visible",
+    labelKey: "visibleAvailability",
   },
   {
     icon: MapPin,
-    label: "Entrega local",
+    labelKey: "nationalShipping",
   },
-];
+] as const;
 
 export async function SearchHero({
   filterOptions,
@@ -76,11 +76,11 @@ export async function SearchHero({
 
               <div className="animate-fade-up delay-500 mt-8 grid gap-3 sm:grid-cols-3 lg:max-w-2xl">
                 {heroSignals.map((signal) => (
-                  <div className="flex items-center gap-3" key={signal.label}>
+                  <div className="flex items-center gap-3" key={signal.labelKey}>
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control border border-ca-gold-400/20 bg-ca-gold-400/10 text-ca-gold-400">
                       <signal.icon className="h-5 w-5" strokeWidth={1.8} />
                     </span>
-                    <span className="text-sm font-semibold leading-5 text-white/85">{signal.label}</span>
+                    <span className="text-sm font-semibold leading-5 text-white/85">{t(signal.labelKey)}</span>
                   </div>
                 ))}
               </div>

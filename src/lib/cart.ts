@@ -1,3 +1,4 @@
+import { buildShippingPackages, type ShippingPackage } from "./shipping";
 import { cookies } from "next/headers";
 import { getLiveCatalogProducts, type CatalogProduct } from "@/data/products";
 import {
@@ -26,6 +27,8 @@ export type CartLine = {
 };
 
 export type GuestCart = {
+  totalWeightGrams?: number | null;
+  shippingPackages?: ShippingPackage[];
   hasBlockingIssues: boolean;
   itemCount: number;
   lines: CartLine[];
@@ -55,6 +58,8 @@ export async function getGuestCart(): Promise<GuestCart> {
   });
 
   return {
+    totalWeightGrams: buildShippingPackages(lines)?.totalWeightGrams ?? null,
+    shippingPackages: buildShippingPackages(lines)?.packages ?? [],
     hasBlockingIssues: lines.some((line) => Boolean(line.issue)),
     itemCount: lines.reduce((total, line) => total + line.quantity, 0),
     lines,

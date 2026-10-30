@@ -1,5 +1,10 @@
 # QA Strategy - E-commerce de repuestos
 
+## Actualización vigente — 30 oct 2026 / #115
+
+Para envíos, combinar pruebas unitarias del catálogo/paquetes/proveedor con PostgreSQL aislado para importación, activación, idempotencia y montos reales/cobrados. E2E cubre dirección nacional, cotización fake, fallback sin tarifa, retiro, históricos e idiomas, más viewport móvil. Landing tiene smoke independiente sin secretos. Escenarios en el checklist B19. Ver [contrato y operación del envío nacional](national-shipping.md).
+
+
 ## Objetivo
 
 Validar que el MVP permita comprar repuestos sin errores criticos en catalogo, carrito, checkout, pagos, inventario, ordenes, admin y responsive.
@@ -258,3 +263,16 @@ P0/P1/P2/P3
 - P1: rompe flujo importante pero existe workaround.
 - P2: error visible o UX mala sin bloquear venta.
 - P3: detalle menor, texto, polish.
+
+### Validación B19 / #115
+
+- [ ] Recorrer checkout y Mis direcciones en los 14 departamentos; rechazar municipio de otro departamento, referencia vacía y coordenadas inválidas.
+- [ ] Cotizar carrito mixto: suma de peso por cantidad y paquetes con medidas persistidas.
+- [ ] Proveedor vacío/error/sin opciones muestra WhatsApp, conserva carrito, bloquea pago nacional; retiro a $0 funciona.
+- [ ] Fake ofrece courier, precio y "Mismo día"; cambiar dirección/pin invalida la tarifa seleccionada.
+- [ ] Manipular precio en respuesta/formulario: DB y cobro usan precio del servidor. Reenvío con misma key no duplica reserva/pedido; cambio de opción/precio cambia huella.
+- [ ] Activación manual/CSV incompleta se rechaza claramente; borrador sin medidas se permite. Revisar lista de activos incompletos.
+- [ ] Promoción apagada cobra tarifa; activa y subtotal elegible cobra $0 conservando quotedCents > 0, con auditoría ADMIN.
+- [ ] Detalle público/admin muestra courier, costo, referencia y estimación opcional; histórico LOCAL_DELIVERY funciona.
+- [ ] Cobertura nacional en es/en y JSON-LD; smoke de landing sin secretos. Revisar checkout a 390px sin scroll horizontal.
+- [ ] `npm run lint`, `npm run typecheck`, `npm test` con DB desechable, `npm run test:e2e` y `npm run test:landing`; CI quality/e2e verdes antes de merge aprobado.

@@ -8,4 +8,4 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://castilloaut
 export const SITE_NAME = "Castillo Auto Parts";
 
 export const SITE_DESCRIPTION =
-  "Encuentra repuestos automotrices para tu vehículo. Filtra por marca, modelo, año o número de parte y consulta opciones de entrega local.";
+  "Encuentra repuestos automotrices para tu vehículo. Filtra por marca, modelo, año o número de parte y consulta envíos a todo El Salvador.";
