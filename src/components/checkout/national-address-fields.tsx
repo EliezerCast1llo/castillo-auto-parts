@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { departments, municipalitiesByDepartment } from "@/data/el-salvador";
+import { departments, getMunicipalities } from "@/data/el-salvador";
 
 export type NationalAddressFields = { addressLine1: string; addressLine2: string; department: string; city: string; landmark: string; deliveryNotes: string };
 export const emptyNationalAddress: NationalAddressFields = { addressLine1: "", addressLine2: "", department: "", city: "", landmark: "", deliveryNotes: "" };
@@ -23,7 +23,7 @@ export function NationalAddressInputs({ value, onChange }: { value: NationalAddr
     <label className="block text-sm font-semibold">{t("city")}
       <select aria-label={t("city")} className={inputClass} name="city" required value={value.city} onChange={(e) => onChange({ ...value, city: e.target.value })}>
         <option value="">{t("selectCity")}</option>
-        {(municipalitiesByDepartment[value.department] ?? []).map((name) => <option key={name}>{name}</option>)}
+        {getMunicipalities(value.department).map((name) => <option key={name}>{name}</option>)}
       </select>
     </label>
     <label className="block text-sm font-semibold sm:col-span-2">{t("notes")}

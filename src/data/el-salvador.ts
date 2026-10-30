@@ -19,8 +19,11 @@ export const municipalitiesByDepartment: Record<string, readonly string[]> = {
 };
 
 export const departments = Object.keys(municipalitiesByDepartment);
+export function getMunicipalities(department?: string): readonly string[] {
+  return department && Object.hasOwn(municipalitiesByDepartment, department) ? municipalitiesByDepartment[department] : [];
+}
 export function isNationalAddress(department?: string, city?: string) {
-  return Boolean(department && city && municipalitiesByDepartment[department]?.includes(city));
+  return Boolean(city && getMunicipalities(department).includes(city));
 }
 
 // Country-wide coordinate envelope, including islands. This is an input sanity

@@ -14,6 +14,7 @@ describe("national shipping boundary", () => {
     expect(Object.values(municipalitiesByDepartment).flat()).toHaveLength(44);
     for (const [department, cities] of Object.entries(municipalitiesByDepartment)) for (const city of cities) expect(isNationalAddress(department, city)).toBe(true);
     expect(isNationalAddress("San Miguel", "Santa Ana Centro")).toBe(false);
+    for (const department of ["__proto__", "constructor", "toString"]) expect(isNationalAddress(department, "anything")).toBe(false);
     for (const [lat, lng] of [[13.84, -89.85], [14.36, -89.17], [13.34, -87.84], [13.18, -87.7]]) expect(isNationalCoordinate(lat, lng)).toBe(true);
     expect(isNationalCoordinate(0, 0)).toBe(false);
     expect(isNationalCoordinate(NaN, -89)).toBe(false);
