@@ -3,6 +3,7 @@ import { Barlow_Condensed, Outfit } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { CookieConsentSlot } from "@/components/consent/cookie-consent-slot";
+import { GoogleAdsTag } from "@/components/analytics/google-ads-tag";
 import { ToastProvider } from "@/components/ui/toast";
 import { defaultLocale, isPublishedLocale, locales, type Locale } from "@/lib/i18n/config";
 import { loadMessages, pickClientMessages } from "@/lib/i18n/messages";
@@ -106,6 +107,7 @@ export default async function StorefrontLayout({
           <ToastProvider>{children}</ToastProvider>
           <CookieConsentSlot />
         </NextIntlClientProvider>
+        <GoogleAdsTag />
       </body>
     </html>
   );

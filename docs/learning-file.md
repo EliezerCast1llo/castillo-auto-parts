@@ -10,6 +10,13 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 - **Branch por tarea:** al iniciar cualquier tarea que modifique el repo, crear primero una nueva branch desde `main` (convención `claude/<tema>` o `codex/<tema>`). No commitear trabajo directamente en `main`; `main` solo recibe merges vía PR. (Acordado 2026-06-24.)
 
+## Actualización 2026-11-03 — Google Ads / #117
+
+- La etiqueta es opcional por `NEXT_PUBLIC_GOOGLE_ADS_ID` (público, configurado antes del build); sin ID no cambia la política CSP ni se contacta Google. Los scripts de landing y tienda heredan el nonce del middleware.
+- Compra solo se emite tras validar acceso al pedido y pago `PAID`, con total real en USD y número de pedido; deduplicación de sesión y sin PII ni query tokens en las URLs de seguimiento. La etiqueta de conversión depende de `NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL`.
+- Landing expone únicamente portada, assets, robots permisivo y sitemap de `/`. Sus handlers separados evitan cargar los servicios de la tienda.
+- CI simula Google. Eliezer configura Vercel, verifica Tag Assistant/protección/logs y solicita la revisión de anuncios; código validado no equivale a campaña aprobada. No se hace merge ni despliegue sin su autorización.
+
 ## Estado Actual
 
 - Fecha de ultima actualizacion: 2026-06-24 (Fase 5 - calidad, performance y SEO).

@@ -18,6 +18,9 @@ assert(!("DATABASE_URL" in environment), "Database settings must be absent");
 assert(!("NEXTAUTH_SECRET" in environment), "Auth settings must be absent");
 const port = process.env.LANDING_SMOKE_PORT || "3211";
 const origin = `http://localhost:${port}`;
+const withGoogleAds = process.argv.includes("--google-ads");
+const adsId = "AW-123456789";
+if (withGoogleAds) environment.NEXT_PUBLIC_GOOGLE_ADS_ID = adsId;
 
 async function build() {
   const child = spawn("npm", ["run", "build"], { env: environment, stdio: "inherit" });
@@ -31,7 +34,11 @@ try {
   await build();
   const manifest = JSON.parse(readFileSync(".next/server/app-paths-manifest.json", "utf8"));
   assert(Object.keys(manifest).some((path) => path === "/(temporary)/page"));
-  assert(Object.keys(manifest).every((path) => !/catalog|cart|checkout|account|admin|auth|api|sitemap/.test(path)), "Store routes must not be bundled");
+  assert(Object.keys(manifest).every((path) => !/catalog|cart|checkout|account|admin|auth|api/.test(path)), "Store routes must not be bundled");
+  assert(Object.keys(manifest).some((path) => path.includes("robots.txt")));
+  assert(Object.keys(manifest).some((path) => path.includes("sitemap.xml")));
+  const clientManifest = readFileSync(".next/server/app/(temporary)/page_client-reference-manifest.js", "utf8");
+  assert(!clientManifest.includes("google-ads-purchase"), "Purchase conversion must not be bundled in landing");
   const trace = JSON.parse(readFileSync(".next/server/app/(temporary)/page.js.nft.json", "utf8"));
   assert(!trace.files.some((file) => /@prisma|@auth|next-auth|resend|@aws-sdk|@sentry|upstash/.test(file)), "Landing must not trace store service dependencies");
   server = spawn("npm", ["start", "--", "--port", port], { env: environment, stdio: "inherit", detached: true });
@@ -48,7 +55,15 @@ try {
   });
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
+  // No traffic reaches Google, even when testing the opt-in configuration in CI.
+  await context.route("https://www.googletagmanager.com/gtag/js?*", (route) => route.fulfill({
+    contentType: "application/javascript", body: "window.__googleAdsMockLoaded = true;",
+  }));
   const page = await context.newPage();
+  await page.addInitScript(() => {
+    window.__cspViolations = [];
+    document.addEventListener("securitypolicyviolation", (event) => window.__cspViolations.push(event.blockedURI));
+  });
   const errors = [];
   const external = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -60,6 +75,25 @@ try {
     assert.equal(response.status(), 200);
     const headers = response.headers();
     assert(headers["content-security-policy"]?.includes("frame-ancestors 'none'"), "Landing must enforce CSP");
+    const csp = headers["content-security-policy"];
+    const nonce = csp.match(/'nonce-([^']+)'/)[1];
+    assert(!csp.split("; ").find((item) => item.startsWith("script-src ")).includes("unsafe-"));
+    if (withGoogleAds) {
+      assert(csp.includes("https://www.googletagmanager.com"));
+      assert(csp.includes("https://googleads.g.doubleclick.net"));
+      assert.equal(await page.locator("#google-ads-tag").evaluate((script) => script.nonce), nonce);
+      assert.equal(await page.locator("#google-ads-config").evaluate((script) => script.nonce), nonce);
+      assert.equal(await page.locator("#google-ads-tag").getAttribute("src"), `https://www.googletagmanager.com/gtag/js?id=${adsId}`);
+      const commands = await page.evaluate(() => window.dataLayer.map((args) => Array.from(args)));
+      assert.equal(commands[0][0], "js");
+      assert.equal(commands[1][0], "config");
+      assert.equal(commands[1][1], adsId);
+      assert.equal(await page.evaluate(() => window.__googleAdsMockLoaded), true);
+    } else {
+      assert.equal(await page.locator("#google-ads-tag, #google-ads-config").count(), 0);
+      assert(!csp.includes("googletagmanager.com"));
+    }
+    assert.deepEqual(await page.evaluate(() => window.__cspViolations), []);
     assert.equal(headers["x-content-type-options"], "nosniff");
     assert.equal(await page.locator("html").getAttribute("lang"), "es");
     assert.match(await page.title(), /Castillo Autoparts/);
@@ -73,9 +107,20 @@ try {
     await page.screenshot({ path: `test-results/landing/${width}.png`, fullPage: true });
   }
   assert.deepEqual(errors, [], "No browser or CSP errors");
-  assert.deepEqual(external, [], "No third-party requests");
+  assert(external.every((url) => withGoogleAds && url === `https://www.googletagmanager.com/gtag/js?id=${adsId}`), "Only the mocked opt-in Google tag may be requested");
   assert.deepEqual(await context.cookies(), [], "No session or tracking cookies");
-  for (const path of ["/catalog", "/es/catalog", "/en/catalog", "/cart", "/es/cart", "/checkout", "/es/checkout", "/account", "/es/account", "/auth/login", "/es/auth/login", "/admin", "/admin/login", "/api/auth/session", "/api/health", "/api/monitoring", "/api/webhooks/wompi", "/api/internal/expire-payment-reservations", "/sitemap.xml", "/robots.txt", "/_next/image?url=https://example.com/image.jpg&w=64&q=75"]) {
+  const adsBot = await context.request.get(origin, { headers: { "User-Agent": "AdsBot-Google" }, maxRedirects: 0 });
+  assert.equal(adsBot.status(), 200, "AdsBot-Google must receive the landing directly");
+  assert.equal(adsBot.headers().location, undefined);
+  const robots = await context.request.get(`${origin}/robots.txt`);
+  assert.equal(robots.status(), 200);
+  assert.match(await robots.text(), /User-Agent: \*\s+Allow: \//i);
+  assert(!(await robots.text()).includes("Disallow:"));
+  assert((await robots.text()).includes("Sitemap: https://castillo-auto-parts.vercel.app/sitemap.xml"));
+  const sitemap = await context.request.get(`${origin}/sitemap.xml`);
+  assert.equal(sitemap.status(), 200);
+  assert.deepEqual([...((await sitemap.text()).matchAll(/<loc>(.*?)<\/loc>/g))].map((match) => match[1]), ["https://castillo-auto-parts.vercel.app/"]);
+  for (const path of ["/catalog", "/es/catalog", "/en/catalog", "/cart", "/es/cart", "/checkout", "/es/checkout", "/account", "/es/account", "/auth/login", "/es/auth/login", "/admin", "/admin/login", "/api/auth/session", "/api/health", "/api/monitoring", "/api/webhooks/wompi", "/api/internal/expire-payment-reservations", "/_next/image?url=https://example.com/image.jpg&w=64&q=75"]) {
     const response = await context.request.get(`${origin}${path}`, { maxRedirects: 0 });
     assert.equal(response.status(), 404, `${path} must be disabled without invoking services`);
     assert(response.headers()["content-security-policy"], "Disabled routes retain CSP");
@@ -84,7 +129,7 @@ try {
     const response = await context.request.post(`${origin}${path}`, { data: {} });
     assert.equal(response.status(), 404, "Mutations must be disabled");
   }
-  console.log("Landing smoke passed: secret-free build/start, isolated routes, CSP, zero external requests/errors and 3 responsive viewports.");
+  console.log(`Landing smoke passed (${withGoogleAds ? "mocked Google Ads" : "no Google Ads"}): secret-free build/start, isolated store routes, CSP/nonces, robots/sitemap, AdsBot 200 and 3 responsive viewports.`);
 } finally {
   await browser?.close();
   if (server?.pid) {

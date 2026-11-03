@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { GoogleAdsTag } from "@/components/analytics/google-ads-tag";
 import "./landing.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -8,5 +9,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function TemporaryLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="es"><body>{children}</body></html>;
+  return <html lang="es"><body>{children}<GoogleAdsTag /></body></html>;
 }

@@ -138,10 +138,19 @@ jobs:
         run: npm run prisma:generate
 
       - name: Landing smoke without application secrets
-        run: npm run test:landing
+        run: |
+          npm run test:landing
+          npm run test:landing -- --google-ads
 
       - name: Run Playwright tests
         run: npm run test:e2e
+
+      - name: Google Ads purchase with a mocked tag
+        env:
+          NEXT_PUBLIC_GOOGLE_ADS_ID: AW-123456789
+          NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL: purchase-test
+          CSP_ENFORCE: "true"
+        run: npm run test:e2e -- tests/e2e/google-ads.spec.ts
 
       - name: Upload Playwright artifacts
         if: failure()

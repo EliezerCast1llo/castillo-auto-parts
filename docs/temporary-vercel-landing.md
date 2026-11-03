@@ -17,8 +17,8 @@ con valor vacío o con otro valor, Next mantiene su selección normal de rutas.
 Cambiar de modo requiere un **nuevo build**, no solo reiniciar una compilación
 anterior. No reutilizar el mismo `.next` entre modos sin reconstruirlo.
 
-La portada en `/` muestra **Castillo Autoparts**, descripción de repuestos para
-Santa Tecla, San Salvador y alrededores, **+503 7890 7671** y
+La portada en `/` muestra **Castillo Autoparts**, descripción de repuestos con
+envíos a todo El Salvador, **+503 7890 7671** y
 `https://wa.me/50378907671`. El contenido está en next-intl, con español como idioma
 visible. Se incluyen mensajes ingleses para conservar la paridad de catálogos,
 pero no se publica una ruta inglesa en este modo.
@@ -31,8 +31,55 @@ ni datos de demostración que permitan intentar una compra.
 
 La CSP se aplica en modo enforcement y se mantienen headers de seguridad.
 La página se renderiza por petición para que los scripts Next reciban el nonce
-correcto. No usa fuentes remotas, analítica, sesión, cookies de seguimiento ni
-reportadores de errores externos. Teléfono y WhatsApp se abren solo al pulsarlos.
+correcto. Sin `NEXT_PUBLIC_GOOGLE_ADS_ID` no usa fuentes remotas, analítica, sesión,
+cookies de seguimiento ni reportadores de errores externos. Teléfono y WhatsApp se abren solo al pulsarlos.
+
+## Google Ads — B20 / #117
+
+La URL pública de la portada es `https://castillo-auto-parts.vercel.app/`.
+`/robots.txt` permite todos los crawlers (incluido AdsBot-Google) y apunta a
+`/sitemap.xml`, que solo lista `/`. No publica enlaces a catálogo o productos.
+`NEXT_PUBLIC_SITE_URL`, si se configura, debe contener el origen público canónico;
+en landing el valor por defecto es `https://castillo-auto-parts.vercel.app`.
+Los archivos de robots y sitemap de la tienda mantienen su comportamiento.
+
+Variables públicas opcionales (vacías por defecto en `.env.example`):
+
+| Variable | Producción | Uso |
+| --- | --- | --- |
+| `NEXT_PUBLIC_GOOGLE_ADS_ID` | `AW-18533725490` | Activa gtag y los dominios Google del CSP en landing y tienda. |
+| `NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL` | `-s2HCOKola8dELLqyIVF` | Activa Compra, exclusivamente en confirmación de un pedido pagado en la tienda. |
+
+Configurar antes del build y mantener los mismos valores al arrancar. **Requiere
+un nuevo build/redeploy**; son IDs públicos que aparecen en el HTML, no secretos.
+Sin ID no se carga Google ni cambia el CSP. Ambos scripts usan `next/script` con
+`afterInteractive` y el nonce `x-nonce` del middleware. No se agrega `unsafe-inline`
+ni `unsafe-eval` al `script-src` de producción; se conserva el permiso de desarrollo
+que Next necesita para depurar.
+
+Compra envía solo `send_to`, el total real (productos + envío) en USD y
+`transaction_id` igual al número de pedido. El servidor comprueba pago `PAID`;
+pendiente o rechazado no genera conversión. Se deduplica en `sessionStorage` y,
+si el navegador lo deniega, en memoria durante esa página (Google también recibe
+`transaction_id`). No se envían email, teléfono o dirección. Se eliminan query y
+fragmento de la URL y del referrer para no transmitir tokens de acceso al pedido.
+Landing no compila el componente de conversión ni requiere pagos o DB.
+
+Después de revisar y fusionar el PR, **Eliezer**:
+
+1. Agrega los IDs en Vercel y vuelve a desplegar.
+2. Confirma que Production no tenga Deployment Protection/Vercel Authentication,
+   y revisa los logs por errores 5xx o fallos de arranque en frío.
+3. Comprueba `curl -A 'AdsBot-Google' -I https://castillo-auto-parts.vercel.app/`
+   (200, sin redirecciones), robots/sitemap y Tag Assistant (`AW-18533725490`).
+4. Usa exactamente `https://castillo-auto-parts.vercel.app/` como URL final de
+   los anuncios; la URL visible debe usar el mismo dominio. Otras rutas dan 404.
+5. Apela en el Administrador de políticas. Este PR no garantiza la aprobación.
+
+La conversión real solo se prueba cuando la tienda con Wompi (#90) esté en
+producción. Al comprar el dominio propio (#89), conectarlo en Vercel, redirigir
+`.vercel.app` con 308 y actualizar URL visible/final de los anuncios al mismo
+dominio. Esa operación queda fuera de este cambio.
 
 ## Conectar y desplegar en la cuenta de Eliezer
 
@@ -86,6 +133,7 @@ No ejecutar migraciones ni seed para esta comprobación. Las pruebas reproducibl
 
 ```bash
 npm run test:landing
+npm run test:landing -- --google-ads
 ```
 
 Este comando elimina del entorno hijo las variables de aplicación de
@@ -96,9 +144,26 @@ Necesita Chromium de Playwright instalado (`npx playwright install --with-deps
 chromium` en Linux) y usa por defecto el puerto 3211; puede cambiarse mediante
 `LANDING_SMOKE_PORT`. No permite usar una URL externa ni ejecutar compras.
 
+La conversión se prueba en una base aislada, con Google interceptado y CSP
+enforcement (también hay un paso específico en CI):
+
+```bash
+NEXT_PUBLIC_GOOGLE_ADS_ID=AW-123456789 \
+NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL=purchase-test CSP_ENFORCE=true \
+npm run test:e2e -- tests/e2e/google-ads.spec.ts
+```
+
+Este runner requiere `DATABASE_URL` de pruebas y crea/elimina su propio esquema.
+Sin los dos IDs ficticios el spec de Google Ads se omite, manteniendo el E2E
+normal sin seguimiento. Verifica pendiente/rechazado sin conversión, pago
+aprobado con total y número reales, nonce, URLs sin token y recarga sin duplicado.
+
 Comprueba manifest de rutas y dependencias trazadas, contenido/contacto, CSP,
-404 de tienda/API y mutaciones, ausencia de errores de consola, peticiones
-externas y cookies, y overflow a 320, 390 y 1440 px. Guarda capturas en
+200 para AdsBot-Google y robots/sitemap, 404 de tienda/API y mutaciones,
+ausencia de errores de consola/CSP y overflow a 320, 390 y 1440 px. Sin ID exige
+cero peticiones externas/cookies; `--google-ads` usa un ID ficticio y un script
+interceptado por Playwright (no contacta Google) y valida carga/configuración con
+nonces. Ambos se ejecutan en CI. Guarda capturas en
 `test-results/landing/`. El job CI `e2e` lo ejecuta antes de la suite normal; después
 el runner existente reconstruye la tienda sin `SITE_MODE`, con su esquema DB
 aislado, y verifica su comportamiento habitual. La selección exacta del modo se
