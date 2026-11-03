@@ -11,7 +11,6 @@
     "subtotal": "Subtotal",
     "shippingTitle": "Shipping",
     "pickupFree": "Free pickup at {location}",
-    "pickupOrDelivery": "Free pickup at {location}; or delivery {zones}.",
     "taxNotice": "Prices include 13% VAT.",
     "nationalShipping": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup."
   },

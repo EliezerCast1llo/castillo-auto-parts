@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/empty-state";
 import { SiteHeader } from "@/components/site-header";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { auth } from "@/lib/auth";
-import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
+import { SUPPORT_WHATSAPP_NUMBER, buildContactLinks } from "@/lib/contact";
 import { db } from "@/lib/db";
 
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
@@ -145,7 +145,7 @@ function OrderHelpCard({ t }: { t: OrdersListTranslator }) {
         {SUPPORT_WHATSAPP_NUMBER ? (
           <a
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 transition hover:bg-ca-background"
-            href={`tel:+${SUPPORT_WHATSAPP_NUMBER}`}
+            href={buildContactLinks(SUPPORT_WHATSAPP_NUMBER).telephone}
           >
             <Phone className="h-4 w-4" strokeWidth={1.9} />
             +{SUPPORT_WHATSAPP_NUMBER}

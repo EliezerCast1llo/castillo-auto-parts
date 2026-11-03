@@ -1,3 +1,5 @@
+import { isOperationalErrorCode, OperationalError } from "./operational-error";
+
 /** The complete telemetry schema. Never copy an Error, request or caller object. */
 export const MONITORING_OPERATIONS = [
   "checkout", "wompi_webhook", "boxful_webhook", "boxful_label", "reconciliation",
@@ -5,6 +7,7 @@ export const MONITORING_OPERATIONS = [
   "admin-action", "admin-settings-action", "sendPasswordResetEmail", "catalog-data-source",
   "createGuestCheckoutFromCart", "clearGuestCartAfterPendingOrder", "createStockAlertRequest",
   "paymentWebhookRejected", "paidOrderRequiresManualReview", "logFailedEmail", "sendOrderConfirmationEmail",
+  "rate_limit_provider", "shipping_rates",
 ] as const;
 const outcomes = ["started", "completed", "failed", "rejected", "manual_review", "invalid_signature", "invalid", "not_found", "processed", "duplicate", "already_processed", "client_error", "client_rejection", "client_boundary", "pending_overdue"];
 export type MonitoringOperation = typeof MONITORING_OPERATIONS[number];
@@ -20,11 +23,13 @@ export function sanitizeMonitoringEvent(level: MonitoringLevel, input: Record<st
   return {
     level, context, correlationId, timestamp: new Date().toISOString(),
     outcome: typeof input.outcome === "string" && outcomes.includes(input.outcome) ? input.outcome : "failed",
+    ...(isOperationalErrorCode(input.errorCode) ? { errorCode: input.errorCode } : {}),
   };
 }
 
-/** Local diagnostic codes only. Never emit a freely assignable error.name. */
+/** Known integration codes may reach telemetry; generic diagnostic codes stay local. */
 export function localErrorCode(error: unknown) {
+  if (error instanceof OperationalError && isOperationalErrorCode(error.code)) return error.code;
   if (error === undefined) return "UNCLASSIFIED_ERROR";
   if (!(error instanceof Error)) return "NON_ERROR_THROWN";
   switch (error.name) {

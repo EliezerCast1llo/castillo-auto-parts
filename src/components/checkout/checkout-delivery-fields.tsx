@@ -5,7 +5,9 @@ import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatCurrency } from "@/lib/money";
 import type { PickupLocationOption } from "@/lib/fulfillment";
-import { shippingRateKey, type ShippingRate } from "@/lib/shipping";
+import type { ShippingRate } from "@/lib/shipping";
+import { shippingRateKey } from "@/lib/shipping-rate-key";
+import { buildContactLinks } from "@/lib/contact";
 import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
 import { CheckoutLocationPicker } from "./checkout-location-picker";
 import { emptyNationalAddress, NationalAddressInputs, type NationalAddressFields } from "./national-address-fields";
@@ -41,7 +43,7 @@ export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtota
       setRates(next); setStatus(next.length ? "ready" : "unavailable");
     } catch { if (revision.current === current) setStatus("unavailable"); }
   }
-  const whatsapp = `https://wa.me/50378907671?text=${encodeURIComponent(`${t("whatsappRequest")}\n${cartDetail}\n${address.city}, ${address.department}`)}`;
+  const whatsapp = buildContactLinks(undefined, `${t("whatsappRequest")}\n${cartDetail}\n${address.city}, ${address.department}`).whatsapp;
   return <div className="mt-4 space-y-4">
     <div className="grid gap-3 sm:grid-cols-2">
       {(["PICKUP", "NATIONAL_SHIPPING"] as const).map((value) => <label className="flex min-h-12 items-center gap-3 rounded-xl border border-ca-border px-3 font-semibold" key={value}>

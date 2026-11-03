@@ -20,6 +20,8 @@
  */
 
 import { createRateLimiter, type RateLimitOptions, type RateLimitResult } from "./rate-limit";
+import { OperationalError, providerFailure } from "./operational-error";
+import { logWarn } from "./logger";
 
 export type AsyncRateLimiter = {
   check(key: string): Promise<RateLimitResult>;
@@ -70,7 +72,7 @@ export function createAsyncRateLimiter(options: RateLimitOptions): AsyncRateLimi
     !allowsInMemory &&
     (!redisUrl || !redisToken)
   ) {
-    throw new Error(
+    throw new OperationalError("CONFIG_MISSING",
       "UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN son obligatorios en producción. " +
         "Crea una base de datos en upstash.com y añade las variables. " +
         "En un despliegue de un solo proceso puedes usar ALLOW_IN_MEMORY_RATE_LIMIT=true.",
@@ -78,6 +80,12 @@ export function createAsyncRateLimiter(options: RateLimitOptions): AsyncRateLimi
   }
 
   if (redisUrl && redisToken) {
+    try {
+      const url = new URL(redisUrl);
+      if (url.protocol !== "https:" || url.username || url.password) throw new Error();
+    } catch {
+      throw new OperationalError("CONFIG_INVALID", "UPSTASH_REDIS_REST_URL must be a valid HTTPS URL without credentials.");
+    }
     return buildRedisRateLimiter(options, redisUrl, redisToken);
   }
 
@@ -188,10 +196,11 @@ function buildRedisRateLimiter(
     });
 
     if (!response.ok) {
-      throw new Error(`Redis command failed: ${response.status} ${response.statusText}`);
+      throw new OperationalError(response.status >= 500 ? "PROVIDER_UNAVAILABLE" : "PROVIDER_REJECTED", "Redis command failed.");
     }
 
-    const json = (await response.json()) as { result: T };
+    const json = (await response.json()) as { result: T; error?: unknown };
+    if (json.error) throw new OperationalError("PROVIDER_REJECTED", "Redis command rejected.");
     return json.result;
   }
 
@@ -206,10 +215,13 @@ function buildRedisRateLimiter(
     });
 
     if (!response.ok) {
-      throw new Error(`Redis pipeline failed: ${response.status} ${response.statusText}`);
+      throw new OperationalError(response.status >= 500 ? "PROVIDER_UNAVAILABLE" : "PROVIDER_REJECTED", "Redis pipeline failed.");
     }
 
-    const json = (await response.json()) as { result: unknown }[];
+    const json = (await response.json()) as { result: unknown; error?: unknown }[];
+    if (!Array.isArray(json) || json.some((item) => item.error)) {
+      throw new OperationalError("PROVIDER_REJECTED", "Redis pipeline rejected.");
+    }
     return json.map((item) => item.result);
   }
 
@@ -248,7 +260,7 @@ function buildRedisRateLimiter(
         };
       } catch (error) {
         // Redis caído: delegar al limiter en memoria en vez de dejar pasar todo.
-        console.error("[rate-limit-redis] check failed, falling back to in-memory:", error);
+        await logWarn({ context: "rate_limit_provider", outcome: "failed" }, providerFailure(error, "Redis unavailable; using memory fallback."));
         return memoryFallback.check(key);
       }
     },
@@ -299,7 +311,7 @@ function buildRedisRateLimiter(
         // prefiere a un fail-closed que bloquearía TODO login ante cualquier
         // parpadeo de Redis (auto-DoS). En el deploy single-instance de Railway el
         // conteo en memoria es efectivo al 100%. El Map está acotado (MAX_BUCKETS).
-        console.error("[rate-limit-redis] registerFailure failed, falling back to in-memory:", error);
+        await logWarn({ context: "rate_limit_provider", outcome: "failed" }, providerFailure(error, "Redis unavailable; using memory fallback."));
         return memoryFallback.registerFailure(key);
       }
     },
@@ -309,7 +321,7 @@ function buildRedisRateLimiter(
       try {
         await redisCommand(["DEL", `${key}:count`, `${key}:locked`]);
       } catch (error) {
-        console.error("[rate-limit-redis] reset failed:", error);
+        await logWarn({ context: "rate_limit_provider", outcome: "failed" }, providerFailure(error, "Redis reset unavailable."));
       }
     },
   };

@@ -1,6 +1,7 @@
 import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { buildContactLinks } from "@/lib/contact";
 
 type WhatsAppCtaVariant = "button" | "floating" | "inline" | "subtle";
 
@@ -25,7 +26,7 @@ export function WhatsAppCTA({
  // fallback si, y su ruta interna se llama `/help` aunque en espanol se sirva
  // como `/ayuda`.
  const whatsappUrl = phone
- ? `https://wa.me/${phone}?text=${encodeURIComponent(message ?? t("message"))}`
+ ? buildContactLinks(phone, message ?? t("message")).whatsapp
  : null;
  // El texto visible da el nombre accesible, incluido el fallback localizado.
 

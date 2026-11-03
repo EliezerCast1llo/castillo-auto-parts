@@ -2,6 +2,8 @@ import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as payments from "@/lib/payments";
 import { POST } from "./route";
+import * as paymentEvents from "@/lib/payment-events";
+import { OperationalError } from "@/lib/operational-error";
 
 const originalEnvironment = { ...process.env };
 const webhookSecret = "webhook-test-secret";
@@ -19,6 +21,7 @@ describe("Wompi webhook route", () => {
     process.env = { ...originalEnvironment };
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it("logs an unexpected provider failure with the response correlation and no sensitive data", async () => {
@@ -50,6 +53,38 @@ describe("Wompi webhook route", () => {
       ok: false,
       reason: "invalid_signature",
     });
+  });
+
+  it("rejects a flood of invalid signatures without spending monitoring quota, then reports a signed failure", async () => {
+    vi.stubEnv("SENTRY_DSN", `https://${"a".repeat(32)}@o123.ingest.sentry.io/1`);
+    const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+    vi.stubGlobal("fetch", fetch);
+    const info = vi.spyOn(console, "log").mockImplementation(() => {});
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const warnings = vi.spyOn(console, "warn").mockImplementation(() => {});
+    for (let i = 0; i < 40; i++) {
+      const response = await POST(new Request("https://shop.test/api/webhooks/wompi", {
+        method: "POST", headers: { wompi_hash: "0".repeat(64) }, body: "private@example.com invalid body",
+      }));
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ ok: false, reason: "invalid_signature" });
+    }
+    expect(fetch).not.toHaveBeenCalled();
+    expect(errors).not.toHaveBeenCalled();
+    expect(warnings).not.toHaveBeenCalled();
+    const rejectionLogs = info.mock.calls.map(([line]) => JSON.parse(line)).filter((event) => event.outcome === "invalid_signature");
+    expect(rejectionLogs).toHaveLength(40);
+    expect(rejectionLogs.every((event) => event.errorCode === "WEBHOOK_SIGNATURE_INVALID")).toBe(true);
+    vi.spyOn(paymentEvents, "processPaymentWebhookEvent").mockRejectedValue(new OperationalError("PROVIDER_UNAVAILABLE", "private@example.com token-secret"));
+    const body = '{"Monto":12.99}';
+    const response = await POST(new Request("https://shop.test/api/webhooks/wompi", { method: "POST", body,
+      headers: { wompi_hash: createHmac("sha256", webhookSecret).update(body).digest("hex") } }));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false, reason: "webhook_unavailable" });
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch.mock.calls[0][1].body).toContain('"error_code":"PROVIDER_UNAVAILABLE"');
+    expect(fetch.mock.calls[0][1].body).not.toContain("private@example.com");
+    expect(errors).toHaveBeenCalledOnce();
   });
 
   it("returns 400 for a signed but structurally incomplete payload", async () => {

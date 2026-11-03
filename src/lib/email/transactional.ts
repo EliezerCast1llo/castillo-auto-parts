@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "../db";
 import { getEmailProvider } from ".";
 import { logError as log } from "../logger";
+import { localErrorCode } from "../monitoring-event";
 import {
   buildOrderConfirmationEmail,
   type OrderConfirmationEmailInput,
@@ -67,7 +68,7 @@ async function logFailedEmail({
   try {
     await db.emailLog.create({
       data: {
-        errorMessage: error instanceof Error ? error.message : "Unknown email error",
+        errorMessage: localErrorCode(error),
         payloadJson: emailPayloadJson(message),
         provider,
         recipient: message.to,

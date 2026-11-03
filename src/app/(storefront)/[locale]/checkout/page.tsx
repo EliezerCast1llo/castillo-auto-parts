@@ -6,6 +6,7 @@ import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { getGuestCart } from "@/lib/cart";
+import { buildContactLinks } from "@/lib/contact";
 import {
   CHECKOUT_RETRY_KEY_COOKIE,
   createCheckoutIdempotencyKey,
@@ -112,7 +113,7 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
             </div>
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
-            {status === "coverage_unavailable" ? <a className="block rounded-xl border p-3 font-bold underline" href="https://wa.me/50378907671">WhatsApp</a> : null}
+            {status === "coverage_unavailable" ? <a className="block rounded-xl border p-3 font-bold underline" href={buildContactLinks().whatsapp}>WhatsApp</a> : null}
 
             {/* El form se muestra siempre que haya carrito utilizable. En
                 duplicate_in_progress el reintento reusa la key de la cookie

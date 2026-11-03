@@ -1,4 +1,5 @@
 import { mockPaymentProvider } from "./mock-provider";
+import { OperationalError } from "../operational-error";
 import { isIsolatedE2EEnvironment } from "../production-environment";
 import { isPaymentProviderId, type PaymentProvider, type PaymentProviderId } from "./provider";
 import { createWompiPaymentProvider, getWompiConfig } from "./wompi-provider";
@@ -34,19 +35,19 @@ export function getPaymentProvider(
     return createWompiPaymentProvider(getWompiConfig());
   }
 
-  throw new Error(`Payment provider "${resolvedProviderId}" is not implemented yet.`);
+  throw new OperationalError("CONFIG_INVALID", "Payment provider is not implemented yet.");
 }
 
 export function resolvePaymentProviderId(providerId?: string): PaymentProviderId {
   const normalizedProviderId = providerId?.trim() || "mock";
   if (isPaymentProviderId(normalizedProviderId)) return normalizedProviderId;
 
-  throw new Error(`Unsupported payment provider "${normalizedProviderId}".`);
+  throw new OperationalError("CONFIG_INVALID", "Unsupported payment provider.");
 }
 
 export function assertPaymentProviderAllowed(providerId: PaymentProviderId, environment = process.env.NODE_ENV) {
   if (environment === "production" && providerId === "mock" && !isE2EMockPaymentAllowed()) {
-    throw new Error("The mock payment provider cannot be used in production.");
+    throw new OperationalError("CONFIG_INVALID", "The mock payment provider cannot be used in production.");
   }
 }
 

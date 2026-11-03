@@ -145,6 +145,14 @@ test("customer can save an address after reviewing it", async ({ page, context }
   }
   await page.getByLabel("Departamento", { exact: true }).selectOption("San Miguel");
   await page.getByLabel("Municipio", { exact: true }).selectOption("San Miguel Centro");
+  // HTML inputs are complete, but the server rejects the missing map location.
+  await page.getByRole("button", { name: "Revisar dirección" }).click();
+  await page.getByRole("button", { name: "Guardar dirección" }).click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toHaveText("Selecciona un punto de entrega en el mapa de El Salvador.");
+  await expect(page.getByRole("button", { name: "Guardar dirección" })).toBeEnabled();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("button", { name: "Editar", exact: true }).click();
+  await expect(page.getByLabel("Dirección", { exact: true })).toHaveValue("12 avenida sur");
   await page.getByRole("button", { name: "Usar mi ubicación" }).click();
   await expect(page.locator('input[name="latitude"]')).toHaveValue(/^13\.48(?:0*)$/);
   await page.getByRole("button", { name: "Revisar dirección" }).click();

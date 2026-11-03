@@ -19,6 +19,7 @@
  *   3. Si el producto se queda sin imágenes o sin primaria, se reajusta automáticamente.
  */
 
+import { logError } from "@/lib/logger";
 import { type NextRequest, NextResponse } from "next/server";
 import { getAdminUserForHandler } from "@/lib/admin-auth";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
@@ -102,7 +103,7 @@ export async function DELETE(request: NextRequest) {
       });
     });
   } catch (error) {
-    console.error("[delete-image] DB error:", error);
+    await logError({ context: "admin-action", outcome: "failed" }, error);
     return NextResponse.json({ error: "Error al eliminar la imagen" }, { status: 500 });
   }
 
@@ -114,7 +115,7 @@ export async function DELETE(request: NextRequest) {
     } catch (error) {
       // Objeto queda huérfano en R2 pero no hay referencia en DB.
       // Loguear para limpieza manual futura.
-      console.error("[delete-image] R2 delete failed for key:", r2Key, error);
+      await logError({ context: "admin-action", outcome: "failed" }, error);
     }
   }
 

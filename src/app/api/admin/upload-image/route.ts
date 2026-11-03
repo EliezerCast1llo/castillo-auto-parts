@@ -18,6 +18,7 @@
  * Response 500: error de upload o DB
  */
 
+import { logError } from "@/lib/logger";
 import { type NextRequest, NextResponse } from "next/server";
 import { getAdminUserForHandler } from "@/lib/admin-auth";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
   try {
     uploadResult = await uploadToR2(key, buffer, file.type);
   } catch (error) {
-    console.error("[upload-image] R2 upload failed:", error);
+    await logError({ context: "admin-action", outcome: "failed" }, error);
     return NextResponse.json({ error: "Error al subir la imagen" }, { status: 500 });
   }
 
@@ -170,13 +171,13 @@ export async function POST(request: NextRequest) {
       isPrimary: imageRecord.isPrimary,
     });
   } catch (error) {
-    console.error("[upload-image] DB error:", error);
+    await logError({ context: "admin-action", outcome: "failed" }, error);
     // Intentar limpiar el objeto de R2 si la DB falla
     try {
       const { deleteFromR2 } = await import("@/lib/r2");
       await deleteFromR2(key);
-    } catch {
-      console.error("[upload-image] Failed to clean up R2 object after DB error");
+    } catch (cleanupError) {
+      await logError({ context: "admin-action", outcome: "failed" }, cleanupError);
     }
 
     return NextResponse.json({ error: "Error al guardar la imagen" }, { status: 500 });

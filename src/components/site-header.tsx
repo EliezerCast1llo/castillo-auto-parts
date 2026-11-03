@@ -7,7 +7,7 @@ import { MyVehicleChip } from "@/components/my-vehicle-chip";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { buttonVariants } from "@/components/ui/button";
-import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
+import { SUPPORT_WHATSAPP_NUMBER, buildContactLinks } from "@/lib/contact";
 import { siteNavItems } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import type { LocaleHref } from "@/lib/i18n/navigation";
@@ -248,7 +248,7 @@ async function UtilityBar({ locale }: { locale: Locale }) {
         {SUPPORT_WHATSAPP_NUMBER ? (
           <a
             className="inline-flex items-center gap-1.5 whitespace-nowrap text-white/76 transition hover:text-white"
-            href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}`}
+            href={buildContactLinks(SUPPORT_WHATSAPP_NUMBER).whatsapp}
             rel="noopener noreferrer"
             target="_blank"
           >

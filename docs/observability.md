@@ -32,10 +32,26 @@ suscripciones ni despliega nada. No habilitar cobro por exceso de cuota.
 
 `logger.ts` aplica una **lista permitida** antes de consola y del transporte:
 `level`, `timestamp`, `context` (operación conocida), `outcome` (resultado conocido)
-y `correlationId` (UUID aleatorio). Solo en consola se agrega un `errorCode` de una
-lista fija (por ejemplo `TYPE_ERROR`, `DATABASE_REQUEST_ERROR` o `INTERNAL_ERROR`)
-para diagnóstico. No se copia libremente `error.name`, que también puede contener
-datos sensibles. Ese código nunca se entrega al transporte ni a Sentry.
+y `correlationId` (UUID aleatorio). Solo en consola se agregan los códigos genéricos
+fijos `TYPE_ERROR`, `DATABASE_REQUEST_ERROR`, `INTERNAL_ERROR`, etc. No se copia
+libremente `error.name`, que también puede contener datos sensibles.
+
+Desde #119, los errores conocidos de integración usan `OperationalError` con un
+catálogo cerrado. Su `errorCode` llega tanto al log como al tag `error_code` de
+Sentry (y al fingerprint); los códigos genéricos siguen siendo solo locales:
+
+| Código | Diagnóstico |
+| --- | --- |
+| `CONFIG_MISSING` | Falta configuración requerida de Wompi, Resend, Upstash o R2. |
+| `CONFIG_INVALID` | Configuración inválida o proveedor de prueba prohibido. |
+| `PROVIDER_UNAVAILABLE` | Error de red, lectura de respuesta o HTTP 5xx del proveedor. |
+| `PROVIDER_REJECTED` | Rechazo HTTP 4xx, error explícito del SDK o respuesta inválida. |
+| `WEBHOOK_SIGNATURE_INVALID` | Firma Wompi rechazada; solo info local, sin envío de evento. |
+| `SHIPPING_RATE_UNAVAILABLE` | Error o timeout al consultar tarifas; la respuesta sigue siendo `[]`. |
+
+El logger deriva el código del error tipado; no acepta códigos arbitrarios del
+contexto ni mensajes de SDK. Redis mantiene su fallback en memoria, pero sin
+imprimir errores crudos. R2, Resend y Wompi descartan causas/cuerpos del proveedor.
 Se descartan todos los demás campos. No se serializan mensajes, nombres, stacks o causas de errores, cuerpos, URLs,
 parámetros, cabeceras, cookies, firmas, emails, nombres, IDs de usuarios/pedidos,
 importes, tarjetas, tokens ni claves. No hay SDK con enriquecimiento automático,
@@ -59,6 +75,9 @@ Wompi genera su propio UUID (ignora IDs suministrados por terceros), que devuelv
 también en errores 401/400/404/422/503. El cron genera un UUID por ejecución y lo
 propaga entre lotes; el endpoint solo lo acepta tras autenticar Bearer y validar
 su formato. No se registran el Bearer, identificadores del proveedor o payloads.
+Las firmas inválidas conservan su 401 y solo generan logs info locales; incluso
+un flood no consume el cupo de eventos de error del servidor. Una firma válida
+seguida de un fallo real sí produce el evento correspondiente.
 
 Errores no controlados del servidor: hook Next `onRequestError`; errores fatales
 Node: `uncaughtExceptionMonitor` sin sustituir el cierre normal. Cliente: eventos

@@ -40,8 +40,9 @@ export async function sendMonitoringEvent(input: SafeMonitoringEvent) {
   const body = [JSON.stringify({ event_id: eventId }), JSON.stringify({ type: "event" }), JSON.stringify({
     event_id: eventId, timestamp: event.timestamp, platform: "other", level: event.level === "warn" ? "warning" : event.level,
     message: `${event.context}: ${event.outcome}`,
-    fingerprint: [event.context, event.outcome],
-    tags: { operation: event.context, outcome: event.outcome, correlation_id: event.correlationId },
+    fingerprint: [event.context, event.outcome, ...(event.errorCode ? [event.errorCode] : [])],
+    tags: { operation: event.context, outcome: event.outcome, correlation_id: event.correlationId,
+      ...(event.errorCode ? { error_code: event.errorCode } : {}) },
   })].join("\n") + "\n";
   try {
     await fetch(endpoint, { method: "POST", headers: { "content-type": "application/x-sentry-envelope" }, body,

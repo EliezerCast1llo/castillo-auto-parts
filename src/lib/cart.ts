@@ -57,9 +57,10 @@ export async function getGuestCart(): Promise<GuestCart> {
     ];
   });
 
+  const shipping = buildShippingPackages(lines);
   return {
-    totalWeightGrams: buildShippingPackages(lines)?.totalWeightGrams ?? null,
-    shippingPackages: buildShippingPackages(lines)?.packages ?? [],
+    totalWeightGrams: shipping?.totalWeightGrams ?? null,
+    shippingPackages: shipping?.packages ?? [],
     hasBlockingIssues: lines.some((line) => Boolean(line.issue)),
     itemCount: lines.reduce((total, line) => total + line.quantity, 0),
     lines,

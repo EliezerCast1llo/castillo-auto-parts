@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ArrowUpRight, MapPin, MessageCircle, Phone, Wrench } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { buildContactLinks } from "@/lib/contact";
 
 export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
   const t = await getTranslations({ locale: "es", namespace: "Landing" });
+  const contact = buildContactLinks();
   return (
     <div className="landing-shell">
       <header className="landing-header">
@@ -23,11 +25,11 @@ export default async function LandingPage() {
           <span className="landing-contact-icon" aria-hidden="true"><MessageCircle /></span>
           <h2 id="contact-heading">{t("contactTitle")}</h2>
           <p>{t("contactDescription")}</p>
-          <a className="landing-whatsapp" href="https://wa.me/50378907671" target="_blank" rel="noopener noreferrer">
+          <a className="landing-whatsapp" href={contact.whatsapp} target="_blank" rel="noopener noreferrer">
             <MessageCircle aria-hidden="true" />{t("whatsapp")}<ArrowUpRight aria-hidden="true" />
           </a>
           <div className="landing-details">
-            <div><Phone aria-hidden="true" /><p><span>{t("phoneLabel")}</span><a href="tel:+50378907671">+503 7890 7671</a></p></div>
+            <div><Phone aria-hidden="true" /><p><span>{t("phoneLabel")}</span><a href={contact.telephone}>{contact.displayPhone}</a></p></div>
             <div><MapPin aria-hidden="true" /><p><span>{t("coverageLabel")}</span>{t("coverage")}</p></div>
           </div>
         </section>

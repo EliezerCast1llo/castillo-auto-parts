@@ -41,7 +41,8 @@ export async function POST(request: Request) {
       return respond({ ok: true, status: result.status });
     } catch (error) {
       if (error instanceof InvalidWompiWebhookSignatureError) {
-        await logWarn({ context: "wompi_webhook", outcome: "invalid_signature" });
+        // Expected unauthenticated traffic must not spend the server error-event budget.
+        await logInfo({ context: "wompi_webhook", outcome: "invalid_signature", errorCode: "WEBHOOK_SIGNATURE_INVALID" });
         return respond({ ok: false, reason: "invalid_signature" }, 401);
       }
 
