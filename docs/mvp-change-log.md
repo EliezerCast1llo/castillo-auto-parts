@@ -1,5 +1,11 @@
 # MVP Change Log
 
+## 2026-11-03 — B20 / #117: Google Ads y destino de la portada
+
+Etiqueta opcional en los layouts de landing y tienda con `next/script`, carga posterior a hidratación y nonce por petición. Solo con `NEXT_PUBLIC_GOOGLE_ADS_ID` se amplían los orígenes CSP de Google; sin ID se conserva la política anterior. La conversión Compra usa el total real del pedido en USD y su número, exclusivamente con pago `PAID`, con deduplicación por sesión y sin datos del cliente ni tokens de acceso en las URLs enviadas.
+
+Landing publica robots permisivo y sitemap de una sola URL (`/`), sin importar catálogo/DB ni código de conversión. El smoke prueba AdsBot-Google 200, nonces/CSP, aislamiento y ambos modos de etiqueta (Google simulado). No se activaron campañas, variables de Vercel ni despliegues. Las comprobaciones operativas y la apelación de anuncios quedan a cargo de Eliezer.
+
 ## 2026-10-30 — B19 / #115: cobertura nacional
 
 Decisión del dueño: reemplazar entrega propia por zonas con envío a todo El Salvador vía Boxful. Retiro en bodega gratis; envío cobrado, salvo promoción expresa del dueño. Solo tarjeta. Costo/tiempo según courier al pagar, sin garantizar mismo día y sin reajustar la tarifa del pedido.

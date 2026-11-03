@@ -2,6 +2,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { notFound } from "next/navigation";
 import { CheckCircle2, Clock3, CreditCard, Info, PackageCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { GoogleAdsPurchase } from "@/components/analytics/google-ads-purchase";
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/money";
 import { verifyOrderAccessToken } from "@/lib/order-access-token";
@@ -64,6 +65,9 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      {order.payment?.status === "PAID" ? (
+        <GoogleAdsPurchase orderNumber={order.orderNumber} totalCents={order.totalCents} />
+      ) : null}
       <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
