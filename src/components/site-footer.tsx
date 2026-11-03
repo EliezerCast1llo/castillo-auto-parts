@@ -2,7 +2,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { MapPin, ShieldCheck, Truck, Wrench } from "lucide-react";
 import { getCatalogFacets } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
-import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
+import { SUPPORT_WHATSAPP_NUMBER, buildContactLinks } from "@/lib/contact";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import type { Locale } from "@/lib/i18n/config";
 import { getTranslations } from "next-intl/server";
@@ -99,7 +99,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           {SUPPORT_WHATSAPP_NUMBER ? (
             <a
               className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"
-              href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(tWhatsApp("message"))}`}
+              href={buildContactLinks(SUPPORT_WHATSAPP_NUMBER, tWhatsApp("message")).whatsapp}
               rel="noopener noreferrer"
               target="_blank"
             >

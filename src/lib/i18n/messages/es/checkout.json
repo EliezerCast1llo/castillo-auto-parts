@@ -11,7 +11,6 @@
     "subtotal": "Subtotal",
     "shippingTitle": "Envío",
     "pickupFree": "Retiro gratis en {location}",
-    "pickupOrDelivery": "Retiro gratis en {location}; o envío {zones}.",
     "taxNotice": "Precios con IVA incluido (13%).",
     "nationalShipping": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis."
   },

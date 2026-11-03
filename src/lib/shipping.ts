@@ -1,6 +1,10 @@
+import "server-only";
 import { isIsolatedE2EEnvironment } from "./production-environment";
 import type { PackageMeasurements } from "./package-measurements";
 import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
+import { OperationalError } from "./operational-error";
+import { logWarn } from "./logger";
+export { shippingRateKey } from "./shipping-rate-key";
 
 export type ShippingDestination = {
   addressLine1: string; addressLine2?: string; department: string; city: string;
@@ -49,18 +53,18 @@ export async function getShippingRates(request: ShippingRequest, provider = getS
   try {
     const rates = await Promise.race([
       provider.getRates(request),
-      new Promise<ShippingRate[]>((resolve) => { timeout = setTimeout(() => resolve([]), 5000); }),
+      new Promise<ShippingRate[]>((_, reject) => { timeout = setTimeout(() => reject(new OperationalError("SHIPPING_RATE_UNAVAILABLE", "Shipping rates timed out.")), 5000); }),
     ]);
     return rates.filter((rate) => rate.provider && rate.courierId && rate.courierName &&
       Number.isSafeInteger(rate.priceCents) && rate.priceCents > 0 &&
       ["same-day", "next-day"].includes(rate.serviceType) &&
       (!rate.estimatedDeliveryAt || Number.isFinite(Date.parse(rate.estimatedDeliveryAt))));
-  } catch { return []; } finally { if (timeout) clearTimeout(timeout); }
+  } catch {
+    await logWarn({ context: "shipping_rates", outcome: "failed" }, new OperationalError("SHIPPING_RATE_UNAVAILABLE", "Shipping rates unavailable."));
+    return [];
+  } finally { if (timeout) clearTimeout(timeout); }
 }
 
-export function shippingRateKey(rate: Pick<ShippingRate, "provider" | "courierId" | "serviceType">) {
-  return JSON.stringify([rate.provider, rate.courierId, rate.serviceType]);
-}
 export function chargedShippingCents(quotedCents: number, subtotalCents: number, promo: { enabled: boolean; minimumSubtotalCents: number }) {
   return promo.enabled && subtotalCents >= promo.minimumSubtotalCents ? 0 : quotedCents;
 }

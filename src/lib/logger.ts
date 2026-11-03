@@ -1,16 +1,20 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { localErrorCode, sanitizeMonitoringEvent, type MonitoringLevel, type MonitoringOperation } from "./monitoring-event";
 import { sendMonitoringEvent } from "./monitoring";
+import { isOperationalErrorCode } from "./operational-error";
 
 const observations = new AsyncLocalStorage<{ correlationId: string; operation: MonitoringOperation }>();
 
 async function log(level: MonitoringLevel, context: { context: string; [key: string]: unknown }, error?: unknown) {
   const observation = observations.getStore();
+  const errorCode = level !== "info" ? localErrorCode(error)
+    : isOperationalErrorCode(context.errorCode) ? context.errorCode : undefined;
   const payload = sanitizeMonitoringEvent(level, {
     ...context,
+    errorCode,
     ...(observation ? { correlationId: observation.correlationId, context: observation.operation } : {}),
   });
-  const localPayload = { ...payload, ...(level !== "info" ? { errorCode: localErrorCode(error) } : {}) };
+  const localPayload = { ...payload, ...(errorCode ? { errorCode } : {}) };
   if (level === "error") console.error(JSON.stringify(localPayload));
   else if (level === "warn") console.warn(JSON.stringify(localPayload));
   else console.log(JSON.stringify(payload));

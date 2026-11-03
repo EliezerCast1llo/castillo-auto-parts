@@ -21,6 +21,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { OperationalError, providerFailure } from "./operational-error";
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -88,7 +89,7 @@ function createR2Client(): S3Client {
   const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
 
   if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error(
+    throw new OperationalError("CONFIG_MISSING",
       "Cloudflare R2 no está configurado. Agrega CLOUDFLARE_R2_ACCOUNT_ID, " +
         "CLOUDFLARE_R2_ACCESS_KEY_ID y CLOUDFLARE_R2_SECRET_ACCESS_KEY en .env.",
     );
@@ -118,13 +119,19 @@ function getR2Client(): S3Client {
 
 function getBucketName(): string {
   const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
-  if (!bucket) throw new Error("CLOUDFLARE_R2_BUCKET_NAME no está configurado.");
+  if (!bucket) throw new OperationalError("CONFIG_MISSING", "CLOUDFLARE_R2_BUCKET_NAME no está configurado.");
   return bucket;
 }
 
 export function getR2PublicUrl(key: string): string {
   const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
-  if (!publicUrl) throw new Error("CLOUDFLARE_R2_PUBLIC_URL no está configurado.");
+  if (!publicUrl) throw new OperationalError("CONFIG_MISSING", "CLOUDFLARE_R2_PUBLIC_URL no está configurado.");
+  try {
+    const url = new URL(publicUrl);
+    if (url.protocol !== "https:" || url.username || url.password) throw new Error();
+  } catch {
+    throw new OperationalError("CONFIG_INVALID", "CLOUDFLARE_R2_PUBLIC_URL must be a valid HTTPS URL without credentials.");
+  }
   return `${publicUrl.replace(/\/$/, "")}/${key}`;
 }
 
@@ -163,7 +170,8 @@ export async function uploadToR2(
     CacheControl: "public, max-age=604800, immutable",
   });
 
-  await getR2Client().send(command);
+  try { await getR2Client().send(command); }
+  catch (error) { throw providerFailure(error, "R2 upload unavailable."); }
 
   return {
     key,
@@ -181,7 +189,8 @@ export async function deleteFromR2(key: string): Promise<void> {
     Key: key,
   });
 
-  await getR2Client().send(command);
+  try { await getR2Client().send(command); }
+  catch (error) { throw providerFailure(error, "R2 delete unavailable."); }
 }
 
 /**

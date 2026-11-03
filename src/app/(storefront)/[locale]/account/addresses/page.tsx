@@ -51,6 +51,12 @@ export default async function AccountAddressesPage({
   const noticeMessage = await getStatusMessage("addresses", estado, locale);
   const noticeIsSuccess = NOTICE_IS_SUCCESS[estado] ?? false;
   const t = await getTranslations({ locale, namespace: "Account.addresses" });
+  const tErrors = await getTranslations({ locale, namespace: "Status.addresses" });
+  const errorMessages = {
+    missing_fields: tErrors("missing_fields"),
+    invalid_department: tErrors("invalid_department"),
+    invalid_location: tErrors("invalid_location"),
+  };
 
   const addresses = await db.address.findMany({
       where: { userId: session.user.id },
@@ -72,7 +78,7 @@ export default async function AccountAddressesPage({
 
         <div className="mt-4 flex items-center justify-between gap-4">
           <h1 className="text-2xl font-black text-ca-navy-950">{t("title")}</h1>
-          <AddAddressModal />
+          <AddAddressModal errorMessages={errorMessages} />
         </div>
 
         {noticeMessage ? (
@@ -98,7 +104,7 @@ export default async function AccountAddressesPage({
                 {t("emptyDescription")}
               </p>
             </div>
-            <AddAddressModal />
+            <AddAddressModal errorMessages={errorMessages} />
           </div>
         ) : (
           <div className="mt-5 space-y-3">

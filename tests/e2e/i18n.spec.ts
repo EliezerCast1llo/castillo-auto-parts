@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { EN, ES, prisma } from "./helpers";
 import { PRODUCT_CLAIMS } from "./fixtures/products";
+import { createOrderAccessToken, hashOrderAccessToken } from "../../src/lib/order-access-token";
 
 test("legacy unprefixed URLs redirect permanently to Spanish", async ({ request }) => {
   for (const path of ["/catalog", "/ayuda", "/cart", "/vehiculos/toyota"]) {
@@ -546,8 +547,10 @@ async function createShippedOrder(email: string) {
     where: { sku: PRODUCT_CLAIMS["i18n.spec.ts"].cartAndCheckout.sku },
   });
 
-  return prisma.order.create({
+  const accessToken = createOrderAccessToken();
+  const order = await prisma.order.create({
     data: {
+      accessTokenHash: hashOrderAccessToken(accessToken),
       customerEmail: email,
       customerName: "Cliente i18n E2E",
       customerPhone: "70000000",
@@ -573,6 +576,7 @@ async function createShippedOrder(email: string) {
       userId: user.id,
     },
   });
+  return { ...order, accessToken };
 }
 
 test("the account area speaks the language of the page", async ({ page }) => {
@@ -592,7 +596,7 @@ test("the order tracking labels follow the language, and the identifiers do not"
   page,
 }) => {
   const email = await signInCustomer(page, "i18n-orders");
-  await createShippedOrder(email);
+  const order = await createShippedOrder(email);
 
   // El seguimiento devuelve identificadores y el catalogo los escribe. Este
   // test es la otra mitad del unitario: alli se verifica que cada identificador
@@ -614,6 +618,13 @@ test("the order tracking labels follow the language, and the identifiers do not"
   // Y el identificador crudo nunca llega a la pantalla: si el catalogo no
   // resolviera, se veria "inTransit" en vez de la etiqueta.
   await expect(page.getByText(/inTransit|readyForPickup|paymentProcessing/)).toHaveCount(0);
+  // Historical LOCAL_DELIVERY also remains readable on the signed public detail page.
+  for (const [path, method] of [[ES, "Entrega a domicilio"], [EN, "Home delivery"]] as const) {
+    const response = await page.goto(path(`/orders/${order.orderNumber}?token=${order.accessToken}`));
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole("heading", { name: order.orderNumber })).toBeVisible();
+    await expect(page.getByText(method, { exact: true })).toBeVisible();
+  }
 });
 
 test("the sign-in page speaks the language of the page", async ({ page }) => {

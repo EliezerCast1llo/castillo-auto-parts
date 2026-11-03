@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { OperationalError, providerFailure } from "../operational-error";
 import type {
   CreatePaymentResult,
   PaymentProvider,
@@ -25,9 +26,9 @@ export type WompiConfig = {
 
 type Fetch = typeof fetch;
 
-export class InvalidWompiWebhookSignatureError extends Error {
+export class InvalidWompiWebhookSignatureError extends OperationalError {
   constructor() {
-    super("Invalid Wompi webhook signature.");
+    super("WEBHOOK_SIGNATURE_INVALID", "Invalid Wompi webhook signature.");
   }
 }
 
@@ -36,13 +37,17 @@ export function createWompiPaymentProvider(
   fetchImplementation: Fetch = fetch,
 ): PaymentProvider {
   let cachedToken: { accessToken: string; expiresAt: number } | undefined;
+  const requestProvider: Fetch = async (...args) => {
+    try { return await fetchImplementation(...args); }
+    catch (error) { throw providerFailure(error, "Wompi request unavailable."); }
+  };
 
   return {
     id: "wompi",
 
     async createPayment(input): Promise<CreatePaymentResult> {
       const accessToken = await getAccessToken();
-      const response = await fetchImplementation(joinUrl(config.apiBaseUrl, "/EnlacePago"), {
+      const response = await requestProvider(joinUrl(config.apiBaseUrl, "/EnlacePago"), {
         body: JSON.stringify({
           configuracion: {
             cantidadPorDefecto: 1,
@@ -82,10 +87,10 @@ export function createWompiPaymentProvider(
       const isProduction = booleanValue(payload.estaProductivo);
 
       if (!idEnlace || !checkoutUrl || isProduction === undefined) {
-        throw new Error("Wompi returned an incomplete payment-link response.");
+        throw new OperationalError("PROVIDER_REJECTED", "Wompi returned an incomplete payment-link response.");
       }
       if (isProduction !== (config.environment === "production")) {
-        throw new Error("Wompi payment-link environment does not match configuration.");
+        throw new OperationalError("PROVIDER_REJECTED", "Wompi payment-link environment does not match configuration.");
       }
 
       return {
@@ -151,7 +156,7 @@ export function createWompiPaymentProvider(
       client_secret: config.apiSecret,
       grant_type: "client_credentials",
     });
-    const response = await fetchImplementation(
+    const response = await requestProvider(
       joinUrl(config.identityBaseUrl, "/connect/token"),
       {
         body,
@@ -164,7 +169,7 @@ export function createWompiPaymentProvider(
     const accessToken = stringValue(payload.access_token);
     const expiresIn = numberValue(payload.expires_in);
     if (!accessToken || !expiresIn || expiresIn <= 0) {
-      throw new Error("Wompi returned an incomplete OAuth response.");
+      throw new OperationalError("PROVIDER_REJECTED", "Wompi returned an incomplete OAuth response.");
     }
 
     cachedToken = {
@@ -178,16 +183,16 @@ export function createWompiPaymentProvider(
 export function getWompiConfig(environment: NodeJS.ProcessEnv = process.env): WompiConfig {
   const wompiEnvironment = environment.WOMPI_ENVIRONMENT?.trim();
   if (wompiEnvironment !== "sandbox" && wompiEnvironment !== "production") {
-    throw new Error('WOMPI_ENVIRONMENT must be "sandbox" or "production".');
+    throw new OperationalError(wompiEnvironment ? "CONFIG_INVALID" : "CONFIG_MISSING", 'WOMPI_ENVIRONMENT must be "sandbox" or "production".');
   }
 
   return {
-    apiBaseUrl: environment.WOMPI_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL,
+    apiBaseUrl: requiredHttpsUrl(environment.WOMPI_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL, "WOMPI_API_BASE_URL", wompiEnvironment),
     appId: requiredEnvironmentValue(environment, "WOMPI_APP_ID"),
     apiSecret: requiredEnvironmentValue(environment, "WOMPI_API_SECRET"),
     environment: wompiEnvironment,
     identityBaseUrl:
-      environment.WOMPI_IDENTITY_BASE_URL?.trim() || DEFAULT_IDENTITY_BASE_URL,
+      requiredHttpsUrl(environment.WOMPI_IDENTITY_BASE_URL?.trim() || DEFAULT_IDENTITY_BASE_URL, "WOMPI_IDENTITY_BASE_URL", wompiEnvironment),
     webhookSecret:
       environment.WOMPI_WEBHOOK_SECRET?.trim() ||
       requiredEnvironmentValue(environment, "WOMPI_API_SECRET"),
@@ -217,16 +222,21 @@ export function verifyWompiWebhookSignature(
 
 function requiredEnvironmentValue(environment: NodeJS.ProcessEnv, name: string) {
   const value = environment[name]?.trim();
-  if (!value) throw new Error(`${name} is required when Wompi is enabled.`);
+  if (!value) throw new OperationalError("CONFIG_MISSING", `${name} is required when Wompi is enabled.`);
   return value;
 }
 
 function requiredHttpsUrl(value: string, name: string, environment: WompiEnvironment) {
-  const url = new URL(value);
-  if (environment === "production" && url.protocol !== "https:") {
-    throw new Error(`${name} must use HTTPS in production.`);
+  try {
+    const url = new URL(value);
+    if (environment === "production" && url.protocol !== "https:") {
+      throw new OperationalError("CONFIG_INVALID", `${name} must use HTTPS in production.`);
+    }
+    return url.toString();
+  } catch (error) {
+    if (error instanceof OperationalError) throw error;
+    throw new OperationalError("CONFIG_INVALID", `${name} must be a valid URL.`);
   }
-  return url.toString();
 }
 
 function joinUrl(baseUrl: string, path: string) {
@@ -234,12 +244,11 @@ function joinUrl(baseUrl: string, path: string) {
 }
 
 async function readJsonResponse(response: Response, operation: string) {
-  const text = await response.text();
-  const payload = parseJsonRecord(text);
   if (!response.ok) {
-    throw new Error(`Wompi could not ${operation} (HTTP ${response.status}).`);
+    throw new OperationalError(response.status >= 500 ? "PROVIDER_UNAVAILABLE" : "PROVIDER_REJECTED", `Wompi could not ${operation} (HTTP ${response.status}).`);
   }
-  return payload;
+  try { return parseJsonRecord(await response.text()); }
+  catch (error) { throw providerFailure(error, "Wompi response unavailable."); }
 }
 
 function parseJsonRecord(value: string) {
@@ -251,7 +260,7 @@ function parseJsonRecord(value: string) {
   } catch {
     // The caller reports a provider-level error without exposing response data.
   }
-  throw new Error("Wompi returned invalid JSON.");
+  throw new OperationalError("PROVIDER_REJECTED", "Wompi returned invalid JSON.");
 }
 
 function mapWompiStatus(value: string | undefined): PaymentStatus | undefined {

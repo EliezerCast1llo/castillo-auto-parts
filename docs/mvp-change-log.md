@@ -1,5 +1,11 @@
 # MVP Change Log
 
+## 2026-11-03 — B21 / #119: limpieza y diagnósticos de integraciones
+
+Las firmas inválidas de Wompi conservan 401 sin consumir cuota externa de monitoreo. Un catálogo cerrado de códigos distingue fallos conocidos de configuración/proveedor en logs sanitizados y eventos; Redis/R2 dejan de imprimir errores crudos y EmailLog guarda solo el código del fallo. Las respuestas HTTP y los fallbacks de integraciones conservan su forma.
+
+WhatsApp y teléfono usan un único constructor sin dependencias de la tienda; landing y fallback de envío conservan el número público actual, con override por la variable existente. Las validaciones de dirección se muestran dentro del formulario, preservando datos y habilitando el reintento tras el rechazo. Se eliminan dos claves i18n sin referencias (incluida `orders.detail.zone`, sin uso en pedidos históricos) y `getGuestCart` calcula paquetes/peso una sola vez. Sin migraciones, dependencias ni credenciales nuevas. Boxful y políticas de Ads permanecen en #91 y #93.
+
 ## 2026-11-03 — B20 / #117: Google Ads y destino de la portada
 
 Etiqueta opcional en los layouts de landing y tienda con `next/script`, carga posterior a hidratación y nonce por petición. Solo con `NEXT_PUBLIC_GOOGLE_ADS_ID` se amplían los orígenes CSP de Google; sin ID se conserva la política anterior. La conversión Compra usa el total real del pedido en USD y su número, exclusivamente con pago `PAID`, con deduplicación por sesión y sin datos del cliente ni tokens de acceso en las URLs enviadas.

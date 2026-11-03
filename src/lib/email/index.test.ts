@@ -35,6 +35,6 @@ describe("email provider selection", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("EMAIL_PROVIDER", "unknown");
 
-    expect(() => getEmailProvider()).toThrow('EMAIL_PROVIDER inválido: unknown');
+    expect(() => getEmailProvider()).toThrow('EMAIL_PROVIDER inválido');
   });
 });

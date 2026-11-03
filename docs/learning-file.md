@@ -10,6 +10,13 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 - **Branch por tarea:** al iniciar cualquier tarea que modifique el repo, crear primero una nueva branch desde `main` (convención `claude/<tema>` o `codex/<tema>`). No commitear trabajo directamente en `main`; `main` solo recibe merges vía PR. (Acordado 2026-06-24.)
 
+## Actualización 2026-11-03 — endurecimiento / #119
+
+- Diagnósticos conocidos: `OperationalError` y catálogo fijo en `operational-error.ts`. Solo códigos permitidos entran a telemetría; jamás serializar errores de SDK, causas, credenciales o PII. Firmas inválidas Wompi son tráfico esperado (401, info local) y no gastan eventos de monitoreo.
+- `buildContactLinks` centraliza wa.me/tel y formato de teléfono, sin imports de servidor. Los CTAs opcionales conservan su fallback a ayuda sin configuración; landing y envío conservan su contacto público real por defecto y respetan el override existente.
+- El formulario de direcciones recibe errores de validación tipados y los presenta sin cerrarse ni perder campos; el estado guardando se limpia con finally. Al guardar, revalida la página, cierra el modal y conserva la URL de éxito; autenticación mantiene su redirección.
+- `shippingRateKey` vive en un módulo puro para el navegador; las consultas de tarifas y sus logs son solo de servidor. No cambia la integración Boxful, el ciclo de cotización ni los límites/alcance de #91.
+
 ## Actualización 2026-11-03 — Google Ads / #117
 
 - La etiqueta es opcional por `NEXT_PUBLIC_GOOGLE_ADS_ID` (público, configurado antes del build); sin ID no cambia la política CSP ni se contacta Google. Los scripts de landing y tienda heredan el nonce del middleware.
