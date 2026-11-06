@@ -84,5 +84,15 @@
     "verifyBeforeSaving": "Verifica que los datos sean correctos antes de guardar.",
     "selectCity": "Selecciona municipio"
   },
-  "breadcrumbAriaLabel": "Ruta de la cuenta"
+  "breadcrumbAriaLabel": "Ruta de la cuenta",
+  "twoFactor": {
+    "title": "Verificación en dos pasos",
+    "description": "Con esto activado, cada ingreso con contraseña pide además un código de 6 dígitos que enviamos a tu correo.",
+    "statusOn": "Activada",
+    "statusOff": "Desactivada",
+    "enable": "Activar verificación",
+    "disable": "Desactivar verificación",
+    "providerTitle": "Tu cuenta ingresa con Google.",
+    "providerDescription": "Google ya pide su propio segundo factor, así que este no agregaría protección."
+  }
 }

@@ -50,3 +50,43 @@ export async function changePasswordAction(formData: FormData) {
 
   redirect({ href: { pathname: "/account", query: { estado: "password_changed" } }, locale });
 }
+
+/**
+ * Enciende o apaga el segundo factor de la cuenta.
+ *
+ * El valor llega en un campo oculto con el estado deseado y no como un
+ * interruptor que se interpreta: así el botón dice exactamente qué va a hacer y
+ * un doble envío deja la cuenta donde el botón prometía, no alternando.
+ */
+export async function toggleTwoFactorAction(formData: FormData) {
+  const locale = await getActionLocale();
+  const session = await getCustomerSession();
+  if (!session) return redirect({ href: "/auth/login", locale });
+
+  const enabled = formString(formData, "enabled") === "true";
+
+  const user = await db.user.findUnique({
+    where: { id: session.id },
+    select: { passwordHash: true },
+  });
+
+  // Sin contraseña propia no hay nada que reforzar: esa cuenta entra por Google,
+  // y ese camino no pasa por el código. Encenderlo prometería una protección
+  // que no existiría.
+  if (!user?.passwordHash) {
+    redirect({ href: { pathname: "/account", query: { estado: "no_credentials" } }, locale });
+  }
+
+  await db.user.update({
+    data: { twoFactorEnabled: enabled },
+    where: { id: session.id },
+  });
+
+  redirect({
+    href: {
+      pathname: "/account",
+      query: { estado: enabled ? "two_factor_enabled" : "two_factor_disabled" },
+    },
+    locale,
+  });
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { getAdminSecretIssue, getAdminUserForHandler, ADMIN_SESSION_COOKIE } from "./admin-auth";
+import { getAdminSecretIssue, getAdminUserForHandler, getSafeAdminNextPath, ADMIN_SESSION_COOKIE } from "./admin-auth";
 
 vi.mock("next/headers", () => ({
   cookies: vi.fn(),
@@ -134,5 +134,26 @@ describe("getAdminUserForHandler", () => {
     vi.mocked(db.user.findUnique).mockResolvedValue({ isActive: true, role: "SALES" } as never);
     const result = await getAdminUserForHandler();
     expect("user" in result).toBe(true);
+  });
+});
+
+describe("getSafeAdminNextPath", () => {
+  it("conserva un destino del panel", () => {
+    expect(getSafeAdminNextPath("/admin/products")).toBe("/admin/products");
+    expect(getSafeAdminNextPath("/admin")).toBe("/admin");
+  });
+
+  it("descarta destinos fuera del panel", () => {
+    expect(getSafeAdminNextPath("https://malo.test/admin/orders")).toBe("/admin/orders");
+    expect(getSafeAdminNextPath("/es/account")).toBe("/admin/orders");
+    expect(getSafeAdminNextPath(undefined)).toBe("/admin/orders");
+  });
+
+  it("descarta las dos pantallas del ingreso", () => {
+    // `/admin/2fa` redirige al destino cuando ya hay sesión: tenerse a sí misma
+    // como destino da un bucle infinito después de verificar el código.
+    expect(getSafeAdminNextPath("/admin/2fa")).toBe("/admin/orders");
+    expect(getSafeAdminNextPath("/admin/2fa?next=/admin/users")).toBe("/admin/orders");
+    expect(getSafeAdminNextPath("/admin/login")).toBe("/admin/orders");
   });
 });

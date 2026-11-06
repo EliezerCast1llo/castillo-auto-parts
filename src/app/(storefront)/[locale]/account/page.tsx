@@ -5,11 +5,17 @@ import { AccountPasswordForm } from "@/components/account/account-password-form"
 import { AccountProfileForm } from "@/components/account/account-profile-form";
 import { AccountQuickActions } from "@/components/account/account-quick-actions";
 import { AccountSupportCard } from "@/components/account/account-support-card";
+import { AccountTwoFactorForm } from "@/components/account/account-two-factor-form";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { firstValue } from "@/lib/url-utils";
-import { changePasswordAction, logoutCustomer, updateProfileAction } from "./actions";
+import {
+  changePasswordAction,
+  logoutCustomer,
+  toggleTwoFactorAction,
+  updateProfileAction,
+} from "./actions";
 
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
 import { getStatusMessage } from "@/lib/i18n/status";
@@ -67,6 +73,7 @@ export default async function AccountPage({
       name: true,
       passwordHash: true,
       phone: true,
+      twoFactorEnabled: true,
     },
   });
 
@@ -129,7 +136,16 @@ export default async function AccountPage({
               />
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="min-w-0">
+              <AccountTwoFactorForm
+                action={toggleTwoFactorAction}
+                enabled={user.twoFactorEnabled}
+                hasPassword={hasPassword}
+                locale={locale}
+              />
+            </div>
+
+            <div className="min-w-0">
               <AccountSupportCard locale={locale} />
             </div>
           </div>

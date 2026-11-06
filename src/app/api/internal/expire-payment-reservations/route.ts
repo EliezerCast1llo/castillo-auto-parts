@@ -1,8 +1,9 @@
 import { checkPendingPaymentBacklog } from "@/lib/pending-payment-monitoring";
-import { logInfo, observeOperation } from "@/lib/logger";
+import { logError, logInfo, observeOperation } from "@/lib/logger";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { expirePaymentReservations } from "@/lib/payment-reservations";
+import { purgeExpiredTwoFactorChallenges } from "@/lib/two-factor";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +30,34 @@ async function expireReservations(request: Request) {
   return observeOperation("reservation_cron", async () => {
     await checkPendingPaymentBacklog();
     const released = await expirePaymentReservations();
+    const purgedTwoFactorChallenges = await purgeTwoFactorChallenges();
     await logInfo({ context: "reservation_cron", outcome: "completed" });
-    return NextResponse.json({ ok: true, released }, { headers: { "x-correlation-id": correlationId } });
+    return NextResponse.json(
+      { ok: true, purgedTwoFactorChallenges, released },
+      { headers: { "x-correlation-id": correlationId } },
+    );
   }, correlationId);
+}
+
+/**
+ * Limpieza de los desafíos de segundo factor vencidos.
+ *
+ * Viaja en este cron porque es el único que ya corre cada cinco minutos y está
+ * autenticado; montar un segundo horario para borrar filas muertas sería una
+ * pieza más que configurar en cada despliegue.
+ *
+ * Va aislada: lo importante de este endpoint es liberar reservas de pago, y una
+ * excepción acá —la tabla todavía sin migrar, por ejemplo— no puede dejar las
+ * reservas sin expirar. Devuelve `null` cuando falla para que la respuesta
+ * distinga "no borró nada" de "no pudo".
+ */
+async function purgeTwoFactorChallenges(): Promise<number | null> {
+  try {
+    return await purgeExpiredTwoFactorChallenges();
+  } catch (error) {
+    await logError({ context: "reservation_cron.purge_two_factor" }, error);
+    return null;
+  }
 }
 
 export function isValidBearerToken(authorization: string | null, secret: string) {

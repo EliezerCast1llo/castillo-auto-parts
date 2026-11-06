@@ -69,6 +69,9 @@ describe.skipIf(!process.env.DATABASE_URL)("reservation cron endpoint with Postg
     for (const [kind, status] of [["live", "PAYMENT_PROCESSING"], ["paid", "PAID_PENDING_SHIPMENT"]]) {
       expect((await db.order.findUniqueOrThrow({ where: { orderNumber: `CRON-${kind}` } })).status).toBe(status);
     }
-    await expect((await POST(request("fixture-cron-not-a-real-secret"))).json()).resolves.toEqual({ ok: true, released: 0 });
+    // Una segunda corrida no libera nada. `purgedTwoFactorChallenges` viaja
+    // en la misma respuesta porque la purga de desafíos vencidos va de
+    // prestado en este cron; acá no hay ninguno, así que borra cero.
+    await expect((await POST(request("fixture-cron-not-a-real-secret"))).json()).resolves.toEqual({ ok: true, purgedTwoFactorChallenges: 0, released: 0 });
   });
 });

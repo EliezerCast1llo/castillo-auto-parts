@@ -8,11 +8,17 @@
     "password_mismatch": "Las contraseñas no coinciden.",
     "password_reset": "Contraseña restablecida. Inicia sesión con tu nueva contraseña.",
     "rate_limited": "Demasiados intentos. Espera unos minutos e intenta de nuevo.",
+    "two_factor_invalid": "El código no es válido o ya venció. Pide uno nuevo.",
+    "two_factor_restart": "La verificación venció. Inicia sesión de nuevo.",
+    "two_factor_sent": "Te enviamos un código nuevo. Revisa tu correo.",
+    "two_factor_unavailable": "No pudimos enviar el código. Intenta de nuevo en unos minutos.",
     "weak_password": "La contraseña debe tener al menos 8 caracteres."
   },
   "account": {
     "success": {
       "password_changed": "Contraseña cambiada correctamente.",
+      "two_factor_disabled": "Verificación en dos pasos desactivada.",
+      "two_factor_enabled": "Verificación en dos pasos activada.",
       "updated": "Teléfono actualizado correctamente."
     },
     "error": {
