@@ -3,6 +3,7 @@ import {
   PaymentStatus as PrismaPaymentStatus,
   Prisma,
 } from "@prisma/client";
+import { ensureBoxfulShipment } from "./boxful/shipments";
 import { db } from "./db";
 import { sendOrderConfirmationEmail } from "./email/transactional";
 import type { OrderConfirmationEmailInput } from "./email/templates";
@@ -187,6 +188,7 @@ export async function processPaymentWebhookEvent(
     });
 
     if (result.status === "processed") {
+      await ensureBoxfulShipment(payment.order.orderNumber);
       await sendOrderConfirmationEmail(result.email);
     }
     if (result.status === "manual_review") {

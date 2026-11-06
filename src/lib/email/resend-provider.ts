@@ -20,7 +20,7 @@ function createResendProvider(): EmailProvider {
           subject: message.subject,
           html: message.html,
           text: message.text,
-        });
+        }, { idempotencyKey: message.idempotencyKey, ...(message.signal ? { signal: message.signal } : {}) });
 
         if (result.error) {
           const status = result.error.statusCode;

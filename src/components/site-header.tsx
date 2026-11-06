@@ -1,7 +1,7 @@
 import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle, ShoppingCart, Truck, User, UserRound, Wrench } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { getGuestCartItemCount } from "@/lib/cart";
+import { getCartItemCount } from "@/lib/cart";
 import { MobileMenu } from "@/components/mobile-menu";
 import { MyVehicleChip } from "@/components/my-vehicle-chip";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import type { LocaleHref } from "@/lib/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/config";
+import { LocaleSwitch } from "@/components/locale-switch";
 
 type SiteHeaderProps = {
   /**
@@ -32,7 +33,7 @@ type SiteHeaderProps = {
 export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProps) {
   const tNav = await getTranslations({ locale, namespace: "Nav" });
   const [cartItemCount, session] = await Promise.all([
-    getGuestCartItemCount(),
+    getCartItemCount(),
     auth(),
   ]);
 
@@ -97,6 +98,10 @@ export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProp
                 variant="subtle"
               />
             </div>
+
+            {/* En el cabezal fijo va junto al resto de las acciones: la barra
+                superior con el conmutador solo existe en la portada. */}
+            <LocaleSwitch current={locale} label={tNav("languageSwitch")} tone="onLight" />
 
             <Link
               href={accountHref}
@@ -256,6 +261,10 @@ async function UtilityBar({ locale }: { locale: Locale }) {
             {tNav("whatsappAdvice")}
           </a>
         ) : null}
+
+        {/* Último de la barra: es un control que se usa una vez y no debería
+            competir con el dato de entrega ni con el contacto. */}
+        <LocaleSwitch current={locale} label={tNav("languageSwitch")} />
       </div>
     </div>
   );

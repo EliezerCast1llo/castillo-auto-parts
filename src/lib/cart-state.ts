@@ -109,6 +109,24 @@ export function removeStoredCartItem(items: StoredCartItem[], sku: string) {
   return normalizeCartItems(items).filter((item) => item.sku !== cleanSku);
 }
 
+/**
+ * Funde dos carritos en uno.
+ *
+ * Las cantidades se **suman**, no se reemplazan: quien agregó dos antes de
+ * entrar y uno después eligió las dos veces, y quedarse con una sola de las dos
+ * decisiones es perder la otra en silencio. El tope por línea se aplica igual.
+ *
+ * El tope por stock no se aplica acá a propósito: el stock se chequea al leer
+ * el carrito, que es donde ya se marcaba `insufficient_stock` para el carrito
+ * que vive en el navegador. Aplicarlo también acá recortaría líneas sin avisar.
+ */
+export function mergeStoredCarts(
+  first: StoredCartItem[],
+  second: StoredCartItem[],
+): StoredCartItem[] {
+  return normalizeCartItems([...first, ...second]);
+}
+
 export function getStoredCartQuantity(items: StoredCartItem[], sku: string) {
   return normalizeCartItems(items).find((item) => item.sku === sku)?.quantity ?? 0;
 }

@@ -1,3 +1,4 @@
+import { checkoutBoxfulLocations } from "@/lib/boxful/locations";
 import { cookies } from "next/headers";
 import { Link } from "@/lib/i18n/navigation";
 import { AlertCircle, ArrowLeft, CreditCard, Info, MapPin } from "lucide-react";
@@ -5,7 +6,7 @@ import { CheckoutFormState, CheckoutPayButton } from "@/components/checkout/chec
 import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
-import { getGuestCart } from "@/lib/cart";
+import { getCart } from "@/lib/cart";
 import { buildContactLinks } from "@/lib/contact";
 import {
   CHECKOUT_RETRY_KEY_COOKIE,
@@ -45,10 +46,11 @@ type CheckoutPageProps = {
 export default async function CheckoutPage({ params: routeParams, searchParams }: CheckoutPageProps) {
   const locale = await resolveAndPublishRouteLocale(routeParams);
   const [cart, fulfillmentOptions, session] = await Promise.all([
-    getGuestCart(),
+    getCart(),
     getFulfillmentOptions(),
     auth(),
   ]);
+  const boxfulLocations = await checkoutBoxfulLocations();
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = await getStatusMessage("checkout", status, locale);
@@ -120,6 +122,8 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
                 (reproduce, no duplica), así que no hace falta ocultarlo. */}
             {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <CheckoutForm
+                boxfulLocations={boxfulLocations}
+                requiresDistrict={process.env.SHIPPING_PROVIDER === "boxful"}
                 cartDetail={cart.lines.map((line) => `${line.quantity} × ${line.product.sku} ${line.product.name}`).join("; ")}
                 shippingConfigured={getShippingProvider() !== unavailableShippingProvider}
                 idempotencyKey={idempotencyKey}
@@ -197,6 +201,7 @@ type SavedAddress = {
 };
 
 function CheckoutForm({
+  boxfulLocations, requiresDistrict,
   cartDetail,
   idempotencyKey,
   shippingConfigured,
@@ -206,6 +211,7 @@ function CheckoutForm({
   t,
   userDefaults,
 }: {
+  boxfulLocations: Awaited<ReturnType<typeof checkoutBoxfulLocations>>; requiresDistrict: boolean;
   cartDetail: string;
   idempotencyKey: string;
   shippingConfigured: boolean;
@@ -265,6 +271,7 @@ function CheckoutForm({
       <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
         <h2 className="text-base font-black text-ca-navy-950">{t("form.deliveryMethod")}</h2>
         <CheckoutDeliveryFields
+          boxfulLocations={boxfulLocations} requiresDistrict={requiresDistrict}
           cartDetail={cartDetail}
           shippingConfigured={shippingConfigured}
           pickupLocation={pickupLocation}

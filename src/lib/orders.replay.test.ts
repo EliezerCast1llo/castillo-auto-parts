@@ -1,6 +1,6 @@
 import { OrderStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
-import type { GuestCart } from "./cart";
+import type { CartSummary } from "./cart";
 import type { CheckoutInput } from "./checkout";
 import {
   buildIntentFingerprint,
@@ -29,7 +29,7 @@ function order(overrides: Partial<IdempotentOrderLookup> = {}): IdempotentOrderL
   };
 }
 
-function cart(lines: { sku: string; quantity: number }[]): GuestCart {
+function cart(lines: { sku: string; quantity: number }[]): CartSummary {
   return {
     hasBlockingIssues: false,
     itemCount: lines.reduce((total, line) => total + line.quantity, 0),
@@ -40,7 +40,7 @@ function cart(lines: { sku: string; quantity: number }[]): GuestCart {
       quantity: line.quantity,
       product: { sku: line.sku },
     })),
-  } as GuestCart;
+  } as CartSummary;
 }
 
 function input(overrides: Partial<CheckoutInput> = {}): CheckoutInput {
@@ -183,14 +183,13 @@ describe("buildIntentFingerprint", () => {
     );
   });
 
-  it("changes identity with the selected courier, server quote, promotion charge or landmark", () => {
+  it("changes identity with courier/district/landmark, while quote price is outside the intent", () => {
     const data = input({ fulfillmentMethod: "NATIONAL_SHIPPING", shippingOption: "express", landmark: "Parque" });
-    const rate = { priceCents: 500, chargedCents: 500 };
-    const fingerprint = buildIntentFingerprint(baseCart, data, rate);
-    expect(buildIntentFingerprint(baseCart, { ...data, shippingOption: "standard" }, rate)).not.toBe(fingerprint);
-    expect(buildIntentFingerprint(baseCart, data, { priceCents: 600, chargedCents: 600 })).not.toBe(fingerprint);
-    expect(buildIntentFingerprint(baseCart, data, { ...rate, chargedCents: 0 })).not.toBe(fingerprint);
-    expect(buildIntentFingerprint(baseCart, { ...data, landmark: "Iglesia" }, rate)).not.toBe(fingerprint);
+    const fingerprint = buildIntentFingerprint(baseCart, data);
+    expect(buildIntentFingerprint(baseCart, { ...data, shippingOption: "standard" })).not.toBe(fingerprint);
+    expect(buildIntentFingerprint(baseCart, { ...data, shippingCityId: "different-district" })).not.toBe(fingerprint);
+    expect(buildIntentFingerprint(baseCart, { ...data, landmark: "Iglesia" })).not.toBe(fingerprint);
+    expect(buildIntentFingerprint(baseCart, { ...data, shippingQuoteToken: "refreshed-token" })).toBe(fingerprint);
   });
 
   it("difiere si cambian email, nombre o teléfono del cliente", () => {

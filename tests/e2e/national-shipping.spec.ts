@@ -65,3 +65,27 @@ test("no rates provides WhatsApp and blocks payment; pickup remains usable on mo
   await page.getByRole("button", { name: "Confirmar y pagar" }).click();
   await expect(page).toHaveURL(/\/payments\/mock\//);
 });
+
+
+test("automatically renews after 300 seconds, preserves fields and stops after leaving national checkout", async ({ page }) => {
+  await page.clock.install();
+  let requests = 0;
+  await page.route("**/api/shipping/rates", async (route) => {
+    requests++;
+    const response = await route.fetch(); const data = await response.json();
+    data.expiresAt = await page.evaluate(() => Date.now() + 300000);
+    await route.fulfill({ response, json: data });
+  });
+  await page.getByRole("button", { name: "Calcular envío" }).click();
+  await page.getByRole("radio", { name: /Paquetería de prueba Express/ }).check();
+  await expect(page.getByRole("button", { name: "Confirmar y pagar" })).toBeEnabled();
+  const before = requests;
+  await page.clock.fastForward(300001);
+  await expect.poll(() => requests).toBe(before + 1);
+  await expect(page.getByRole("button", { name: "Confirmar y pagar" })).toBeEnabled();
+  await expect(page.getByLabel("Dirección", { exact: true })).toHaveValue("Calle 5 casa 3");
+  await expect(page.getByLabel("Punto de referencia", { exact: true })).toHaveValue("Frente al parque");
+  await page.getByRole("radio", { name: "Retiro en bodega", exact: true }).check();
+  await page.clock.fastForward(600001);
+  expect(requests).toBe(before + 1);
+});

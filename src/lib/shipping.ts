@@ -1,4 +1,6 @@
 import "server-only";
+import { boxfulShippingProvider } from "./boxful/provider";
+import type { BoxfulSnapshot } from "./boxful/provider";
 import { isIsolatedE2EEnvironment } from "./production-environment";
 import type { PackageMeasurements } from "./package-measurements";
 import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
@@ -11,9 +13,10 @@ export type ShippingDestination = {
   landmark: string; latitude: number; longitude: number;
   stateId?: string; cityId?: string;
 };
-export type ShippingPackage = PackageMeasurements & { quantity: number; sku: string };
+export type ShippingPackage = PackageMeasurements & { quantity: number; sku: string; priceCents?: number };
 export type ShippingRequest = { destination: ShippingDestination; packages: ShippingPackage[]; totalWeightGrams: number };
 export type ShippingRate = {
+  boxfulSnapshot?: BoxfulSnapshot;
   provider: string; courierId: string; courierName: string; priceCents: number;
   serviceType: "same-day" | "next-day"; estimatedDeliveryAt?: string;
 };
@@ -43,6 +46,7 @@ export const fakeShippingProvider: ShippingRateProvider = {
 };
 
 export function getShippingProvider(env = process.env): ShippingRateProvider {
+  if (env.SHIPPING_PROVIDER === "boxful") return boxfulShippingProvider;
   if (env.SHIPPING_PROVIDER !== "fake") return unavailableShippingProvider;
   return ["development", "test"].includes(env.NODE_ENV ?? "") || isIsolatedE2EEnvironment(env)
     ? fakeShippingProvider : unavailableShippingProvider;
@@ -53,7 +57,7 @@ export async function getShippingRates(request: ShippingRequest, provider = getS
   try {
     const rates = await Promise.race([
       provider.getRates(request),
-      new Promise<ShippingRate[]>((_, reject) => { timeout = setTimeout(() => reject(new OperationalError("SHIPPING_RATE_UNAVAILABLE", "Shipping rates timed out.")), 5000); }),
+      new Promise<ShippingRate[]>((_, reject) => { timeout = setTimeout(() => reject(new OperationalError("SHIPPING_RATE_UNAVAILABLE", "Shipping rates timed out.")), provider === boxfulShippingProvider ? 20000 : 5000); }),
     ]);
     return rates.filter((rate) => rate.provider && rate.courierId && rate.courierName &&
       Number.isSafeInteger(rate.priceCents) && rate.priceCents > 0 &&
@@ -67,4 +71,8 @@ export async function getShippingRates(request: ShippingRequest, provider = getS
 
 export function chargedShippingCents(quotedCents: number, subtotalCents: number, promo: { enabled: boolean; minimumSubtotalCents: number }) {
   return promo.enabled && subtotalCents >= promo.minimumSubtotalCents ? 0 : quotedCents;
+}
+
+export function publicShippingRate(rate: ShippingRate & { chargedCents: number }) {
+  return { provider: rate.provider, courierId: rate.courierId, courierName: rate.courierName, priceCents: rate.priceCents, chargedCents: rate.chargedCents, serviceType: rate.serviceType, estimatedDeliveryAt: rate.estimatedDeliveryAt };
 }

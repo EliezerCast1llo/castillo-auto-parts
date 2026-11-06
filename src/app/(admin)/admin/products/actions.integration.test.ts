@@ -17,7 +17,14 @@ vi.mock("@/lib/db", async () => {
   return { db: new PrismaClient({ datasources: { db: { url: isolation.url } } }) };
 });
 vi.mock("@/lib/admin-auth", () => ({ requireAdminRole: isolation.requireAdmin }));
-vi.mock("next/cache", () => ({ updateTag: vi.fn(), revalidatePath: vi.fn() }));
+// `unstable_cache` entra por `settings/actions` → `store-settings`, que cachea
+// la lectura de ajustes. Acá se ejecuta directo: el cache es de Next, no
+// es lo que esta prueba mide.
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+  updateTag: vi.fn(),
+}));
 vi.mock("@/lib/i18n/revalidate", () => ({ revalidateStorefrontPath: vi.fn() }));
 vi.mock("@/data/products", () => ({ CATALOG_CACHE_TAG: "catalog", productCacheTag: (slug: string) => `product:${slug}` }));
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`TEST_REDIRECT:${path}`); } }));

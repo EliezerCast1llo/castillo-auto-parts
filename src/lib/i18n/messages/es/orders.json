@@ -76,7 +76,8 @@
     "shippingCost": "Costo de envío",
     "quotedCost": "Costo de paquetería",
     "estimatedDelivery": "Fecha estimada",
-    "landmark": "Punto de referencia"
+    "landmark": "Punto de referencia",
+    "carrierTracking": "Rastrear envío con la paquetería"
   },
   "status": {
     "CANCELLED": "Cancelada",

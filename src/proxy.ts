@@ -1,5 +1,15 @@
 /**
- * Next.js Edge Middleware — CSP, ruteo de idiomas y protección de /admin/**
+ * Next.js Proxy (antes "middleware") — CSP, ruteo de idiomas y protección de /admin/**
+ *
+ * Vive en `src/` y no en la raíz porque Next busca este archivo **al lado de
+ * `app/`**, y acá `app/` está en `src/app/`. Con el archivo en la raíz, Next
+ * no lo detectaba y no corría nada de lo que hay abajo: sin CSP, sin
+ * negociación de idioma —`/` devolvía 404— y sin el `next` que devuelve al
+ * admin a donde iba. Ni siquiera avisaba de la deprecación, porque para
+ * avisarla primero hay que encontrar el archivo.
+ *
+ * El nombre `proxy` y la función `proxy` son la convención de Next 16; la
+ * anterior, `middleware`, está deprecada.
  *
  * Corre en Edge Runtime (sin Node.js APIs). Usa Web Crypto API para
  * verificar el HMAC-SHA256 del token de sesión admin v2.
@@ -45,6 +55,7 @@ const CLOCK_SKEW_SECONDS = 60;
 const ROUTE_ROLES: Array<{ prefix: string; roles: string[] }> = [
   { prefix: "/admin/users", roles: ["ADMIN"] },
   { prefix: "/admin/settings", roles: ["ADMIN"] },
+  { prefix: "/admin/boxful", roles: ["ADMIN", "ACCOUNTING"] },
   { prefix: "/admin/audit", roles: ["ADMIN"] },
   { prefix: "/admin/products", roles: ["ADMIN", "MARKETING"] },
   { prefix: "/admin/stock-alerts", roles: ["ADMIN", "SUPPORT", "WAREHOUSE"] },
@@ -69,7 +80,7 @@ const ROLE_HOME: Record<string, string> = {
 // Middleware principal
 // ---------------------------------------------------------------------------
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const nonce = createNonce();
   const csp = buildContentSecurityPolicy({ nonce });

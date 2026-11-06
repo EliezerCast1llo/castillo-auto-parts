@@ -2,7 +2,7 @@ import { isOperationalErrorCode, OperationalError } from "./operational-error";
 
 /** The complete telemetry schema. Never copy an Error, request or caller object. */
 export const MONITORING_OPERATIONS = [
-  "checkout", "wompi_webhook", "boxful_webhook", "boxful_label", "reconciliation",
+  "checkout", "wompi_webhook", "boxful_webhook", "boxful_label", "boxful_alert", "reconciliation",
   "reservation_cron", "server_unhandled", "client_unhandled", "unknown",
   "admin-action", "admin-settings-action", "sendPasswordResetEmail", "catalog-data-source",
   "createGuestCheckoutFromCart", "clearGuestCartAfterPendingOrder", "createStockAlertRequest",

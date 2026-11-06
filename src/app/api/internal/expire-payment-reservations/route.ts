@@ -1,7 +1,8 @@
+import { runBoxfulMaintenance } from "@/lib/boxful/alerts";
 import { checkPendingPaymentBacklog } from "@/lib/pending-payment-monitoring";
 import { logError, logInfo, observeOperation } from "@/lib/logger";
 import { timingSafeEqual } from "node:crypto";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { expirePaymentReservations } from "@/lib/payment-reservations";
 import { purgeExpiredTwoFactorChallenges } from "@/lib/two-factor";
 
@@ -31,6 +32,7 @@ async function expireReservations(request: Request) {
     await checkPendingPaymentBacklog();
     const released = await expirePaymentReservations();
     const purgedTwoFactorChallenges = await purgeTwoFactorChallenges();
+    if (process.env.SHIPPING_PROVIDER === "boxful") after(runBoxfulMaintenance);
     await logInfo({ context: "reservation_cron", outcome: "completed" });
     return NextResponse.json(
       { ok: true, purgedTwoFactorChallenges, released },

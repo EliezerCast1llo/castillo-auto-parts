@@ -12,6 +12,8 @@ export const checkoutSchema = z
     addressLine2: optionalLimitedString(120),
     landmark: optionalLimitedString(200),
     shippingOption: optionalLimitedString(300),
+    shippingQuoteToken: optionalLimitedString(100_000),
+    shippingCityId: optionalLimitedString(120),
     city: optionalLimitedString(80),
     customerEmail: z.string().trim().email("Ingresa un email válido.").max(254, "El email es demasiado largo."),
     customerName: z
@@ -72,6 +74,8 @@ export function parseCheckoutFormData(formData: FormData) {
     addressLine2: optionalFormString(formData, "addressLine2"),
     landmark: optionalFormString(formData, "landmark"),
     shippingOption: optionalFormString(formData, "shippingOption"),
+    shippingQuoteToken: optionalFormString(formData, "shippingQuoteToken"),
+    shippingCityId: optionalFormString(formData, "shippingCityId"),
     city: optionalFormString(formData, "city"),
     customerEmail: formString(formData, "customerEmail"),
     customerName: formString(formData, "customerName"),

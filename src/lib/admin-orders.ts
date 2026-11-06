@@ -91,6 +91,7 @@ export async function updateOrderStatusForAdmin(
     status: OrderStatus;
   },
 ) {
+  await tx.$queryRaw`SELECT id FROM "Order" WHERE "orderNumber" = ${orderNumber} FOR UPDATE`;
   const existingOrder = await tx.order.findUnique({
     where: { orderNumber },
     select: {
@@ -102,7 +103,7 @@ export async function updateOrderStatusForAdmin(
         },
       },
       shipment: {
-        select: { status: true },
+        select: { status: true, provider: true, attemptedAt: true },
       },
       status: true,
     },
@@ -113,6 +114,11 @@ export async function updateOrderStatusForAdmin(
   }
 
   if (!canTransitionOrderStatus(existingOrder.status, status)) {
+    throw new AdminOrderStatusError("invalid_transition");
+  }
+
+  if (stockRestoringOrderStatuses.has(status) && existingOrder.shipment?.provider === "boxful" && existingOrder.shipment.attemptedAt && existingOrder.shipment.status !== "CANCELLED") {
+    // A waybill may exist even after timeout. Reconcile/cancel with courier first.
     throw new AdminOrderStatusError("invalid_transition");
   }
 

@@ -2,8 +2,9 @@ import { createAsyncRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-
 import { getClientIp } from "@/lib/request-ip";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getGuestCart } from "@/lib/cart";
+import { getCart } from "@/lib/cart";
 import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
+import { publicShippingRate } from "@/lib/shipping";
 import { quoteCartShipping } from "@/lib/shipping-checkout";
 
 let limiter: AsyncRateLimiter | undefined;
@@ -11,7 +12,7 @@ let limiter: AsyncRateLimiter | undefined;
 const destinationSchema = z.object({
   addressLine1: z.string().trim().min(1).max(160), addressLine2: z.string().trim().max(120).optional(),
   landmark: z.string().trim().min(1).max(200), department: z.string().max(80), city: z.string().max(80),
-  latitude: z.number(), longitude: z.number(),
+  latitude: z.number(), longitude: z.number(), cityId: z.string().max(120).optional(),
 }).refine((data) => isNationalAddress(data.department, data.city) && isNationalCoordinate(data.latitude, data.longitude));
 
 export async function POST(request: Request) {
@@ -22,9 +23,9 @@ export async function POST(request: Request) {
     if (!attempt.allowed) return NextResponse.json({ rates: [] }, { headers: { ...headers, "Retry-After": String(attempt.retryAfterSeconds) }, status: 429 });
     const parsed = destinationSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ rates: [] }, { headers, status: 400 });
-    const cart = await getGuestCart();
+    const cart = await getCart();
     if (!cart.lines.length || cart.hasBlockingIssues) return NextResponse.json({ rates: [] }, { headers });
     const quote = await quoteCartShipping(cart.lines, parsed.data);
-    return NextResponse.json({ rates: quote?.rates ?? [], totalWeightGrams: quote?.totalWeightGrams ?? null }, { headers });
+    return NextResponse.json({ rates: quote?.rates.map(publicShippingRate) ?? [], quoteToken: quote?.quoteToken, expiresAt: quote?.expiresAt, totalWeightGrams: quote?.totalWeightGrams ?? null }, { headers });
   } catch { return NextResponse.json({ rates: [] }, { headers }); }
 }
