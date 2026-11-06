@@ -21,9 +21,21 @@
   --asphalt-ink: #d7dadc;
   --asphalt-ink-dim: #9ea4a8;
   --stripe: #e8e4d9;
+  --galvanized: #8f979b;
+  --galvanized-dark: #5f676a;
+
+  /* No son colores nuevos: son el blanco de señal a media fuerza, que es lo
+     que son en la lámina —una línea grabada y una cabeza de perno, no tinta—.
+     Derivarlos del token en vez de escribir el literal deja dicho eso. */
+  --ink-hairline: color-mix(in srgb, var(--sign-white) 24%, transparent);
+  --ink-hardware: color-mix(in srgb, var(--sign-white) 32%, transparent);
 
   --rule: 3px;
   --gutter: clamp(20px, 4vw, 56px);
+  /* Cuánto baja el poste dentro del asfalto. Suficiente para que se lea como
+     poste y no como muñón: una señal se ve desde lejos y lo que la sostiene se
+     ve con ella. */
+  --post-drop: clamp(52px, 7vh, 92px);
 
   color-scheme: dark;
   font-family: var(--sign-face), system-ui, sans-serif;
@@ -59,6 +71,61 @@ a {
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  /* El fondo de la página es el asfalto: la placa se ve **desde** la carretera,
+     y por eso tiene que haber carretera detrás de ella. */
+  background: var(--asphalt);
+}
+
+/* ---------------------------------------------------------------------------
+   El montaje
+   --------------------------------------------------------------------------- */
+
+.sign-mount {
+  position: relative;
+  /* Por encima del asfalto: los postes se salen por abajo y, sin esto, la
+     sección siguiente los tapa al pintarse después. */
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  /* El aire de arriba y de los lados es lo que convierte la placa en objeto:
+     sin él vuelve a ser una banda de color. Abajo queda el largo de los
+     postes, que plantan en el asfalto. */
+  padding: clamp(18px, 3vh, 34px) var(--gutter) 0;
+}
+
+/* Los postes. Bajan desde la placa y entran en el asfalto, por detrás. */
+.sign-post {
+  position: absolute;
+  top: 35%;
+  bottom: calc(var(--post-drop) * -1);
+  width: clamp(10px, 1.1vw, 16px);
+  background: linear-gradient(
+    to right,
+    var(--galvanized-dark) 0 22%,
+    var(--galvanized) 22% 58%,
+    var(--galvanized-dark) 58% 100%
+  );
+}
+
+/* La placa de anclaje: donde el poste se atornilla al suelo. Sin ella el poste
+   parece cortado; con ella, plantado. */
+.sign-post::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: 320%;
+  height: 6px;
+  background: var(--galvanized-dark);
+}
+
+.sign-post-left {
+  left: 18%;
+}
+
+.sign-post-right {
+  right: 18%;
 }
 
 /* ---------------------------------------------------------------------------
@@ -75,7 +142,13 @@ a {
   background: var(--sign-green);
   /* El borde blanco interior es el de una señal real, y es el único adorno
      que la placa recibe. */
-  box-shadow: inset 0 0 0 var(--rule) var(--sign-white), inset 0 0 0 calc(var(--rule) * 4) var(--sign-green);
+  /* Dos anillos de esmalte por dentro y el canto de la lámina por fuera: eso
+     último es lo que la despega del asfalto y la vuelve una pieza con grosor,
+     no una zona de color. */
+  box-shadow:
+    inset 0 0 0 var(--rule) var(--sign-white),
+    inset 0 0 0 calc(var(--rule) * 4) var(--sign-green),
+    0 3px 0 0 var(--galvanized-dark);
   color: var(--sign-white);
 }
 
@@ -94,8 +167,8 @@ a {
   height: 14px;
   pointer-events: none;
   background:
-    radial-gradient(circle, #ffffff52 0 5px, transparent 5.5px) left center / 14px 14px no-repeat,
-    radial-gradient(circle, #ffffff52 0 5px, transparent 5.5px) right center / 14px 14px no-repeat;
+    radial-gradient(circle, var(--ink-hardware) 0 5px, transparent 5.5px) left center / 14px 14px no-repeat,
+    radial-gradient(circle, var(--ink-hardware) 0 5px, transparent 5.5px) right center / 14px 14px no-repeat;
 }
 
 .sign-plate::before {
@@ -106,9 +179,13 @@ a {
   bottom: 30px;
 }
 
-/* El contenido va sobre los pernos, que son pseudo-elementos posicionados. */
+/* El contenido va sobre los pernos. El `z-index` es necesario además de
+   `position`: `::after` es el último hijo del elemento, así que sin él se
+   pinta encima de todo lo demás y las cabezas de abajo caen sobre la placa de
+   salida. */
 .sign-plate > * {
   position: relative;
+  z-index: 1;
 }
 
 .sign-head {
@@ -133,7 +210,7 @@ a {
   place-items: center;
   width: 46px;
   height: 38px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--sign-green-deep);
@@ -204,11 +281,11 @@ a {
   align-items: baseline;
   gap: clamp(12px, 2vw, 24px);
   padding-block: clamp(10px, 1.6vh, 16px);
-  border-top: 1px solid #ffffff3d;
+  border-top: 1px solid var(--ink-hairline);
 }
 
 .sign-destinations li:last-child {
-  border-bottom: 1px solid #ffffff3d;
+  border-bottom: 1px solid var(--ink-hairline);
 }
 
 .sign-place {
@@ -312,7 +389,9 @@ a {
 
 .asphalt {
   position: relative;
-  padding: clamp(44px, 7vh, 76px) var(--gutter) clamp(28px, 4vh, 44px);
+  /* El espacio de arriba deja ver los postes plantando antes de que empiece a
+     leerse el texto. */
+  padding: calc(var(--post-drop) + clamp(34px, 5vh, 60px)) var(--gutter) clamp(28px, 4vh, 44px);
   background: var(--asphalt);
 }
 
@@ -321,7 +400,7 @@ a {
 .asphalt-stripe {
   position: absolute;
   inset-inline: 0;
-  top: clamp(20px, 3vh, 32px);
+  top: calc(var(--post-drop) + clamp(22px, 3vh, 36px));
   height: 6px;
   background: repeating-linear-gradient(
     to right,
@@ -410,6 +489,14 @@ a {
    --------------------------------------------------------------------------- */
 
 @media (max-width: 640px) {
+  .sign-post-left {
+    left: 12%;
+  }
+
+  .sign-post-right {
+    right: 12%;
+  }
+
   /* La flecha se queda. El destino y el tiempo siguen en la misma línea en
      pantalla angosta, así que la flecha apunta a algo; y es una de las cuatro
      cosas por las que esta página se reconoce como señal, en el dispositivo

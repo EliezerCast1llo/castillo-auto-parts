@@ -53,59 +53,68 @@ export async function LandingContent({ locale, otherHref, otherLabel }: LandingC
 
   return (
     <div className="landing-shell">
-      <section className="sign-plate">
-        <header className="sign-head">
-          {/* El escudo de ruta: la marca ocupa el lugar que en una señal ocupa
-              el número de carretera. */}
-          <Link className="sign-shield" href="/" prefetch={false}>
-            <span className="sign-shield-mark" aria-hidden="true">
-              CA
-            </span>
-            {t("brand")}
-          </Link>
+      {/* El montaje. La placa deja de ser un fondo y pasa a ser un objeto:
+          tiene canto, está atornillada, y baja a la carretera por dos postes.
+          Es lo que el mundo ya nombraba —«poste galvanizado»— y la página
+          nunca había dibujado. */}
+      <div className="sign-mount">
+        <div aria-hidden="true" className="sign-post sign-post-left" />
+        <div aria-hidden="true" className="sign-post sign-post-right" />
 
-          <nav aria-label={t("languageLabel")} className="sign-lang">
-            {/* `lang` además de `hrefLang`: el primero dice en qué idioma está
-                **esta** etiqueta, el segundo a qué idioma lleva el enlace. Sin
-                el primero, un lector de pantalla lee "EN" en español. */}
-            <Link
-              href={otherHref}
-              hrefLang={otherLocale}
-              lang={otherLocale}
-              prefetch={false}
-            >
-              {otherLabel}
+        <section className="sign-plate">
+          <header className="sign-head">
+            {/* El escudo de ruta: la marca ocupa el lugar que en una señal ocupa
+                el número de carretera. */}
+            <Link className="sign-shield" href="/" prefetch={false}>
+              <span className="sign-shield-mark" aria-hidden="true">
+                CA
+              </span>
+              {t("brand")}
             </Link>
-          </nav>
-        </header>
 
-        <div className="sign-body">
-          <h1 className="sign-legend">{t("title")}</h1>
+            <nav aria-label={t("languageLabel")} className="sign-lang">
+              {/* `lang` además de `hrefLang`: el primero dice en qué idioma está
+                  **esta** etiqueta, el segundo a qué idioma lleva el enlace. Sin
+                  el primero, un lector de pantalla lee "EN" en español. */}
+              <Link
+                href={otherHref}
+                hrefLang={otherLocale}
+                lang={otherLocale}
+                prefetch={false}
+              >
+                {otherLabel}
+              </Link>
+            </nav>
+          </header>
 
-          <ul aria-label={t("destinationsLabel")} className="sign-destinations">
-            {destinations.map((destination) => (
-              <li key={destination.id}>
-                <span className="sign-place">{destination.place}</span>
-                <SignArrow />
-                <span className="sign-when">{destination.when}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className="sign-body">
+            <h1 className="sign-legend">{t("title")}</h1>
 
-        {/* La placa de salida: amarillo de advertencia, reservado para esto y
-            para nada más en toda la página. */}
-        <a
-          className="sign-exit"
-          href={contact.whatsapp}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <span className="sign-exit-label">{t("exit")}</span>
-          <span className="sign-exit-action">{t("whatsapp")}</span>
-          <SignArrow />
-        </a>
-      </section>
+            <ul aria-label={t("destinationsLabel")} className="sign-destinations">
+              {destinations.map((destination) => (
+                <li key={destination.id}>
+                  <span className="sign-place">{destination.place}</span>
+                  <SignArrow />
+                  <span className="sign-when">{destination.when}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* La placa de salida: amarillo de advertencia, reservado para esto y
+              para nada más en toda la página. */}
+          <a
+            className="sign-exit"
+            href={contact.whatsapp}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span className="sign-exit-label">{t("exit")}</span>
+            <span className="sign-exit-action">{t("whatsapp")}</span>
+            <SignArrow />
+          </a>
+        </section>
+      </div>
 
       <section className="asphalt">
         {/* La franja corre horizontal y escala; nunca se parte en dos renglones. */}

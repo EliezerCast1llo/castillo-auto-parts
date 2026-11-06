@@ -12,6 +12,8 @@ colors:
   asphalt-ink: "#d7dadc"
   asphalt-ink-dim: "#9ea4a8"
   stripe: "#e8e4d9"
+  galvanized: "#8f979b"
+  galvanized-dark: "#5f676a"
 typography:
   display:
     fontFamily: "Overpass, system-ui, sans-serif"
@@ -19,6 +21,11 @@ typography:
     fontWeight: 800
     lineHeight: 0.98
     letterSpacing: "-0.02em"
+  brand:
+    fontFamily: "Overpass, system-ui, sans-serif"
+    fontSize: "clamp(15px, 1.6vw, 19px)"
+    fontWeight: 800
+    letterSpacing: "0.02em"
   headline:
     fontFamily: "Overpass, system-ui, sans-serif"
     fontSize: "clamp(18px, 2.4vw, 26px)"
@@ -39,11 +46,20 @@ typography:
     fontSize: "clamp(15px, 1.9vw, 21px)"
     fontWeight: 600
     letterSpacing: "0.01em"
+  contact-value:
+    fontFamily: "Overpass, system-ui, sans-serif"
+    fontSize: "clamp(17px, 2vw, 21px)"
+    fontWeight: 600
   body:
     fontFamily: "Overpass, system-ui, sans-serif"
     fontSize: "clamp(15px, 1.7vw, 18px)"
     fontWeight: 400
     lineHeight: 1.6
+  code:
+    fontFamily: "Overpass, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 800
+    letterSpacing: "0.06em"
   label:
     fontFamily: "Overpass, system-ui, sans-serif"
     fontSize: "12px"
@@ -65,7 +81,16 @@ spacing:
   bolt-inset: "30px"
   gutter: "clamp(20px, 4vw, 56px)"
   section-gap: "clamp(28px, 5vh, 56px)"
+  mount-air: "clamp(18px, 3vh, 34px)"
+  post-drop: "clamp(52px, 7vh, 92px)"
 components:
+  sign-mount:
+    rounded: "{rounded.none}"
+    padding: "{spacing.mount-air} {spacing.gutter} 0"
+  sign-post:
+    backgroundColor: "{colors.galvanized}"
+    rounded: "{rounded.none}"
+    width: "clamp(10px, 1.1vw, 16px)"
   plate:
     backgroundColor: "{colors.sign-green}"
     textColor: "{colors.sign-white}"
@@ -80,12 +105,17 @@ components:
     height: "72px"
   nav-lang:
     textColor: "{colors.sign-white}"
+    typography: "{typography.code}"
     rounded: "{rounded.none}"
     padding: "0 14px"
     height: "44px"
   nav-lang-hover:
     backgroundColor: "{colors.sign-white}"
     textColor: "{colors.sign-green-deep}"
+  shield-lockup:
+    textColor: "{colors.sign-white}"
+    typography: "{typography.brand}"
+    rounded: "{rounded.none}"
   shield-mark:
     backgroundColor: "{colors.sign-white}"
     textColor: "{colors.sign-green-deep}"
@@ -95,6 +125,10 @@ components:
   shield-mark-hover:
     backgroundColor: "{colors.sign-yellow}"
     textColor: "{colors.asphalt}"
+  contact-value:
+    textColor: "{colors.asphalt-ink}"
+    typography: "{typography.contact-value}"
+    rounded: "{rounded.none}"
   destination-row:
     textColor: "{colors.sign-white}"
     typography: "{typography.place}"
@@ -116,17 +150,24 @@ components:
 This is Salvadoran highway destination signage rendered as a web surface. The
 page is a green enamel plate read at speed: it names what exists, states how
 far it is from your hands in time rather than kilometres, and marks where the
-exit is. Everything below the plate is the asphalt it stands over, with a
-painted lane stripe running across it. The world is built from four marks and
+exit is. The plate is a mounted object, not a background band: it has air above
+and beside it, a sheet edge below it, and two galvanized posts that descend
+behind it and plant in the asphalt. The asphalt is the page ground — the sign is
+seen *from* the road, so there is road behind it — with a painted lane stripe
+running across it below the footings. The world is built from four marks and
 survives the removal of all its copy: green field, authored arrow, distance in
 time, yellow exit plate.
 
-Nothing is simulated. There is no chrome, no metal gradient, no bevel pretending
-to be relief, no drop shadow standing in for a photograph of a sign. The only
-materials the build carries are flat enamel colour, an inset white border of the
-kind a real plate has, a painted stripe, and four bolt heads in the plate's
-corners. The density is low and deliberate: a single plate, two destination
-rows, one action, three facts, two contact fields.
+Nothing is simulated. There is no chrome, no gloss, no bevel pretending to be
+relief, no drop shadow standing in for a photograph of a sign. The materials the
+build carries are the four the world names and nothing else: flat enamel colour,
+the inset white border of the kind a real plate has, galvanized steel (the two
+posts, their footing plates, and the sheet's own bottom edge), and the painted
+stripe — plus four bolt heads in the plate's corners, which are the fastening the
+mount implies. Every one of them is drawn flat: the post is two hard-stopped
+tones across its width, not a lighting ramp. The density is low and deliberate:
+a single plate, two destination rows, one action, three facts, two contact
+fields.
 
 Type is one family at three weights, drawn from FHWA highway lettering and
 self-hosted (downloaded at build by `next/font`, never fetched at runtime). The
@@ -141,12 +182,14 @@ geometry, and lettering.
 - One type family (Overpass) at weights 400 / 600 / 800
 - Authored SVG arrows at a 3px stroke, matching the system rule weight
 - No images, no photographs, no icon library
-- Flat throughout: depth is tonal (plate over asphalt), never cast
+- The plate is mounted, not floated: two galvanized posts plant it in the ground
+- Depth is material and tonal — sheet thickness, post, field change — never cast
 
 ## Colors
 
-A reflective-signage palette: one saturated green field, one warning accent, and
-a cold asphalt ground, with no tint or decorative hue anywhere between them.
+A reflective-signage palette: one saturated green field, one warning accent, a
+galvanized grey for the hardware that holds the plate up, and a cold asphalt
+ground, with no tint or decorative hue anywhere between them.
 
 ### Primary
 - **Sign Green** (`{colors.sign-green}`): The plate itself. The dominant field of
@@ -160,6 +203,14 @@ a cold asphalt ground, with no tint or decorative hue anywhere between them.
 - **Warning Yellow** (`{colors.sign-yellow}`): The exit plate's field, the focus
   ring, the selection highlight, and the underline colour of a hovered contact
   link. On the page body it appears exactly once, on the primary action.
+
+### Tertiary
+- **Galvanized** (`{colors.galvanized}`): The lit face of a mounting post — the
+  middle band of its two-tone section. This is the fourth material the world
+  always named and the build drew only once the plate became an object.
+- **Dark Galvanized** (`{colors.galvanized-dark}`): The post's turning edges, its
+  footing plate where it meets the ground, and the plate's own bottom sheet edge.
+  Hardware only; never a text colour and never a field.
 
 ### Neutral
 - **Sign White** (`{colors.sign-white}`): Information on green. Headline,
@@ -185,8 +236,10 @@ signal. Browser-surface use (`::selection`, `:focus-visible`) is the one
 exemption, because those are responses and not content.
 
 **The Three Fields Rule.** Every surface is one of three fields: green plate
-(the claim), asphalt (the facts), raised asphalt (the close). There is no
-fourth background colour and no card floating inside a field.
+(the claim), asphalt (the facts and the page ground behind the sign), raised
+asphalt (the close). There is no fourth background colour. The galvanized greys
+are not a field: they are drawn hardware, and they only ever appear as the
+structure that holds a plate up.
 
 **The Inversion Rule.** White on green inverts to deep green on white; yellow
 inverts to asphalt. Nothing else inverts, and no text sits on a tint.
@@ -206,15 +259,22 @@ contrast between faces. Three weights ship: 400, 600, 800.
 - **Display** (800, `clamp(42px, 7vw, 88px)`, line-height 0.98): The plate's
   legend. Mixed case, flush left, `max-width: 18ch`, `text-wrap: balance`. One
   per page.
+- **Brand** (800, `clamp(15px, 1.6vw, 19px)`, tracking 0.02em): The brand name
+  beside the route shield in the plate head. Mixed case.
 - **Headline** (800, `clamp(18px, 2.4vw, 26px)`): The exit plate's action text.
 - **Title** (800, `clamp(16px, 2.1vw, 24px)`, tracking 0.03em, uppercase): The
   distance-in-time value in a destination row. Set `nowrap`, right-aligned.
 - **Lead** (600, `clamp(18px, 2.1vw, 23px)`, line-height 1.5): The first
   paragraph on asphalt.
-- **Place** (600, `clamp(15px, 1.9vw, 21px)`): A destination name, and the
-  contact values in the asphalt definition list.
+- **Place** (600, `clamp(15px, 1.9vw, 21px)`): A destination name on the plate.
+- **Contact Value** (600, `clamp(17px, 2vw, 21px)`): The values in the asphalt
+  contact list. It starts one step above Place because it sits on asphalt rather
+  than on enamel and has no arrow leading the eye to it.
 - **Body** (400, `clamp(15px, 1.7vw, 18px)`, line-height 1.6): Supporting facts
   on asphalt, held to `max-width: 68ch`.
+- **Code** (800, 15px, tracking 0.06em, uppercase): A short code on a small head
+  plate — the locale on the language plate. Fixed, not fluid: a head plate is the
+  same size at every width.
 - **Label** (800, 12px, tracking 0.22em, uppercase): Short sign legends only —
   the word on the exit plate, and the terms in the contact list (0.2em there).
 - **Meta** (400, 13px, line-height 1.6): The footer's two lines.
@@ -237,15 +297,28 @@ open tracking is not a sign legend.
 
 ## Layout
 
-A single column, full-viewport flex shell (`min-height: 100svh`). The green
-plate takes all the remaining height and the asphalt section follows it, so the
+A single column, full-viewport flex shell (`min-height: 100svh`) whose own
+background is the asphalt ground. Inside it, a mount wrapper takes all the
+remaining height and holds the green plate; the asphalt section follows, so the
 plate always fills the first viewport regardless of copy length.
 
+The mount is what makes the plate a piece rather than a band. It insets the plate
+by the air token (`{spacing.mount-air}`) on top and by the gutter on the sides,
+with nothing at the bottom, so the plate has visible edges on three sides and the
+posts continue out of the fourth. It is `position: relative` with `z-index: 1`,
+because the posts overshoot its bottom and the asphalt section — later in the flow
+— would otherwise paint over them.
+
 Horizontal rhythm is one token: a fluid gutter of `clamp(20px, 4vw, 56px)`, used
-as the plate's padding, the asphalt's inline padding, and the footer's. Vertical
-rhythm is fluid in the same way — `clamp(28px, 5vh, 56px)` between plate
-regions, `clamp(28px, 4vh, 48px)` inside the plate body, `clamp(44px, 7vh, 76px)`
-at the top of the asphalt. Fixed small steps are 2px (row gap), 4px, 10px, 16px.
+as the mount's and plate's inline padding, the asphalt's, and the footer's.
+Vertical rhythm is fluid in the same way — `clamp(28px, 5vh, 56px)` between plate
+regions, `clamp(28px, 4vh, 48px)` inside the plate body. Below the plate, one
+token governs everything: the post drop (`{spacing.post-drop}`) sets how far the
+posts descend past the plate, and both the asphalt's top padding
+(`post-drop + clamp(34px, 5vh, 60px)`) and the lane stripe's offset
+(`post-drop + clamp(22px, 3vh, 36px)`) are measured from it, so the stripe runs
+*below* the footings instead of cutting across the posts. Fixed small steps are
+2px (row gap), 4px, 10px, 16px.
 
 The plate's internal composition reads top-left to bottom-right: route shield
 and language plate in the head, legend and destination rows centred in the body
@@ -256,8 +329,14 @@ arrow / time — at `minmax(0, 1fr) auto minmax(9ch, max-content)`.
 Measure is capped where text runs: 18ch on the display legend, 68ch on the
 asphalt facts.
 
-One breakpoint, at 640px, and it only tightens: the destination row's time
-column drops to `auto` with a 10px column gap, the arrow shrinks to 22px, and
+The two posts are absolutely positioned inside the mount at 18% from each edge,
+descending from 35% of the plate's height (behind it) to `post-drop` below it.
+Their inset is a proportion, not a measurement: a real sign's posts sit under the
+plate's mass, so they move with the plate instead of holding a fixed gap.
+
+One breakpoint, at 640px, and it only tightens: the posts move in to 12% from
+each edge so they stay under a narrower plate, the destination row's time column
+drops to `auto` with a 10px column gap, the arrow shrinks to 22px, and
 the exit plate stretches full width with its content pushed apart. The arrow
 survives on phone deliberately — it is one of the four marks the world is
 recognised by, on the device most traffic arrives from.
@@ -271,30 +350,59 @@ wraps to a second line and never becomes a texture.
 **The One Gutter Rule.** All page-level horizontal inset comes from the gutter
 token. No section invents its own margin.
 
+**The Mounted Plate Rule.** A plate in this world is never full-bleed and never
+floated. It gets air on top and sides so its edges read, a sheet edge below, and
+two posts that leave the plate and plant in the ground below it. If a surface
+cannot show where it is held up, it is a band of colour and not a sign.
+
+**The Post Drop Rule.** One token (`{spacing.post-drop}`) owns the whole junction
+between sign and road: the posts' overshoot, the asphalt's top padding, and the
+stripe's offset are all measured from it. The stripe always passes below the
+footings; nothing painted on the road crosses a post.
+
 ## Elevation & Depth
 
-There are no shadows in this system. Nothing is lifted, nothing casts, nothing
-is beveled to imitate relief. Depth is tonal and material: the green plate sits
-over the asphalt ground because they are different fields, and the footer is one
-step lighter than the asphalt (`{colors.asphalt-raised}`) to close the page
-without a divider.
+Nothing in this system is lifted and nothing casts. Depth is material and
+tonal: the plate is a physical sheet held off the ground by posts, the fields
+differ in colour, and the footer is one step lighter than the asphalt
+(`{colors.asphalt-raised}`) to close the page without a divider.
 
-The single `box-shadow` in the build is not elevation: it is the plate's enamel
-border, two stacked inset rings
-(`inset 0 0 0 3px {colors.sign-white}, inset 0 0 0 12px {colors.sign-green}`)
-that reproduce the white line a real destination plate carries inside its edge.
+The plate carries exactly one `box-shadow` declaration, in three layers, and not
+one of them is elevation. Two are the enamel border — stacked inset rings that
+reproduce the white line a real destination plate carries inside its edge. The
+third is the plate's own bottom edge: a 3px band of dark galvanized directly
+below the sheet, zero blur and zero spread, which is thickness rather than lift.
+It is the cut edge of the metal, in the same material the posts are made of.
 
-The plate's four mounting bolts are the only other material detail: 14px flat
-translucent-white discs (`#ffffff52`) inset 30px from the corners, drawn as
-pseudo-element backgrounds. They are hardware, not highlights — no gloss, no
+The plate's four mounting bolts and the posts' footing plates are the other
+material details. The bolts are 14px flat translucent-white discs (`#ffffff52`)
+inset 30px from the corners, drawn as pseudo-element backgrounds. The footings
+are 6px-tall bars in dark galvanized, 320% of the post's width, centred where the
+post meets the ground. All of it is hardware, not highlight — no gloss, no
 gradient ramp, no ring.
 
+### Shadow Vocabulary
+- **Enamel border** (`inset 0 0 0 3px {colors.sign-white}, inset 0 0 0 12px
+  {colors.sign-green}`): The white line inside a real plate's edge. On every green
+  plate, always.
+- **Sheet edge** (`0 3px 0 0 {colors.galvanized-dark}`): The thickness of the
+  metal below a mounted plate. Bottom axis only, no blur, no spread, mount
+  material colour. Only on a plate that is actually mounted.
+
 ### Named Rules
-**The Nothing Faked Rule.** No chrome, no metal gradient, no gloss, no bevel
-imitating relief, no drop shadow, no photograph, no stock image. Only flat
-enamel, the inset border, the painted stripe, and the bolt heads. A gradient is
-permitted solely as a drawing primitive for a flat shape (the bolt discs, the
-stripe dashes), never as a lighting effect.
+**The Nothing Faked Rule.** No chrome, no gloss, no metal *sheen*, no bevel
+imitating relief, no cast or ambient shadow, no photograph, no stock image. The
+permitted materials are exactly the four the world names plus their fastening:
+flat enamel with its inset border, galvanized steel (post, footing, sheet edge),
+painted stripe, and the bolt heads. A gradient is permitted solely as a drawing
+primitive for a flat shape — the bolt discs, the stripe dashes, and the post's
+two tones at hard stops — never as a lighting effect or a smooth highlight ramp.
+
+**The Sheet Edge Rule.** A plate's thickness is drawn as a 3px zero-blur,
+zero-spread band on the bottom axis only, in the mount's own material
+(`{colors.galvanized-dark}`). Add a blur radius, a second axis, a black, or a
+spread and it stops being an edge and becomes the drop shadow this world does not
+have. It belongs only to a plate that visibly has posts.
 
 **The Flat Field Rule.** Surfaces are flat at every state. State is expressed by
 colour inversion or by position, never by lift.
@@ -312,6 +420,12 @@ Silhouette comes from clipping, and only twice:
   18px bevel of a real exit panel, cut on the trailing edge in the direction of
   travel.
 
+The mount adds two more pieces of geometry, both rectangles: the post, a
+`clamp(10px, 1.1vw, 16px)`-wide vertical bar whose round section is implied by
+three hard-stopped colour bands across its width (dark 0–22%, lit 22–58%, dark
+58–100%) rather than by a curve or a highlight; and its footing, a 6px bar at
+320% of the post's width. Nothing in the mount is rounded and nothing is clipped.
+
 Lines are a two-tier system: the 3px system rule (`--rule`) for the plate border,
 the language plate's stroke, the focus outline, and the authored arrow's stroke
 weight; and a 1px hairline at `#ffffff3d` for the rules that separate destination
@@ -321,8 +435,13 @@ rows. Nothing in between.
 **The Zero Radius Rule.** Radius is 0 on every surface. If a shape needs an
 identity, cut it with `clip-path` from the signage vocabulary — never round it.
 
-**The Shared Rule Weight Rule.** The 3px rule token is one value doing four
-jobs: plate border, button stroke, focus ring, arrow stroke. Drawn marks and
+**The Round-By-Banding Rule.** Curvature is implied by flat bands at hard stops,
+never by a smooth ramp. The post reads as a cylinder because it has a lit face
+between two turning edges — three stops, no interpolation visible. The moment the
+stops soften, it is a gloss effect.
+
+**The Shared Rule Weight Rule.** The 3px rule token is one value doing five
+jobs: plate border, button stroke, focus ring, arrow stroke, sheet edge. Drawn marks and
 drawn borders are the same thickness, which is what makes the arrow read as part
 of the sign rather than as an icon pasted on it.
 
@@ -346,15 +465,37 @@ of the sign rather than as an icon pasted on it.
 
 ### Navigation
 - **Language plate:** A single anchor styled as a small sign plate — 3px white
-  stroke, no fill, 44px minimum height, 14px inline padding, 15px/800 text at
-  0.06em tracking, uppercase locale code. Hover inverts it: white fill, deep
+  stroke, no fill, 44px minimum height, 14px inline padding, the Code role
+  (15px/800 at 0.06em), uppercase locale code. Hover inverts it: white fill, deep
   green text. It carries both `lang` and `hrefLang`, so the label is pronounced
   in its own language.
 - **Route shield:** The brand lock-up in the head-left position a route number
   occupies on a real sign — the clipped white shield containing the two-letter
-  mark in deep green, followed by the brand name at `clamp(15px, 1.6vw, 19px)`/800.
+  mark in deep green (16px/800, one pixel above the Code step), followed by the
+  brand name in the Brand role.
   Hovering the lock-up turns the shield yellow with asphalt ink; this is the one
   place yellow appears as a transient state rather than as the action.
+
+### Sign Mount (signature component)
+The structure that turns the plate into an object. It is not decoration and it is
+not optional on a plate surface: a destination sign that cannot be seen to be held
+up reads as a coloured band.
+- **Wrapper:** `position: relative`, `z-index: 1`, flex, padding
+  `{spacing.mount-air} {spacing.gutter} 0`. The z-index is load-bearing: the posts
+  overshoot the wrapper and the asphalt section paints after it.
+- **Posts:** Two `aria-hidden` bars, `clamp(10px, 1.1vw, 16px)` wide, at 18% from
+  each edge (12% under 640px), running from 35% of the plate's height to
+  `{spacing.post-drop}` below it, so they emerge from behind the plate and enter
+  the road. The section is three hard colour stops across the width — dark / lit /
+  dark — in the galvanized pair.
+- **Footings:** A `::after` on each post, 6px tall and 320% of the post's width,
+  centred at the bottom in dark galvanized. Without it a post looks cut off
+  instead of planted.
+- **Sheet edge:** The plate's third box-shadow layer, 3px of dark galvanized below
+  the bottom edge. See Elevation & Depth.
+- **Paint order:** `.sign-plate > *` carries `position: relative; z-index: 1`,
+  because the bolt pseudo-element is the plate's last child and would otherwise
+  paint over the exit plate.
 
 ### Destination Row (signature component)
 The structural unit of the page, not a decorative list. Each row states a place
@@ -381,9 +522,20 @@ the same stroke weight is redrawn in the preview card.
 ### Contact List
 A definition list on asphalt, laid out as wrap-capable flex columns with
 `clamp(24px, 5vw, 64px)` between them. Terms are the 12px/800 uppercase label at
-0.2em tracking in dim asphalt ink; values are 600 weight in asphalt ink. Links
+0.2em tracking in dim asphalt ink; values are the Contact Value role
+(`clamp(17px, 2vw, 21px)`/600) in asphalt ink. Links
 keep their underline at 2px thickness with a 5px offset, and on hover the text
 goes stripe-white while the underline turns warning yellow.
+
+### Preview Card
+The share image (1200×630) is a **single frame of the plate**, not the page: full
+bleed green with a 6px white border scaled for the raster, the route shield, the
+legend, two destination rows, and the exit legend. It deliberately has no mount —
+posts and sheet edge belong to a page that stands on a road, and there is no road
+in a 1200×630 frame. Its px type values are the ramp's upper clamp bounds baked at
+one fixed width; they are not new steps on the ramp. The rasterizer does not apply
+`clip-path` to a container with children, so the exit plate ships unbeveled there;
+the silhouette lives on the page.
 
 ### Browser Surfaces
 Selection and focus are part of the system, not left to the browser:
@@ -404,6 +556,13 @@ button; they get prose or nothing.
 ### Do:
 - **Do** start any new surface as the green plate (`{colors.sign-green}`) with the
   3px inset white enamel border, and put information in sign white.
+- **Do** mount any plate that occupies a page: air on top and sides, the 3px
+  galvanized sheet edge below it, and two posts that plant in the asphalt ground.
+- **Do** measure the whole sign-to-road junction from the post-drop token
+  (`clamp(52px, 7vh, 92px)`) — post overshoot, asphalt top padding, stripe offset
+  — so the stripe runs below the footings and never across a post.
+- **Do** draw implied roundness as flat bands at hard stops, the way the post's
+  three-stop section does.
 - **Do** spend warning yellow (`{colors.sign-yellow}`) on exactly one element per
   page: the primary action.
 - **Do** express distance as time in the destination rows ("HOY", "HOY O
@@ -427,8 +586,10 @@ button; they get prose or nothing.
 ### Don't:
 - **Don't** add a second yellow element, a yellow heading, or a yellow rule. The
   rarity is the whole mechanism.
-- **Don't** fake material: no chrome, no metal gradient, no gloss, no bevel
-  imitating relief, no drop shadow, no cast or ambient elevation of any kind.
+- **Don't** fake material: no chrome, no gloss, no metal sheen or highlight ramp,
+  no bevel imitating relief, no drop shadow, no cast or ambient elevation of any
+  kind. A gradient may only band a flat shape (the post's three stops, the bolt
+  discs, the stripe dashes); it may never light one.
 - **Don't** round a corner. There is no radius in this system.
 - **Don't** use an icon library, an icon font, or a text-glyph arrow.
 - **Don't** introduce a second type family, an italic, or a weight outside
@@ -437,8 +598,17 @@ button; they get prose or nothing.
   longer than a short legend.
 - **Don't** let the lane stripe wrap to a second line or turn into a repeating
   texture or a diagonal hatch.
-- **Don't** put a card, panel, or tinted box inside a field; there are three
-  fields and nothing floats in them.
+- **Don't** float a panel, card, or tinted box inside a field. The plate is the
+  one inset piece and it is not floating: it is mounted, with posts reaching the
+  ground and a sheet edge showing its thickness. An inset rectangle with neither
+  is a card, and this world has none.
+- **Don't** let a plate run full-bleed to the top and sides of the viewport. Its
+  edges are what make it an object.
+- **Don't** turn the sheet edge into a shadow: no blur radius, no horizontal
+  offset, no spread, no black, and never on anything that isn't a mounted plate.
+- **Don't** give the posts a gloss, a smooth gradient ramp, a highlight streak, or
+  a rounded cap. Galvanized steel in this world is two flat tones meeting at a
+  hard stop.
 - **Don't** state a distance, time, price, figure, address, or hour that the
   business cannot hold. A destination row that promises an unsupported time
   breaks the column's grammar, not just its copy.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T00:00:00Z",
+  "generatedAt": "2026-11-06T12:00:00Z",
   "title": "Design System: Castillo Autoparts — Señal de Destino",
   "extensions": {
     "colorMeta": {
@@ -63,14 +63,29 @@
         "displayName": "Stripe",
         "canonical": "#e8e4d9",
         "tonalRamp": ["oklch(18% 0.012 90)", "oklch(30% 0.015 90)", "oklch(42% 0.018 90)", "oklch(54% 0.020 90)", "oklch(66% 0.022 90)", "oklch(78% 0.022 90)", "oklch(88% 0.018 90)", "oklch(96% 0.010 90)"]
+      },
+      "galvanized": {
+        "role": "tertiary",
+        "displayName": "Galvanized",
+        "canonical": "#8f979b",
+        "tonalRamp": ["oklch(18% 0.008 225)", "oklch(30% 0.009 225)", "oklch(42% 0.010 225)", "oklch(54% 0.011 225)", "oklch(66% 0.011 225)", "oklch(78% 0.010 225)", "oklch(88% 0.008 225)", "oklch(96% 0.004 225)"]
+      },
+      "galvanized-dark": {
+        "role": "tertiary",
+        "displayName": "Dark Galvanized",
+        "canonical": "#5f676a",
+        "tonalRamp": ["oklch(17% 0.008 225)", "oklch(28% 0.009 225)", "oklch(40% 0.010 225)", "oklch(49% 0.011 225)", "oklch(62% 0.011 225)", "oklch(75% 0.010 225)", "oklch(86% 0.008 225)", "oklch(95% 0.004 225)"]
       }
     },
     "typographyMeta": {
       "display": { "displayName": "Plate Legend", "purpose": "The one headline on the green plate. Mixed case, flush left, max-width 18ch, text-wrap balance." },
+      "brand": { "displayName": "Brand Name", "purpose": "The brand name beside the route shield in the plate head. Mixed case." },
       "headline": { "displayName": "Exit Action", "purpose": "The action text inside the yellow exit plate." },
       "title": { "displayName": "Distance In Time", "purpose": "The time value in a destination row. Uppercase, right-aligned, nowrap." },
       "lead": { "displayName": "Asphalt Lead", "purpose": "First paragraph of the asphalt section." },
-      "place": { "displayName": "Place", "purpose": "Destination name in a row; also contact values." },
+      "place": { "displayName": "Place", "purpose": "Destination name in a row on the plate." },
+      "contact-value": { "displayName": "Contact Value", "purpose": "Values in the asphalt contact list. One step above Place because it sits on asphalt and has no arrow leading the eye to it." },
+      "code": { "displayName": "Head Plate Code", "purpose": "A short uppercase code on a small head plate \u2014 the locale on the language plate. Fixed, not fluid: a head plate is the same size at every width." },
       "body": { "displayName": "Asphalt Body", "purpose": "Supporting facts on asphalt, capped at 68ch." },
       "label": { "displayName": "Sign Legend", "purpose": "Short uppercase legends only: the exit word, contact terms. Wide tracking is required at this size." },
       "meta": { "displayName": "Footer Meta", "purpose": "The footer's two lines." }
@@ -79,7 +94,12 @@
       {
         "name": "plate-enamel-border",
         "value": "inset 0 0 0 3px #f2f5f2, inset 0 0 0 12px #0b6b3a",
-        "purpose": "Not elevation. The white line a real destination plate carries inside its edge, drawn as two stacked inset rings. The only box-shadow in the system; nothing casts."
+        "purpose": "Not elevation. The white line a real destination plate carries inside its edge, drawn as two stacked inset rings. Always present on a green plate."
+      },
+      {
+        "name": "plate-sheet-edge",
+        "value": "0 3px 0 0 #5f676a",
+        "purpose": "Not elevation. The cut bottom edge of the metal sheet, in the mount's own material: 3px, zero blur, zero spread, bottom axis only. Thickness, not lift. Only on a plate that is visibly mounted on posts; a blur, a second axis, a spread, or a black turns it into the drop shadow this world does not have."
       }
     ],
     "motion": [
@@ -113,12 +133,20 @@
       "css": ".ds-destinations { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-family: Overpass, system-ui, sans-serif; color: #f2f5f2; background: #0b6b3a; } .ds-destinations li { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(9ch, max-content); align-items: baseline; gap: clamp(12px, 2vw, 24px); padding-block: clamp(10px, 1.6vh, 16px); border-top: 1px solid #ffffff3d; } .ds-destinations li:last-child { border-bottom: 1px solid #ffffff3d; } .ds-place { font-size: clamp(15px, 1.9vw, 21px); font-weight: 600; letter-spacing: 0.01em; } .ds-destinations .ds-arrow { width: clamp(28px, 3vw, 40px); height: auto; align-self: center; color: #c7d8cc; } .ds-when { font-size: clamp(16px, 2.1vw, 24px); font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; text-align: right; white-space: nowrap; } @media (prefers-reduced-motion: no-preference) { @keyframes ds-approach { from { opacity: 0; transform: translateY(14px); } } .ds-destinations li { animation: ds-approach 620ms cubic-bezier(0.16, 1, 0.3, 1) both; } .ds-destinations li:nth-child(2) { animation-delay: 90ms; } } @media (max-width: 640px) { .ds-destinations li { grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 10px; } .ds-destinations .ds-arrow { width: 22px; } }"
     },
     {
+        "name": "Sign Mount",
+        "kind": "custom",
+        "refersTo": "sign-mount",
+        "description": "What makes the plate an object instead of a colour band: air on top and sides, two galvanized posts descending behind it into the road, each with a footing plate.",
+        "html": "<div class=\"ds-mount\"><div class=\"ds-post ds-post-left\" aria-hidden=\"true\"></div><div class=\"ds-post ds-post-right\" aria-hidden=\"true\"></div><section class=\"ds-mounted-plate\"><h1 class=\"ds-mounted-legend\">Tu próximo repuesto empieza aquí.</h1></section></div><div class=\"ds-mount-ground\" aria-hidden=\"true\"></div>",
+        "css": ".ds-mount { --post-drop: clamp(52px, 7vh, 92px); position: relative; z-index: 1; display: flex; min-height: 300px; padding: clamp(18px, 3vh, 34px) clamp(20px, 4vw, 56px) 0; background: #16181a; } .ds-post { position: absolute; top: 35%; bottom: calc(var(--post-drop) * -1); width: clamp(10px, 1.1vw, 16px); background: linear-gradient(to right, #5f676a 0 22%, #8f979b 22% 58%, #5f676a 58% 100%); } .ds-post::after { content: \"\"; position: absolute; bottom: 0; left: 50%; translate: -50% 0; width: 320%; height: 6px; background: #5f676a; } .ds-post-left { left: 18%; } .ds-post-right { right: 18%; } .ds-mounted-plate { flex: 1; display: flex; flex-direction: column; padding: clamp(20px, 4vw, 56px); font-family: Overpass, system-ui, sans-serif; color: #f2f5f2; background: #0b6b3a; border-radius: 0; box-shadow: inset 0 0 0 3px #f2f5f2, inset 0 0 0 12px #0b6b3a, 0 3px 0 0 #5f676a; } .ds-mounted-legend { margin: 0; max-width: 18ch; font-size: clamp(32px, 5vw, 60px); font-weight: 800; line-height: 0.98; letter-spacing: -0.02em; } .ds-mount-ground { height: calc(clamp(52px, 7vh, 92px) + 40px); background: #16181a; } @media (max-width: 640px) { .ds-post-left { left: 12%; } .ds-post-right { right: 12%; } }"
+    },
+    {
       "name": "Sign Plate",
       "kind": "card",
       "refersTo": "plate",
-      "description": "The green field every surface starts from: inset white enamel border and four mounting bolts, no shadow and no radius.",
+      "description": "The green field every surface starts from: inset white enamel border, four mounting bolts, and the 3px galvanized sheet edge below it. No radius, nothing cast.",
       "html": "<section class=\"ds-plate\"><h1 class=\"ds-legend\">Tu próximo repuesto empieza aquí.</h1></section>",
-      "css": ".ds-plate { position: relative; display: flex; flex-direction: column; gap: clamp(28px, 5vh, 56px); padding: clamp(20px, 4vw, 56px); min-height: 320px; font-family: Overpass, system-ui, sans-serif; color: #f2f5f2; background: #0b6b3a; border-radius: 0; box-shadow: inset 0 0 0 3px #f2f5f2, inset 0 0 0 12px #0b6b3a; } .ds-plate::before, .ds-plate::after { content: \"\"; position: absolute; inset-inline: 30px; height: 14px; pointer-events: none; background: radial-gradient(circle, #ffffff52 0 5px, transparent 5.5px) left center / 14px 14px no-repeat, radial-gradient(circle, #ffffff52 0 5px, transparent 5.5px) right center / 14px 14px no-repeat; } .ds-plate::before { top: 30px; } .ds-plate::after { bottom: 30px; } .ds-plate > * { position: relative; } .ds-legend { margin: 0; max-width: 18ch; font-size: clamp(42px, 7vw, 88px); font-weight: 800; line-height: 0.98; letter-spacing: -0.02em; text-wrap: balance; }"
+      "css": ".ds-plate { position: relative; display: flex; flex-direction: column; gap: clamp(28px, 5vh, 56px); padding: clamp(20px, 4vw, 56px); min-height: 320px; font-family: Overpass, system-ui, sans-serif; color: #f2f5f2; background: #0b6b3a; border-radius: 0; box-shadow: inset 0 0 0 3px #f2f5f2, inset 0 0 0 12px #0b6b3a, 0 3px 0 0 #5f676a; } .ds-plate::before, .ds-plate::after { content: \"\"; position: absolute; inset-inline: 30px; height: 14px; pointer-events: none; background: radial-gradient(circle, #ffffff52 0 5px, transparent 5.5px) left center / 14px 14px no-repeat, radial-gradient(circle, #ffffff52 0 5px, transparent 5.5px) right center / 14px 14px no-repeat; } .ds-plate::before { top: 30px; } .ds-plate::after { bottom: 30px; } .ds-plate > * { position: relative; z-index: 1; } .ds-legend { margin: 0; max-width: 18ch; font-size: clamp(42px, 7vw, 88px); font-weight: 800; line-height: 0.98; letter-spacing: -0.02em; text-wrap: balance; }"
     },
     {
       "name": "Route Shield (Brand Mark)",
@@ -140,9 +168,9 @@
       "name": "Asphalt Section",
       "kind": "card",
       "refersTo": "footer",
-      "description": "The ground below the plate: lane stripe across the top, lead paragraph, supporting facts at 68ch.",
+      "description": "The ground the sign stands on: top padding and stripe offset both measured from the post drop, so the lane stripe runs below the post footings. Lead paragraph and supporting facts at 68ch.",
       "html": "<section class=\"ds-asphalt\"><div class=\"ds-stripe\" aria-hidden=\"true\"></div><div class=\"ds-facts\"><p class=\"ds-lead\">Bodega propia con stock real.</p><p>La pieza está físicamente y puede retirarse hoy.</p></div></section>",
-      "css": ".ds-asphalt { position: relative; padding: clamp(44px, 7vh, 76px) clamp(20px, 4vw, 56px) clamp(28px, 4vh, 44px); font-family: Overpass, system-ui, sans-serif; background: #16181a; } .ds-stripe { position: absolute; inset-inline: 0; top: clamp(20px, 3vh, 32px); height: 6px; opacity: 0.5; background: repeating-linear-gradient(to right, #e8e4d9 0 clamp(40px, 7vw, 86px), transparent clamp(40px, 7vw, 86px) clamp(92px, 15vw, 190px)); } .ds-facts { display: grid; gap: 10px; max-width: 68ch; } .ds-lead { margin: 0; font-size: clamp(18px, 2.1vw, 23px); font-weight: 600; line-height: 1.5; color: #d7dadc; } .ds-facts p:not(.ds-lead) { margin: 0; font-size: clamp(15px, 1.7vw, 18px); line-height: 1.6; color: #9ea4a8; }"
+      "css": ".ds-asphalt { position: relative; --post-drop: clamp(52px, 7vh, 92px); padding: calc(var(--post-drop) + clamp(34px, 5vh, 60px)) clamp(20px, 4vw, 56px) clamp(28px, 4vh, 44px); font-family: Overpass, system-ui, sans-serif; background: #16181a; } .ds-stripe { position: absolute; inset-inline: 0; top: calc(var(--post-drop) + clamp(22px, 3vh, 36px)); height: 6px; opacity: 0.5; background: repeating-linear-gradient(to right, #e8e4d9 0 clamp(40px, 7vw, 86px), transparent clamp(40px, 7vw, 86px) clamp(92px, 15vw, 190px)); } .ds-facts { display: grid; gap: 10px; max-width: 68ch; } .ds-lead { margin: 0; font-size: clamp(18px, 2.1vw, 23px); font-weight: 600; line-height: 1.5; color: #d7dadc; } .ds-facts p:not(.ds-lead) { margin: 0; font-size: clamp(15px, 1.7vw, 18px); line-height: 1.6; color: #9ea4a8; }"
     },
     {
       "name": "Contact List",
@@ -163,7 +191,7 @@
   ],
   "narrative": {
     "northStar": "The Destination Sign",
-    "overview": "This is Salvadoran highway destination signage rendered as a web surface. The page is a green enamel plate read at speed: it names what exists, states how far it is from your hands in time rather than kilometres, and marks where the exit is. Everything below the plate is the asphalt it stands over, with a painted lane stripe running across it. The world is built from four marks and survives the removal of all its copy: green field, authored arrow, distance in time, yellow exit plate.\n\nNothing is simulated. There is no chrome, no metal gradient, no bevel pretending to be relief, no drop shadow standing in for a photograph of a sign. The only materials the build carries are flat enamel colour, an inset white border of the kind a real plate has, a painted stripe, and four bolt heads in the plate's corners. The density is low and deliberate: a single plate, two destination rows, one action, three facts, two contact fields.\n\nType is one family at three weights, drawn from FHWA highway lettering and self-hosted (downloaded at build by next/font, never fetched at runtime). The page ships with zero images, by constraint: the business has no photographs yet and none may be invented, so the world is carried entirely by colour, geometry, and lettering.",
+    "overview": "This is Salvadoran highway destination signage rendered as a web surface. The page is a green enamel plate read at speed: it names what exists, states how far it is from your hands in time rather than kilometres, and marks where the exit is. The plate is a mounted object, not a background band: it has air above and beside it, a sheet edge below it, and two galvanized posts that descend behind it and plant in the asphalt. The asphalt is the page ground — the sign is seen *from* the road, so there is road behind it — with a painted lane stripe running across it below the footings. The world is built from four marks and survives the removal of all its copy: green field, authored arrow, distance in time, yellow exit plate.\n\nNothing is simulated. There is no chrome, no gloss, no bevel pretending to be relief, no drop shadow standing in for a photograph of a sign. The materials the build carries are the four the world names and nothing else: flat enamel colour, the inset white border of the kind a real plate has, galvanized steel (the two posts, their footing plates, and the sheet's own bottom edge), and the painted stripe — plus four bolt heads in the plate's corners, which are the fastening the mount implies. Every one of them is drawn flat: the post is two hard-stopped tones across its width, not a lighting ramp. The density is low and deliberate: a single plate, two destination rows, one action, three facts, two contact fields.\n\nType is one family at three weights, drawn from FHWA highway lettering and self-hosted (downloaded at build by next/font, never fetched at runtime). The page ships with zero images, by constraint: the business has no photographs yet and none may be invented, so the world is carried entirely by colour, geometry, and lettering.",
     "keyCharacteristics": [
       "Green enamel field dominant; white reserved for information",
       "Warning yellow exactly once per page, only on the primary action",
@@ -171,26 +199,34 @@
       "One type family (Overpass) at weights 400 / 600 / 800",
       "Authored SVG arrows at a 3px stroke, matching the system rule weight",
       "No images, no photographs, no icon library",
-      "Flat throughout: depth is tonal (plate over asphalt), never cast"
+      "The plate is mounted, not floated: two galvanized posts plant it in the ground",
+      "Depth is material and tonal \u2014 sheet thickness, post, field change \u2014 never cast"
     ],
     "rules": [
       { "name": "The One Yellow Rule", "body": "Warning yellow appears exactly once in the page body, and only on the primary action. Its second appearance anywhere destroys the signal. Browser-surface use (::selection, :focus-visible) is the one exemption, because those are responses and not content.", "section": "colors" },
-      { "name": "The Three Fields Rule", "body": "Every surface is one of three fields: green plate (the claim), asphalt (the facts), raised asphalt (the close). There is no fourth background colour and no card floating inside a field.", "section": "colors" },
+      { "name": "The Three Fields Rule", "body": "Every surface is one of three fields: green plate (the claim), asphalt (the facts and the page ground behind the sign), raised asphalt (the close). There is no fourth background colour. The galvanized greys are not a field: they are drawn hardware, and they only ever appear as the structure that holds a plate up.", "section": "colors" },
       { "name": "The Inversion Rule", "body": "White on green inverts to deep green on white; yellow inverts to asphalt. Nothing else inverts, and no text sits on a tint.", "section": "colors" },
       { "name": "The Mixed-Case Legend Rule", "body": "The display legend is mixed case, not all caps. Modern destination signage moved to mixed case because it is read faster at speed, which is the condition this page imitates. Uppercase is reserved for short legends — the exit word, the time values, contact terms — exactly where a real sign uses it.", "section": "typography" },
       { "name": "The One Family Rule", "body": "One family, three weights (400 / 600 / 800). No second face, no italic, no condensed cut. If a level needs separating, change weight, size, or tracking.", "section": "typography" },
       { "name": "The Tracking Inverse Rule", "body": "Tracking tightens as size grows (-0.02em at display) and opens as size shrinks (0.22em at 12px label). A 12px string without open tracking is not a sign legend.", "section": "typography" },
       { "name": "The Unbroken Stripe Rule", "body": "The lane stripe runs horizontally across the full inline axis and scales its dash with viewport width (clamp(40px, 7vw, 86px) paint, clamp(92px, 15vw, 190px) period). It never wraps to a second line and never becomes a texture.", "section": "layout" },
       { "name": "The One Gutter Rule", "body": "All page-level horizontal inset comes from the gutter token. No section invents its own margin.", "section": "layout" },
-      { "name": "The Nothing Faked Rule", "body": "No chrome, no metal gradient, no gloss, no bevel imitating relief, no drop shadow, no photograph, no stock image. Only flat enamel, the inset border, the painted stripe, and the bolt heads. A gradient is permitted solely as a drawing primitive for a flat shape (the bolt discs, the stripe dashes), never as a lighting effect.", "section": "elevation" },
+      { "name": "The Mounted Plate Rule", "body": "A plate in this world is never full-bleed and never floated. It gets air on top and sides so its edges read, a sheet edge below, and two posts that leave the plate and plant in the ground below it. If a surface cannot show where it is held up, it is a band of colour and not a sign.", "section": "layout" },
+      { "name": "The Post Drop Rule", "body": "One token (clamp(52px, 7vh, 92px)) owns the whole junction between sign and road: the posts' overshoot, the asphalt's top padding, and the stripe's offset are all measured from it. The stripe always passes below the footings; nothing painted on the road crosses a post.", "section": "layout" },
+      { "name": "The Nothing Faked Rule", "body": "No chrome, no gloss, no metal sheen, no bevel imitating relief, no cast or ambient shadow, no photograph, no stock image. The permitted materials are exactly the four the world names plus their fastening: flat enamel with its inset border, galvanized steel (post, footing, sheet edge), painted stripe, and the bolt heads. A gradient is permitted solely as a drawing primitive for a flat shape \u2014 the bolt discs, the stripe dashes, and the post's two tones at hard stops \u2014 never as a lighting effect or a smooth highlight ramp.", "section": "elevation" },
+      { "name": "The Sheet Edge Rule", "body": "A plate's thickness is drawn as a 3px zero-blur, zero-spread band on the bottom axis only, in the mount's own material (#5f676a). Add a blur radius, a second axis, a black, or a spread and it stops being an edge and becomes the drop shadow this world does not have. It belongs only to a plate that visibly has posts.", "section": "elevation" },
       { "name": "The Flat Field Rule", "body": "Surfaces are flat at every state. State is expressed by colour inversion or by position, never by lift.", "section": "elevation" },
       { "name": "The Zero Radius Rule", "body": "Radius is 0 on every surface. If a shape needs an identity, cut it with clip-path from the signage vocabulary — never round it.", "section": "shapes" },
-      { "name": "The Shared Rule Weight Rule", "body": "The 3px rule token is one value doing four jobs: plate border, button stroke, focus ring, arrow stroke. Drawn marks and drawn borders are the same thickness, which is what makes the arrow read as part of the sign rather than as an icon pasted on it.", "section": "shapes" },
+      { "name": "The Round-By-Banding Rule", "body": "Curvature is implied by flat bands at hard stops, never by a smooth ramp. The post reads as a cylinder because it has a lit face between two turning edges \u2014 three stops, no interpolation visible. The moment the stops soften, it is a gloss effect.", "section": "shapes" },
+      { "name": "The Shared Rule Weight Rule", "body": "The 3px rule token is one value doing five jobs: plate border, button stroke, focus ring, arrow stroke, sheet edge. Drawn marks and drawn borders are the same thickness, which is what makes the arrow read as part of the sign rather than as an icon pasted on it.", "section": "shapes" },
       { "name": "The Authored Arrow Rule", "body": "Arrows are authored SVG at the 3px system stroke. No icon library, no icon font, no text glyph (→, »), no <img>. Any new mark in this world is drawn at the rule weight or it is not drawn.", "section": "components" },
       { "name": "The Single Action Rule", "body": "One action per surface, rendered as the one yellow plate, reachable without JavaScript. Additional calls to action do not get a button; they get prose or nothing.", "section": "components" }
     ],
     "dos": [
       "Do start any new surface as the green plate (#0b6b3a) with the 3px inset white enamel border, and put information in sign white.",
+      "Do mount any plate that occupies a page: air on top and sides, the 3px galvanized sheet edge below it, and two posts that plant in the asphalt ground.",
+      "Do measure the whole sign-to-road junction from the post-drop token (clamp(52px, 7vh, 92px)) \u2014 post overshoot, asphalt top padding, stripe offset \u2014 so the stripe runs below the footings and never across a post.",
+      "Do draw implied roundness as flat bands at hard stops, the way the post's three-stop section does.",
       "Do spend warning yellow (#f2b705) on exactly one element per page: the primary action.",
       "Do express distance as time in the destination rows (\"HOY\", \"HOY O MAÑANA\"), uppercase, right-aligned, 800 weight.",
       "Do set display and body copy in mixed case; keep uppercase for short sign legends and contact terms, with tracking opened to 0.2–0.22em.",
@@ -203,13 +239,16 @@
     ],
     "donts": [
       "Don't add a second yellow element, a yellow heading, or a yellow rule. The rarity is the whole mechanism.",
-      "Don't fake material: no chrome, no metal gradient, no gloss, no bevel imitating relief, no drop shadow, no cast or ambient elevation of any kind.",
+      "Don't fake material: no chrome, no gloss, no metal sheen or highlight ramp, no bevel imitating relief, no drop shadow, no cast or ambient elevation of any kind. A gradient may only band a flat shape (the post's three stops, the bolt discs, the stripe dashes); it may never light one.",
       "Don't round a corner. There is no radius in this system.",
       "Don't use an icon library, an icon font, or a text-glyph arrow.",
       "Don't introduce a second type family, an italic, or a weight outside 400 / 600 / 800; and don't load type at runtime — it is self-hosted at build.",
       "Don't set the display legend in all caps, and don't uppercase anything longer than a short legend.",
       "Don't let the lane stripe wrap to a second line or turn into a repeating texture or a diagonal hatch.",
-      "Don't put a card, panel, or tinted box inside a field; there are three fields and nothing floats in them.",
+      "Don't float a panel, card, or tinted box inside a field. The plate is the one inset piece and it is not floating: it is mounted, with posts reaching the ground and a sheet edge showing its thickness. An inset rectangle with neither is a card, and this world has none.",
+      "Don't let a plate run full-bleed to the top and sides of the viewport. Its edges are what make it an object.",
+      "Don't turn the sheet edge into a shadow: no blur radius, no horizontal offset, no spread, no black, and never on anything that isn't a mounted plate.",
+      "Don't give the posts a gloss, a smooth gradient ramp, a highlight streak, or a rounded cap. Galvanized steel in this world is two flat tones meeting at a hard stop.",
       "Don't state a distance, time, price, figure, address, or hour that the business cannot hold. A destination row that promises an unsupported time breaks the column's grammar, not just its copy.",
       "Don't add a second button. A surface in this world has one action."
     ]

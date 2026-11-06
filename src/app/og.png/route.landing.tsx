@@ -24,7 +24,7 @@ export const dynamic = "force-static";
  * Acá el archivo se abre en disco, que es literalmente lo que hace falta, y
  * ocurre al compilar porque la imagen es estática.
  */
-function fontPath(weight: 700 | 800) {
+function fontPath(weight: 600 | 800) {
   return path.join(
     process.cwd(),
     "node_modules/@fontsource/overpass/files",
@@ -54,7 +54,7 @@ function DestinationRow({ place, when }: { place: string; when: string }) {
         width: "100%",
       }}
     >
-      <div style={{ display: "flex", flex: 1, fontSize: 28, fontWeight: 700 }}>{place}</div>
+      <div style={{ display: "flex", flex: 1, fontSize: 28, fontWeight: 600 }}>{place}</div>
       <SignArrow color="#c7d8cc" width={44} />
       <div style={{ display: "flex", fontSize: 30, fontWeight: 800, letterSpacing: "0.03em" }}>
         {when}
@@ -65,7 +65,7 @@ function DestinationRow({ place, when }: { place: string; when: string }) {
 
 export async function GET() {
   const [semibold, bold] = await Promise.all([
-    readFile(fontPath(700)),
+    readFile(fontPath(600)),
     readFile(fontPath(800)),
   ]);
 
@@ -162,7 +162,7 @@ export async function GET() {
     ),
     {
       fonts: [
-        { data: semibold, name: "Overpass", style: "normal", weight: 700 },
+        { data: semibold, name: "Overpass", style: "normal", weight: 600 },
         { data: bold, name: "Overpass", style: "normal", weight: 800 },
       ],
       height: 630,
