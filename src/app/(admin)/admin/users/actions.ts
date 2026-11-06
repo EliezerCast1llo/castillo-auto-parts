@@ -5,7 +5,7 @@ import type { UserRole } from "@prisma/client";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { db } from "@/lib/db";
-import { formString } from "@/lib/form-utils";
+import { formCheckbox, formString } from "@/lib/form-utils";
 import {
   ADMIN_ROLES,
   adminEmailExists,
@@ -72,8 +72,8 @@ export async function updateAdminUserAction(formData: FormData) {
   const id = formString(formData, "id");
   const name = formString(formData, "name").trim();
   const role = formString(formData, "role") as UserRole;
-  const isActive = formData.get("isActive") === "true";
-  const twoFactorEnabled = formData.get("twoFactorEnabled") === "true";
+  const isActive = formCheckbox(formData, "isActive");
+  const twoFactorEnabled = formCheckbox(formData, "twoFactorEnabled");
   const password = formString(formData, "password");
   const passwordConfirm = formString(formData, "passwordConfirm");
 

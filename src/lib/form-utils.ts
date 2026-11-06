@@ -38,3 +38,18 @@ export function optionalFormStringOrNull(
 ): string | null {
   return formString(formData, key) || null;
 }
+
+/**
+ * Lee una casilla de verificación acompañada de un campo oculto.
+ *
+ * El par es necesario porque una casilla sin marcar **no manda nada**: sin el
+ * oculto, apagarla sería indistinguible de no haber enviado el formulario.
+ *
+ * Y `getAll` y no `get` porque `get` devuelve el **primer** valor: con el
+ * oculto escrito antes de la casilla —que es como está en el panel— marcarla
+ * no servía de nada y el campo se guardaba siempre apagado. Mirando todos los
+ * valores, el orden en el HTML deja de importar.
+ */
+export function formCheckbox(formData: FormData, key: string): boolean {
+  return formData.getAll(key).includes("true");
+}
