@@ -29,6 +29,7 @@ export const pathnames = {
   "/orders/[orderNumber]": "/orders/[orderNumber]",
   "/payments/mock/[externalPaymentId]": "/payments/mock/[externalPaymentId]",
   "/auth/login": "/auth/login",
+  "/auth/2fa": "/auth/2fa",
   "/auth/register": "/auth/register",
   "/auth/forgot-password": "/auth/forgot-password",
   "/auth/reset-password/[token]": "/auth/reset-password/[token]",

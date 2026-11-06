@@ -8,11 +8,17 @@
     "password_mismatch": "The passwords do not match.",
     "password_reset": "Your password was reset. Sign in with your new password.",
     "rate_limited": "Too many attempts. Wait a few minutes and try again.",
+    "two_factor_invalid": "That code is not valid or has expired. Request a new one.",
+    "two_factor_restart": "The verification expired. Sign in again.",
+    "two_factor_sent": "We sent you a new code. Check your email.",
+    "two_factor_unavailable": "We could not send the code. Try again in a few minutes.",
     "weak_password": "Your password must be at least 8 characters long."
   },
   "account": {
     "success": {
       "password_changed": "Your password was changed.",
+      "two_factor_disabled": "Two-step verification is off.",
+      "two_factor_enabled": "Two-step verification is on.",
       "updated": "Your phone number was updated."
     },
     "error": {

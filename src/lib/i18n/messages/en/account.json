@@ -84,5 +84,15 @@
     "verifyBeforeSaving": "Check that everything is right before saving.",
     "selectCity": "Select a municipality"
   },
-  "breadcrumbAriaLabel": "Account breadcrumb"
+  "breadcrumbAriaLabel": "Account breadcrumb",
+  "twoFactor": {
+    "title": "Two-step verification",
+    "description": "With this on, every password sign-in also asks for a 6-digit code we send to your email.",
+    "statusOn": "On",
+    "statusOff": "Off",
+    "enable": "Turn on verification",
+    "disable": "Turn off verification",
+    "providerTitle": "Your account signs in with Google.",
+    "providerDescription": "Google already asks for its own second factor, so this would add no protection."
+  }
 }

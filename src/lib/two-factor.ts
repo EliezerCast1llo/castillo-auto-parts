@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
+import { requireAuthSecret } from "@/lib/auth-secret";
 import { db } from "@/lib/db";
 
 /**
@@ -46,20 +47,9 @@ export type VerifyResult =
  * arranque falla si falta o es débil— y agregar otra variable sería una pieza
  * más que alguien puede olvidar de configurar.
  */
-function codeSecret() {
-  const secret = process.env.AUTH_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim() || "";
-
-  if (!secret) {
-    throw new Error(
-      "AUTH_SECRET/NEXTAUTH_SECRET es necesario para hashear los códigos de segundo factor.",
-    );
-  }
-
-  return secret;
-}
-
 function hashCode(code: string) {
-  return createHmac("sha256", codeSecret()).update(code).digest("base64url");
+  const secret = requireAuthSecret("hashear los códigos de segundo factor");
+  return createHmac("sha256", secret).update(code).digest("base64url");
 }
 
 /**
