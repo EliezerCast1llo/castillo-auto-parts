@@ -112,7 +112,10 @@ export async function middleware(request: NextRequest) {
 async function handleAdmin(request: NextRequest, requestHeaders: Headers) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin/login")) {
+  // Las dos pantallas del ingreso quedan fuera de la verificación: a `/admin/2fa`
+  // se llega con la contraseña probada y todavía sin sesión, así que exigirla
+  // acá devolvería al login en bucle.
+  if (pathname.startsWith("/admin/login") || pathname.startsWith("/admin/2fa")) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 

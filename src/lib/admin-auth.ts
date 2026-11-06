@@ -181,9 +181,20 @@ export async function clearAdminSessionCookie(): Promise<void> {
   cookieStore.delete(ADMIN_SESSION_COOKIE);
 }
 
+/**
+ * Las dos pantallas del ingreso no sirven como destino.
+ *
+ * Mandar a `/admin/login` tras entrar sería absurdo, y mandar a `/admin/2fa`
+ * es peor: esa pantalla redirige al destino cuando ya hay sesión, así que
+ * tenerse a sí misma como destino da un bucle.
+ */
+const ADMIN_ENTRY_PATHS = ["/admin/login", "/admin/2fa"];
+
 export function getSafeAdminNextPath(value: string | undefined): string {
   const isAdminPath = value === "/admin" || Boolean(value?.startsWith("/admin/"));
-  if (!value || !isAdminPath || value.startsWith("/admin/login")) {
+  const isEntryPath = ADMIN_ENTRY_PATHS.some((entry) => value?.startsWith(entry));
+
+  if (!value || !isAdminPath || isEntryPath) {
     return "/admin/orders";
   }
   return value;
