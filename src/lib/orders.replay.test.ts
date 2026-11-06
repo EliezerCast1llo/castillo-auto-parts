@@ -1,6 +1,6 @@
 import { OrderStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
-import type { GuestCart } from "./cart";
+import type { CartSummary } from "./cart";
 import type { CheckoutInput } from "./checkout";
 import {
   buildIntentFingerprint,
@@ -29,7 +29,7 @@ function order(overrides: Partial<IdempotentOrderLookup> = {}): IdempotentOrderL
   };
 }
 
-function cart(lines: { sku: string; quantity: number }[]): GuestCart {
+function cart(lines: { sku: string; quantity: number }[]): CartSummary {
   return {
     hasBlockingIssues: false,
     itemCount: lines.reduce((total, line) => total + line.quantity, 0),
@@ -40,7 +40,7 @@ function cart(lines: { sku: string; quantity: number }[]): GuestCart {
       quantity: line.quantity,
       product: { sku: line.sku },
     })),
-  } as GuestCart;
+  } as CartSummary;
 }
 
 function input(overrides: Partial<CheckoutInput> = {}): CheckoutInput {

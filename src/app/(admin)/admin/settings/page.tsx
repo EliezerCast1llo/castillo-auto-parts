@@ -4,7 +4,8 @@ import { SiteHeader } from "@/components/site-header";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { defaultPickupLocation, DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
 import { db } from "@/lib/db";
-import { updateShippingPromotion, updatePickupSettings } from "./actions";
+import { getAllStoreSettings, STORE_SETTINGS, type StoreSettingName } from "@/lib/store-settings";
+import { updateShippingPromotion, updatePickupSettings, updateStoreSettings } from "./actions";
 import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
@@ -24,9 +25,10 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado);
   const statusMessage = getStatusMessage(status);
-  const [pickupLocation, promotion] = await Promise.all([
+  const [pickupLocation, promotion, storeSettings] = await Promise.all([
     db.inventoryLocation.findUnique({ where: { code: DEFAULT_LOCATION_CODE } }),
     db.shippingPromotion.findUnique({ where: { id: "national" } }),
+    getAllStoreSettings(),
   ]);
 
   return (
@@ -111,6 +113,38 @@ export default async function AdminSettingsPage({ searchParams }: AdminSettingsP
                 <label className="flex min-h-11 items-center gap-3"><input type="checkbox" name="enabled" value="true" defaultChecked={promotion?.enabled ?? false} /> Activar promoción</label>
                 <SettingsField label="Compra mínima USD (con IVA, sin envío)" name="minimumSubtotal" type="number" min="0" step="0.01" defaultValue={((promotion?.minimumSubtotalCents ?? 0) / 100).toFixed(2)} required />
                 <button className="min-h-11 rounded-md bg-primary px-4 font-semibold text-white">Guardar promoción</button>
+              </form>
+            </section>
+
+            <section className="rounded-md border border-border bg-card p-5 lg:col-span-2">
+              <h2 className="text-lg font-bold text-primary">Comportamiento de la tienda</h2>
+              <p className="mt-2 text-sm">
+                Opciones que cambian cómo funciona la tienda sin tocar el entorno ni volver a desplegar.
+              </p>
+              <form action={updateStoreSettings} className="mt-4 space-y-4">
+                {(Object.keys(STORE_SETTINGS) as StoreSettingName[]).map((name) => (
+                  <label className="flex items-start gap-3 text-sm" key={name}>
+                    {/* El par oculto/casilla es necesario: una casilla sin marcar
+                        no manda nada, y sin el oculto el ajuste nunca se apagaría. */}
+                    <input name={name} type="hidden" value="false" />
+                    <input
+                      className="mt-1 h-4 w-4 rounded border-border"
+                      defaultChecked={storeSettings[name]}
+                      name={name}
+                      type="checkbox"
+                      value="true"
+                    />
+                    <span>
+                      <span className="font-semibold">{STORE_SETTINGS[name].label}</span>
+                      <span className="mt-1 block text-muted-foreground">
+                        {STORE_SETTINGS[name].description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+                <button className="min-h-11 rounded-md bg-primary px-4 font-semibold text-white">
+                  Guardar comportamiento
+                </button>
               </form>
             </section>
           </div>
@@ -222,6 +256,8 @@ function getStatusMessage(status: string) {
     invalid_zone: "Revisa los datos de la zona.",
     pickup_error: "No se pudieron guardar los datos de retiro.",
     pickup_updated: "Datos de retiro actualizados.",
+    store_error: "No se pudo guardar el comportamiento de la tienda.",
+    store_updated: "Comportamiento de la tienda actualizado.",
     zone_created: "Zona creada.",
     zone_error: "No se pudo guardar la zona.",
     zone_updated: "Zona actualizada.",

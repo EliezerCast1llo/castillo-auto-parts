@@ -15,7 +15,7 @@ import { CartNotice } from "@/components/cart/cart-notice";
 import { EmptyState } from "@/components/empty-state";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { getGuestCart, type CartLine } from "@/lib/cart";
+import { getCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
 import { createStockAlert } from "@/lib/actions/cart";
@@ -46,7 +46,7 @@ type CartPageProps = {
 
 export default async function CartPage({ params: routeParams, searchParams }: CartPageProps) {
   const locale = await resolveAndPublishRouteLocale(routeParams);
-  const cart = await getGuestCart();
+  const cart = await getCart();
   const params = searchParams ? await searchParams : {};
   const status = firstValue(params.estado) ?? "";
   const t = await getTranslations({ locale, namespace: "Cart" });

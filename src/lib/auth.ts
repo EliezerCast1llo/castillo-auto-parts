@@ -17,9 +17,12 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { UserRole } from "@prisma/client";
+import { mergeGuestCartIntoAccount } from "@/lib/cart-store";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/admin-credentials";
+import { logError } from "@/lib/logger";
 import { canSignInWithOAuthProfile } from "@/lib/oauth-profile";
+import { getStoreSetting } from "@/lib/store-settings";
 import { defaultLocale } from "@/lib/i18n/config";
 
 // Validación de secreto en producción. Auth.js v5 prefiere AUTH_SECRET;
@@ -113,6 +116,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = token.id as string;
       session.user.role = token.role as UserRole;
       return session;
+    },
+  },
+
+  events: {
+    /**
+     * Pasa el carrito del navegador a la cuenta al entrar.
+     *
+     * Va en el evento y no en los formularios de ingreso porque los formularios
+     * no son todos los caminos: el regreso de Google entra por el manejador de
+     * ruta de Auth.js y nunca pasa por una acción nuestra. El evento corre en
+     * los tres proveedores.
+     *
+     * Y no puede ir en la lectura del carrito, que sería el otro lugar obvio:
+     * la fusión tiene que borrar la cookie, y las cookies no se escriben
+     * mientras se renderiza una página.
+     *
+     * Falla en silencio a propósito: perder la fusión deja el carrito en el
+     * navegador, que es molesto; tirar acá dejaría a la persona sin poder
+     * entrar, que es peor. El ajuste apagado la saltea entera.
+     */
+    async signIn({ user }) {
+      if (!user?.id) return;
+
+      try {
+        if (!(await getStoreSetting("persistentCart"))) return;
+        await mergeGuestCartIntoAccount(user.id);
+      } catch (error) {
+        logError({ context: "mergeGuestCartIntoAccount", userId: user.id }, error);
+      }
     },
   },
 
