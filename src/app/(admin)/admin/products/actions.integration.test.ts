@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { db } from "@/lib/db";
-import { createAdminProduct, updateAdminProduct } from "./actions";
+import { createAdminProduct, updateAdminProduct, type AdminProductFormState } from "./actions";
 import { previewCatalogImport } from "@/lib/catalog-import";
 import { updateShippingPromotion } from "../settings/actions";
 import { CSV_COLUMNS, exportCsv } from "@/lib/catalog-csv";
@@ -23,13 +23,41 @@ vi.mock("@/data/products", () => ({ CATALOG_CACHE_TAG: "catalog", productCacheTa
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`TEST_REDIRECT:${path}`); } }));
 
 const actor = { id: "sku-admin", email: "sku-admin@example.com", role: "ADMIN" as const, name: "Fixture" };
-async function submit(action: (form: FormData) => Promise<void>, form: FormData) {
-  try { await action(form); }
+type SubmitResult = AdminProductFormState | void;
+
+/**
+ * Normaliza los dos desenlaces de una acción a una URL.
+ *
+ * La edición y los ajustes redirigen; la creación **devuelve** su resultado,
+ * porque redirigir tiraba el formulario y las imágenes que esperaban a que el
+ * producto existiera. Las pruebas preguntan lo mismo en los dos casos —qué
+ * estado salió—, así que el resultado devuelto se traduce a la URL que ese
+ * mismo estado produciría.
+ */
+function stateToUrl(state: AdminProductFormState) {
+  if (state?.status === "created") {
+    return new URL(`/admin/products/${state.slug}/edit?estado=created`, "https://admin.test");
+  }
+
+  const query = new URLSearchParams({ estado: state?.status === "error" ? state.code : "unknown" });
+  if (state?.status === "error" && state.existingSku) query.set("sku_existente", state.existingSku);
+
+  return new URL(`/admin/products/new?${query}`, "https://admin.test");
+}
+
+async function submit(
+  action: (previousState: never, form: FormData) => Promise<SubmitResult>,
+  form: FormData,
+) {
+  try {
+    const result = await action(null as never, form);
+    if (result) return stateToUrl(result);
+  }
   catch (error) {
     if (error instanceof Error && error.message.startsWith("TEST_REDIRECT:")) return new URL(error.message.slice("TEST_REDIRECT:".length), "https://admin.test");
     throw error;
   }
-  throw new Error("Action did not redirect");
+  throw new Error("Action neither redirected nor returned a state");
 }
 
 describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isolated PostgreSQL", () => {
@@ -51,11 +79,11 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
 
   it("saves the opt-in shipping promotion through an audited admin action", async () => {
     const data = new FormData(); data.set("enabled", "true"); data.set("minimumSubtotal", "75.50");
-    expect((await submit(updateShippingPromotion, data)).searchParams.get("estado")).toBe("promotion_updated");
+    expect((await submit(updateShippingPromotion as never, data)).searchParams.get("estado")).toBe("promotion_updated");
     expect(await db.shippingPromotion.findUniqueOrThrow({ where: { id: "national" } })).toMatchObject({ enabled: true, minimumSubtotalCents: 7550 });
     expect(await db.adminAuditLog.count({ where: { action: "shipping_promotion.updated" } })).toBe(1);
     data.set("minimumSubtotal", "-1");
-    expect((await submit(updateShippingPromotion, data)).searchParams.get("estado")).toBe("invalid_promotion");
+    expect((await submit(updateShippingPromotion as never, data)).searchParams.get("estado")).toBe("invalid_promotion");
     expect((await db.shippingPromotion.findUniqueOrThrow({ where: { id: "national" } })).minimumSubtotalCents).toBe(7550);
   });
 

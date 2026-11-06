@@ -124,6 +124,11 @@ function getStatusMessage(status: string, existingSku: string) {
   if (status === "sku_conflict") return adminSkuConflictMessage(existingSku);
   const messages: Record<string, string> = {
     created: "Producto creado.",
+    // El producto sí quedó guardado: lo que falló fue alguna imagen. Se dice
+    // así de explícito porque el siguiente paso es distinto —reintentar la
+    // subida acá abajo— y no "volver a crear el producto".
+    created_images_failed:
+      "Producto creado, pero alguna imagen no se pudo subir. Vuelve a agregarla aquí abajo.",
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
     invalid: "Revisa los campos. Para activar el producto completa peso, largo, ancho y alto; sin medidas puedes guardarlo como borrador.",

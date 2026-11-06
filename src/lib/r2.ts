@@ -22,6 +22,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { OperationalError, providerFailure } from "./operational-error";
+import { MAX_IMAGE_SIZE_BYTES } from "./image-upload-limits";
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -37,7 +38,10 @@ export type R2UploadResult = {
 // ---------------------------------------------------------------------------
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"] as const;
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+// El límite vive en un módulo aparte: un solo número para los dos lados, el
+// selector del formulario que avisa antes de subir y esta ruta que rechaza
+// igual. Duplicarlo dejaría que uno se corriera y el aviso dejara de coincidir
+// con lo que el servidor acepta.
 
 export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
@@ -77,7 +81,8 @@ export function hasValidImageMagicBytes(buffer: Buffer, mimeType: AllowedMimeTyp
 /**
  * Tamaño máximo permitido para subir imágenes de producto.
  */
-export const MAX_IMAGE_SIZE_BYTES = MAX_FILE_SIZE_BYTES;
+// Se reexporta para no mover los imports que ya apuntaban acá.
+export { MAX_IMAGE_SIZE_BYTES };
 
 // ---------------------------------------------------------------------------
 // Cliente S3 (singleton por módulo)

@@ -7,24 +7,17 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { createAdminProduct } from "../actions";
 import { defaultLocale } from "@/lib/i18n/config";
-import { adminSkuConflictMessage } from "@/lib/admin-products";
-import { SKU_FORMAT_MESSAGE } from "@/lib/product-sku";
 
 export const dynamic = "force-dynamic";
 
-type NewAdminProductPageProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-};
 
 export const metadata = {
   title: "Nuevo producto | Castillo Auto Parts",
 };
 
-export default async function NewAdminProductPage({ searchParams }: NewAdminProductPageProps) {
+export default async function NewAdminProductPage() {
   const adminUser = await requireAdminRole("ADMIN");
 
-  const params = searchParams ? await searchParams : {};
-  const statusMessage = getStatusMessage(firstValue(params.estado), firstValue(params.sku_existente));
   const categories = await db.productCategory.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   });
@@ -45,8 +38,6 @@ export default async function NewAdminProductPage({ searchParams }: NewAdminProd
           <AdminNav active="products" user={adminUser} />
         </div>
 
-        {statusMessage ? <AdminProductNotice message={statusMessage} /> : null}
-
         <section className="mt-5">
           <AdminProductForm
             action={createAdminProduct}
@@ -57,29 +48,4 @@ export default async function NewAdminProductPage({ searchParams }: NewAdminProd
       </div>
     </main>
   );
-}
-
-function AdminProductNotice({ message }: { message: string }) {
-  return (
-    <div role="alert" className="mt-5 rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
-      {message}
-    </div>
-  );
-}
-
-function getStatusMessage(status: string, existingSku: string) {
-  if (status === "sku_conflict") return adminSkuConflictMessage(existingSku);
-  const messages: Record<string, string> = {
-    db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
-    duplicate: "Ya existe un producto con ese SKU o slug.",
-    invalid: "Revisa los campos. Para activar el producto completa peso, largo, ancho y alto; sin medidas puedes guardarlo como borrador.",
-    invalid_sku: SKU_FORMAT_MESSAGE,
-    conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
-  };
-
-  return messages[status] ?? "";
-}
-
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
