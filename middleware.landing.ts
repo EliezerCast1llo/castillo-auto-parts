@@ -13,8 +13,12 @@ export function middleware(request: NextRequest) {
   headers.set("x-nonce", nonce);
   const path = request.nextUrl.pathname;
   const readable = request.method === "GET" || request.method === "HEAD";
-  const allowed = path === "/" || path.startsWith("/_next/static/") || path === "/icon.svg"
-    || path === "/robots.txt" || path === "/sitemap.xml";
+  // Lista blanca: lo que no está acá devuelve 404 sin tocar ningún servicio.
+  // `/en` es la landing en inglés; es una URL propia y no una cookie porque un
+  // buscador tiene que poder indexarla aparte, y esta página no emite cookies.
+  const allowed = path === "/" || path === "/en" || path.startsWith("/_next/static/")
+    || path === "/icon.svg" || path === "/robots.txt" || path === "/sitemap.xml"
+    || path === "/og.png";
   const response = !readable || !allowed
     ? new NextResponse(null, { status: 404 })
     : NextResponse.next({ request: { headers } });

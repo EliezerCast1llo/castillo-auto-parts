@@ -117,9 +117,40 @@ try {
   assert.match(await robots.text(), /User-Agent: \*\s+Allow: \//i);
   assert(!(await robots.text()).includes("Disallow:"));
   assert((await robots.text()).includes("Sitemap: https://castillo-auto-parts.vercel.app/sitemap.xml"));
+  // Los rastreadores de asistentes se nombran uno por uno: varios solo entran
+  // cuando se los nombra, y que estén escritos deja constancia de que fue una
+  // decisión. Si alguien los quita, esto lo dice.
+  for (const agent of ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "PerplexityBot", "ClaudeBot"]) {
+    assert.match(await robots.text(), new RegExp(`User-Agent: ${agent}\\s+Allow: /`), `${agent} must be allowed by name`);
+  }
   const sitemap = await context.request.get(`${origin}/sitemap.xml`);
   assert.equal(sitemap.status(), 200);
-  assert.deepEqual([...((await sitemap.text()).matchAll(/<loc>(.*?)<\/loc>/g))].map((match) => match[1]), ["https://castillo-auto-parts.vercel.app/"]);
+  const sitemapBody = await sitemap.text();
+  assert.deepEqual([...sitemapBody.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]), ["https://castillo-auto-parts.vercel.app/", "https://castillo-auto-parts.vercel.app/en"]);
+  // Sin los alternates, un buscador trata el inglés como contenido duplicado
+  // del español en vez de indexarlo aparte.
+  for (const lang of ["es", "en", "x-default"]) {
+    assert(sitemapBody.includes(`hreflang="${lang}"`), `sitemap must declare the ${lang} alternate`);
+  }
+  // La versión en inglés es una URL propia, no una cookie: es lo único que
+  // permite que se pueda indexar, compartir y abrir en otra pestaña.
+  const english = await page.goto(`${origin}/en`);
+  assert.equal(english.status(), 200);
+  assert.equal(await page.locator("html").getAttribute("lang"), "en");
+  assert(await page.getByText("Automotive parts online with shipping throughout El Salvador.", { exact: true }).isVisible());
+  assert.equal(await page.getByRole("link", { name: "ES", exact: true }).getAttribute("href"), "/");
+  assert.equal(await page.locator("form,input").count(), 0);
+  // Los datos estructurados son lo que hace que un buscador o un asistente
+  // entiendan qué negocio es este. No pueden declarar lo que no existe.
+  for (const path of ["/", "/en"]) {
+    await page.goto(`${origin}${path}`);
+    const jsonLd = JSON.parse(await page.locator('script[type="application/ld+json"]').innerText());
+    assert.equal(jsonLd["@type"], "AutoPartsStore");
+    assert.equal(jsonLd.areaServed.name, "El Salvador");
+    for (const invented of ["address", "openingHours", "openingHoursSpecification", "aggregateRating", "priceRange", "review"]) {
+      assert(!(invented in jsonLd), `structured data must not invent ${invented}`);
+    }
+  }
   for (const path of ["/catalog", "/es/catalog", "/en/catalog", "/cart", "/es/cart", "/checkout", "/es/checkout", "/account", "/es/account", "/auth/login", "/es/auth/login", "/admin", "/admin/login", "/api/auth/session", "/api/health", "/api/monitoring", "/api/webhooks/wompi", "/api/internal/expire-payment-reservations", "/_next/image?url=https://example.com/image.jpg&w=64&q=75"]) {
     const response = await context.request.get(`${origin}${path}`, { maxRedirects: 0 });
     assert.equal(response.status(), 404, `${path} must be disabled without invoking services`);
