@@ -1,5 +1,9 @@
 # MVP Change Log
 
+## 2026-11-05 — B5 / #91: integración Boxful para QA
+
+Cliente auth v2 con tokens cifrados y bloqueo PostgreSQL, proveedor de cotización con lbs confirmadas por el dueño y medidas omitibles, mapeo admin por distrito/cuenta, comprobante cifrado vigente y renovación de checkout. El pago conserva el total mostrado sin recotizar ni incluir precio en la huella. Guía posterior al pago con claim e incertidumbre persistente: nunca repetir a ciegas un POST que pudo crearla. Webhook confirma por API, deduplica y publica seguimiento; reintento admin, saldo estimado y outbox de alertas email/Telegram independientes. Migraciones aditivas y pruebas HTTP simuladas. Activación QA y confirmación de referencia, cuentas, webhook y canales pendientes; producción bloqueada por host/flags y aprobación del dueño. Ver `docs/boxful-shipping.md`.
+
 ## 2026-11-03 — B21 / #119: limpieza y diagnósticos de integraciones
 
 Las firmas inválidas de Wompi conservan 401 sin consumir cuota externa de monitoreo. Un catálogo cerrado de códigos distingue fallos conocidos de configuración/proveedor en logs sanitizados y eventos; Redis/R2 dejan de imprimir errores crudos y EmailLog guarda solo el código del fallo. Las respuestas HTTP y los fallbacks de integraciones conservan su forma.

@@ -55,6 +55,7 @@ const CLOCK_SKEW_SECONDS = 60;
 const ROUTE_ROLES: Array<{ prefix: string; roles: string[] }> = [
   { prefix: "/admin/users", roles: ["ADMIN"] },
   { prefix: "/admin/settings", roles: ["ADMIN"] },
+  { prefix: "/admin/boxful", roles: ["ADMIN", "ACCOUNTING"] },
   { prefix: "/admin/audit", roles: ["ADMIN"] },
   { prefix: "/admin/products", roles: ["ADMIN", "MARKETING"] },
   { prefix: "/admin/stock-alerts", roles: ["ADMIN", "SUPPORT", "WAREHOUSE"] },

@@ -117,6 +117,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
                   label={t("detail.courier")}
                   value={order.shipment?.courierName ?? t("detail.pending")}
                 />
+                {order.shipment?.trackingUrl ? <a href={order.shipment.trackingUrl} target="_blank" rel="noreferrer" className="font-bold underline">{t("detail.carrierTracking")}</a> : null}
                 <InfoItem label={t("detail.shippingCost")} value={formatCurrency(order.shipment?.chargedCents ?? order.shippingCents, locale)} />
                 <InfoItem label={t("detail.estimatedDelivery")} value={order.shipment?.estimatedDeliveryAt ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "America/El_Salvador" }).format(order.shipment.estimatedDeliveryAt) : t("detail.pending")} />
                 {order.address?.landmark ? <InfoItem label={t("detail.landmark")} value={order.address.landmark} /> : null}

@@ -42,3 +42,13 @@ export async function updateAdminOrderStatus(formData: FormData) {
   redirect(`/admin/orders/${orderNumber}?estado=updated`);
 }
 
+
+export async function retryBoxfulShipment(formData: FormData) {
+  await requireAdminRole("ADMIN", "WAREHOUSE");
+  const orderNumber = formString(formData, "orderNumber");
+  if (!/^CAP-[A-Z0-9-]+$/.test(orderNumber)) redirect("/admin/orders");
+  const { ensureBoxfulShipment } = await import("@/lib/boxful/shipments");
+  await ensureBoxfulShipment(orderNumber);
+  revalidatePath(`/admin/orders/${orderNumber}`);
+  redirect(`/admin/orders/${orderNumber}`);
+}

@@ -118,8 +118,8 @@ con estas mismas expresiones y notificaciones de nuevos issues del proyecto.
 | Pagos pendientes >30 min | `operation:reservation_cron outcome:pending_overdue` | El cron consulta **antes** de expirar: al menos una orden PAYMENT_PROCESSING con createdAt anterior a 30 min. Revisar scheduler, pago y reserva. |
 | Cron/reconciliación fallan | `operation:reservation_cron outcome:failed` y regla separada `operation:reconciliation outcome:failed` | Primer evento: revisar logs por UUID y estado real del pedido. |
 | Checkout falla | `operation:checkout outcome:failed` | Primer evento: revisar DB y proveedor. |
-| Creación de guía falla (B5) | `operation:boxful_label outcome:failed` | Primer evento: revisar proveedor, dirección/paquete en admin y guía existente antes de reintentar. **Pendiente de B5**, aún no genera eventos reales. |
-| Webhook Boxful (B5) | `operation:boxful_webhook outcome:failed` | Primer evento; verificar firma y estado. **Pendiente de B5**. |
+| Creación de guía falla (B5) | `operation:boxful_label outcome:failed` | Primer evento: revisar proveedor, dirección/paquete en admin y guía existente antes de reintentar. Implementado en #91; ver `boxful-shipping.md`. |
+| Webhook Boxful (B5) | `operation:boxful_webhook outcome:failed` | Primer evento; verificar token y consulta de estado. Implementado en #91. |
 
 El umbral N actual es **30 minutos**, constante
 `PENDING_PAYMENT_ALERT_MINUTES` en `pending-payment-monitoring.ts`. No altera el
@@ -149,11 +149,12 @@ su propia alerta. Sin ese control, silencio no significa ausencia de pendientes.
 
 ## Límites conocidos / integración futura
 
-Boxful aún no tiene implementación de guías ni webhook en este repositorio.
-Al implementar B5 envolver ambos con `observeOperation("boxful_label", work)` y
-`observeOperation("boxful_webhook", work)`; registrar `completed` en éxito y
-`failed` en error. Los tests ya verifican sanitización/correlación de esas
-operaciones; **no equivalen a probar una integración Boxful real**. No se añade un
-endpoint ficticio. La reconciliación actual es manual (cambio de estado admin);
-no existe polling/reconciliación automática de proveedores. Fatal errors y
-funciones que terminan inmediatamente pueden perder el envío; no hay cola durable.
+#91 implementa `boxful_label` y `boxful_webhook` con correlación y diagnóstico
+sanitizado. El webhook rechaza tokens inválidos antes de crear eventos de error;
+los estados aceptados se consultan por API. La outbox de alertas y las creaciones
+inciertas viven en PostgreSQL y el cron las recupera tras la respuesta principal.
+Los eventos Sentry siguen siendo best-effort y pueden perderse si el proceso
+termina abruptamente; la outbox de correo/Telegram es independiente. La entrega
+exactamente una vez de Telegram no puede garantizarse si hay una caída entre
+el envío y el guardado de éxito. Pruebas HTTP simuladas no equivalen a validar
+cuenta/guías reales de QA; ver `boxful-shipping.md` para la activación pendiente.

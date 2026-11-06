@@ -17,7 +17,7 @@ import {
   getOrderStatusClassName,
 } from "@/lib/order-formatters";
 import { firstValue } from "@/lib/url-utils";
-import { updateAdminOrderStatus } from "./actions";
+import { retryBoxfulShipment, updateAdminOrderStatus } from "./actions";
 import { defaultLocale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
@@ -141,6 +141,14 @@ export default async function AdminOrderDetailPage({
               <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
                 <InfoBlock label="Método" value={formatShipmentMethod(order.shipment?.method)} />
                 <InfoBlock label="Estado envío" value={formatShipmentStatus(order.shipment?.status)} />
+                {order.shipment?.provider === "boxful" ? <div className="space-y-2 rounded border p-3">
+                  <p>Guía: {order.shipment.shipmentNumber || "Pendiente"}</p>
+                  <p>{order.shipment.creationState === "UNKNOWN" ? "Respuesta incierta. Solo se consultará la guía existente; no se creará otra automáticamente." : order.shipment.creationState === "FAILED" ? "Pagado, envío pendiente. Corrige el rechazo antes de reintentar." : order.shipment.creationState === "CREATED" ? "Guía creada" : "Envío pendiente"}</p>
+                  {order.shipment.trackingUrl ? <a className="underline" target="_blank" rel="noreferrer" href={order.shipment.trackingUrl}>Rastrear envío</a> : null}
+                  {order.shipment.labelUrl ? <a className="ml-3 underline" target="_blank" rel="noreferrer" href={order.shipment.labelUrl}>Etiqueta PDF</a> : null}
+                  {order.payment?.status === "PAID" && order.shipment.creationState !== "CREATED" && ["ADMIN", "WAREHOUSE"].includes(adminUser.role) ? <form action={retryBoxfulShipment}><input type="hidden" name="orderNumber" value={order.orderNumber} /><button className="rounded border p-3">Revisar y reintentar envío</button></form> : null}
+                  {["ADMIN", "ACCOUNTING"].includes(adminUser.role) ? <Link className="block underline" href="/admin/boxful">Saldo estimado y distritos de Boxful</Link> : null}
+                </div> : null}
                 <InfoBlock label="Paquetería" value={order.shipment?.courierName ?? "Pendiente"} />
                 <InfoBlock label="Cobro de envío" value={formatCurrency(order.shipment?.chargedCents ?? order.shippingCents)} />
                 <InfoBlock label="Costo de paquetería" value={order.shipment?.quotedCents == null ? "Pendiente" : formatCurrency(order.shipment.quotedCents)} />

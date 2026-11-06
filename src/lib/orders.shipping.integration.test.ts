@@ -3,6 +3,7 @@ import { beforeAll, afterAll, beforeEach, describe, expect, it, vi } from "vites
 import { db } from "./db";
 import { createGuestCheckoutFromCart } from "./orders";
 import { shippingRateKey } from "./shipping";
+import { quoteCartShipping } from "./shipping-checkout";
 import type { CartSummary } from "./cart";
 
 const fixtures = vi.hoisted(() => {
@@ -17,9 +18,12 @@ vi.mock("./payments", () => ({ getPaymentProvider: () => ({ id: "mock", createPa
 vi.mock("./email/templates", () => ({ buildAbsoluteAppUrl: () => "http://localhost/order" }));
 
 const shippingOption = shippingRateKey({ provider: "fake", courierId: "test-express", serviceType: "same-day" });
-function checkout(overrides: Record<string, string> = {}) {
+async function checkout(overrides: Record<string, string> = {}) {
   const form = new FormData();
   for (const [key, value] of Object.entries({ customerName: "Shipping QA", customerEmail: "shipping@example.com", customerPhone: "77777777", fulfillmentMethod: "NATIONAL_SHIPPING", paymentMethod: "online_card", addressLine1: "Calle 5", department: "San Miguel", city: "San Miguel Centro", landmark: "Parque", latitude: "13.48", longitude: "-88.18", shippingOption, shippingCents: "1", ...overrides })) form.set(key, value);
+  const destination = { addressLine1: "Calle 5", department: "San Miguel", city: "San Miguel Centro", landmark: "Parque", latitude: 13.48, longitude: -88.18 };
+  const quote = await quoteCartShipping(await fixtures.cart().then((cart: CartSummary) => cart.lines), destination);
+  if (quote) form.set("shippingQuoteToken", quote.quoteToken);
   return form;
 }
 
@@ -36,9 +40,9 @@ describe.skipIf(!process.env.DATABASE_URL)("shipping checkout with isolated Post
   beforeEach(async () => { vi.stubEnv("SHIPPING_PROVIDER", "fake"); fixtures.cart.mockResolvedValue(cart); await db.shippingPromotion.upsert({ where: { id: "national" }, create: { id: "national" }, update: { enabled: false } }); });
   afterAll(async () => { vi.unstubAllEnvs(); try { await db.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${fixtures.schema}" CASCADE`); } finally { await db.$disconnect(); } });
 
-  it("re-quotes tampered amounts, persists weights and destination snapshot, and replays without duplicate stock", async () => {
+  it("validates authenticated quotes despite tampered amounts, persists weights and destination snapshot, and replays without duplicate stock", async () => {
     const key = "a".repeat(64);
-    const result = await createGuestCheckoutFromCart(checkout(), undefined, key);
+    const result = await createGuestCheckoutFromCart(await checkout(), undefined, key);
     expect(result.status).toBe("created");
     const order = await db.order.findUniqueOrThrow({ where: { idempotencyKey: key }, include: { shipment: true, address: true, payment: true } });
     expect(order).toMatchObject({ shippingCents: 500, subtotalCents: 5000, totalCents: 5500 });
@@ -46,13 +50,13 @@ describe.skipIf(!process.env.DATABASE_URL)("shipping checkout with isolated Post
     expect(order.address?.landmark).toBe("Parque");
     expect(order.payment?.amountCents).toBe(5500);
     const stockBefore = await db.inventoryStock.findMany({ orderBy: { id: "asc" } });
-    expect(await createGuestCheckoutFromCart(checkout({ shippingCents: "0" }), undefined, key)).toMatchObject({ status: "created", orderNumber: order.orderNumber });
+    expect(await createGuestCheckoutFromCart(await checkout({ shippingCents: "0" }), undefined, key)).toMatchObject({ status: "created", orderNumber: order.orderNumber });
     expect(await db.order.count({ where: { idempotencyKey: key } })).toBe(1);
     expect(await db.inventoryStock.findMany({ orderBy: { id: "asc" } })).toEqual(stockBefore);
   });
   it("preserves real courier cost while charging zero under an eligible owner promotion", async () => {
     await db.shippingPromotion.update({ where: { id: "national" }, data: { enabled: true, minimumSubtotalCents: 5000 } });
-    const result = await createGuestCheckoutFromCart(checkout(), undefined, "b".repeat(64));
+    const result = await createGuestCheckoutFromCart(await checkout(), undefined, "b".repeat(64));
     expect(result.status).toBe("created");
     const order = await db.order.findUniqueOrThrow({ where: { idempotencyKey: "b".repeat(64) }, include: { shipment: true } });
     expect(order).toMatchObject({ totalCents: 5000, shippingCents: 0 });
@@ -60,11 +64,11 @@ describe.skipIf(!process.env.DATABASE_URL)("shipping checkout with isolated Post
   });
   it("blocks missing/unknown quotes without reserving stock; pickup works when unconfigured", async () => {
     const count = await db.order.count();
-    expect(await createGuestCheckoutFromCart(checkout({ shippingOption: "tampered" }))).toEqual({ status: "coverage_unavailable" });
+    expect(await createGuestCheckoutFromCart(await checkout({ shippingOption: "tampered" }))).toEqual({ status: "coverage_unavailable" });
     vi.stubEnv("SHIPPING_PROVIDER", "");
-    expect(await createGuestCheckoutFromCart(checkout())).toEqual({ status: "coverage_unavailable" });
+    expect(await createGuestCheckoutFromCart(await checkout())).toEqual({ status: "coverage_unavailable" });
     expect(await db.order.count()).toBe(count);
-    const result = await createGuestCheckoutFromCart(checkout({ fulfillmentMethod: "PICKUP" }), undefined, "c".repeat(64));
+    const result = await createGuestCheckoutFromCart(await checkout({ fulfillmentMethod: "PICKUP" }), undefined, "c".repeat(64));
     expect(result.status).toBe("created");
     expect((await db.order.findUniqueOrThrow({ where: { idempotencyKey: "c".repeat(64) } })).shippingCents).toBe(0);
   });

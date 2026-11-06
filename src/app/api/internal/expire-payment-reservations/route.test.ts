@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { GET, POST, isValidBearerToken } from "./route";
 
+const deferred = vi.hoisted(() => vi.fn());
+vi.mock("next/server", async (original) => ({ ...await original<typeof import("next/server")>(), after: deferred }));
 const expire = vi.hoisted(() => vi.fn());
 const purge = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/payment-reservations", () => ({ expirePaymentReservations: expire }));
@@ -38,6 +40,14 @@ describe("reservation expiration authorization", () => {
     await expect(response.json()).resolves.toEqual({ ok: true, purgedTwoFactorChallenges: 3, released: 2 });
     expect(expire).toHaveBeenCalledOnce();
     expect(purge).toHaveBeenCalledOnce();
+  });
+
+  it("schedules Boxful after the response so external HTTP cannot block reservation expiration", async () => {
+    vi.stubEnv("RESERVATION_CRON_SECRET", "fixture-secret"); vi.stubEnv("SHIPPING_PROVIDER", "boxful");
+    expire.mockResolvedValue(2); purge.mockResolvedValue(0);
+    const response = await POST(new Request("https://shop.test/api/internal/expire-payment-reservations", { headers: { authorization: "Bearer fixture-secret" } }));
+    expect(response.status).toBe(200); expect(expire).toHaveBeenCalledOnce(); expect(deferred).toHaveBeenCalledOnce();
+    expect(deferred.mock.calls[0][0]).toBeInstanceOf(Function);
   });
 
   it("libera las reservas aunque la purga del segundo factor falle", async () => {

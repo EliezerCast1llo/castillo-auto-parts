@@ -17,7 +17,7 @@ import {
 } from "./checkout";
 import { db } from "./db";
 import { DEFAULT_LOCATION_CODE } from "./fulfillment";
-import { quoteCartShipping } from "./shipping-checkout";
+import { readCartShippingQuote } from "./shipping-checkout";
 import { shippingRateKey } from "./shipping";
 import { buildAbsoluteAppUrl } from "./email/templates";
 import { deriveScopedIdempotencyKey, hashCheckoutIntent } from "./checkout-idempotency";
@@ -77,13 +77,13 @@ export async function createGuestCheckoutFromCart(
   // Huella del intento completo: items + método de entrega + dirección/coords. Dos
   // submits con los mismos items pero DISTINTA dirección son intentos distintos.
   const shippingQuote = parsed.data.fulfillmentMethod === "NATIONAL_SHIPPING" && cart.lines.length
-    ? await quoteCartShipping(cart.lines, {
+    ? await readCartShippingQuote(cart.lines, {
         addressLine1: parsed.data.addressLine1!, addressLine2: parsed.data.addressLine2,
         city: parsed.data.city!, department: parsed.data.department!, landmark: parsed.data.landmark!,
-        latitude: parsed.data.latitude!, longitude: parsed.data.longitude!,
-      }) : null;
+        latitude: parsed.data.latitude!, longitude: parsed.data.longitude!, cityId: parsed.data.shippingCityId,
+      }, parsed.data.shippingQuoteToken) : null;
   const selectedRate = shippingQuote?.rates.find((rate) => shippingRateKey(rate) === parsed.data.shippingOption);
-  const intentFingerprint = buildIntentFingerprint(cart, parsed.data, selectedRate);
+  const intentFingerprint = buildIntentFingerprint(cart, parsed.data);
   const intentHash = hashCheckoutIntent(intentFingerprint);
 
   // Idempotencia: se resuelve tras leer el carrito pero ANTES de los guards, para
@@ -240,6 +240,7 @@ export async function createGuestCheckoutFromCart(
           orderNumber,
           shipment: {
             create: {
+              boxfulSnapshot: selectedRate?.boxfulSnapshot ? JSON.parse(JSON.stringify(selectedRate.boxfulSnapshot)) as Prisma.InputJsonValue : undefined,
               provider: selectedRate?.provider,
               courierId: selectedRate?.courierId,
               courierName: selectedRate?.courierName,
@@ -348,7 +349,7 @@ export async function createGuestCheckoutFromCart(
         // ocupando el índice único. Liberarla y reintentar UNA vez para no dejar al
         // cliente en un bucle permanente de duplicate_in_progress con stock reservado.
         await releaseIdempotencyKey(effectiveIdempotencyKey);
-        return createGuestCheckoutFromCart(formData, userId, idempotencyKey, true);
+        return createGuestCheckoutFromCart(formData, userId, idempotencyKey, true, locale);
       }
       // Ganador aún sin checkoutUrl persistido: reintento, no error terminal.
       return { status: "duplicate_in_progress" };
@@ -423,13 +424,12 @@ export function isSameCheckoutIntent(
 // Huella del intento completo: items + entrega + dirección + coords + datos del
 // cliente. Un email/teléfono con typo corregido cambia la huella → no se reproduce
 // la orden vieja (la confirmación no se manda al dato equivocado).
-export function buildIntentFingerprint(cart: CartSummary, input: CheckoutInput, rate?: { priceCents: number; chargedCents: number }): string {
+export function buildIntentFingerprint(cart: CartSummary, input: CheckoutInput): string {
   return [
     cartFingerprint(cart),
     `fm:${input.fulfillmentMethod}`,
     `so:${input.shippingOption ?? ""}`,
-    `sq:${rate?.priceCents ?? ""}`,
-    `sc:${rate?.chargedCents ?? ""}`,
+    `bc:${input.shippingCityId ?? ""}`,
     `lm:${input.landmark ?? ""}`,
     `em:${input.customerEmail}`,
     `nm:${input.customerName}`,

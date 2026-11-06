@@ -76,7 +76,8 @@
     "shippingCost": "Shipping cost",
     "quotedCost": "Courier cost",
     "estimatedDelivery": "Estimated delivery",
-    "landmark": "Landmark"
+    "landmark": "Landmark",
+    "carrierTracking": "Track shipment with the carrier"
   },
   "status": {
     "CANCELLED": "Cancelled",

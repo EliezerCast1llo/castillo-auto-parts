@@ -1,4 +1,6 @@
 export type EmailMessage = {
+  idempotencyKey?: string;
+  signal?: AbortSignal;
   from: string;
   html: string;
   subject: string;

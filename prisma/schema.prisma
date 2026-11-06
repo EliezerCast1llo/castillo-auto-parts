@@ -402,6 +402,15 @@ model InvoiceDte {
 }
 
 model Shipment {
+  externalId          String? @unique
+  shipmentNumber      String?
+  trackingUrl         String?
+  labelUrl            String?
+  creationState       String @default("PENDING")
+  attemptedAt         DateTime?
+  lastErrorCode       String?
+  boxfulSnapshot      Json?
+  events              ShipmentEvent[]
   id                  String    @id @default(cuid())
   orderId             String    @unique
   order               Order     @relation(fields: [orderId], references: [id])
@@ -575,4 +584,61 @@ model TwoFactorChallenge {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// Account-scoped, encrypted token pair; row lock serializes refresh across instances.
+model BoxfulSession {
+  id String @id
+  encryptedTokens String? @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+// Owner verifies each district against the account's GET /states catalog.
+model BoxfulLocation {
+  id String @id @default(cuid())
+  accountScope String
+  department String
+  municipality String
+  district String
+  stateId String
+  cityId String
+  @@unique([accountScope, department, municipality, cityId])
+}
+
+model ShipmentEvent {
+  id String @id @default(cuid())
+  shipmentId String
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  eventKey String @unique
+  status String
+  receivedAt DateTime @default(now())
+}
+
+// Signed cents: top-ups positive, quoted carrier costs negative. Not a bank balance.
+model BoxfulBalanceEntry {
+  id String @id
+  accountScope String
+  amountCents Int
+  createdAt DateTime @default(now())
+  @@index([accountScope])
+}
+
+// Durable, grouped operations outbox; each channel succeeds independently.
+model ShippingAlert {
+  id String @id
+  accountScope String
+  orderNumber String?
+  code String
+  amountCents Int?
+  groupKey String
+  emailSentAt DateTime?
+  telegramSentAt DateTime?
+  lockedUntil DateTime?
+  createdAt DateTime @default(now())
+  @@index([groupKey])
+}
+
+model ShippingAlertLease {
+  id String @id
+  lockedUntil DateTime
 }

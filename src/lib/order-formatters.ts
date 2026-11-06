@@ -62,6 +62,7 @@ const SHIPMENT_STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelado",
   DELIVERED: "Entregado",
   IN_TRANSIT: "En tránsito",
+  INCIDENT: "Incidencia de envío",
   PENDING: "Pendiente",
 };
 

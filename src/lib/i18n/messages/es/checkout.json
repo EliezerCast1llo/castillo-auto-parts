@@ -65,7 +65,9 @@
     "unavailable": "No pudimos calcular el envío a tu dirección en este momento. Escríbenos por WhatsApp y te ayudamos",
     "selectRate": "Selecciona una tarifa antes de pagar",
     "pendingQuote": "Pendiente de cotización",
-    "whatsappRequest": "Necesito ayuda para cotizar este carrito:"
+    "whatsappRequest": "Necesito ayuda para cotizar este carrito:",
+    "district": "Distrito de entrega",
+    "selectDistrict": "Selecciona el distrito"
   },
   "addressModal": {
     "title": "Dirección de entrega",
