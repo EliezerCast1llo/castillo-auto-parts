@@ -2,8 +2,10 @@
  * auth.ts — Configuración central de Auth.js v5 para clientes.
  *
  * Proveedores:
- *   - Credentials: email + contraseña (mismo hash scrypt que admin)
- *   - Google: OAuth 2.0
+ *   - Credentials: email + contraseña (mismo hash scrypt que admin). Rechaza a
+ *     las cuentas con segundo factor encendido: esas entran por "two-factor".
+ *   - two-factor: código de seis dígitos enviado al correo
+ *   - Google: OAuth 2.0 (sin segundo factor propio: Google ya pide el suyo)
  *
  * Estrategia JWT (stateless cookies) para compatibilidad con Edge Runtime.
  * El PrismaAdapter se usa solo para persistir cuentas OAuth (Account model).
@@ -19,7 +21,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { UserRole } from "@prisma/client";
 import { mergeGuestCartIntoAccount } from "@/lib/cart-store";
 import { db } from "@/lib/db";
-import { verifyPassword } from "@/lib/admin-credentials";
+import { authorizeCustomerPassword, authorizeTwoFactorCode } from "@/lib/auth-providers";
 import { logError } from "@/lib/logger";
 import { canSignInWithOAuthProfile } from "@/lib/oauth-profile";
 import { getStoreSetting } from "@/lib/store-settings";
@@ -53,27 +55,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Contraseña", type: "password" },
       },
-      authorize: async (credentials) => {
-        const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
-        const password = credentials?.password as string | undefined;
+      // Rechaza a las cuentas con segundo factor encendido; el porqué y su
+      // prueba están en auth-providers.ts.
+      authorize: (credentials) =>
+        authorizeCustomerPassword(
+          credentials?.email as string | undefined,
+          credentials?.password as string | undefined,
+        ),
+    }),
 
-        if (!email || !password) return null;
-
-        const user = await db.user.findUnique({ where: { email } });
-        if (!user || !user.isActive) return null;
-        if (!user.passwordHash) return null; // cuenta OAuth sin contraseña propia
-
-        const ok = await verifyPassword(password, user.passwordHash);
-        if (!ok) return null;
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-        };
+    Credentials({
+      id: "two-factor",
+      name: "Código de verificación",
+      credentials: {
+        challengeId: { label: "Desafío", type: "text" },
+        code: { label: "Código", type: "text" },
       },
+      authorize: (credentials) =>
+        authorizeTwoFactorCode(
+          credentials?.challengeId as string | undefined,
+          credentials?.code as string | undefined,
+        ),
     }),
   ],
 

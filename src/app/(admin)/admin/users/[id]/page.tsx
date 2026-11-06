@@ -128,6 +128,25 @@ export default async function EditAdminUserPage({ params, searchParams }: EditAd
             <input type="hidden" name="isActive" value="true" />
           )}
 
+          {/* El par oculto/checkbox es el patrón del formulario: sin el oculto,
+              un checkbox desmarcado no manda nada y el valor quedaría igual. */}
+          <label className="flex items-start gap-3 text-sm font-semibold">
+            <input type="hidden" name="twoFactorEnabled" value="false" />
+            <input
+              type="checkbox"
+              name="twoFactorEnabled"
+              value="true"
+              defaultChecked={targetUser.twoFactorEnabled}
+              className="mt-0.5 h-4 w-4 rounded border-border"
+            />
+            <span>
+              Pedir código por correo al entrar
+              <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                Aplica al panel y a la tienda. El código llega a {targetUser.email}.
+              </span>
+            </span>
+          </label>
+
           <div className="border-t border-border pt-5">
             <p className="text-sm font-semibold">Cambiar contraseña</p>
             <p className="mt-1 text-xs text-muted-foreground">

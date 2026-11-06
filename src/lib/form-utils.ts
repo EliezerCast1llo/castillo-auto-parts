@@ -46,7 +46,7 @@ export function optionalFormStringOrNull(
  * oculto, apagarla sería indistinguible de no haber enviado el formulario.
  *
  * Y `getAll` y no `get` porque `get` devuelve el **primer** valor: con el
- * oculto escrito antes de la casilla —que es como estaba en el panel— marcarla
+ * oculto escrito antes de la casilla —que es como está en el panel— marcarla
  * no servía de nada y el campo se guardaba siempre apagado. Mirando todos los
  * valores, el orden en el HTML deja de importar.
  */

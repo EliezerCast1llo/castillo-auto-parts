@@ -73,6 +73,7 @@ export async function updateAdminUserAction(formData: FormData) {
   const name = formString(formData, "name").trim();
   const role = formString(formData, "role") as UserRole;
   const isActive = formCheckbox(formData, "isActive");
+  const twoFactorEnabled = formCheckbox(formData, "twoFactorEnabled");
   const password = formString(formData, "password");
   const passwordConfirm = formString(formData, "passwordConfirm");
 
@@ -96,6 +97,7 @@ export async function updateAdminUserAction(formData: FormData) {
     name,
     role,
     isActive,
+    twoFactorEnabled,
     ...(password ? { password } : {}),
   });
 
