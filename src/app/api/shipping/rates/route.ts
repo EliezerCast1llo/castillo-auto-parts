@@ -2,7 +2,7 @@ import { createAsyncRateLimiter, type AsyncRateLimiter } from "@/lib/rate-limit-
 import { getClientIp } from "@/lib/request-ip";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getGuestCart } from "@/lib/cart";
+import { getCart } from "@/lib/cart";
 import { isNationalAddress, isNationalCoordinate } from "@/data/el-salvador";
 import { quoteCartShipping } from "@/lib/shipping-checkout";
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     if (!attempt.allowed) return NextResponse.json({ rates: [] }, { headers: { ...headers, "Retry-After": String(attempt.retryAfterSeconds) }, status: 429 });
     const parsed = destinationSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ rates: [] }, { headers, status: 400 });
-    const cart = await getGuestCart();
+    const cart = await getCart();
     if (!cart.lines.length || cart.hasBlockingIssues) return NextResponse.json({ rates: [] }, { headers });
     const quote = await quoteCartShipping(cart.lines, parsed.data);
     return NextResponse.json({ rates: quote?.rates ?? [], totalWeightGrams: quote?.totalWeightGrams ?? null }, { headers });

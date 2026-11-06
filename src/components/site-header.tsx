@@ -1,7 +1,7 @@
 import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle, ShoppingCart, Truck, User, UserRound, Wrench } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { getGuestCartItemCount } from "@/lib/cart";
+import { getCartItemCount } from "@/lib/cart";
 import { MobileMenu } from "@/components/mobile-menu";
 import { MyVehicleChip } from "@/components/my-vehicle-chip";
 import { SearchAutocomplete } from "@/components/search/search-autocomplete";
@@ -32,7 +32,7 @@ type SiteHeaderProps = {
 export async function SiteHeader({ locale, variant = "default" }: SiteHeaderProps) {
   const tNav = await getTranslations({ locale, namespace: "Nav" });
   const [cartItemCount, session] = await Promise.all([
-    getGuestCartItemCount(),
+    getCartItemCount(),
     auth(),
   ]);
 

@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidateStorefrontPath } from "@/lib/i18n/revalidate";
 import { getActionLocale } from "@/lib/i18n/action-locale";
 import { redirect } from "@/lib/i18n/navigation";
-import { addGuestCartItem, removeGuestCartItem, updateGuestCartItem } from "@/lib/cart";
+import { addItemToCart, removeItemFromCart, updateCartItemQuantity } from "@/lib/cart";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { createStockAlertRequest } from "@/lib/stock-alerts";
 
@@ -19,7 +19,7 @@ export async function addCartItem(formData: FormData) {
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 1);
   const shouldStayOnPage = formData.get("stayOnPage") === "true";
-  const result = await addGuestCartItem(sku, quantity);
+  const result = await addItemToCart(sku, quantity);
 
   if (shouldStayOnPage) {
     revalidateStorefrontPath("/");
@@ -32,7 +32,7 @@ export async function addCartItem(formData: FormData) {
 }
 
 export type AddCartItemInlineState = {
-  status: Awaited<ReturnType<typeof addGuestCartItem>>;
+  status: Awaited<ReturnType<typeof addItemToCart>>;
   /** Cambia en cada envío para que el cliente reaccione aunque el status se repita. */
   at: number;
 } | null;
@@ -48,7 +48,7 @@ export async function addCartItemInline(
 ): Promise<AddCartItemInlineState> {
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 1);
-  const status = await addGuestCartItem(sku, quantity);
+  const status = await addItemToCart(sku, quantity);
 
   // Refresca el contador del carrito en el header también cuando el cliente no
   // puede ejecutar router.refresh() (envío del form sin JS).
@@ -63,7 +63,7 @@ export async function updateCartItem(formData: FormData) {
   const locale = await getActionLocale();
   const sku = String(formData.get("sku") ?? "");
   const quantity = Number(formData.get("quantity") ?? 0);
-  const result = await updateGuestCartItem(sku, quantity);
+  const result = await updateCartItemQuantity(sku, quantity);
 
   redirect({ href: { pathname: "/cart", query: { estado: result } }, locale });
 }
@@ -71,7 +71,7 @@ export async function updateCartItem(formData: FormData) {
 export async function removeCartItem(formData: FormData) {
   const locale = await getActionLocale();
   const sku = String(formData.get("sku") ?? "");
-  await removeGuestCartItem(sku);
+  await removeItemFromCart(sku);
 
   redirect({ href: { pathname: "/cart", query: { estado: "removed" } }, locale });
 }

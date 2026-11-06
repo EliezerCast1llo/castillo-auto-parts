@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { CART_MAX_LINE_QUANTITY } from "./cart-validation";
 import {
+  mergeStoredCarts,
   parseStoredCart,
   parseSignedStoredCart,
   removeStoredCartItem,
@@ -93,6 +95,46 @@ describe("cart state", () => {
     expect(parseSignedStoredCart(legacyCart, "cart-secret")).toEqual([]);
     expect(parseSignedStoredCart(legacyCart, "cart-secret", { allowUnsignedFallback: true })).toEqual([
       { sku: "A-1", quantity: 2 },
+    ]);
+  });
+});
+
+describe("mergeStoredCarts", () => {
+  it("suma las cantidades del mismo SKU", () => {
+    // Quien agregó dos antes de entrar y uno después eligió las dos veces.
+    // Quedarse con una sola de las dos decisiones pierde la otra en silencio.
+    expect(mergeStoredCarts([{ sku: "SKU-A", quantity: 2 }], [{ sku: "SKU-A", quantity: 1 }])).toEqual([
+      { sku: "SKU-A", quantity: 3 },
+    ]);
+  });
+
+  it("conserva los SKU que están en uno solo de los dos", () => {
+    const merged = mergeStoredCarts([{ sku: "SKU-A", quantity: 1 }], [{ sku: "SKU-B", quantity: 2 }]);
+
+    expect(merged).toHaveLength(2);
+    expect(merged).toEqual(
+      expect.arrayContaining([
+        { sku: "SKU-A", quantity: 1 },
+        { sku: "SKU-B", quantity: 2 },
+      ]),
+    );
+  });
+
+  it("respeta el tope por línea al sumar", () => {
+    const merged = mergeStoredCarts(
+      [{ sku: "SKU-A", quantity: CART_MAX_LINE_QUANTITY }],
+      [{ sku: "SKU-A", quantity: 5 }],
+    );
+
+    expect(merged).toEqual([{ sku: "SKU-A", quantity: CART_MAX_LINE_QUANTITY }]);
+  });
+
+  it("devuelve el otro carrito cuando uno está vacío", () => {
+    expect(mergeStoredCarts([], [{ sku: "SKU-A", quantity: 2 }])).toEqual([
+      { sku: "SKU-A", quantity: 2 },
+    ]);
+    expect(mergeStoredCarts([{ sku: "SKU-A", quantity: 2 }], [])).toEqual([
+      { sku: "SKU-A", quantity: 2 },
     ]);
   });
 });

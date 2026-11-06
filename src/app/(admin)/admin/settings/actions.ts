@@ -7,10 +7,16 @@ import { redirect } from "next/navigation";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { parseAdminPriceCents, slugifyProductValue } from "@/lib/admin-products";
 import { requireAdminRole } from "@/lib/admin-auth";
-import { formString } from "@/lib/form-utils";
+import { formCheckbox, formString } from "@/lib/form-utils";
 import { logError } from "@/lib/logger";
 import { DEFAULT_LOCATION_CODE } from "@/lib/fulfillment";
 import { db } from "@/lib/db";
+import {
+  revalidateStoreSettings,
+  setStoreSetting,
+  STORE_SETTINGS,
+  type StoreSettingName,
+} from "@/lib/store-settings";
 
 export async function updatePickupSettings(formData: FormData) {
   await requireAdminRole("ADMIN");
@@ -177,13 +183,22 @@ function revalidateFulfillmentPaths() {
   revalidatePath("/admin/settings");
 }
 
-function handleSettingsError(error: unknown, scope: "pickup" | "zone"): never {
+const SETTINGS_ERROR_STATUS = {
+  pickup: "pickup_error",
+  store: "store_error",
+  zone: "zone_error",
+} as const;
+
+function handleSettingsError(
+  error: unknown,
+  scope: keyof typeof SETTINGS_ERROR_STATUS,
+): never {
   if (isPrismaUniqueError(error)) {
     redirect("/admin/settings?estado=duplicate");
   }
 
   logError({ context: "admin-settings-action" }, error);
-  redirect(`/admin/settings?estado=${scope === "pickup" ? "pickup_error" : "zone_error"}`);
+  redirect(`/admin/settings?estado=${SETTINGS_ERROR_STATUS[scope]}`);
 }
 
 function isPrismaUniqueError(error: unknown) {
@@ -214,4 +229,47 @@ export async function updateShippingPromotion(formData: FormData) {
   });
   revalidateFulfillmentPaths();
   redirect("/admin/settings?estado=promotion_updated");
+}
+
+/**
+ * Guarda los ajustes de la tienda.
+ *
+ * Un solo formulario para todo el registro: cada casilla manda su propia clave
+ * y lo que no viene marcado se guarda apagado. Por eso el formulario tiene que
+ * listar **todos** los ajustes, y por eso se recorre el registro en vez de leer
+ * nombres sueltos — agregar un ajuste nuevo no requiere tocar esta función.
+ */
+export async function updateStoreSettings(formData: FormData) {
+  await requireAdminRole("ADMIN");
+
+  const names = Object.keys(STORE_SETTINGS) as StoreSettingName[];
+  const values = Object.fromEntries(
+    names.map((name) => [name, formCheckbox(formData, name)]),
+  ) as Record<StoreSettingName, boolean>;
+
+  try {
+    await db.$transaction(async (tx) => {
+      for (const name of names) {
+        await setStoreSetting(name, values[name], tx);
+      }
+
+      // En la misma transacción que el cambio: si la auditoría falla, el ajuste
+      // no queda cambiado sin rastro de quién lo cambió.
+      await writeAdminAuditLog(tx, {
+        action: "settings.store.updated",
+        entityId: "store-settings",
+        entityLabel: "Ajustes de la tienda",
+        entityType: "StoreSetting",
+        metadata: values,
+      });
+    });
+  } catch (error) {
+    handleSettingsError(error, "store");
+  }
+
+  // Sin esto el cambio tarda hasta un minuto en verse: los ajustes se cachean
+  // porque el cabezal del sitio los consulta en cada página.
+  revalidateStoreSettings();
+  revalidateFulfillmentPaths();
+  redirect("/admin/settings?estado=store_updated");
 }
