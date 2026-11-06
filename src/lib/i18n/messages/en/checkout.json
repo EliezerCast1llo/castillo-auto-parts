@@ -65,7 +65,9 @@
     "unavailable": "We could not calculate shipping to your address right now. Message us on WhatsApp and we will help you",
     "selectRate": "Select a shipping rate before paying",
     "pendingQuote": "Pending quote",
-    "whatsappRequest": "Please help me quote this cart:"
+    "whatsappRequest": "Please help me quote this cart:",
+    "district": "Delivery district",
+    "selectDistrict": "Select the district"
   },
   "addressModal": {
     "title": "Delivery address",

@@ -10,6 +10,13 @@ Actualizar este archivo cuando cambien decisiones importantes, riesgos, arquitec
 
 - **Branch por tarea:** al iniciar cualquier tarea que modifique el repo, crear primero una nueva branch desde `main` (convención `claude/<tema>` o `codex/<tema>`). No commitear trabajo directamente en `main`; `main` solo recibe merges vía PR. (Acordado 2026-06-24.)
 
+## Actualización 2026-11-05 — Boxful / #91
+
+- QA usa devapi; producción requiere host permitido, VERCEL_ENV=production y flag del dueño. Libras confirmadas en chat; medidas omitibles sin inventarlas. Aún falta comprobar QA y contrato orderNumber antes de activarlo.
+- Tokens AES-GCM por cuenta+host, refresh protegido por bloqueo DB. Cotizaciones cifradas sin filas intermedias, TTL 300 s y cobro del total mostrado sin recotizar. Precio y comprobante fuera de la huella del intento.
+- Mapeo por distrito en admin contra catálogo de la cuenta, sin IDs de ejemplos. Guías después de PAID; UNKNOWN tras respuesta incierta solo consulta/reconcilia y no vuelve a crear aunque GET dé 404.
+- Outbox por canal y agrupación por minuto, saldo estimado de recargas menos cotizado, cron autenticado y webhook verificado por API. Ver docs/boxful-shipping.md para bloqueos externos, limitación de exactamente-una entrega Telegram y pasos de activación.
+
 ## Actualización 2026-11-03 — endurecimiento / #119
 
 - Diagnósticos conocidos: `OperationalError` y catálogo fijo en `operational-error.ts`. Solo códigos permitidos entran a telemetría; jamás serializar errores de SDK, causas, credenciales o PII. Firmas inválidas Wompi son tráfico esperado (401, info local) y no gastan eventos de monitoreo.
