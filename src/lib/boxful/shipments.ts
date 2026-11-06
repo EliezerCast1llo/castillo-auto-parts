@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { db } from "../db";
-import { logError, observeOperation } from "../logger";
+import { logError, logInfo, observeOperation } from "../logger";
 import { boxfulConfig, boxfulError } from "./config";
 import { BoxfulHttpError, boxfulRequest } from "./client";
 import { snapshotSchema } from "./provider";
@@ -79,6 +79,7 @@ async function saveCreatedShipment(id: string, accountScope: string, quotedCents
     await tx.shipment.update({ where: { id }, data: { creationState: "CREATED", status: "PENDING", externalId: remote.id, shipmentNumber: remote.shipmentNumber, trackingUrl: safeCarrierUrl(remote.trackingUrl), labelUrl: safeCarrierUrl(remote.labelUrl), lastErrorCode: null } });
     await tx.boxfulBalanceEntry.createMany({ data: { id: `shipment:${id}`, accountScope, amountCents: -quotedCents }, skipDuplicates: true });
   });
+  await logInfo({ context: "boxful_label", outcome: "completed" });
 }
 const descriptions: Record<string, string> = { "Creado en sistema": "-1", Registrado: "1", Recolectado: "2", "En ruta a destino": "3", Entregado: "4", "Guía cancelada": "5", "Problemas en gestión": "6", "Finalizada con problemas": "7", "No entregado": "8", "Devuelto en bodega": "9", "No recolectado": "10", "Ubicado en locker": "11" };
 export function boxfulStatus(remote: RemoteShipment) {

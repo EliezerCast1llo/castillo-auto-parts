@@ -1,7 +1,7 @@
 import { timingSafeEqual, createHash } from "node:crypto";
 import { z } from "zod";
 import { reconcileBoxfulShipment } from "@/lib/boxful/shipments";
-import { observeOperation } from "@/lib/logger";
+import { logInfo, observeOperation } from "@/lib/logger";
 
 export function validBoxfulToken(provided: string | null, expected: string) {
   return timingSafeEqual(createHash("sha256").update(provided || "").digest(), createHash("sha256").update(expected).digest()) && Boolean(provided);
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     if (!body.success) return Response.json({ ok: false }, { status: 400 });
     return await observeOperation("boxful_webhook", async () => {
       const status = await reconcileBoxfulShipment(body.data.shipmentId);
+      await logInfo({ context: "boxful_webhook", outcome: status === "ignored" ? "rejected" : status });
       return Response.json({ ok: true, status });
     });
   } catch {
