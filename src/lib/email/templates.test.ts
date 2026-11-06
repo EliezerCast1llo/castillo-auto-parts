@@ -3,6 +3,7 @@ import {
   buildAbsoluteAppUrl,
   buildOrderConfirmationEmail,
   buildPasswordResetEmail,
+  buildTwoFactorCodeEmail,
 } from "./templates";
 
 const ORDER = {
@@ -85,5 +86,53 @@ describe("buildAbsoluteAppUrl", () => {
     expect(buildAbsoluteAppUrl("/orders/CAP-1")).toBe("https://castillo.example/es/orders/CAP-1");
 
     vi.unstubAllEnvs();
+  });
+
+  describe("código de segundo factor", () => {
+    const INPUT = {
+      code: "048213",
+      customerEmail: "cliente@example.com",
+      customerName: "Cliente Demo",
+      expiresInMinutes: 10,
+    };
+
+    it("pone el código en el asunto y en el cuerpo", () => {
+      // En el asunto para que se lea desde la notificación del teléfono, que
+      // es cómo se usa en la práctica.
+      const email = buildTwoFactorCodeEmail({ ...INPUT, locale: "es" });
+
+      expect(email.subject).toContain("048213");
+      expect(email.text).toContain("048213");
+      expect(email.html).toContain("048213");
+    });
+
+    it("no lleva ningún enlace", () => {
+      // Un correo de autenticación con un link es la forma exacta que imita el
+      // phishing: acostumbrar al cliente a hacer clic ahí trabaja contra lo
+      // que este correo intenta proteger.
+      const email = buildTwoFactorCodeEmail({ ...INPUT, locale: "es" });
+
+      expect(email.html).not.toContain("<a ");
+      expect(email.html).not.toContain("http");
+      expect(email.text).not.toContain("http");
+    });
+
+    it("habla el idioma pedido", () => {
+      expect(buildTwoFactorCodeEmail({ ...INPUT, locale: "es" }).text).toContain(
+        "Usa este código",
+      );
+      expect(buildTwoFactorCodeEmail({ ...INPUT, locale: "en" }).text).toContain(
+        "Use this code",
+      );
+    });
+
+    it("dice cuánto dura, con el valor que recibe", () => {
+      // El texto no repite la constante del módulo: si la vida del código
+      // cambia, el correo lo dice solo.
+      const email = buildTwoFactorCodeEmail({ ...INPUT, expiresInMinutes: 3, locale: "es" });
+
+      expect(email.text).toContain("3 minutos");
+      expect(email.text).not.toContain("10 minutos");
+    });
   });
 });

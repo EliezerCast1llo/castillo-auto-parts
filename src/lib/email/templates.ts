@@ -36,7 +36,10 @@ export type OrderConfirmationEmailInput = {
  * De paso hace que estas funciones sean sincrónicas y testeables sin montar
  * nada alrededor.
  */
-function emailTranslator(locale: Locale, namespace: "orderConfirmation" | "passwordReset") {
+function emailTranslator(
+  locale: Locale,
+  namespace: "orderConfirmation" | "passwordReset" | "twoFactorCode",
+) {
   return createTranslator({
     locale,
     messages: loadMessages(locale),
@@ -128,4 +131,48 @@ function escapeHtml(value: string) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+export type TwoFactorCodeEmailInput = {
+  customerEmail: string;
+  customerName: string;
+  code: string;
+  /** Vida del código en minutos, para que el texto no repita una constante del módulo. */
+  expiresInMinutes: number;
+  locale: Locale;
+};
+
+/**
+ * Correo con el código de segundo factor.
+ *
+ * El código va **en el asunto** además del cuerpo: así se lee desde la
+ * notificación del teléfono sin abrir el correo, que es cómo se usa en la
+ * práctica. No lleva ningún enlace a propósito — un correo de autenticación con
+ * un link es la forma exacta que imita el phishing, y acostumbrar al cliente a
+ * hacer clic ahí trabaja contra lo que este correo intenta proteger.
+ */
+export function buildTwoFactorCodeEmail(input: TwoFactorCodeEmailInput): EmailMessage {
+  const t = emailTranslator(input.locale, "twoFactorCode");
+
+  const greeting = t("greeting", { customerName: input.customerName });
+  const intro = t("intro");
+  const validFor = t("validFor", { minutes: input.expiresInMinutes });
+  const ignore = t("ignore");
+
+  return {
+    from: getTransactionalEmailFrom(),
+    html: [
+      `<p>${escapeHtml(greeting)}</p>`,
+      `<p>${escapeHtml(intro)}</p>`,
+      // Monoespaciado y espaciado: seis dígitos seguidos se leen mal y se
+      // tipean peor desde un teléfono.
+      `<p style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:28px;` +
+        `font-weight:700;letter-spacing:6px;margin:16px 0">${escapeHtml(input.code)}</p>`,
+      `<p>${escapeHtml(validFor)}</p>`,
+      `<p style="color:#667085;font-size:12px">${escapeHtml(ignore)}</p>`,
+    ].join("\n"),
+    subject: t("subject", { code: input.code }),
+    text: [greeting, "", intro, input.code, "", validFor, "", ignore].join("\n"),
+    to: input.customerEmail,
+  };
 }

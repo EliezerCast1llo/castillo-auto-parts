@@ -62,6 +62,9 @@ model User {
   phone         String?
   role          UserRole  @default(CUSTOMER)
   passwordHash  String?
+  /// Segundo factor por codigo de correo. Opt-in: el cliente lo activa desde su
+  /// cuenta. Google queda exento porque ya trae su propio segundo factor.
+  twoFactorEnabled Boolean @default(false)
   isActive      Boolean   @default(true)
   lastLoginAt   DateTime?
   accounts      Account[]
@@ -71,6 +74,7 @@ model User {
   addresses     Address[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  twoFactorChallenges TwoFactorChallenge[]
 }
 
 model Account {
@@ -528,4 +532,26 @@ model ShippingPromotion {
   enabled              Boolean @default(false)
   minimumSubtotalCents Int @default(0)
   updatedAt            DateTime @updatedAt
+}
+
+/// Desafio de segundo factor: un codigo de 6 digitos de un solo uso.
+///
+/// Tabla propia y no `VerificationToken` por dos razones. Necesita **contador
+/// de intentos**: seis digitos son 10^6 combinaciones y sin tope se fuerzan por
+/// fuerza bruta. Y guarda un **HMAC** del codigo, no el codigo: un hash simple
+/// de seis digitos se revierte con una tabla de un millon de entradas, asi que
+/// la clave del HMAC —el secreto del servidor— es lo que vuelve inutil una
+/// filtracion de la base.
+model TwoFactorChallenge {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

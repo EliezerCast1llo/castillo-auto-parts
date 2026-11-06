@@ -11,5 +11,12 @@
     "subject": "Restablecer contraseña — {siteName}",
     "intro": "Usa el siguiente enlace para restablecer tu contraseña (válido por 1 hora):",
     "ignore": "Si no solicitaste esto, ignora este mensaje."
+  },
+  "twoFactorCode": {
+    "subject": "Tu código de ingreso: {code}",
+    "greeting": "Hola {customerName},",
+    "intro": "Usa este código para completar tu ingreso:",
+    "validFor": "El código vence en {minutes} minutos y sirve una sola vez.",
+    "ignore": "Si no intentaste ingresar, ignora este mensaje y considera cambiar tu contraseña."
   }
 }
