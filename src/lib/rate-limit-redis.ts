@@ -131,6 +131,38 @@ export function createForgotPasswordRateLimiter(): AsyncRateLimiter {
   });
 }
 
+/**
+ * Códigos de segundo factor: 5 envíos → bloqueo 15 min.
+ *
+ * Es la otra mitad del tope de cinco intentos por desafío. Sin esto, pedir
+ * códigos nuevos en serie da ventanas de cinco intentos sin límite sobre la
+ * misma cuenta, y el tope por desafío pasa a ser un trámite.
+ *
+ * Se aplica por cuenta y no por IP: el ataque que importa apunta a una cuenta
+ * concreta y rota de IP con facilidad.
+ */
+export function createTwoFactorRequestRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 5,
+    windowMs: 15 * 60 * 1000,
+    lockoutMs: 15 * 60 * 1000,
+  });
+}
+
+/**
+ * Verificaciones de código: 10 intentos → bloqueo 15 min por IP.
+ *
+ * Más alto que el tope por desafío a propósito: este corta a quien ataca varias
+ * cuentas desde el mismo lugar, no a quien se equivoca tipeando la suya.
+ */
+export function createTwoFactorVerifyRateLimiter(): AsyncRateLimiter {
+  return createAsyncRateLimiter({
+    maxAttempts: 10,
+    windowMs: 15 * 60 * 1000,
+    lockoutMs: 15 * 60 * 1000,
+  });
+}
+
 /** 5 intentos → bloqueo 15 min por IP. */
 export function createResetPasswordRateLimiter(): AsyncRateLimiter {
   return createAsyncRateLimiter({
