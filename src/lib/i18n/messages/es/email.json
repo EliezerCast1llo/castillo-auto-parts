@@ -5,7 +5,15 @@
     "received": "Recibimos tu orden {orderNumber} por {total}.",
     "pending": "Tu compra quedó pendiente de preparación para entrega.",
     "viewOrder": "Ver estado de la orden",
-    "signature": "Gracias por comprar en {siteName}."
+    "signature": "Gracias por comprar en {siteName}.",
+    "summaryTitle": "Resumen de tu compra",
+    "itemLine": "{quantity} × {name}",
+    "itemSku": "SKU {sku}",
+    "subtotal": "Productos",
+    "shipping": "Envío",
+    "total": "Total",
+    "freeShipping": "Gratis",
+    "deliveryMethod": "Método de entrega"
   },
   "passwordReset": {
     "subject": "Restablecer contraseña — {siteName}",
