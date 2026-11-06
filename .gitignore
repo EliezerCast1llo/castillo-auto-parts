@@ -34,3 +34,9 @@ blob-report/
 # prisma/local db
 *.db
 *.db-journal
+
+# Impeccable: capturas y rondas de decisión son de la sesión, no del repo.
+# El contrato de dirección (.impeccable/surfaces) y los tokens (design.json) sí.
+.impeccable/review/
+.impeccable/questions/
+.impeccable/mocks/

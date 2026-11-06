@@ -1,48 +1,555 @@
-:root { color-scheme: light; font-family: Arial, Helvetica, sans-serif; color: #f7f8fb; background: #081b31; }
-* { box-sizing: border-box; }
-body { margin: 0; }
-a { color: inherit; }
-.landing-shell { min-height: 100svh; display: flex; flex-direction: column; background: radial-gradient(ellipse at 18% 25%, #123b5b 0, transparent 52%), #081b31; }
-.landing-header, .landing-main, .landing-footer { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
-.landing-header { padding-block: 30px; display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid #ffffff24; }
-.landing-brand { font-size: 22px; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 12px; }
-.landing-mark { display: grid; place-items: center; color: #081b31; background: #f3bf4c; border-radius: 12px; width: 42px; height: 42px; flex: none; }
-.landing-country { font-size: 13px; color: #c4d1de; }
-.landing-main { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 72px; padding-block: 90px; }
-.landing-eyebrow { text-transform: uppercase; letter-spacing: .14em; color: #f3bf4c; font-weight: 700; font-size: 12px; line-height: 1.7; }
-h1 { font-size: clamp(40px, 5.3vw, 64px); line-height: 1.06; letter-spacing: -.045em; margin: 22px 0; max-width: 540px; }
-.landing-description { font-size: 19px; color: #c4d1de; line-height: 1.65; max-width: 490px; }
-.landing-status { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c4d1de; line-height: 1.5; margin-top: 38px; }
-.landing-status span { height: 7px; width: 7px; background: #f3bf4c; border-radius: 50%; flex: none; }
-.landing-contact { background: #fff; color: #0f2136; border-radius: 24px; padding: 36px; box-shadow: 0 24px 64px #0003; }
-.landing-contact-icon { width: 48px; height: 48px; background: #edf4f1; color: #206648; border-radius: 14px; display: grid; place-items: center; }
-h2 { font-size: 26px; letter-spacing: -.025em; line-height: 1.2; margin: 22px 0 10px; }
-.landing-contact > p { font-size: 15px; line-height: 1.65; color: #506071; margin-bottom: 24px; }
-.landing-whatsapp { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 17px 13px; background: #185c3d; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 10px; }
-.landing-whatsapp:hover { background: #10472e; }
-.landing-whatsapp svg { width: 18px; height: 18px; flex: none; }
-.landing-details { margin-top: 26px; border-top: 1px solid #e3e8ed; padding-top: 6px; }
-.landing-details > div { display: flex; align-items: flex-start; gap: 14px; margin-top: 21px; }
-.landing-details svg { width: 18px; height: 18px; color: #5c7185; flex: none; margin-top: 3px; }
-.landing-details p { margin: 0; font-size: 14px; line-height: 1.6; }
-.landing-details span { display: block; color: #607183; font-size: 12px; margin-bottom: 3px; }
-.landing-details a { font-weight: 700; text-decoration: none; font-size: 18px; }
-.landing-footer { display: flex; justify-content: space-between; gap: 32px; align-items: start; padding-block: 24px; border-top: 1px solid #ffffff24; color: #b3c3d2; font-size: 12px; line-height: 1.7; }
-.landing-footer p { margin: 0; }
-.landing-footer p:first-child { white-space: nowrap; font-weight: 700; }
-.landing-footer p:last-child { max-width: 540px; text-align: right; }
-a:focus-visible { outline: 3px solid #df9900; outline-offset: 5px; border-radius: 4px; }
-@media (max-width: 760px) {
- .landing-header, .landing-main, .landing-footer { width: min(540px, calc(100% - 40px)); }
- .landing-header { padding-block: 22px; }
- .landing-brand { font-size: 19px; gap: 10px; }
- .landing-country { display: none; }
- .landing-main { grid-template-columns: 1fr; gap: 34px; padding-block: 44px; }
- h1 { font-size: clamp(39px, 10vw, 53px); }
- .landing-description { font-size: 17px; }
- .landing-status { margin-top: 24px; }
- .landing-contact { padding: 26px; border-radius: 20px; }
- .landing-footer { flex-direction: column; gap: 8px; padding-block: 22px; }
- .landing-footer p:last-child { text-align: left; }
+/*
+ * Señal de Destino.
+ *
+ * La página es la señal que se lee a 80 km/h: qué hay, a qué distancia está de
+ * tus manos, y dónde está la salida para preguntarlo. Verde reflectivo como
+ * campo dominante, blanco de señal para la información, amarillo de
+ * advertencia reservado solo para la acción, asfalto abajo.
+ *
+ * No hay cromados, ni degradados metálicos, ni sombras de carro: lo único que
+ * se dibuja son las partes que una señal necesita para funcionar.
+ */
+
+:root {
+  --sign-green: #0b6b3a;
+  --sign-green-deep: #085129;
+  --sign-white: #f2f5f2;
+  --sign-white-dim: #c7d8cc;
+  --sign-yellow: #f2b705;
+  --asphalt: #16181a;
+  --asphalt-raised: #1f2225;
+  --asphalt-ink: #d7dadc;
+  --asphalt-ink-dim: #9ea4a8;
+  --stripe: #e8e4d9;
+  --galvanized: #8f979b;
+  --galvanized-dark: #5f676a;
+
+  /* No son colores nuevos: son el blanco de señal a media fuerza, que es lo
+     que son en la lámina —una línea grabada y una cabeza de perno, no tinta—.
+     Derivarlos del token en vez de escribir el literal deja dicho eso. */
+  --ink-hairline: color-mix(in srgb, var(--sign-white) 24%, transparent);
+  --ink-hardware: color-mix(in srgb, var(--sign-white) 32%, transparent);
+
+  --rule: 3px;
+  --gutter: clamp(20px, 4vw, 56px);
+  /* Cuánto baja el poste dentro del asfalto. Suficiente para que se lea como
+     poste y no como muñón: una señal se ve desde lejos y lo que la sostiene se
+     ve con ella. */
+  --post-drop: clamp(52px, 7vh, 92px);
+
+  color-scheme: dark;
+  font-family: var(--sign-face), system-ui, sans-serif;
+  background: var(--asphalt);
+  color: var(--asphalt-ink);
 }
-@media (prefers-reduced-motion: no-preference) { a { transition: background-color .15s ease; } }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+/* La selección y el foco también son parte del sistema: salen de la paleta,
+   no del navegador. */
+::selection {
+  background: var(--sign-yellow);
+  color: var(--asphalt);
+}
+
+:focus-visible {
+  outline: var(--rule) solid var(--sign-yellow);
+  outline-offset: 3px;
+}
+
+.landing-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  /* El fondo de la página es el asfalto: la placa se ve **desde** la carretera,
+     y por eso tiene que haber carretera detrás de ella. */
+  background: var(--asphalt);
+}
+
+/* ---------------------------------------------------------------------------
+   El montaje
+   --------------------------------------------------------------------------- */
+
+.sign-mount {
+  position: relative;
+  /* Por encima del asfalto: los postes se salen por abajo y, sin esto, la
+     sección siguiente los tapa al pintarse después. */
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  /* El aire de arriba y de los lados es lo que convierte la placa en objeto:
+     sin él vuelve a ser una banda de color. Abajo queda el largo de los
+     postes, que plantan en el asfalto. */
+  padding: clamp(18px, 3vh, 34px) var(--gutter) 0;
+}
+
+/* Los postes. Bajan desde la placa y entran en el asfalto, por detrás. */
+.sign-post {
+  position: absolute;
+  top: 35%;
+  bottom: calc(var(--post-drop) * -1);
+  width: clamp(10px, 1.1vw, 16px);
+  background: linear-gradient(
+    to right,
+    var(--galvanized-dark) 0 22%,
+    var(--galvanized) 22% 58%,
+    var(--galvanized-dark) 58% 100%
+  );
+}
+
+/* La placa de anclaje: donde el poste se atornilla al suelo. Sin ella el poste
+   parece cortado; con ella, plantado. */
+.sign-post::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: 320%;
+  height: 6px;
+  background: var(--galvanized-dark);
+}
+
+.sign-post-left {
+  left: 18%;
+}
+
+.sign-post-right {
+  right: 18%;
+}
+
+/* ---------------------------------------------------------------------------
+   La placa
+   --------------------------------------------------------------------------- */
+
+.sign-plate {
+  position: relative;
+  flex: 1;
+  /* Un hijo flex trae `min-width: auto`: no encoge por debajo de su contenido
+     mínimo, y cualquier texto con `nowrap` adentro empuja la placa más ancha
+     que el montaje que la contiene. La placa se ajusta al montaje; lo que no
+     cabe adentro se resuelve adentro. */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 5vh, 56px);
+  padding: var(--gutter);
+  background: var(--sign-green);
+  /* El borde blanco interior es el de una señal real, y es el único adorno
+     que la placa recibe. */
+  /* Dos anillos de esmalte por dentro y el canto de la lámina por fuera: eso
+     último es lo que la despega del asfalto y la vuelve una pieza con grosor,
+     no una zona de color. */
+  box-shadow:
+    inset 0 0 0 var(--rule) var(--sign-white),
+    inset 0 0 0 calc(var(--rule) * 4) var(--sign-green),
+    0 3px 0 0 var(--galvanized-dark);
+  color: var(--sign-white);
+}
+
+/* Los pernos de montaje: una placa de destino va atornillada a sus postes, y
+   las cabezas se ven en las cuatro esquinas. Es la pieza que falta para que
+   esto sea una placa y no un rectángulo verde.
+
+   Se descartó dibujar en su lugar la retícula de registro: tilada con
+   gradientes de un píxel es indistinguible del fondo cuadriculado que delata a
+   una interfaz generada, y el detector del proyecto la marca como tal. */
+.sign-plate::before,
+.sign-plate::after {
+  content: "";
+  position: absolute;
+  inset-inline: 30px;
+  height: 14px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, var(--ink-hardware) 0 5px, transparent 5.5px) left center / 14px 14px no-repeat,
+    radial-gradient(circle, var(--ink-hardware) 0 5px, transparent 5.5px) right center / 14px 14px no-repeat;
+}
+
+.sign-plate::before {
+  top: 30px;
+}
+
+.sign-plate::after {
+  bottom: 30px;
+}
+
+/* El contenido va sobre los pernos. El `z-index` es necesario además de
+   `position`: `::after` es el último hijo del elemento, así que sin él se
+   pinta encima de todo lo demás y las cabezas de abajo caen sobre la placa de
+   salida. */
+.sign-plate > * {
+  position: relative;
+  z-index: 1;
+}
+
+.sign-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sign-shield {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(15px, 1.6vw, 19px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.sign-shield-mark {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 38px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--sign-green-deep);
+  background: var(--sign-white);
+  /* El recorte del escudo de ruta, no un rectángulo redondeado. */
+  clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%);
+  transition: background 160ms ease-out, color 160ms ease-out;
+}
+
+.sign-lang a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  border: var(--rule) solid var(--sign-white);
+}
+
+.sign-lang a:hover {
+  color: var(--sign-green-deep);
+  background: var(--sign-white);
+}
+
+.sign-shield:hover .sign-shield-mark {
+  background: var(--sign-yellow);
+  color: var(--asphalt);
+}
+
+.sign-body {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  gap: clamp(28px, 4vh, 48px);
+}
+
+/* En caja mixta y no en versales, al revés de lo que decía el contrato: las
+   señales de destino modernas pasaron a caja mixta justamente porque se lee
+   más rápido a velocidad, que es la condición que esta página imita. Las
+   versales quedan para las leyendas cortas —SALIDA, los tiempos—, que es donde
+   una señal real también las usa. */
+.sign-legend {
+  margin: 0;
+  max-width: 20ch;
+  font-size: clamp(30px, 4.2vw, 54px);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Las filas de destino: el lugar a la izquierda, la flecha al centro, el
+   tiempo a la derecha, con la línea de puntos que una señal usa para que el
+   ojo cruce de un lado al otro. */
+.sign-destinations {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.sign-destinations li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(9ch, max-content);
+  align-items: baseline;
+  gap: clamp(12px, 2vw, 24px);
+  padding-block: clamp(16px, 2.4vh, 26px);
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.sign-destinations li:last-child {
+  border-bottom: 1px solid var(--ink-hairline);
+}
+
+.sign-place {
+  font-size: clamp(17px, 2.2vw, 26px);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.sign-arrow {
+  width: clamp(28px, 3vw, 40px);
+  height: auto;
+  align-self: center;
+  color: var(--sign-white-dim);
+}
+
+.sign-when {
+  font-size: clamp(24px, 3.6vw, 46px);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* La salida. Amarillo de advertencia, biselada como una placa de salida real,
+   y es lo único amarillo de toda la página. */
+.sign-exit {
+  /* Abajo a la derecha: es donde una señal pone la placa de salida, y es donde
+     termina el recorrido de lectura de la placa. */
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 22px);
+  min-height: 72px;
+  padding: 14px clamp(20px, 3vw, 32px);
+  color: var(--asphalt);
+  background: var(--sign-yellow);
+  text-decoration: none;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sign-exit:hover {
+  transform: translateX(10px);
+}
+
+.sign-exit .sign-arrow {
+  color: var(--asphalt);
+}
+
+.sign-exit-action {
+  /* En una sola línea donde entra: el texto del botón dice qué pasa al tocarlo
+     y partido pierde continuidad. Pero `nowrap` fijo lo volvía un ancho
+     mínimo irreducible, y a 320px el texto completo no entra a ningún tamaño
+     legible: ahí se parte, que es mejor que desbordar la página. */
+  text-wrap: balance;
+  font-size: clamp(15px, 4.6vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sign-exit {
+    transition: none;
+  }
+
+  .sign-exit:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes sign-approach {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+
+  .sign-destinations li {
+    animation: sign-approach 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .sign-destinations li:nth-child(2) {
+    animation-delay: 90ms;
+  }
+
+  /* La salida entra justo después de la última fila. El retraso se calcula
+     contra las filas que existen: con uno timado para tres, quedaba un hueco
+     de doscientos milisegundos antes de lo único que la página pide hacer. */
+  .sign-exit {
+    animation: sign-approach 620ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   El asfalto
+   --------------------------------------------------------------------------- */
+
+.asphalt {
+  position: relative;
+  /* El espacio de arriba deja ver los postes plantando antes de que empiece a
+     leerse el texto. */
+  padding: calc(var(--post-drop) + clamp(34px, 5vh, 60px)) var(--gutter) clamp(28px, 4vh, 44px);
+  background: var(--asphalt);
+}
+
+/* Una sola línea horizontal, ininterrumpida: escala con el ancho en vez de
+   envolverse en dos renglones. */
+.asphalt-stripe {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--post-drop) + clamp(22px, 3vh, 36px));
+  height: 6px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--stripe) 0 clamp(40px, 7vw, 86px),
+    transparent clamp(40px, 7vw, 86px) clamp(92px, 15vw, 190px)
+  );
+  opacity: 0.5;
+}
+
+.asphalt-facts {
+  display: grid;
+  gap: 10px;
+  max-width: 68ch;
+}
+
+.asphalt-facts p:not(.asphalt-lead) {
+  margin: 0;
+  font-size: clamp(15px, 1.7vw, 18px);
+  line-height: 1.6;
+  color: var(--asphalt-ink-dim);
+}
+
+.asphalt-lead {
+  margin: 0;
+  font-size: clamp(18px, 2.1vw, 23px);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--asphalt-ink);
+}
+
+.asphalt-contact {
+  margin: clamp(28px, 4vh, 44px) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(24px, 5vw, 64px);
+}
+
+.asphalt-contact div {
+  display: grid;
+  gap: 4px;
+}
+
+.asphalt-contact dt {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--asphalt-ink-dim);
+}
+
+.asphalt-contact dd {
+  margin: 0;
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 600;
+  color: var(--asphalt-ink);
+}
+
+.asphalt-contact a {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+
+.asphalt-contact a:hover {
+  color: var(--stripe);
+  text-decoration-color: var(--sign-yellow);
+}
+
+.landing-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  padding: clamp(20px, 3vh, 28px) var(--gutter) clamp(28px, 4vh, 40px);
+  background: var(--asphalt-raised);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--asphalt-ink-dim);
+}
+
+.landing-footer p {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Teléfono
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .sign-post-left {
+    left: 12%;
+  }
+
+  .sign-post-right {
+    right: 12%;
+  }
+
+  /* El herraje pesa de más en pantalla chica: en escritorio es un detalle, acá
+     compite con lo que hay que leer. Se atenúa, no desaparece: sigue siendo lo
+     que sostiene la placa. */
+  .sign-post {
+    width: 8px;
+  }
+
+  .sign-plate::before,
+  .sign-plate::after {
+    opacity: 0.55;
+  }
+
+  /* En pantalla angosta el destino y el tiempo se apilan en vez de pelearse el
+     ancho: con el tiempo grande, el destino se partía en tres renglones y la
+     fila quedaba desalineada. Arriba el lugar, abajo la flecha y el tiempo,
+     que es lo que hay que reconocer primero.
+
+     La flecha se queda: apunta del lugar al tiempo, y es una de las cuatro
+     cosas por las que esta página se reconoce como señal justo en el
+     dispositivo desde el que llega casi todo el tráfico. */
+  .sign-destinations li {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "place place"
+      "arrow when";
+    column-gap: 10px;
+    row-gap: 4px;
+  }
+
+  .sign-place {
+    grid-area: place;
+  }
+
+  .sign-destinations .sign-arrow {
+    grid-area: arrow;
+    width: 24px;
+  }
+
+  /* `nowrap` acá era lo que rompía el ancho: «HOY O MAÑANA» a 24px mide más
+     que la columna a 320px, y al ser el contenido mínimo de la placa la
+     empujaba fuera del montaje. Que se parta en dos renglones cuando no cabe;
+     en los anchos donde cabe se sigue leyendo en uno. */
+  .sign-when {
+    grid-area: when;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .sign-exit {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+}

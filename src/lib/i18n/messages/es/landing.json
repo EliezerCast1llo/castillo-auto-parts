@@ -1,14 +1,18 @@
 {
   "brand": "Castillo Autoparts",
-  "eyebrow": "Repuestos automotrices · El Salvador",
   "title": "Tu próximo repuesto empieza aquí.",
   "description": "Repuestos automotrices en línea con envíos a todo El Salvador.",
   "status": "Estamos preparando nuestra tienda en línea",
-  "contactTitle": "Hablemos de tu vehículo",
-  "contactDescription": "Escríbenos por WhatsApp para consultar sobre repuestos.",
   "whatsapp": "Escríbenos por WhatsApp",
-  "phoneLabel": "Llámanos",
+  "phoneLabel": "WhatsApp y llamadas",
   "coverageLabel": "Nuestra zona",
   "coverage": "Envíos a todo El Salvador",
-  "footer": "La tienda aún no está disponible. Por ahora, puedes contactarnos por teléfono o WhatsApp."
+  "destinationsLabel": "Qué hay y en cuánto lo tienes",
+  "pickup": "Retiro en bodega",
+  "pickupWhen": "Hoy",
+  "localDelivery": "Entrega en San Salvador",
+  "localDeliveryWhen": "Hoy o mañana",
+  "stockFact": "Bodega propia: la pieza está acá, no se pide a nadie.",
+  "askFact": "Dinos la pieza o el número de parte y te decimos si la tenemos.",
+  "languageLabel": "Idioma"
 }
