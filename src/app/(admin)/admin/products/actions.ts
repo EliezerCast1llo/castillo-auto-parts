@@ -22,6 +22,23 @@ import { findCatalogSkuMatches } from "@/lib/catalog-sku";
 
 const DEFAULT_LOCATION_CODE = "MAIN";
 
+/**
+ * Resultado de guardar el formulario de producto.
+ *
+ * La creación **devuelve** este estado en vez de redirigir. El motivo es
+ * concreto: un redirect es una navegación, y una navegación tira el formulario
+ * entero —quien llenó quince campos y erró uno los perdía todos— y también
+ * tira los archivos de imagen que el navegador tenía esperando a que el
+ * producto existiera.
+ *
+ * `productId` y `slug` solo vienen con `created`: son lo que el cliente
+ * necesita para subir esas imágenes y recién después navegar.
+ */
+export type AdminProductFormState =
+  | { status: "created"; productId: string; slug: string }
+  | { status: "error"; code: string; existingSku?: string }
+  | null;
+
 type AdminProductInput = {
   brand: string;
   categoryId: string;
@@ -44,14 +61,17 @@ type AdminProductInput = {
   measurements: { weightGrams: number | null; lengthMm: number | null; widthMm: number | null; heightMm: number | null };
 };
 
-export async function createAdminProduct(formData: FormData) {
+export async function createAdminProduct(
+  _previousState: AdminProductFormState,
+  formData: FormData,
+): Promise<AdminProductFormState> {
   await requireAdminRole("ADMIN");
-  if (!isValidCatalogSku(formString(formData, "sku"))) redirect("/admin/products/new?estado=invalid_sku");
+  if (!isValidCatalogSku(formString(formData, "sku"))) {
+    return { status: "error", code: "invalid_sku" };
+  }
 
   const input = parseAdminProductFormData(formData);
-  if (!input) redirect("/admin/products/new?estado=invalid");
-
-  let redirectPath = "/admin/products";
+  if (!input) return { status: "error", code: "invalid" };
 
   try {
     const product = await runProductWrite(async (tx) => {
@@ -101,15 +121,23 @@ export async function createAdminProduct(formData: FormData) {
     });
 
     revalidateProductPaths(product.slug);
-    redirectPath = `/admin/products/${product.slug}/edit?estado=created`;
-  } catch (error) {
-    await handleAdminProductError(error, "/admin/products/new", input.sku);
-  }
 
-  redirect(redirectPath);
+    return { status: "created", productId: product.id, slug: product.slug };
+  } catch (error) {
+    return await resolveAdminProductError(error, input.sku);
+  }
 }
 
-export async function updateAdminProduct(formData: FormData) {
+/**
+ * La edición sí redirige: ahí no hay nada esperando al guardado —las imágenes
+ * se suben aparte, contra un producto que ya existe— y el redirect recarga la
+ * ficha con los datos que quedaron. El primer parámetro existe solo para que
+ * comparta firma con la creación y el mismo formulario sirva para las dos.
+ */
+export async function updateAdminProduct(
+  _previousState: AdminProductFormState,
+  formData: FormData,
+): Promise<AdminProductFormState> {
   const productId = formString(formData, "productId");
   await requireAdminRole("ADMIN");
 
@@ -445,11 +473,21 @@ async function runProductWrite<T>(operation: (tx: Prisma.TransactionClient) => P
   }
 }
 
-async function handleAdminProductError(error: unknown, fallbackPath: string, sku: string, productId?: string): Promise<never> {
+/**
+ * Clasifica el error de un guardado.
+ *
+ * Era parte del redirect, y así solo servía para el camino que navega. Acá
+ * solo decide **qué pasó**; quién lo muestra —una respuesta devuelta o una
+ * URL— lo deciden los dos llamadores. Separarlo evita la alternativa, que era
+ * tener la misma cadena de `if` escrita dos veces y que una se quedara atrás.
+ */
+async function resolveAdminProductError(
+  error: unknown,
+  sku: string,
+  productId?: string,
+): Promise<{ status: "error"; code: string; existingSku?: string }> {
   if (error instanceof AdminProductDomainError) {
-    const query = new URLSearchParams({ estado: error.code });
-    if (error.existingSku) query.set("sku_existente", error.existingSku);
-    redirect(`${fallbackPath}?${query}`);
+    return { status: "error", code: error.code, existingSku: error.existingSku };
   }
 
   // A concurrent save may win after the check. Report its SKU just as clearly.
@@ -458,20 +496,23 @@ async function handleAdminProductError(error: unknown, fallbackPath: string, sku
     try { matches = await findCatalogSkuMatches(db, [sku], productId); }
     catch { /* Preserve the safe fallback if the database became unavailable. */ }
     if (matches.length) {
-      redirect(`${fallbackPath}?${new URLSearchParams({ estado: "sku_conflict", sku_existente: matches[0].sku })}`);
+      return { status: "error", code: "sku_conflict", existingSku: matches[0].sku };
     }
   }
 
-  if (isPrismaTransactionConflict(error)) {
-    redirect(`${fallbackPath}?estado=conflict`);
-  }
-
-  if (isPrismaUniqueError(error)) {
-    redirect(`${fallbackPath}?estado=duplicate`);
-  }
+  if (isPrismaTransactionConflict(error)) return { status: "error", code: "conflict" };
+  if (isPrismaUniqueError(error)) return { status: "error", code: "duplicate" };
 
   console.error(error);
-  redirect(`${fallbackPath}?estado=db_unavailable`);
+  return { status: "error", code: "db_unavailable" };
+}
+
+async function handleAdminProductError(error: unknown, fallbackPath: string, sku: string, productId?: string): Promise<never> {
+  const resolved = await resolveAdminProductError(error, sku, productId);
+  const query = new URLSearchParams({ estado: resolved.code });
+  if (resolved.existingSku) query.set("sku_existente", resolved.existingSku);
+
+  redirect(`${fallbackPath}?${query}`);
 }
 
 function isPrismaTransactionConflict(error: unknown) {

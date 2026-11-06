@@ -74,10 +74,16 @@ test("create and edit collisions report the existing SKU and preserve records", 
   const existing = await prisma.product.create({ data: { sku, slug: existingSlug, name: "Existing SKU fixture", brand: "Fixture", weightGrams: 1000, lengthMm: 200, widthMm: 100, heightMm: 80, categoryId, priceCents: 100 } });
   await prepareProduct(page, sku.toLowerCase(), `${slugPrefix}-duplicate`);
   await page.getByRole("button", { name: "Crear producto", exact: true }).click();
-  await expect(page).toHaveURL(/\/admin\/products\/new\?estado=sku_conflict/);
+  // El error ya no viaja en la URL: la creación devuelve su resultado para no
+  // perder el formulario. Se queda en la misma página, sin query.
   const notice = page.getByRole("alert").filter({ hasText: "El SKU coincide" });
   await expect(notice).toContainText(sku);
   await expect(notice).toContainText("no se guardó ningún cambio");
+  await expect(page).toHaveURL(/\/admin\/products\/new$/);
+  // Lo tipeado sobrevive al error. Antes el redirect devolvía el formulario en
+  // blanco y había que escribir los quince campos de nuevo.
+  await expect(page.getByLabel("Nombre", { exact: true })).toHaveValue(`Repuesto ${slugPrefix}-duplicate`);
+  await expect(page.getByLabel("SKU", { exact: true })).toHaveValue(sku.toLowerCase());
   expect(await prisma.product.count({ where: { sku } })).toBe(1);
   expect(await prisma.product.count({ where: { slug: `${slugPrefix}-duplicate` } })).toBe(0);
   const other = await prisma.product.create({ data: { sku: otherSku, slug: otherSlug, name: "Other SKU fixture", brand: "Fixture", weightGrams: 1000, lengthMm: 200, widthMm: 100, heightMm: 80, categoryId, priceCents: 200 } });
@@ -95,8 +101,8 @@ test("invalid SKU formats show allowed characters and return to the original edi
   for (const invalid of ["ABC#1", "AÑO-1"]) {
     await prepareProduct(page, `${prefix}-${invalid}`, `${slugPrefix}-invalid`);
     await page.getByRole("button", { name: "Crear producto", exact: true }).click();
-    await expect(page).toHaveURL(/\/admin\/products\/new\?estado=invalid_sku$/);
     await expect(page.getByRole("alert").filter({ hasText: "El SKU es obligatorio" })).toContainText("A-Z sin tildes");
+    await expect(page).toHaveURL(/\/admin\/products\/new$/);
     expect(await prisma.product.count({ where: { slug: `${slugPrefix}-invalid` } })).toBe(0);
   }
   const sku = `${prefix}-AB.C_1`, slug = `${slugPrefix}-valid-punctuation`;
