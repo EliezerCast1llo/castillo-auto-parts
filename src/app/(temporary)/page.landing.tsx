@@ -2,24 +2,17 @@ import Link from "next/link";
 import { ArrowUpRight, MapPin, MessageCircle, Phone, Wrench } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { buildContactLinks } from "@/lib/contact";
-import { LandingLocaleSwitch } from "./landing-locale-switch";
-import { resolveLandingLocale } from "./landing-locale";
 
 export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
-  const locale = await resolveLandingLocale();
-  const t = await getTranslations({ locale, namespace: "Landing" });
-  const tNav = await getTranslations({ locale, namespace: "Nav" });
+  const t = await getTranslations({ locale: "es", namespace: "Landing" });
   const contact = buildContactLinks();
   return (
     <div className="landing-shell">
       <header className="landing-header">
         <Link href="/" prefetch={false} className="landing-brand"><span className="landing-mark" aria-hidden="true"><Wrench /></span>{t("brand")}</Link>
-        <div className="landing-header-actions">
-          <span className="landing-country">El Salvador</span>
-          <LandingLocaleSwitch current={locale} label={tNav("languageSwitch")} />
-        </div>
+        <span className="landing-country">El Salvador</span>
       </header>
       <main className="landing-main">
         <section className="landing-intro">
