@@ -8,11 +8,34 @@ import { formatCurrency } from "../money";
 import { getTransactionalEmailFrom } from ".";
 import type { EmailMessage } from "./provider";
 
+/**
+ * Una línea de la compra, con los datos congelados al momento de comprar.
+ *
+ * Vienen de los `*Snapshot` de `OrderItem` y no del producto vivo: el correo
+ * tiene que decir qué se compró y a qué precio, aunque el producto después
+ * cambie de nombre o de precio.
+ */
+export type OrderConfirmationEmailItem = {
+  name: string;
+  sku: string;
+  quantity: number;
+  lineTotalCents: number;
+};
+
 export type OrderConfirmationEmailInput = {
   customerEmail: string;
   customerName: string;
   orderNumber: string;
   orderUrl: string;
+  items: OrderConfirmationEmailItem[];
+  subtotalCents: number;
+  shippingCents: number;
+  /**
+   * Método de entrega, como identificador del enum y no como texto: el nombre
+   * se resuelve contra el catálogo de mensajes, que ya lo tiene en los dos
+   * idiomas. `null` cuando la orden todavía no tiene envío asignado.
+   */
+  fulfillmentMethod: "PICKUP" | "LOCAL_DELIVERY" | "NATIONAL_SHIPPING" | null;
   totalCents: number;
   /**
    * Idioma en el que el cliente hizo la compra, guardado en la orden.
@@ -47,12 +70,26 @@ function emailTranslator(locale: Locale, namespace: "orderConfirmation" | "passw
 
 export function buildOrderConfirmationEmail(input: OrderConfirmationEmailInput): EmailMessage {
   const t = emailTranslator(input.locale, "orderConfirmation");
+  const money = (cents: number) => formatCurrency(cents, input.locale);
 
-  const total = formatCurrency(input.totalCents, input.locale);
+  const total = money(input.totalCents);
   const greeting = t("greeting", { customerName: input.customerName });
   const received = t("received", { orderNumber: input.orderNumber, total });
   const pending = t("pending");
   const signature = t("signature", { siteName: SITE_NAME });
+
+  // El envío gratis se dice con palabras y no con "$0.00": retiro en bodega
+  // cuesta cero y leerlo como monto hace dudar de si se cobró algo.
+  const shipping = input.shippingCents > 0 ? money(input.shippingCents) : t("freeShipping");
+  const methodName = input.fulfillmentMethod
+    ? fulfillmentMethodName(input.fulfillmentMethod, input.locale)
+    : null;
+
+  const summaryRows: [string, string][] = [
+    [t("subtotal"), money(input.subtotalCents)],
+    [t("shipping"), shipping],
+    [t("total"), total],
+  ];
 
   return {
     from: getTransactionalEmailFrom(),
@@ -60,21 +97,102 @@ export function buildOrderConfirmationEmail(input: OrderConfirmationEmailInput):
       `<p>${escapeHtml(greeting)}</p>`,
       `<p>${escapeHtml(received)}</p>`,
       `<p>${escapeHtml(pending)}</p>`,
+      `<h2 style="font-size:16px;margin:24px 0 8px">${escapeHtml(t("summaryTitle"))}</h2>`,
+      itemsHtml(input, t),
+      summaryHtml(summaryRows),
+      methodName
+        ? `<p><strong>${escapeHtml(t("deliveryMethod"))}:</strong> ${escapeHtml(methodName)}</p>`
+        : "",
       `<p><a href="${escapeHtml(input.orderUrl)}">${escapeHtml(t("viewOrder"))}</a></p>`,
       `<p>${escapeHtml(signature)}</p>`,
-    ].join("\n"),
+    ]
+      .filter(Boolean)
+      .join("\n"),
     subject: t("subject", { orderNumber: input.orderNumber }),
     text: [
       greeting,
       "",
       received,
       pending,
+      "",
+      t("summaryTitle"),
+      ...input.items.map(
+        (item) =>
+          `- ${t("itemLine", { name: item.name, quantity: item.quantity })}` +
+          ` (${t("itemSku", { sku: item.sku })}) — ${money(item.lineTotalCents)}`,
+      ),
+      "",
+      ...summaryRows.map(([label, value]) => `${label}: ${value}`),
+      ...(methodName ? [`${t("deliveryMethod")}: ${methodName}`] : []),
+      "",
       `${t("viewOrder")}: ${input.orderUrl}`,
       "",
       signature,
     ].join("\n"),
     to: input.customerEmail,
   };
+}
+
+/**
+ * Nombre del método de entrega.
+ *
+ * Sale del namespace `Orders`, que ya lo tiene en los dos idiomas desde la
+ * tajada de pedidos: duplicarlo en `Email` dejaría dos textos para la misma
+ * cosa, y uno de los dos se desactualizaría.
+ */
+function fulfillmentMethodName(
+  method: NonNullable<OrderConfirmationEmailInput["fulfillmentMethod"]>,
+  locale: Locale,
+) {
+  const t = createTranslator({
+    locale,
+    messages: loadMessages(locale),
+    namespace: "Orders.method",
+    timeZone: APP_TIME_ZONE,
+  });
+
+  return t(method);
+}
+
+type OrderEmailTranslator = ReturnType<typeof emailTranslator>;
+
+function itemsHtml(input: OrderConfirmationEmailInput, t: OrderEmailTranslator) {
+  if (input.items.length === 0) return "";
+
+  // Tabla y no lista: los clientes de correo no soportan flex ni grid, y una
+  // tabla con `align` es lo único que alinea importes de forma confiable.
+  const rows = input.items
+    .map((item) => {
+      const line = escapeHtml(t("itemLine", { name: item.name, quantity: item.quantity }));
+      const sku = escapeHtml(t("itemSku", { sku: item.sku }));
+      const amount = escapeHtml(formatCurrency(item.lineTotalCents, input.locale));
+
+      return (
+        `<tr><td style="padding:6px 12px 6px 0">${line}<br>` +
+        `<span style="color:#667085;font-size:12px">${sku}</span></td>` +
+        `<td align="right" style="padding:6px 0;white-space:nowrap">${amount}</td></tr>`
+      );
+    })
+    .join("");
+
+  return `<table role="presentation" style="border-collapse:collapse;width:100%">${rows}</table>`;
+}
+
+function summaryHtml(rows: [string, string][]) {
+  const cells = rows
+    .map(([label, value], index) => {
+      const strong = index === rows.length - 1;
+      const weight = strong ? "font-weight:700" : "";
+      const border = index === 0 ? "border-top:1px solid #e4e7ec" : "";
+
+      return (
+        `<tr><td style="padding:6px 12px 6px 0;${weight};${border}">${escapeHtml(label)}</td>` +
+        `<td align="right" style="padding:6px 0;${weight};${border};white-space:nowrap">${escapeHtml(value)}</td></tr>`
+      );
+    })
+    .join("");
+
+  return `<table role="presentation" style="border-collapse:collapse;width:100%">${cells}</table>`;
 }
 
 export type PasswordResetEmailInput = {

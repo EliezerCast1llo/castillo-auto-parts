@@ -5,7 +5,15 @@
     "received": "We received your order {orderNumber} for {total}.",
     "pending": "Your purchase is pending preparation for delivery.",
     "viewOrder": "View order status",
-    "signature": "Thank you for shopping at {siteName}."
+    "signature": "Thank you for shopping at {siteName}.",
+    "summaryTitle": "Your purchase summary",
+    "itemLine": "{quantity} × {name}",
+    "itemSku": "SKU {sku}",
+    "subtotal": "Products",
+    "shipping": "Shipping",
+    "total": "Total",
+    "freeShipping": "Free",
+    "deliveryMethod": "Delivery method"
   },
   "passwordReset": {
     "subject": "Reset your password — {siteName}",

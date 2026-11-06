@@ -5,6 +5,7 @@ import {
 } from "@prisma/client";
 import { db } from "./db";
 import { sendOrderConfirmationEmail } from "./email/transactional";
+import type { OrderConfirmationEmailInput } from "./email/templates";
 import { buildAbsoluteAppUrl } from "./email/templates";
 import { confirmInventoryReservation } from "./inventory-reservations";
 import { logWarn } from "./logger";
@@ -82,12 +83,18 @@ export async function processPaymentWebhookEvent(
         include: {
           order: {
             include: {
+              // Las snapshots y no el producto vivo: el correo tiene que decir
+              // qué se compró y a qué precio, aunque el producto cambie después.
               items: {
                 select: {
+                  lineTotalCents: true,
                   productId: true,
+                  productNameSnapshot: true,
                   quantity: true,
+                  skuSnapshot: true,
                 },
               },
+              shipment: { select: { method: true } },
             },
           },
         },
@@ -159,11 +166,20 @@ export async function processPaymentWebhookEvent(
           customerEmail: currentPayment.order.customerEmail,
           customerName: currentPayment.order.customerName,
           locale: orderLocale,
+          fulfillmentMethod: toFulfillmentMethod(currentPayment.order.shipment?.method),
+          items: currentPayment.order.items.map((item) => ({
+            lineTotalCents: item.lineTotalCents,
+            name: item.productNameSnapshot,
+            quantity: item.quantity,
+            sku: item.skuSnapshot,
+          })),
           orderNumber: currentPayment.order.orderNumber,
           orderUrl: buildAbsoluteAppUrl(
             buildOrderAccessHref(currentPayment.order.orderNumber, emailAccessToken),
             orderLocale,
           ),
+          shippingCents: currentPayment.order.shippingCents,
+          subtotalCents: currentPayment.order.subtotalCents,
           totalCents: currentPayment.order.totalCents,
         },
         status: "processed" as const,
@@ -185,6 +201,24 @@ export async function processPaymentWebhookEvent(
     if (isUniqueConstraintError(error)) return { status: "duplicate" };
     throw error;
   }
+}
+
+
+/**
+ * Angosta el método de envío al union que espera el correo.
+ *
+ * `Shipment.method` es `String` en el schema, así que una fila escrita a mano
+ * podría traer cualquier cosa. Lo desconocido vuelve `null` y el correo omite
+ * la línea en vez de mostrar un valor crudo al cliente.
+ */
+function toFulfillmentMethod(
+  method: string | null | undefined,
+): OrderConfirmationEmailInput["fulfillmentMethod"] {
+  if (method === "PICKUP" || method === "LOCAL_DELIVERY" || method === "NATIONAL_SHIPPING") {
+    return method;
+  }
+
+  return null;
 }
 
 function validateEventStructure(event: PaymentWebhookEvent) {

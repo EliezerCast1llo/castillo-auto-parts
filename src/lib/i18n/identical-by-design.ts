@@ -23,4 +23,9 @@ export const IDENTICAL_BY_DESIGN = new Set<string>([
   "Orders.card.sku",
   // Nombre propio del país: se escribe igual en los dos idiomas.
   "Footer.country",
+  // Plantillas del resumen de compra: solo interpolación y una sigla, sin
+  // palabras que traducir. "Total" además coincide en los dos idiomas.
+  "Email.orderConfirmation.itemLine",
+  "Email.orderConfirmation.itemSku",
+  "Email.orderConfirmation.total",
 ]);

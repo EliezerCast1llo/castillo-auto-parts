@@ -8,8 +8,15 @@ import {
 const ORDER = {
   customerEmail: "cliente@example.com",
   customerName: "Cliente Demo",
+  fulfillmentMethod: "LOCAL_DELIVERY" as const,
+  items: [
+    { lineTotalCents: 995, name: "Filtro de aceite Toyota 1.8L", quantity: 1, sku: "MOCK-FIL-TOY-18" },
+    { lineTotalCents: 300, name: "Bujía iridio", quantity: 2, sku: "MOCK-SPK-HK-16" },
+  ],
   orderNumber: "CAP-20260520-ABC123",
   orderUrl: "https://example.com/es/orders/CAP-20260520-ABC123",
+  shippingCents: 300,
+  subtotalCents: 995,
   totalCents: 1295,
 };
 
@@ -44,6 +51,66 @@ describe("email templates", () => {
 
     expect(spanish.text).toContain("$12.95");
     expect(english.text).toContain("$12.95");
+  });
+
+  it("lleva el resumen de la compra, no solo el total", () => {
+    // El correo era cinco líneas sin una sola línea de producto: quien compraba
+    // recibía un monto y un link, y tenía que abrir la orden para saber qué
+    // había comprado.
+    const email = buildOrderConfirmationEmail({ ...ORDER, locale: "es" });
+
+    for (const campo of [email.text, email.html]) {
+      expect(campo).toContain("Filtro de aceite Toyota 1.8L");
+      expect(campo).toContain("MOCK-FIL-TOY-18");
+      expect(campo).toContain("Bujía iridio");
+      expect(campo).toContain("Resumen de tu compra");
+    }
+
+    // Desglose completo: productos, envío y total, no solo el último.
+    expect(email.text).toContain("$9.95");
+    expect(email.text).toContain("$3.00");
+    expect(email.text).toContain("$12.95");
+  });
+
+  it("nombra el método de entrega en el idioma de la compra", () => {
+    // El nombre sale del namespace `Orders`, que ya lo tenía en los dos
+    // idiomas: duplicarlo en `Email` habría dejado dos textos para lo mismo.
+    expect(buildOrderConfirmationEmail({ ...ORDER, locale: "es" }).text).toContain(
+      "Entrega a domicilio",
+    );
+    expect(buildOrderConfirmationEmail({ ...ORDER, locale: "en" }).text).toContain(
+      "Home delivery",
+    );
+  });
+
+  it("dice que el envío es gratis en vez de mostrar $0.00", () => {
+    // Retiro en bodega cuesta cero, y leerlo como monto hace dudar de si se
+    // cobró algo.
+    const email = buildOrderConfirmationEmail({
+      ...ORDER,
+      fulfillmentMethod: "PICKUP",
+      locale: "es",
+      shippingCents: 0,
+    });
+
+    expect(email.text).toContain("Gratis");
+    expect(email.text).not.toContain("$0.00");
+  });
+
+  it("omite el método de entrega cuando la orden todavía no tiene envío", () => {
+    // `Shipment.method` es String en el schema: lo desconocido llega como null
+    // y el correo calla, en vez de mostrarle un valor crudo al cliente.
+    const email = buildOrderConfirmationEmail({ ...ORDER, fulfillmentMethod: null, locale: "es" });
+
+    expect(email.text).not.toContain("Método de entrega");
+    expect(email.html).not.toContain("Método de entrega");
+  });
+
+  it("no rompe con una orden sin líneas", () => {
+    const email = buildOrderConfirmationEmail({ ...ORDER, items: [], locale: "es" });
+
+    expect(email.html).toContain("Ver estado de la orden");
+    expect(email.text).toContain("$12.95");
   });
 
   it("builds the password reset email in the requested language", () => {
