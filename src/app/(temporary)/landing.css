@@ -256,10 +256,10 @@ a {
    una señal real también las usa. */
 .sign-legend {
   margin: 0;
-  max-width: 18ch;
-  font-size: clamp(42px, 7vw, 88px);
+  max-width: 20ch;
+  font-size: clamp(30px, 4.2vw, 54px);
   font-weight: 800;
-  line-height: 0.98;
+  line-height: 1.02;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
@@ -280,7 +280,7 @@ a {
   grid-template-columns: minmax(0, 1fr) auto minmax(9ch, max-content);
   align-items: baseline;
   gap: clamp(12px, 2vw, 24px);
-  padding-block: clamp(10px, 1.6vh, 16px);
+  padding-block: clamp(16px, 2.4vh, 26px);
   border-top: 1px solid var(--ink-hairline);
 }
 
@@ -289,7 +289,7 @@ a {
 }
 
 .sign-place {
-  font-size: clamp(15px, 1.9vw, 21px);
+  font-size: clamp(17px, 2.2vw, 26px);
   font-weight: 600;
   letter-spacing: 0.01em;
 }
@@ -302,7 +302,7 @@ a {
 }
 
 .sign-when {
-  font-size: clamp(16px, 2.1vw, 24px);
+  font-size: clamp(24px, 3.6vw, 46px);
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -336,15 +336,12 @@ a {
   color: var(--asphalt);
 }
 
-.sign-exit-label {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
 .sign-exit-action {
-  font-size: clamp(18px, 2.4vw, 26px);
+  /* En una sola línea: el texto del botón es lo que dice qué pasa al tocarlo,
+     y partido en dos pierde continuidad. El cuerpo baja con el ancho en vez de
+     desbordar, porque a 320px el texto completo no entra a tamaño fijo. */
+  white-space: nowrap;
+  font-size: clamp(15px, 4.6vw, 26px);
   font-weight: 800;
   letter-spacing: -0.01em;
 }
@@ -497,17 +494,47 @@ a {
     right: 12%;
   }
 
-  /* La flecha se queda. El destino y el tiempo siguen en la misma línea en
-     pantalla angosta, así que la flecha apunta a algo; y es una de las cuatro
-     cosas por las que esta página se reconoce como señal, en el dispositivo
-     desde el que llega casi todo el tráfico. */
+  /* El herraje pesa de más en pantalla chica: en escritorio es un detalle, acá
+     compite con lo que hay que leer. Se atenúa, no desaparece: sigue siendo lo
+     que sostiene la placa. */
+  .sign-post {
+    width: 8px;
+  }
+
+  .sign-plate::before,
+  .sign-plate::after {
+    opacity: 0.55;
+  }
+
+  /* En pantalla angosta el destino y el tiempo se apilan en vez de pelearse el
+     ancho: con el tiempo grande, el destino se partía en tres renglones y la
+     fila quedaba desalineada. Arriba el lugar, abajo la flecha y el tiempo,
+     que es lo que hay que reconocer primero.
+
+     La flecha se queda: apunta del lugar al tiempo, y es una de las cuatro
+     cosas por las que esta página se reconoce como señal justo en el
+     dispositivo desde el que llega casi todo el tráfico. */
   .sign-destinations li {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "place place"
+      "arrow when";
     column-gap: 10px;
+    row-gap: 4px;
+  }
+
+  .sign-place {
+    grid-area: place;
   }
 
   .sign-destinations .sign-arrow {
-    width: 22px;
+    grid-area: arrow;
+    width: 24px;
+  }
+
+  .sign-when {
+    grid-area: when;
+    text-align: left;
   }
 
   .sign-exit {

@@ -54,9 +54,11 @@ function DestinationRow({ place, when }: { place: string; when: string }) {
         width: "100%",
       }}
     >
-      <div style={{ display: "flex", flex: 1, fontSize: 28, fontWeight: 600 }}>{place}</div>
+      <div style={{ display: "flex", flex: 1, fontSize: 26, fontWeight: 600 }}>{place}</div>
       <SignArrow color="#c7d8cc" width={44} />
-      <div style={{ display: "flex", fontSize: 30, fontWeight: 800, letterSpacing: "0.03em" }}>
+      {/* El tiempo por encima del lugar: es el argumento, no el adorno. Son
+          los topes de la escala de la página, que acá es un marco fijo. */}
+      <div style={{ display: "flex", fontSize: 46, fontWeight: 800, letterSpacing: "0.03em" }}>
         {when}
       </div>
     </div>
@@ -109,10 +111,10 @@ export async function GET() {
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
           <div
             style={{
-              fontSize: 72,
+              fontSize: 54,
               fontWeight: 800,
               letterSpacing: "-0.02em",
-              lineHeight: 1,
+              lineHeight: 1.02,
               maxWidth: 820,
             }}
           >
@@ -150,10 +152,7 @@ export async function GET() {
             width: 620,
           }}
         >
-          <div style={{ display: "flex", fontSize: 15, fontWeight: 800, letterSpacing: "0.22em" }}>
-            SALIDA
-          </div>
-          <div style={{ display: "flex", fontSize: 30, fontWeight: 800 }}>
+          <div style={{ display: "flex", fontSize: 26, fontWeight: 800 }}>
             Escríbenos por WhatsApp
           </div>
           <SignArrow color="#16181a" width={44} />

@@ -109,7 +109,6 @@ export async function LandingContent({ locale, otherHref, otherLabel }: LandingC
             rel="noopener noreferrer"
             target="_blank"
           >
-            <span className="sign-exit-label">{t("exit")}</span>
             <span className="sign-exit-action">{t("whatsapp")}</span>
             <SignArrow />
           </a>
@@ -142,7 +141,6 @@ export async function LandingContent({ locale, otherHref, otherLabel }: LandingC
 
       <footer className="landing-footer">
         <p>{t("status")}</p>
-        <p>{t("footer")}</p>
       </footer>
     </div>
   );
