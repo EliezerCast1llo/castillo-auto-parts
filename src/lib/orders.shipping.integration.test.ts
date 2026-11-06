@@ -12,7 +12,7 @@ const fixtures = vi.hoisted(() => {
   return { schema, url: url.toString(), cart: vi.fn(), clear: vi.fn(), createPayment: vi.fn() };
 });
 vi.mock("./db", async () => { const { PrismaClient } = await import("@prisma/client"); return { db: new PrismaClient({ datasources: { db: { url: fixtures.url } } }) }; });
-vi.mock("./cart", () => ({ getCartSummary: fixtures.cart, clearCartSummary: fixtures.clear }));
+vi.mock("./cart", () => ({ getCart: fixtures.cart, clearCart: fixtures.clear }));
 vi.mock("./payments", () => ({ getPaymentProvider: () => ({ id: "mock", createPayment: fixtures.createPayment }) }));
 vi.mock("./email/templates", () => ({ buildAbsoluteAppUrl: () => "http://localhost/order" }));
 
