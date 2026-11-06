@@ -135,6 +135,11 @@ a {
 .sign-plate {
   position: relative;
   flex: 1;
+  /* Un hijo flex trae `min-width: auto`: no encoge por debajo de su contenido
+     mínimo, y cualquier texto con `nowrap` adentro empuja la placa más ancha
+     que el montaje que la contiene. La placa se ajusta al montaje; lo que no
+     cabe adentro se resuelve adentro. */
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: clamp(28px, 5vh, 56px);
@@ -337,10 +342,11 @@ a {
 }
 
 .sign-exit-action {
-  /* En una sola línea: el texto del botón es lo que dice qué pasa al tocarlo,
-     y partido en dos pierde continuidad. El cuerpo baja con el ancho en vez de
-     desbordar, porque a 320px el texto completo no entra a tamaño fijo. */
-  white-space: nowrap;
+  /* En una sola línea donde entra: el texto del botón dice qué pasa al tocarlo
+     y partido pierde continuidad. Pero `nowrap` fijo lo volvía un ancho
+     mínimo irreducible, y a 320px el texto completo no entra a ningún tamaño
+     legible: ahí se parte, que es mejor que desbordar la página. */
+  text-wrap: balance;
   font-size: clamp(15px, 4.6vw, 26px);
   font-weight: 800;
   letter-spacing: -0.01em;
@@ -532,9 +538,14 @@ a {
     width: 24px;
   }
 
+  /* `nowrap` acá era lo que rompía el ancho: «HOY O MAÑANA» a 24px mide más
+     que la columna a 320px, y al ser el contenido mínimo de la placa la
+     empujaba fuera del montaje. Que se parta en dos renglones cuando no cabe;
+     en los anchos donde cabe se sigue leyendo en uno. */
   .sign-when {
     grid-area: when;
     text-align: left;
+    white-space: normal;
   }
 
   .sign-exit {

@@ -19,6 +19,9 @@ assert(!("NEXTAUTH_SECRET" in environment), "Auth settings must be absent");
 const port = process.env.LANDING_SMOKE_PORT || "3211";
 const origin = `http://localhost:${port}`;
 const withGoogleAds = process.argv.includes("--google-ads");
+// 320 es el piso real de un telefono en uso; 360 y 390 son los dos anchos en
+// los que llega casi todo el trafico movil, y 1440 el escritorio.
+const widths = [320, 360, 390, 1440];
 const adsId = "AW-123456789";
 if (withGoogleAds) environment.NEXT_PUBLIC_GOOGLE_ADS_ID = adsId;
 
@@ -69,7 +72,7 @@ try {
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   page.on("request", (request) => { if (!request.url().startsWith(`${origin}/`)) external.push(request.url()); });
-  for (const width of [320, 390, 1440]) {
+  for (const width of widths) {
     await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 });
     const response = await page.goto(origin, { waitUntil: "networkidle" });
     assert.equal(response.status(), 200);
@@ -103,6 +106,21 @@ try {
     assert.equal(await page.getByRole("link", { name: "+503 7890 7671", exact: true }).getAttribute("href"), "tel:+50378907671");
     assert.equal(await page.locator("form,input").count(), 0);
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    // `scrollWidth` no ve lo que un `clip-path` o un `overflow` recorta, y mide
+    // el documento, no las piezas: un elemento puede salirse del viewport sin
+    // mover ese número. Se revisa pieza por pieza, que es como se descubrió
+    // que la placa sobresalía del montaje y quedaba a menos de un pixel del
+    // borde —verde en esta máquina, rojo en CI, por las métricas de la fuente—.
+    assert.deepEqual(
+      await page.evaluate(() => [...document.querySelectorAll("body *")]
+        .filter((element) => {
+          const box = element.getBoundingClientRect();
+          return box.width > 0 && (box.right > innerWidth + 0.5 || box.left < -0.5);
+        })
+        .map((element) => element.className || element.tagName)),
+      [],
+      `Nothing may cross the viewport edge at ${width}px`,
+    );
     mkdirSync("test-results/landing", { recursive: true });
     await page.screenshot({ path: `test-results/landing/${width}.png`, fullPage: true });
   }
@@ -160,7 +178,7 @@ try {
     const response = await context.request.post(`${origin}${path}`, { data: {} });
     assert.equal(response.status(), 404, "Mutations must be disabled");
   }
-  console.log(`Landing smoke passed (${withGoogleAds ? "mocked Google Ads" : "no Google Ads"}): secret-free build/start, isolated store routes, CSP/nonces, robots/sitemap, AdsBot 200 and 3 responsive viewports.`);
+  console.log(`Landing smoke passed (${withGoogleAds ? "mocked Google Ads" : "no Google Ads"}): secret-free build/start, isolated store routes, CSP/nonces, robots/sitemap, AdsBot 200 and ${widths.length} responsive viewports.`);
 } finally {
   await browser?.close();
   if (server?.pid) {
