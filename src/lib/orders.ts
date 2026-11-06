@@ -4,7 +4,7 @@ import {
   PaymentStatus as PrismaPaymentStatus,
   Prisma,
 } from "@prisma/client";
-import { clearGuestCart, getGuestCart, type GuestCart } from "./cart";
+import { clearCart, getCart, type CartSummary } from "./cart";
 import { logError } from "./logger";
 import {
   buildFormattedAddress,
@@ -72,7 +72,7 @@ export async function createGuestCheckoutFromCart(
   const parsed = parseCheckoutFormData(formData);
   if (!parsed.success) return { status: "invalid" };
 
-  const cart = await getGuestCart();
+  const cart = await getCart();
 
   // Huella del intento completo: items + método de entrega + dirección/coords. Dos
   // submits con los mismos items pero DISTINTA dirección son intentos distintos.
@@ -112,7 +112,7 @@ export async function createGuestCheckoutFromCart(
       } else {
         const replay = replayResultForOrder(existing);
         if (replay) {
-          await clearGuestCartSafely();
+          await clearCartSafely();
           return replay;
         }
         if (idempotencyStateForOrder(existing) !== "dead") {
@@ -315,7 +315,7 @@ export async function createGuestCheckoutFromCart(
 
     await recordCreatedPayment(order.paymentId, payment);
 
-    await clearGuestCartSafely();
+    await clearCartSafely();
 
     return {
       accessToken: order.accessToken,
@@ -341,7 +341,7 @@ export async function createGuestCheckoutFromCart(
       const recovery = resolveP2002Recovery(existing, retrying);
 
       if (recovery.kind === "replay") {
-        await clearGuestCartSafely();
+        await clearCartSafely();
         return recovery.result;
       }
       if (recovery.kind === "release_and_retry") {
@@ -388,7 +388,7 @@ function findOrderByIdempotencyKey(idempotencyKey: string): Promise<IdempotentOr
 }
 
 // Huella determinística de los items del carrito (SKUs+cantidades ordenados).
-export function cartFingerprint(cart: GuestCart): string {
+export function cartFingerprint(cart: CartSummary): string {
   return cart.lines
     .map((line) => `${line.product.sku}:${line.quantity}`)
     .sort()
@@ -397,7 +397,7 @@ export function cartFingerprint(cart: GuestCart): string {
 
 // Red para órdenes legacy (creadas antes de la migración de intentHash): tienen
 // intentHash NULL y no pueden compararse por hash, así que se comparan por items.
-export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["items"]): boolean {
+export function cartMatchesOrder(cart: CartSummary, items: IdempotentOrderLookup["items"]): boolean {
   if (cart.lines.length !== items.length) return false;
 
   const orderQuantities = new Map(items.map((item) => [item.skuSnapshot, item.quantity]));
@@ -412,7 +412,7 @@ export function cartMatchesOrder(cart: GuestCart, items: IdempotentOrderLookup["
 // - con intentHash → igualdad de hash (items + entrega + dirección + cliente).
 // - legacy (intentHash NULL) → red: comparar items.
 export function isSameCheckoutIntent(
-  cart: GuestCart,
+  cart: CartSummary,
   currentIntentHash: string,
   existing: IdempotentOrderLookup,
 ): boolean {
@@ -424,7 +424,7 @@ export function isSameCheckoutIntent(
 // Huella del intento completo: items + entrega + dirección + coords + datos del
 // cliente. Un email/teléfono con typo corregido cambia la huella → no se reproduce
 // la orden vieja (la confirmación no se manda al dato equivocado).
-export function buildIntentFingerprint(cart: GuestCart, input: CheckoutInput): string {
+export function buildIntentFingerprint(cart: CartSummary, input: CheckoutInput): string {
   return [
     cartFingerprint(cart),
     `fm:${input.fulfillmentMethod}`,
@@ -480,11 +480,11 @@ async function releaseIdempotencyKey(idempotencyKey: string) {
   });
 }
 
-async function clearGuestCartSafely() {
+async function clearCartSafely() {
   try {
-    await clearGuestCart();
+    await clearCart();
   } catch (error) {
-    logError({ context: "clearGuestCartAfterPendingOrder" }, error);
+    logError({ context: "clearCartAfterPendingOrder" }, error);
   }
 }
 

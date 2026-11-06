@@ -17,7 +17,7 @@ export default async function BoxfulAdmin({ searchParams }: { searchParams: Prom
     const config = boxfulConfig();
     locations = await db.boxfulLocation.findMany({ where: { accountScope: config.scope }, orderBy: [{ department: "asc" }, { municipality: "asc" }, { district: "asc" }] });
     balance = (await db.boxfulBalanceEntry.aggregate({ where: { accountScope: config.scope }, _sum: { amountCents: true } }))._sum.amountCents ?? 0;
-    if (query.department) catalog = await boxfulCatalog();
+    if (user.role === "ADMIN" && query.department) catalog = await boxfulCatalog();
   } catch { /* Names-only configuration notice; never display provider/credential errors. */ }
   const department = query.department && Object.hasOwn(municipalitiesByDepartment, query.department) ? query.department : "";
   const state = catalog.find((s) => s.name === department);

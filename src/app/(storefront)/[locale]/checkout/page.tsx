@@ -6,7 +6,7 @@ import { CheckoutFormState, CheckoutPayButton } from "@/components/checkout/chec
 import { CheckoutDeliveryFields } from "@/components/checkout/checkout-delivery-fields";
 import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
-import { getGuestCart } from "@/lib/cart";
+import { getCart } from "@/lib/cart";
 import { buildContactLinks } from "@/lib/contact";
 import {
   CHECKOUT_RETRY_KEY_COOKIE,
@@ -46,7 +46,7 @@ type CheckoutPageProps = {
 export default async function CheckoutPage({ params: routeParams, searchParams }: CheckoutPageProps) {
   const locale = await resolveAndPublishRouteLocale(routeParams);
   const [cart, fulfillmentOptions, session] = await Promise.all([
-    getGuestCart(),
+    getCart(),
     getFulfillmentOptions(),
     auth(),
   ]);

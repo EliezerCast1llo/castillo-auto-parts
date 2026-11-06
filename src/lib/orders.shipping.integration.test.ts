@@ -4,7 +4,7 @@ import { db } from "./db";
 import { createGuestCheckoutFromCart } from "./orders";
 import { shippingRateKey } from "./shipping";
 import { quoteCartShipping } from "./shipping-checkout";
-import type { GuestCart } from "./cart";
+import type { CartSummary } from "./cart";
 
 const fixtures = vi.hoisted(() => {
   const schema = `e2e_shipping_${crypto.randomUUID().replaceAll("-", "")}`;
@@ -13,7 +13,7 @@ const fixtures = vi.hoisted(() => {
   return { schema, url: url.toString(), cart: vi.fn(), clear: vi.fn(), createPayment: vi.fn() };
 });
 vi.mock("./db", async () => { const { PrismaClient } = await import("@prisma/client"); return { db: new PrismaClient({ datasources: { db: { url: fixtures.url } } }) }; });
-vi.mock("./cart", () => ({ getGuestCart: fixtures.cart, clearGuestCart: fixtures.clear }));
+vi.mock("./cart", () => ({ getCart: fixtures.cart, clearCart: fixtures.clear }));
 vi.mock("./payments", () => ({ getPaymentProvider: () => ({ id: "mock", createPayment: fixtures.createPayment }) }));
 vi.mock("./email/templates", () => ({ buildAbsoluteAppUrl: () => "http://localhost/order" }));
 
@@ -22,19 +22,19 @@ async function checkout(overrides: Record<string, string> = {}) {
   const form = new FormData();
   for (const [key, value] of Object.entries({ customerName: "Shipping QA", customerEmail: "shipping@example.com", customerPhone: "77777777", fulfillmentMethod: "NATIONAL_SHIPPING", paymentMethod: "online_card", addressLine1: "Calle 5", department: "San Miguel", city: "San Miguel Centro", landmark: "Parque", latitude: "13.48", longitude: "-88.18", shippingOption, shippingCents: "1", ...overrides })) form.set(key, value);
   const destination = { addressLine1: "Calle 5", department: "San Miguel", city: "San Miguel Centro", landmark: "Parque", latitude: 13.48, longitude: -88.18 };
-  const quote = await quoteCartShipping(await fixtures.cart().then((cart: GuestCart) => cart.lines), destination);
+  const quote = await quoteCartShipping(await fixtures.cart().then((cart: CartSummary) => cart.lines), destination);
   if (quote) form.set("shippingQuoteToken", quote.quoteToken);
   return form;
 }
 
 describe.skipIf(!process.env.DATABASE_URL)("shipping checkout with isolated PostgreSQL", () => {
-  let cart: GuestCart;
+  let cart: CartSummary;
   beforeAll(async () => {
     execFileSync(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "deploy"], { env: { ...process.env, DATABASE_URL: fixtures.url, DIRECT_DATABASE_URL: fixtures.url }, stdio: "pipe" });
     const category = await db.productCategory.create({ data: { name: "Shipping QA", slug: "shipping-qa" } });
     const location = await db.inventoryLocation.create({ data: { code: "MAIN", name: "QA" } });
     const products = await Promise.all([1250, 500].map((weightGrams, i) => db.product.create({ data: { name: `QA ${i}`, sku: `SHIP-${i}`, slug: `ship-${i}`, brand: "QA", categoryId: category.id, priceCents: 1000, weightGrams, lengthMm: 200, widthMm: 100, heightMm: 80, inventoryStocks: { create: { locationId: location.id, quantityOnHand: 100, status: "IN_STOCK" } } } })));
-    cart = { hasBlockingIssues: false, itemCount: 5, subtotalCents: 5000, lines: products.map((product, i) => ({ product, quantity: i === 0 ? 3 : 2, lineTotalCents: 1000 * (i === 0 ? 3 : 2), availableQuantity: 100 })) } as unknown as GuestCart;
+    cart = { hasBlockingIssues: false, itemCount: 5, subtotalCents: 5000, lines: products.map((product, i) => ({ product, quantity: i === 0 ? 3 : 2, lineTotalCents: 1000 * (i === 0 ? 3 : 2), availableQuantity: 100 })) } as unknown as CartSummary;
     fixtures.createPayment.mockImplementation(async ({ orderNumber, amountCents }) => ({ provider: "mock", externalPaymentId: `mock-${orderNumber}`, externalReference: orderNumber, checkoutUrl: `http://localhost/pay/${orderNumber}`, status: "PENDING", rawStatus: "PENDING", rawPayload: { amountCents } }));
   }, 30000);
   beforeEach(async () => { vi.stubEnv("SHIPPING_PROVIDER", "fake"); fixtures.cart.mockResolvedValue(cart); await db.shippingPromotion.upsert({ where: { id: "national" }, create: { id: "national" }, update: { enabled: false } }); });

@@ -12,7 +12,7 @@ import { quoteCartShipping, readCartShippingQuote } from "./shipping-checkout";
 import { createGuestCheckoutFromCart } from "./orders";
 import { processPaymentWebhookEvent } from "./payment-events";
 import { POST as webhook } from "@/app/api/webhooks/boxful/route";
-import type { GuestCart } from "./cart";
+import type { CartSummary } from "./cart";
 
 const f = vi.hoisted(() => {
   const schema = `e2e_boxful_${crypto.randomUUID().replaceAll("-", "")}`;
@@ -20,14 +20,14 @@ const f = vi.hoisted(() => {
   return { schema, url: url.toString(), cart: vi.fn(), clear: vi.fn(), payment: vi.fn(), mail: vi.fn(), confirmation: vi.fn() };
 });
 vi.mock("./db", async () => { const { PrismaClient } = await import("@prisma/client"); return { db: new PrismaClient({ datasources: { db: { url: f.url } } }) }; });
-vi.mock("./cart", () => ({ getGuestCart: f.cart, clearGuestCart: f.clear }));
+vi.mock("./cart", () => ({ getCart: f.cart, clearCart: f.clear }));
 vi.mock("./payments", () => ({ getPaymentProvider: () => ({ id: "mock", createPayment: f.payment }) }));
 vi.mock("./email", () => ({ getEmailProvider: () => ({ sendEmail: f.mail }), getTransactionalEmailFrom: () => "qa@example.com" }));
 vi.mock("./email/transactional", () => ({ sendOrderConfirmationEmail: f.confirmation }));
 
 const destination = { addressLine1: "Calle 5", department: "San Miguel", city: "San Miguel Centro", landmark: "Parque", latitude: 13.48, longitude: -88.18, cityId: "city-test" };
 const remote = { id: "shipment-test", shipmentNumber: "BF123", trackingUrl: "https://devtracking.goboxful.com/?shipment=BF123", labelUrl: "https://boxful.sfo3.digitaloceanspaces.com/label.pdf", status: "1" };
-let cart: GuestCart;
+let cart: CartSummary;
 let calls: { path: string; body: Record<string, unknown> | undefined }[];
 let shippingPrice: number;
 let createStatus: number;
@@ -52,7 +52,7 @@ describe.skipIf(!process.env.DATABASE_URL)("Boxful HTTP + PostgreSQL flow", () =
     const category = await db.productCategory.create({ data: { name: "Boxful QA", slug: "boxful-qa" } });
     const location = await db.inventoryLocation.create({ data: { code: "MAIN", name: "QA" } });
     const product = await db.product.create({ data: { name: "QA", sku: "BF-QA", slug: "bf-qa", brand: "QA", categoryId: category.id, priceCents: 2000, weightGrams: 4536, lengthMm: 200, widthMm: 100, heightMm: 80, inventoryStocks: { create: { locationId: location.id, quantityOnHand: 1000, status: "IN_STOCK" } } } });
-    cart = { hasBlockingIssues: false, itemCount: 2, subtotalCents: 4000, lines: [{ product, quantity: 2, lineTotalCents: 4000, availableQuantity: 1000 }] } as unknown as GuestCart;
+    cart = { hasBlockingIssues: false, itemCount: 2, subtotalCents: 4000, lines: [{ product, quantity: 2, lineTotalCents: 4000, availableQuantity: 1000 }] } as unknown as CartSummary;
   }, 30000);
   beforeEach(async () => {
     for (const [k, v] of Object.entries({ SHIPPING_PROVIDER: "boxful", BOXFUL_API_BASE_URL: "https://devapi.goboxful.com", BOXFUL_EMAIL: "account@example.com", BOXFUL_PASSWORD: "private-password", BOXFUL_CLIENT_ID: "client-test", BOXFUL_PICKUP_ADDRESS_ID: "pickup-test", BOXFUL_WEIGHT_UNIT: "lb", BOXFUL_DIMENSION_UNIT: "omit", BOXFUL_TOKEN_ENCRYPTION_KEY: "test-only-encryption-key-at-least-32-characters", BOXFUL_ORDER_REFERENCE_CONFIRMED: "true", BOXFUL_WEBHOOK_SECRET: "test-only-webhook-secret-at-least-32-characters", OPS_ALERT_EMAIL: "ops@example.com", TELEGRAM_BOT_TOKEN: "123:private-telegram", TELEGRAM_CHAT_ID: "12345", NEXT_PUBLIC_SITE_URL: "https://qa.example.com" })) vi.stubEnv(k, v);

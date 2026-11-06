@@ -147,7 +147,7 @@ export default async function AdminOrderDetailPage({
                   {order.shipment.trackingUrl ? <a className="underline" target="_blank" rel="noreferrer" href={order.shipment.trackingUrl}>Rastrear envío</a> : null}
                   {order.shipment.labelUrl ? <a className="ml-3 underline" target="_blank" rel="noreferrer" href={order.shipment.labelUrl}>Etiqueta PDF</a> : null}
                   {order.payment?.status === "PAID" && order.shipment.creationState !== "CREATED" && ["ADMIN", "WAREHOUSE"].includes(adminUser.role) ? <form action={retryBoxfulShipment}><input type="hidden" name="orderNumber" value={order.orderNumber} /><button className="rounded border p-3">Revisar y reintentar envío</button></form> : null}
-                  <Link className="block underline" href="/admin/boxful">Saldo estimado y distritos de Boxful</Link>
+                  {["ADMIN", "ACCOUNTING"].includes(adminUser.role) ? <Link className="block underline" href="/admin/boxful">Saldo estimado y distritos de Boxful</Link> : null}
                 </div> : null}
                 <InfoBlock label="Paquetería" value={order.shipment?.courierName ?? "Pendiente"} />
                 <InfoBlock label="Cobro de envío" value={formatCurrency(order.shipment?.chargedCents ?? order.shippingCents)} />

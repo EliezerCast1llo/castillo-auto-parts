@@ -52,28 +52,28 @@ enum InvoiceStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id                  String               @id @default(cuid())
   /// Idioma preferido para los correos que no nacen de un request suyo.
-  locale        String    @default("es")
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  phone         String?
-  role          UserRole  @default(CUSTOMER)
-  passwordHash  String?
+  locale              String               @default("es")
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  image               String?
+  phone               String?
+  role                UserRole             @default(CUSTOMER)
+  passwordHash        String?
   /// Segundo factor por codigo de correo. Opt-in: el cliente lo activa desde su
   /// cuenta. Google queda exento porque ya trae su propio segundo factor.
-  twoFactorEnabled Boolean @default(false)
-  isActive      Boolean   @default(true)
-  lastLoginAt   DateTime?
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
-  carts         Cart[]
-  addresses     Address[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  twoFactorEnabled    Boolean              @default(false)
+  isActive            Boolean              @default(true)
+  lastLoginAt         DateTime?
+  accounts            Account[]
+  sessions            Session[]
+  orders              Order[]
+  carts               Cart[]
+  addresses           Address[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   twoFactorChallenges TwoFactorChallenge[]
 }
 
@@ -234,8 +234,12 @@ model InventoryStock {
 }
 
 model Cart {
-  id             String        @id @default(cuid())
-  userId         String?
+  id String @id @default(cuid())
+
+  /// Único: una cuenta tiene un carrito y no varios. Sin esta restricción, dos
+  /// pestañas agregando a la vez crean dos carritos y el cliente ve uno u otro
+  /// según cuál devuelva primero la consulta.
+  userId         String?       @unique
   user           User?         @relation(fields: [userId], references: [id])
   guestSessionId String?       @unique
   guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id])
@@ -537,9 +541,9 @@ model ProductCategoryTranslation {
 
 // Singleton, opt-in owner promotion. Quoted carrier cost is retained per order.
 model ShippingPromotion {
-  id                   String @id @default("national")
-  enabled              Boolean @default(false)
-  minimumSubtotalCents Int @default(0)
+  id                   String   @id @default("national")
+  enabled              Boolean  @default(false)
+  minimumSubtotalCents Int      @default(0)
   updatedAt            DateTime @updatedAt
 }
 
@@ -551,6 +555,23 @@ model ShippingPromotion {
 /// de seis digitos se revierte con una tabla de un millon de entradas, asi que
 /// la clave del HMAC —el secreto del servidor— es lo que vuelve inutil una
 /// filtracion de la base.
+/// Ajustes de la tienda que el panel puede cambiar sin tocar el entorno.
+///
+/// Es clave/valor a propósito: cada ajuste nuevo es una fila, no una migración.
+/// El tipo y el valor por defecto no viven acá sino en `src/lib/store-settings.ts`,
+/// porque una columna `value` de texto no puede expresarlos y una tabla por
+/// ajuste sería una migración por casilla de verificación.
+///
+/// Una clave ausente NO es un error: significa "nadie la tocó", y se resuelve
+/// con el valor por defecto del registro. Por eso la tabla puede estar vacía y
+/// la tienda funciona igual.
+model StoreSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
 model TwoFactorChallenge {
   id         String    @id @default(cuid())
   userId     String
