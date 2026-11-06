@@ -24,7 +24,7 @@ import {
 } from "@/components/admin/product-image-picker";
 import { uploadPendingImages } from "@/components/admin/upload-pending-images";
 import type { AdminProductFormState } from "@/app/(admin)/admin/products/actions";
-import { formatAdminPriceInput } from "@/lib/admin-products";
+import { adminSkuConflictMessage, formatAdminPriceInput } from "@/lib/admin-products";
 import { SKU_FORMAT_MESSAGE } from "@/lib/product-sku";
 
 type AdminProductFormProduct = {
@@ -78,11 +78,10 @@ type AdminProductFormProps = {
  * hay que corregir y sin recargar nada.
  */
 function errorMessage(code: string, existingSku?: string) {
-  if (code === "sku_conflict") {
-    return existingSku
-      ? `Ya existe un producto con el SKU ${existingSku}.`
-      : "Ya existe un producto con ese SKU.";
-  }
+  // El texto es el que ya mostraban las páginas: el error cambió de canal
+  // —vuelve en la respuesta en vez de en la URL— pero lo que lee la persona no
+  // cambia, y hay pruebas que dependen de estas palabras exactas.
+  if (code === "sku_conflict") return adminSkuConflictMessage(existingSku ?? "");
 
   const messages: Record<string, string> = {
     conflict: "El catálogo cambió mientras guardabas. Revisa los datos y vuelve a intentarlo.",
@@ -165,8 +164,28 @@ export function AdminProductForm({
 
   const busy = stage !== "idle";
 
+  /**
+   * Los dos caminos usan mecanismos distintos a propósito.
+   *
+   * **Crear** va por `onSubmit`: no navega, así que lo tipeado sobrevive al
+   * error y los archivos de imagen siguen esperando en el navegador.
+   *
+   * **Editar** va por `action`: React vacía el formulario al terminar la
+   * acción, que acá es justo lo que se quiere. El servidor normaliza —el SKU se
+   * guarda en mayúsculas y sin espacios—, y tras un guardado fallido la ficha
+   * debe volver a mostrar lo que está en la base, no lo que se intentó. Un
+   * formulario que conserva un SKU rechazado dice que se guardó.
+   */
+  const formProps = isNew
+    ? { onSubmit: handleSubmit }
+    : {
+        action: (formData: FormData) => {
+          void action(null, formData);
+        },
+      };
+
   return (
-    <form className="space-y-4" noValidate={false} onSubmit={handleSubmit}>
+    <form className="space-y-4" {...formProps}>
       {product ? <input name="productId" type="hidden" value={product.id} /> : null}
 
       {error ? (

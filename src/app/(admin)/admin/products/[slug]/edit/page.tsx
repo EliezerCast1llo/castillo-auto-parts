@@ -87,10 +87,46 @@ export default async function EditAdminProductPage({
         {statusMessage ? <AdminProductNotice isError={!["created", "updated"].includes(actionStatus)} message={statusMessage} /> : null}
 
         <section className="mt-5 space-y-4">
+          {/* Se enumeran los campos en vez de esparcir el registro entero.
+              El formulario es un componente de cliente, y el registro trae
+              `Decimal` de Prisma —`ivaRate`— que no se puede serializar para
+              cruzar esa frontera: Next avisa y el valor llega deformado. Lo que
+              el formulario no declara, no viaja. */}
           <AdminProductForm
             action={updateAdminProduct}
             categories={categories}
-            product={{ ...product, translationEn: product.translations[0] ?? null }}
+            product={{
+              brand: product.brand,
+              categoryId: product.categoryId,
+              compatibilities: product.compatibilities.map((item) => ({
+                make: item.make,
+                model: item.model,
+                yearFrom: item.yearFrom,
+                yearTo: item.yearTo,
+              })),
+              description: product.description,
+              heightMm: product.heightMm,
+              id: product.id,
+              inventoryStocks: product.inventoryStocks.map((stock) => ({
+                quantityOnHand: stock.quantityOnHand,
+                reorderPoint: stock.reorderPoint,
+                status: stock.status,
+              })),
+              isActive: product.isActive,
+              isDemo: product.isDemo,
+              isFeatured: product.isFeatured,
+              lengthMm: product.lengthMm,
+              name: product.name,
+              partNumber: product.partNumber,
+              priceCents: product.priceCents,
+              shortDescription: product.shortDescription,
+              sku: product.sku,
+              slug: product.slug,
+              technicalDetails: product.technicalDetails,
+              translationEn: product.translations[0] ?? null,
+              weightGrams: product.weightGrams,
+              widthMm: product.widthMm,
+            }}
             submitLabel="Guardar producto"
           />
           {/* Gestión de imágenes — solo disponible en edición, requiere product.id existente */}
