@@ -87,7 +87,7 @@ export async function loginWithCredentials(formData: FormData) {
     return redirect({ href: { pathname: "/auth/login", query: { estado: "rate_limited", next: nextPath } }, locale });
   }
 
-  const delivery = await deliverTwoFactorChallenge(user.id, locale);
+  const delivery = await deliverTwoFactorChallenge(user.id, locale, "customer");
   if (delivery === "unavailable") {
     return redirect({
       href: { pathname: "/auth/login", query: { estado: "two_factor_unavailable", next: nextPath } },

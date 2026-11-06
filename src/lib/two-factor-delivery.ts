@@ -5,7 +5,7 @@ import { buildTwoFactorCodeEmail } from "@/lib/email/templates";
 import type { Locale } from "@/lib/i18n/config";
 import { logError } from "@/lib/logger";
 import { createTwoFactorChallenge, TWO_FACTOR_LIMITS } from "@/lib/two-factor";
-import { setPendingTwoFactorCookie } from "@/lib/two-factor-cookie";
+import { setPendingTwoFactorCookie, type TwoFactorScope } from "@/lib/two-factor-cookie";
 
 /**
  * Pedir un código: crear el desafío, mandarlo y recordar cuál es.
@@ -23,6 +23,7 @@ const EXPIRES_IN_MINUTES = Math.round(TWO_FACTOR_LIMITS.ttlMs / 60_000);
 export async function deliverTwoFactorChallenge(
   userId: string,
   locale: Locale,
+  scope: TwoFactorScope,
 ): Promise<TwoFactorDeliveryResult> {
   const user = await db.user.findUnique({
     where: { id: userId },
@@ -58,7 +59,7 @@ export async function deliverTwoFactorChallenge(
     return "unavailable";
   }
 
-  await setPendingTwoFactorCookie({ challengeId, userId });
+  await setPendingTwoFactorCookie(scope, { challengeId, userId });
 
   return "sent";
 }

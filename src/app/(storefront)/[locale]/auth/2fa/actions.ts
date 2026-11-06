@@ -31,7 +31,7 @@ let _requestRateLimiter: AsyncRateLimiter | undefined;
 export async function verifyTwoFactorLogin(formData: FormData) {
   const locale = await getActionLocale();
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
-  const pending = await readPendingTwoFactorCookie();
+  const pending = await readPendingTwoFactorCookie("customer");
 
   if (!pending) {
     return redirect({
@@ -83,7 +83,7 @@ export async function verifyTwoFactorLogin(formData: FormData) {
 export async function resendTwoFactorCode(formData: FormData) {
   const locale = await getActionLocale();
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
-  const pending = await readPendingTwoFactorCookie();
+  const pending = await readPendingTwoFactorCookie("customer");
 
   if (!pending) {
     return redirect({
@@ -104,7 +104,7 @@ export async function resendTwoFactorCode(formData: FormData) {
     return redirect({ href: { pathname: "/auth/2fa", query: { estado: "rate_limited", next: nextPath } }, locale });
   }
 
-  const delivery = await deliverTwoFactorChallenge(pending.userId, locale);
+  const delivery = await deliverTwoFactorChallenge(pending.userId, locale, "customer");
   if (delivery === "unavailable") {
     return redirect({
       href: { pathname: "/auth/login", query: { estado: "two_factor_unavailable", next: nextPath } },
@@ -129,7 +129,7 @@ export async function cancelTwoFactorLogin(formData: FormData) {
   const locale = await getActionLocale();
   const nextPath = getSafeCustomerNextPath(formString(formData, "next"));
 
-  await clearPendingTwoFactorCookie();
+  await clearPendingTwoFactorCookie("customer");
 
   redirect({ href: { pathname: "/auth/login", query: { next: nextPath } }, locale });
 }

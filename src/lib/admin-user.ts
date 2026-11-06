@@ -21,12 +21,18 @@ export type AdminSessionUser = {
   role: UserRole;
 };
 
+/** Lo que devuelve la verificación de contraseña: el usuario y si falta el código. */
+export type VerifiedAdmin = AdminSessionUser & {
+  twoFactorEnabled: boolean;
+};
+
 export type AdminUserRecord = {
   id: string;
   email: string;
   name: string | null;
   role: UserRole;
   isActive: boolean;
+  twoFactorEnabled: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
 };
@@ -61,7 +67,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 export async function verifyAdminLogin(
   email: string,
   password: string,
-): Promise<AdminSessionUser | null> {
+): Promise<VerifiedAdmin | null> {
   const user = await db.user.findFirst({
     where: {
       email: email.trim().toLowerCase(),
@@ -76,12 +82,45 @@ export async function verifyAdminLogin(
   const ok = await verifyPassword(password, user.passwordHash);
   if (!ok) return null;
 
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    twoFactorEnabled: user.twoFactorEnabled,
+  };
+}
+
+/**
+ * Marca el ingreso como consumado.
+ *
+ * Estaba adentro de `verifyAdminLogin`, y ahí pasó a ser mentira cuando se
+ * sumó el segundo factor: con la contraseña correcta pero sin el código **no
+ * hubo ingreso**, y `lastLoginAt` quedaba registrando intentos a medio camino.
+ * Quien audita esa columna la lee como "entró", así que se escribe recién
+ * cuando la sesión existe.
+ */
+export async function markAdminLogin(userId: string): Promise<void> {
   await db.user.update({
-    where: { id: user.id },
     data: { lastLoginAt: new Date() },
+    where: { id: userId },
+  });
+}
+
+/**
+ * Relee al admin para el segundo paso.
+ *
+ * El desafío vive diez minutos; en ese rato la cuenta puede desactivarse o
+ * perder el rol. Confiar en lo que se leyó al verificar la contraseña dejaría
+ * entrar a quien ya no debería.
+ */
+export async function findAdminForSession(userId: string): Promise<AdminSessionUser | null> {
+  const user = await db.user.findFirst({
+    where: { id: userId, isActive: true, role: { in: ADMIN_ROLES } },
+    select: { email: true, id: true, name: true, role: true },
   });
 
-  return { id: user.id, email: user.email, name: user.name, role: user.role };
+  return user ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,6 +131,7 @@ export async function listAdminUsers(): Promise<AdminUserRecord[]> {
   return db.user.findMany({
     where: { role: { in: ADMIN_ROLES } },
     select: {
+      twoFactorEnabled: true,
       id: true,
       email: true,
       name: true,
@@ -113,6 +153,7 @@ export async function getAdminUserById(id: string): Promise<AdminUserRecord | nu
       name: true,
       role: true,
       isActive: true,
+      twoFactorEnabled: true,
       lastLoginAt: true,
       createdAt: true,
     },
@@ -145,6 +186,7 @@ export async function updateAdminUser(
     name: string;
     role: UserRole;
     isActive: boolean;
+    twoFactorEnabled: boolean;
     password?: string;
   },
 ): Promise<void> {
@@ -152,6 +194,7 @@ export async function updateAdminUser(
     name: input.name.trim(),
     role: input.role,
     isActive: input.isActive,
+    twoFactorEnabled: input.twoFactorEnabled,
   };
 
   if (input.password) {

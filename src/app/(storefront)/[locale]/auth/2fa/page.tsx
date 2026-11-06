@@ -47,7 +47,7 @@ export default async function TwoFactorPage({
   const session = await auth();
   if (session?.user) redirect({ href: asLocaleHref(nextPath), locale });
 
-  const pending = await readPendingTwoFactorCookie();
+  const pending = await readPendingTwoFactorCookie("customer");
 
   // Sin desafío pendiente no hay nada que verificar. Se vuelve al ingreso en vez
   // de mostrar un formulario que fallaría siempre.

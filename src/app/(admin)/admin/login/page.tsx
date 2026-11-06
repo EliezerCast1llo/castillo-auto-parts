@@ -107,6 +107,8 @@ function getStatusMessage(status: string) {
     logged_out: "Sesión cerrada.",
     not_configured: "El acceso admin no está configurado.",
     rate_limited: "Demasiados intentos fallidos. Espera unos minutos antes de intentar de nuevo.",
+    two_factor_restart: "La verificación venció. Inicia sesión de nuevo.",
+    two_factor_unavailable: "No pudimos enviar el código. Intenta de nuevo en unos minutos.",
     unsafe_config: "La configuración admin no es segura para este entorno.",
   };
 

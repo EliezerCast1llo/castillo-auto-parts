@@ -24,9 +24,28 @@ import { TWO_FACTOR_LIMITS } from "@/lib/two-factor";
  * no hay dónde escribir. Queda inerte igual, porque el desafío es de un solo
  * uso y la cookie muere con él (`maxAge` es la misma vida del desafío).
  */
-export const PENDING_TWO_FACTOR_COOKIE = "castillo_pending_2fa";
+const COOKIE_BY_SCOPE = {
+  admin: "castillo_admin_pending_2fa",
+  customer: "castillo_pending_2fa",
+} as const;
 
-const VERSION = "v1";
+/**
+ * Las dos puertas de ingreso del sistema.
+ *
+ * Cada una guarda su desafío en su propia cookie **y** lo firma con su ámbito
+ * adentro del mensaje. Lo primero evita que empezar un ingreso pise el otro;
+ * lo segundo evita que un desafío creado para una puerta se presente en la
+ * otra. El panel no tiene el mismo valor que la tienda, así que las dos
+ * verificaciones no son intercambiables aunque sean la misma persona.
+ */
+export type TwoFactorScope = keyof typeof COOKIE_BY_SCOPE;
+
+export const PENDING_TWO_FACTOR_COOKIE = COOKIE_BY_SCOPE.customer;
+export const PENDING_ADMIN_TWO_FACTOR_COOKIE = COOKIE_BY_SCOPE.admin;
+
+// v2 suma el ámbito al mensaje firmado. El salto de versión invalida los
+// desafíos en vuelo, que viven diez minutos.
+const VERSION = "v2";
 
 /**
  * Prefijo de dominio del mensaje.
@@ -53,28 +72,31 @@ export type PendingTwoFactor = {
 
 export function createPendingTwoFactorToken(
   secret: string,
+  scope: TwoFactorScope,
   pending: PendingTwoFactor,
   nowMs = Date.now(),
 ): string {
   const issuedAt = Math.floor(nowMs / 1000).toString();
-  const message = `${VERSION}.${issuedAt}.${pending.challengeId}.${pending.userId}`;
+  const message = `${VERSION}.${issuedAt}.${scope}.${pending.challengeId}.${pending.userId}`;
   return `${message}.${sign(message, secret)}`;
 }
 
 export function verifyPendingTwoFactorToken(
   token: string | undefined,
   secret: string,
+  scope: TwoFactorScope,
   nowMs = Date.now(),
 ): PendingTwoFactor | null {
   if (!token || !secret) return null;
 
   const parts = token.split(".");
-  if (parts.length !== 5) return null;
+  if (parts.length !== 6) return null;
 
-  const [version, issuedAtStr, challengeId, userId, signature] = parts;
+  const [version, issuedAtStr, tokenScope, challengeId, userId, signature] = parts;
 
   if (
     version !== VERSION ||
+    tokenScope !== scope ||
     !issuedAtStr ||
     !challengeId ||
     !userId ||
@@ -94,7 +116,7 @@ export function verifyPendingTwoFactorToken(
   if (issuedAt > nowSeconds + CLOCK_SKEW_SECONDS) return null;
   if (nowSeconds - issuedAt > MAX_AGE_SECONDS) return null;
 
-  const message = `${VERSION}.${issuedAtStr}.${challengeId}.${userId}`;
+  const message = `${VERSION}.${issuedAtStr}.${tokenScope}.${challengeId}.${userId}`;
   if (!signatureMatches(message, secret, signature)) return null;
 
   return { challengeId, userId };
@@ -117,11 +139,14 @@ function signatureMatches(message: string, secret: string, signature: string) {
 // Cookie
 // ---------------------------------------------------------------------------
 
-export async function setPendingTwoFactorCookie(pending: PendingTwoFactor): Promise<void> {
+export async function setPendingTwoFactorCookie(
+  scope: TwoFactorScope,
+  pending: PendingTwoFactor,
+): Promise<void> {
   const secret = requireAuthSecret("firmar la cookie del segundo factor");
   const cookieStore = await cookies();
 
-  cookieStore.set(PENDING_TWO_FACTOR_COOKIE, createPendingTwoFactorToken(secret, pending), {
+  cookieStore.set(COOKIE_BY_SCOPE[scope], createPendingTwoFactorToken(secret, scope, pending), {
     httpOnly: true,
     maxAge: MAX_AGE_SECONDS,
     path: "/",
@@ -132,16 +157,18 @@ export async function setPendingTwoFactorCookie(pending: PendingTwoFactor): Prom
   });
 }
 
-export async function readPendingTwoFactorCookie(): Promise<PendingTwoFactor | null> {
+export async function readPendingTwoFactorCookie(
+  scope: TwoFactorScope,
+): Promise<PendingTwoFactor | null> {
   const secret = requireAuthSecret("leer la cookie del segundo factor");
   const cookieStore = await cookies();
 
-  return verifyPendingTwoFactorToken(cookieStore.get(PENDING_TWO_FACTOR_COOKIE)?.value, secret);
+  return verifyPendingTwoFactorToken(cookieStore.get(COOKIE_BY_SCOPE[scope])?.value, secret, scope);
 }
 
-export async function clearPendingTwoFactorCookie(): Promise<void> {
+export async function clearPendingTwoFactorCookie(scope: TwoFactorScope): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(PENDING_TWO_FACTOR_COOKIE);
+  cookieStore.delete(COOKIE_BY_SCOPE[scope]);
 }
 
 export const PENDING_TWO_FACTOR_MAX_AGE_SECONDS = MAX_AGE_SECONDS;
