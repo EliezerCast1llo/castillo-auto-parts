@@ -40,7 +40,9 @@ const e2eEnv = {
     process.env.E2E_RESERVATION_CRON_SECRET || "e2e-reservation-cron-secret-at-least-32-characters-long",
   PLAYWRIGHT_BASE_URL: e2eBaseUrl,
   PLAYWRIGHT_PORT: e2ePort,
-  PLAYWRIGHT_WEB_SERVER_COMMAND: `npm run start -- --port ${e2ePort}`,
+  // El bind a la IP cubre rewrites localizados: normalizarla a localhost
+  // convertía el destino interno en externo y provocaba un bucle (#130).
+  PLAYWRIGHT_WEB_SERVER_COMMAND: `npm run start -- --hostname 127.0.0.1 --port ${e2ePort}`,
   UPSTASH_REDIS_REST_TOKEN: process.env.E2E_UPSTASH_REDIS_REST_TOKEN || "",
   UPSTASH_REDIS_REST_URL: process.env.E2E_UPSTASH_REDIS_REST_URL || "",
 };

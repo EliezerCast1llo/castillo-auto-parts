@@ -1,14 +1,22 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIResponse, type Page } from "@playwright/test";
 import { EN, ES, prisma } from "./helpers";
 import { PRODUCT_CLAIMS } from "./fixtures/products";
 import { createOrderAccessToken, hashOrderAccessToken } from "../../src/lib/order-access-token";
+
+// Con skipProxyUrlNormalize, Next puede conservar Location absoluta. Comprobar
+// el destino y su origen mantiene la misma garantía para ambas representaciones.
+function expectRedirectTo(response: APIResponse, path: string) {
+  const target = new URL(response.headers().location, response.url());
+  expect(target.origin).toBe(new URL(response.url()).origin);
+  expect(`${target.pathname}${target.search}`).toBe(path);
+}
 
 test("legacy unprefixed URLs redirect permanently to Spanish", async ({ request }) => {
   for (const path of ["/catalog", "/ayuda", "/cart", "/vehiculos/toyota"]) {
     const response = await request.get(path, { maxRedirects: 0 });
 
     expect(response.status(), `${path} should be a permanent redirect`).toBe(308);
-    expect(response.headers().location).toBe(`/es${path}`);
+    expectRedirectTo(response, `/es${path}`);
   }
 });
 
@@ -16,7 +24,7 @@ test("the legacy redirect keeps the query string", async ({ request }) => {
   const response = await request.get("/catalog?q=toyota&brand=Bosch", { maxRedirects: 0 });
 
   expect(response.status()).toBe(308);
-  expect(response.headers().location).toBe("/es/catalog?q=toyota&brand=Bosch");
+  expectRedirectTo(response, "/es/catalog?q=toyota&brand=Bosch");
 });
 
 test("the root negotiates the language instead of redirecting permanently", async ({ request }) => {
@@ -124,7 +132,7 @@ test("the matcher excludes whole segments, not prefixes", async ({ request }) =>
     const response = await request.get(path, { maxRedirects: 0 });
 
     expect(response.status(), `${path} debe pasar por el middleware`).toBe(308);
-    expect(response.headers().location).toBe(`/es${path}`);
+    expectRedirectTo(response, `/es${path}`);
   }
 
   // Y los que si son endpoints o assets se siguen saltando.

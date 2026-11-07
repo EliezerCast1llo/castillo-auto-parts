@@ -17,6 +17,7 @@ import { cardVariants } from "@/components/ui/card";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
+import { localizedAlternates } from "@/lib/i18n/metadata";
 import { getTranslations } from "next-intl/server";
 
 export async function generateMetadata({
@@ -30,6 +31,7 @@ export async function generateMetadata({
   return {
     title: t("metadataTitle"),
     description: t("metadataDescription"),
+    alternates: localizedAlternates("/help", locale),
   };
 }
 
