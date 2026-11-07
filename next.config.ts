@@ -65,6 +65,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   pageExtensions: sitePageExtensions(),
+  // Conservar el origen de los rewrites de next-intl. Next normaliza las IP
+  // loopback a `localhost`; ligado a 127.0.0.1, el rewrite /es/ayuda → /es/help
+  // se interpreta como externo, vuelve al proxy y redirige a /es/ayuda en bucle.
+  skipProxyUrlNormalize: true,
   // Fija la raíz del workspace: evita que Turbopack infiera una raíz incorrecta
   // por lockfiles ajenos en directorios superiores.
   turbopack: {
