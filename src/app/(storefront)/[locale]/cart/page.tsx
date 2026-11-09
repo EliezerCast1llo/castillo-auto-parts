@@ -126,6 +126,10 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
               {t("summary.taxNotice")}
             </div>
 
+            <p className="mt-4 text-sm leading-6 text-ca-text-secondary">
+              {t("summary.deliveryNotice")}
+            </p>
+
             <CheckoutReadiness hasBlockingIssues={cart.hasBlockingIssues} t={t} />
 
             {cart.hasBlockingIssues ? (

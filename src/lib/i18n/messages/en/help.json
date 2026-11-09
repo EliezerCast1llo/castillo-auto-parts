@@ -1,6 +1,6 @@
 {
-  "metadataTitle": "Help buying auto parts | Castillo Auto Parts",
-  "metadataDescription": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup.",
+  "metadataTitle": "Help buying auto parts",
+  "metadataDescription": "Shipping throughout El Salvador with Boxful: get cost and delivery estimates at checkout and review the total before confirming payment. Free warehouse pickup.",
   "hero": {
     "eyebrow": "Buying help",
     "titleBefore": "Find",
@@ -20,7 +20,7 @@
   },
   "delivery": {
     "ariaLabel": "Delivery options",
-    "local": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup.",
+    "local": "Shipping throughout El Salvador at Boxful rates. At checkout, get a shipping cost and estimated delivery time, then review the products + shipping total before confirming payment. Free warehouse pickup ($0). Free shipping only with an applicable promotion.",
     "pickup": "Free pickup at the warehouse."
   },
   "steps": {
@@ -32,7 +32,7 @@
     "verifyTitle": "We check the part",
     "verifyDescription": "We confirm fitment and availability before you buy.",
     "chooseTitle": "Choose how to get it",
-    "chooseDescription": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup."
+    "chooseDescription": "Shipping throughout El Salvador at Boxful rates. At checkout, get a shipping cost and estimated delivery time, then review the products + shipping total before confirming payment. Free warehouse pickup ($0). Free shipping only with an applicable promotion."
   },
   "faq": {
     "title": "Frequently asked questions",
@@ -42,7 +42,7 @@
     "pickupQuestion": "Can I pick up my order at the warehouse?",
     "pickupAnswer": "Yes. Warehouse pickup is free. When you choose it at checkout you will see the address, the hours and how to collect your order.",
     "deliveryQuestion": "Do you deliver to my address?",
-    "deliveryAnswer": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup.",
+    "deliveryAnswer": "Shipping throughout El Salvador at Boxful rates. At checkout, get a shipping cost and estimated delivery time, then review the products + shipping total before confirming payment. Free warehouse pickup ($0). Free shipping only with an applicable promotion.",
     "taxQuestion": "Do prices include VAT?",
     "taxAnswer": "Yes. Part prices already include the 13% VAT. At checkout you will see the subtotal, the delivery fee where it applies, and the estimated total.",
     "notFoundQuestion": "What if I cannot find the part?",

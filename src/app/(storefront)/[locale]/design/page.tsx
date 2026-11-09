@@ -54,7 +54,7 @@ const sampleFilters: CatalogFilters = {
  * siempre. Si algún día se publica, se traduce entonces.
  */
 export const metadata = {
-  title: "UI Kit | Castillo Auto Parts",
+  title: "UI Kit",
   description: "Componentes visuales implementables para el MVP.",
 };
 

@@ -13,8 +13,8 @@ type NavKey = keyof typeof esMessages.Nav;
  */
 export const siteNavItems: { key: NavKey; href: LocaleHref }[] = [
   { key: "catalog", href: "/catalog" },
-  { key: "brands", href: { pathname: "/catalog", query: { brand: "Bosch" } } },
-  { key: "deals", href: { pathname: "/catalog", query: { stock: "LOW_STOCK" } } },
+  { key: "brands", href: "/catalog" },
+  { key: "lastUnits", href: { pathname: "/catalog", query: { stock: "LOW_STOCK" } } },
   // La ruta interna se llama `/help`; en español se sirve como `/ayuda`.
   { key: "help", href: "/help" },
 ];

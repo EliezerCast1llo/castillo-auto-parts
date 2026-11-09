@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
     });
 
   return {
-    title: `${product.name} | Castillo Auto Parts`,
+    title: product.name,
     description,
     alternates: localizedAlternates(
       { pathname: "/product/[slug]", params: { slug: product.slug } },

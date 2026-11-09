@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "title": "Your cart | Castillo Auto Parts",
+    "title": "Your cart",
     "description": "Review the parts you picked and continue to checkout."
   },
   "backToCatalog": "Keep shopping",
@@ -12,7 +12,8 @@
     "title": "Order summary",
     "products": "Products",
     "subtotal": "Subtotal",
-    "taxNotice": "Prices include 13% VAT."
+    "taxNotice": "Prices include 13% VAT.",
+    "deliveryNotice": "Shipping throughout El Salvador at Boxful rates. At checkout, get a shipping cost and estimated delivery time, then review the products + shipping total before confirming payment. Free warehouse pickup ($0). Free shipping only with an applicable promotion."
   },
   "readiness": {
     "availabilityPending": "Availability pending",

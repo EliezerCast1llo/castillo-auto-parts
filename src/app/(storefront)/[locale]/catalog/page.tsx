@@ -123,6 +123,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
 
   const { products: filteredProducts, totalCount, totalPages, currentPage, status } = catalogResult;
   const activeFilterCount = countActiveCatalogFilters(filters);
+  const noInventory = activeFilterCount === 0 && totalCount === 0;
   const filterKey = JSON.stringify(filters);
   const stockLabels = Object.fromEntries(
     stockStatuses.map((status) => [status, t(`stockStatus.${status}`)]),
@@ -230,7 +231,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
                 actionHref={activeFilterCount > 0 ? "/catalog" : undefined}
                 actionLabel={activeFilterCount > 0 ? t("empty.clearFilters") : undefined}
                 description={
-                  totalCount === 0
+                  noInventory
                     ? t("empty.noInventoryDescription")
                     : t("empty.noMatchesDescription")
                 }
@@ -240,7 +241,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
                   query,
                 }))}
                 title={
-                  totalCount === 0
+                  noInventory
                     ? t("empty.noInventoryTitle")
                     : t("empty.noMatchesTitle")
                 }

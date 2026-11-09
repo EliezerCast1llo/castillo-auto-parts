@@ -1,5 +1,5 @@
 {
-  "notFoundTitle": "Producto no encontrado | Castillo Auto Parts",
+  "notFoundTitle": "Producto no encontrado",
   "metaDescription": "{name} de {brand} · {compatibility}. Consulta disponibilidad y opciones de entrega.",
   "description": "Descripción",
   "compatibleVehicles": "Vehículos compatibles",
@@ -13,7 +13,7 @@
   "addToCart": "Agregar al carrito",
   "quantity": "Cantidad",
   "validateWithAdvisor": "Validar con asesor",
-  "deliveryNotice": "Enviamos a todo El Salvador. El costo y el tiempo de entrega se calculan al pagar según la paquetería; en algunas zonas llega el mismo día. Retiro en bodega gratis.",
+  "deliveryNotice": "Envíos a todo El Salvador con tarifa de Boxful. En checkout cotizas el costo y el plazo estimado de entrega y revisas el total de productos + envío antes de confirmar el pago. Retiro en bodega gratis ($0). Envío gratis solo con una promoción aplicable.",
   "breadcrumbAriaLabel": "Ruta del producto",
   "home": "Inicio",
   "catalog": "Catálogo",

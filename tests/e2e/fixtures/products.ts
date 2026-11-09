@@ -76,6 +76,13 @@ export const PRODUCT_CLAIMS = {
       use: "cart-only",
     },
   },
+  "storefront-review.spec.ts": {
+    copyAndMetadata: {
+      sku: "MOCK-FUL-FRO",
+      slug: "filtro-combustible-nissan-frontier",
+      use: "cart-only",
+    },
+  },
 } as const satisfies Record<string, Record<string, ProductClaim>>;
 
 /** Todas las reservas, aplanadas con el spec que las hizo. */

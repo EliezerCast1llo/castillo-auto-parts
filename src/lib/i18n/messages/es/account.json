@@ -1,5 +1,5 @@
 {
-  "metadataTitle": "Mi cuenta | Castillo Auto Parts",
+  "metadataTitle": "Mi cuenta",
   "metadataDescription": "Gestiona tu perfil, revisa tus pedidos y tus direcciones guardadas.",
   "header": {
     "brandEyebrow": "Castillo Auto Parts",
@@ -65,7 +65,7 @@
     "review": "Revisar dirección",
     "save": "Guardar dirección",
     "saving": "Guardando…",
-    "metadataTitle": "Mis direcciones | Castillo Auto Parts",
+    "metadataTitle": "Mis direcciones",
     "backToAccount": "Mi cuenta",
     "title": "Mis direcciones",
     "emptyTitle": "Sin direcciones guardadas",
