@@ -3,7 +3,7 @@
 import { useRouter } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Car, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import type { ReactNode } from "react";
 import type { CatalogFilterOptions } from "@/data/catalog-filters";
 import { useVehicleSelection } from "@/components/product/use-vehicle-selection";
@@ -22,7 +22,8 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
   return (
     <form
       action="/catalog"
-      className="grid items-end gap-4 rounded-ca-surface border border-ca-border bg-ca-bg p-4 text-ca-text lg:grid-cols-[minmax(12rem,1.25fr)_repeat(3,minmax(0,1fr))_auto]"
+      aria-label={t("title")}
+      className="grid items-end gap-3 rounded-ca-surface border border-ca-border bg-ca-surface p-4 text-ca-text lg:grid-cols-[repeat(3,minmax(0,1fr))_auto]"
       onSubmit={(event) => {
         event.preventDefault();
         // El botón ya va deshabilitado, pero un Enter en un select también
@@ -45,20 +46,6 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         router.push({ pathname: "/catalog", query: toLinkQuery(params) });
       }}
     >
-      <div className="flex items-center gap-4 self-stretch border-ca-border lg:border-r lg:pr-5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control border border-ca-border bg-ca-surface text-ca-navy">
-          <Car className="h-5 w-5" strokeWidth={1.7} />
-        </span>
-        <div className="min-w-0">
-          <p className="text-base font-bold leading-5 text-ca-navy">
-            {t("title")}
-          </p>
-          <p className="mt-1 text-xs leading-5 text-ca-text-secondary">
-            {t("heroDescription")}
-          </p>
-        </div>
-      </div>
-
       <VehicleSelectField
         index="1"
         label={t("make")}
@@ -104,7 +91,12 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
         ))}
       </VehicleSelectField>
 
-      <Button className="w-full whitespace-nowrap" disabled={!isComplete} size="lg" type="submit">
+      <Button
+        className="w-full whitespace-nowrap enabled:bg-ca-accent enabled:text-ca-navy enabled:hover:bg-ca-accent/90"
+        disabled={!isComplete}
+        size="lg"
+        type="submit"
+      >
         <Search aria-hidden="true" className="h-4 w-4" />
         {t("searchParts")}
       </Button>
@@ -133,7 +125,7 @@ function VehicleSelectField({
 }) {
   return (
     <label className="block text-sm font-bold text-ca-navy">
-      <span className="mb-2 flex items-center gap-2">
+      <span className="mb-1.5 flex items-center gap-2">
         <span
           className={`flex h-6 w-6 items-center justify-center rounded-ca-control text-xs font-bold ${
  disabled ? "bg-ca-bg text-ca-text-secondary" : "bg-ca-navy text-white"

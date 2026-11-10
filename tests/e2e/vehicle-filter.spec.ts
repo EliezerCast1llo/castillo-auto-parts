@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { ES } from "./helpers";
 
 // ---------------------------------------------------------------------------
@@ -14,6 +14,49 @@ async function catalogTotal(page: Page) {
     .innerText();
 
   return Number(label.replace(/\D/g, ""));
+}
+
+async function bounds(locator: Locator) {
+  await expect(locator).toBeVisible();
+  const box = await locator.boundingBox();
+  if (!box) throw new Error("Expected an on-screen layout box");
+  return { ...box, bottom: box.y + box.height, right: box.x + box.width };
+}
+
+for (const [locale, formName] of [["es", "Busca por vehículo"], ["en", "Search by vehicle"]] as const) {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    test(`home banner keeps the complete ${locale} vehicle search above the fold at ${viewport.width}px`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(`/${locale}`);
+      await page.evaluate(() => document.fonts.ready);
+
+      const heading = page.getByRole("heading", { level: 1 });
+      const banner = page.locator("section").filter({ has: heading });
+      const title = await bounds(heading);
+      const search = await bounds(banner.locator('input[role="combobox"]'));
+      const form = banner.getByRole("form", { name: formName });
+      const selector = await bounds(form);
+      const photo = await bounds(banner.locator('img[src*="hero-vehicle.jpg"]'));
+      const benefits = await bounds(banner.getByRole("list"));
+
+      expect(title.bottom).toBeLessThan(search.y);
+      expect(search.bottom).toBeLessThan(selector.y);
+      expect(selector.bottom).toBeLessThanOrEqual(viewport.height);
+      expect(benefits.y).toBeGreaterThan(Math.max(selector.bottom, photo.bottom));
+
+      for (const name of ["vehicleMake", "vehicleModel", "vehicleYear"]) {
+        expect((await bounds(form.locator(`select[name="${name}"]`))).height).toBe(48);
+      }
+
+      if (viewport.width < 1024) {
+        expect(photo.y).toBeGreaterThan(selector.bottom);
+      } else {
+        expect(photo.x).toBeGreaterThan(title.right);
+        expect(photo.bottom).toBeGreaterThanOrEqual(search.bottom);
+        expect(photo.bottom).toBeLessThan(selector.y);
+      }
+    });
+  }
 }
 
 test("home vehicle selector narrows models without reload and filters catalog", async ({ page }) => {

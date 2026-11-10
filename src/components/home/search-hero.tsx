@@ -28,33 +28,38 @@ export async function SearchHero({
   ]);
 
   return (
-    <section className="border-b border-ca-border bg-ca-bg">
-      <div className="ca-on-navy bg-ca-navy text-white">
-        <div className="ca-container grid lg:grid-cols-2">
-          <div className="py-6 lg:py-12 lg:pr-10">
-            <span aria-hidden="true" className="mb-3 block h-0.5 w-12 bg-ca-accent" />
-            <h1 className="max-w-xl text-4xl font-bold leading-none sm:text-5xl lg:text-6xl">
-              {t("heroTitleBefore")} <span className="text-ca-accent">{t("heroTitleHighlight")}</span>
-            </h1>
-            <p className="mt-3 max-w-lg text-sm leading-6 text-white/90 sm:text-base">
-              {t("heroSearchDescription")}
-            </p>
-          </div>
-
-          <div className="relative h-36 sm:h-52 lg:h-auto">
-            <Image
-              src="/hero-vehicle.jpg"
-              alt={t("heroImageAlt")}
-              fill
-              sizes="(min-width: 1280px) 608px, (min-width: 1024px) 50vw, 100vw"
-              fetchPriority="high"
-              loading="eager"
-              className="object-cover"
-            />
-          </div>
+    <section className="bg-ca-navy text-white">
+      <div className="ca-container grid gap-4 py-5 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-6 lg:py-10">
+        <div className="lg:col-start-1 lg:row-start-1">
+          <h1 className="max-w-xl text-balance text-ca-hero-mobile font-bold lg:text-ca-hero">
+            {t("heroTitleBefore")} {t("heroTitleHighlight")}
+          </h1>
+          <p className="mt-3 max-w-xl text-base leading-6 text-white/90">
+            {t("heroSearchDescription")}
+          </p>
         </div>
 
-        <ul className="ca-container grid grid-cols-2 items-center gap-x-3 gap-y-3 py-4 text-xs font-semibold sm:text-sm lg:grid-cols-4 lg:gap-x-5">
+        <div className="min-w-0 lg:col-start-1 lg:row-start-2 lg:self-end">
+          <SearchAutocomplete variant="hero" />
+        </div>
+
+        <div className="lg:col-span-2 lg:row-start-3">
+          <VehicleSelector filterOptions={filterOptions} />
+        </div>
+
+        <div className="relative h-40 overflow-hidden rounded-ca-surface sm:h-52 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-72">
+          <Image
+            src="/hero-vehicle.jpg"
+            alt={t("heroImageAlt")}
+            fill
+            sizes="(min-width: 1280px) 588px, (min-width: 1024px) calc(50vw - 52px), 100vw"
+            fetchPriority="high"
+            loading="eager"
+            className="object-cover"
+          />
+        </div>
+
+        <ul className="ca-on-navy grid grid-cols-2 items-center gap-x-3 gap-y-2 border-t border-white/20 pt-4 text-xs font-semibold lg:col-span-2 lg:row-start-4 lg:grid-cols-4 lg:gap-x-5 lg:text-sm">
           {deliverySignals.map(({ icon: Icon, key }) => (
             <li className="flex items-center gap-2" key={key}>
               <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-ca-accent" />
@@ -77,11 +82,6 @@ export async function SearchHero({
             )}
           </li>
         </ul>
-      </div>
-
-      <div className="ca-container space-y-4 py-6">
-        <SearchAutocomplete variant="hero" />
-        <VehicleSelector filterOptions={filterOptions} />
       </div>
     </section>
   );

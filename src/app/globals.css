@@ -57,6 +57,10 @@
   --shadow-ca-overlay: var(--ca-shadow-overlay);
   --text-ca-title: 2rem;
   --text-ca-title--line-height: 1.2;
+  --text-ca-hero: 3.5rem;
+  --text-ca-hero--line-height: 1.05;
+  --text-ca-hero-mobile: 2.5rem;
+  --text-ca-hero-mobile--line-height: 1.05;
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
 }
