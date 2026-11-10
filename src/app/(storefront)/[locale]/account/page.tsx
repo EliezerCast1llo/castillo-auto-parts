@@ -84,17 +84,17 @@ export default async function AccountPage({
   const hasPassword = Boolean(user.passwordHash);
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
-      <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
+      <div className="ca-container py-7">
         <nav aria-label={t("breadcrumbAriaLabel")} className="mb-5 flex items-center gap-2 text-sm font-bold text-ca-text-secondary">
-          <Link className="inline-flex items-center gap-1.5 transition hover:text-ca-navy-950" href="/">
+          <Link className="inline-flex items-center gap-1.5 transition hover:text-ca-navy" href="/">
             <Home className="h-4 w-4" strokeWidth={1.8} />
             {t("breadcrumbHome")}
           </Link>
           <span aria-hidden="true">/</span>
-          <span className="text-ca-navy-950">{t("breadcrumbCurrent")}</span>
+          <span className="text-ca-navy">{t("breadcrumbCurrent")}</span>
         </nav>
 
         <div className="space-y-5">
@@ -166,14 +166,14 @@ function AccountNotice({
 
   if (statusMessage) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700 shadow-[0_8px_20px_rgba(22,128,58,0.08)]">
+      <div className="rounded-ca-control border border-success/20 bg-ca-surface px-4 py-3 text-sm font-bold text-success">
         {statusMessage}
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-600 shadow-[0_8px_20px_rgba(180,35,24,0.08)]">
+    <div className="rounded-ca-control border border-danger/20 bg-danger/10 px-4 py-3 text-sm font-bold text-danger">
       {errorMessage}
     </div>
   );

@@ -33,11 +33,11 @@ export default async function MockPaymentPage({ params, searchParams }: MockPaym
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader locale={locale} />
       <section className="mx-auto max-w-xl px-4 py-12 sm:px-6">
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-[0_18px_50px_rgba(6,25,51,0.1)] sm:p-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <div className="rounded-ca-control border border-border bg-card p-6 sm:p-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-ca-control bg-primary/10 text-primary">
             <CreditCard className="h-6 w-6" aria-hidden="true" />
           </div>
-          <p className="mt-5 text-sm font-semibold uppercase text-muted-foreground">
+          <p className="mt-5 text-sm font-semibold text-muted-foreground">
             Entorno de desarrollo
           </p>
           <h1 className="mt-2 text-2xl font-bold text-primary">Simulación de pago</h1>
@@ -45,7 +45,7 @@ export default async function MockPaymentPage({ params, searchParams }: MockPaym
             Esta pantalla representa la confirmación asíncrona que enviará el proveedor de pago.
           </p>
 
-          <dl className="mt-6 space-y-3 rounded-xl bg-background p-4 text-sm">
+          <dl className="mt-6 space-y-3 rounded-ca-control bg-background p-4 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Orden</dt>
               <dd className="font-semibold">{payment.order.orderNumber}</dd>
@@ -60,7 +60,7 @@ export default async function MockPaymentPage({ params, searchParams }: MockPaym
             <input name="externalPaymentId" type="hidden" value={externalPaymentId} />
             <input name="returnTo" type="hidden" value={returnTo} />
             <button
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:bg-primary/90"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-ca-control bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:bg-primary/90"
               type="submit"
             >
               <ShieldCheck className="h-5 w-5" aria-hidden="true" />

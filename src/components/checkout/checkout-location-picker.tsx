@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { LocateFixed, MapPin, Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -133,7 +134,7 @@ export function CheckoutLocationPicker({ onLocationFound, initialCoordinates, on
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">{statusText}</p>
         <button
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white disabled:opacity-60"
+          className={buttonVariants({ className: "shrink-0" })}
           disabled={geoStatus === "loading"}
           onClick={handleUseCurrentLocation}
           type="button"
@@ -144,7 +145,7 @@ export function CheckoutLocationPicker({ onLocationFound, initialCoordinates, on
       </div>
 
       <div
-        className="relative h-72 overflow-hidden rounded-md border border-border bg-muted"
+        className="relative h-72 overflow-hidden rounded-ca-control border border-border bg-muted"
         onClick={handleMapClick}
         ref={mapRef}
         role="button"
@@ -158,13 +159,13 @@ export function CheckoutLocationPicker({ onLocationFound, initialCoordinates, on
           />
         ))}
         <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-full flex-col items-center">
-          <MapPin className="h-9 w-9 fill-primary text-primary drop-shadow-md" />
-          <span className="h-2 w-2 rounded-full bg-primary shadow" />
+          <MapPin className="h-9 w-9 fill-primary text-primary" />
+          <span className="h-2 w-2 rounded-ca-control bg-primary" />
         </div>
         <div className="absolute right-3 top-3 grid gap-2">
           <button
             aria-label={t("zoomIn")}
-            className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-primary shadow"
+            className={buttonVariants({ variant: "outline", size: "sm", className: "w-9 px-0" })}
             onClick={(e) => {
               e.stopPropagation();
               setZoom((z) => Math.min(z + 1, 18));
@@ -175,7 +176,7 @@ export function CheckoutLocationPicker({ onLocationFound, initialCoordinates, on
           </button>
           <button
             aria-label={t("zoomOut")}
-            className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-primary shadow"
+            className={buttonVariants({ variant: "outline", size: "sm", className: "w-9 px-0" })}
             onClick={(e) => {
               e.stopPropagation();
               setZoom((z) => Math.max(z - 1, 7));
@@ -185,7 +186,7 @@ export function CheckoutLocationPicker({ onLocationFound, initialCoordinates, on
             <Minus className="h-4 w-4" />
           </button>
         </div>
-        <p className="absolute bottom-2 right-2 rounded bg-card/90 px-2 py-1 text-[11px] font-semibold text-muted-foreground">
+        <p className="absolute bottom-2 right-2 rounded-ca-control bg-card/90 px-2 py-1 text-xs font-semibold text-muted-foreground">
           © OpenStreetMap
         </p>
       </div>

@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { Link, asLocaleHref, redirect } from "@/lib/i18n/navigation";
 import { LogIn } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -36,25 +37,25 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
   if (session?.user) redirect({ href: asLocaleHref(nextPath), locale });
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
-      <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="ca-container flex py-10">
         <div className="mx-auto w-full max-w-md">
           {/* Header */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-white shadow-ca-button-hover">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-ca-control bg-ca-navy text-white">
               <LogIn className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">{t("eyebrow")}</p>
-              <h1 className="text-2xl font-black text-ca-navy-950">{t("title")}</h1>
+              <p className="text-xs font-bold text-ca-text-secondary">{t("eyebrow")}</p>
+              <h1 className="text-2xl font-bold text-ca-navy">{t("title")}</h1>
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-ca-border bg-white p-6 shadow-ca-premium">
+          <div className="mt-6 rounded-ca-surface border border-ca-border bg-ca-surface p-6">
             {errorMessage ? (
-              <div className="mb-5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">
+              <div className="mb-5 rounded-ca-control bg-danger/10 p-3 text-sm font-semibold text-danger">
                 {errorMessage}
               </div>
             ) : null}
@@ -64,7 +65,7 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
               <input type="hidden" name="next" value={nextPath} />
 
               <div>
-                <label htmlFor="email" className="block text-sm font-bold text-ca-navy-950">
+                <label htmlFor="email" className="block text-sm font-bold text-ca-navy">
                   {t("email")}
                 </label>
                 <input
@@ -73,12 +74,12 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
                   required
                   type="email"
                   autoComplete="email"
-                  className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm outline-none focus:border-ca-navy-950"
+                  className="mt-2 h-11 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm focus:border-ca-navy"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-bold text-ca-navy-950">
+                <label htmlFor="password" className="block text-sm font-bold text-ca-navy">
                   {t("password")}
                 </label>
                 <input
@@ -87,14 +88,14 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
                   required
                   type="password"
                   autoComplete="current-password"
-                  className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm outline-none focus:border-ca-navy-950"
+                  className="mt-2 h-11 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm focus:border-ca-navy"
                 />
               </div>
 
               <div className="flex justify-end">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-xs font-bold text-ca-blue-700 hover:underline"
+                  className="text-xs font-bold text-ca-navy-hover hover:underline"
                 >
                   {t("forgotPassword")}
                 </Link>
@@ -102,7 +103,7 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
 
               <button
                 type="submit"
-                className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
+                className={buttonVariants({ size: "lg", className: "w-full" })}
               >
                 {t("submit")}
               </button>
@@ -119,7 +120,7 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
               <input type="hidden" name="next" value={nextPath} />
               <button
                 type="submit"
-                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
+                className={buttonVariants({ variant: "outline", size: "lg", className: "w-full" })}
               >
                 <GoogleIcon />
                 {t("google")}
@@ -131,7 +132,7 @@ export default async function LoginPage({ params: routeParams, searchParams }: L
             {t("noAccount")}{" "}
             <Link
               href={{ pathname: "/auth/register", query: { next: nextPath } }}
-              className="font-bold text-ca-blue-700 hover:underline"
+              className="font-bold text-ca-navy-hover hover:underline"
             >
               {t("createAccount")}
             </Link>

@@ -35,7 +35,7 @@ export function ProductGallery({
 
   if (images.length === 0) {
     return (
-      <div className="flex min-h-[360px] items-center justify-center rounded-md bg-background p-4 sm:p-8">
+      <div className="flex min-h-[360px] items-center justify-center rounded-ca-control bg-background p-4 sm:p-8">
         <ProductVisual seed={productSku} size="large" />
       </div>
     );
@@ -51,11 +51,11 @@ export function ProductGallery({
             type="button"
             onClick={() => setActiveIndex(index)}
             aria-label={image.label}
-            className={`relative aspect-square overflow-hidden rounded-md border-2 bg-background transition ${
-              index === activeIndex
-                ? "border-primary shadow-sm"
-                : "border-border hover:border-primary/50"
-            }`}
+            className={`relative aspect-square overflow-hidden rounded-ca-control border-2 bg-background transition ${
+ index === activeIndex
+ ? "border-primary"
+ : "border-border hover:border-primary/50"
+ }`}
           >
             <Image
               src={image.url}
@@ -69,7 +69,7 @@ export function ProductGallery({
       </div>
 
       {/* Imagen principal */}
-      <div className="flex min-h-[360px] items-center justify-center rounded-md bg-background p-4 sm:p-8">
+      <div className="flex min-h-[360px] items-center justify-center rounded-ca-control bg-background p-4 sm:p-8">
         {activeImage ? (
           <div className="relative h-[300px] w-full sm:h-[360px]">
             <Image

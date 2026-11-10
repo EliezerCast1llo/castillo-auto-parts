@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { checkoutBoxfulLocations } from "@/lib/boxful/locations";
 import { cookies } from "next/headers";
 import { Link } from "@/lib/i18n/navigation";
@@ -92,13 +93,13 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
   }
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
-      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+      <div className="ca-container py-5">
         <Link
           href="/cart"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("backToCart")}
@@ -107,15 +108,15 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
         <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Formulario */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+            <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+              <p className="text-xs font-bold text-ca-text-secondary">
                 {t("eyebrow")}
               </p>
-              <h1 className="mt-1 text-2xl font-black text-ca-navy-950">{t("title")}</h1>
+              <h1 className="mt-1 text-2xl font-bold text-ca-navy">{t("title")}</h1>
             </div>
 
             {statusMessage ? <CheckoutNotice status={status} message={statusMessage} /> : null}
-            {status === "coverage_unavailable" ? <a className="block rounded-xl border p-3 font-bold underline" href={buildContactLinks().whatsapp}>WhatsApp</a> : null}
+            {status === "coverage_unavailable" ? <a className="block rounded-ca-control border p-3 font-bold underline" href={buildContactLinks().whatsapp}>WhatsApp</a> : null}
 
             {/* El form se muestra siempre que haya carrito utilizable. En
                 duplicate_in_progress el reintento reusa la key de la cookie
@@ -139,22 +140,22 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
           </div>
 
           {/* Resumen — sticky en desktop, visible debajo en mobile */}
-          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium lg:sticky lg:top-6">
+          <aside className="h-fit rounded-ca-surface border border-ca-border bg-ca-surface p-5 lg:sticky lg:top-6">
             <div className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-ca-navy-950" strokeWidth={1.8} />
-              <h2 className="text-lg font-black text-ca-navy-950">{t("summary.title")}</h2>
+              <CreditCard className="h-5 w-5 text-ca-navy" strokeWidth={1.8} />
+              <h2 className="text-xl font-bold text-ca-navy">{t("summary.title")}</h2>
             </div>
 
             <div className="mt-4 space-y-3">
               {cart.lines.map((line) => (
                 <div className="flex items-start justify-between gap-3 text-sm" key={line.product.sku}>
                   <div className="min-w-0">
-                    <p className="font-bold text-ca-navy-950 truncate">{line.product.name}</p>
+                    <p className="font-bold text-ca-navy truncate">{line.product.name}</p>
                     <p className="text-ca-text-secondary">
                       {line.quantity} × {formatCurrency(line.product.priceCents, locale)}
                     </p>
                   </div>
-                  <p className="shrink-0 font-black text-ca-navy-950">
+                  <p className="shrink-0 font-bold text-ca-navy">
                     {formatCurrency(line.lineTotalCents, locale)}
                   </p>
                 </div>
@@ -164,20 +165,20 @@ export default async function CheckoutPage({ params: routeParams, searchParams }
             <div className="mt-4 border-t border-ca-border pt-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-ca-text-secondary">{t("summary.subtotal")}</span>
-                <span className="text-xl font-black text-ca-navy-950">
+                <span className="text-xl font-bold text-ca-navy">
                   {formatCurrency(cart.subtotalCents, locale)}
                 </span>
               </div>
             </div>
 
-            <div className="mt-3 rounded-xl bg-ca-background p-3 text-sm">
-              <p className="font-bold text-ca-navy-950">{t("summary.shippingTitle")}</p>
+            <div className="mt-3 rounded-ca-control bg-ca-bg p-3 text-sm">
+              <p className="font-bold text-ca-navy">{t("summary.shippingTitle")}</p>
               <p className="mt-0.5 text-ca-text-secondary">
                 {t("summary.nationalShipping")}
               </p>
             </div>
 
-            <div className="mt-3 flex gap-2 rounded-xl bg-ca-navy-950/5 p-3 text-sm font-semibold text-ca-navy-950">
+            <div className="mt-3 flex gap-2 rounded-ca-control bg-ca-navy/5 p-3 text-sm font-semibold text-ca-navy">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
               {t("summary.taxNotice")}
             </div>
@@ -226,8 +227,8 @@ function CheckoutForm({
   return (
     <CheckoutFormState action={createGuestOrder}>
       <input name="idempotencyKey" type="hidden" value={idempotencyKey} />
-      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-        <h2 className="text-base font-black text-ca-navy-950">{t("form.yourData")}</h2>
+      <section className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+        <h2 className="text-base font-bold text-ca-navy">{t("form.yourData")}</h2>
         {isGuest ? (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <CheckoutField
@@ -268,8 +269,8 @@ function CheckoutForm({
         )}
       </section>
 
-      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-        <h2 className="text-base font-black text-ca-navy-950">{t("form.deliveryMethod")}</h2>
+      <section className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+        <h2 className="text-base font-bold text-ca-navy">{t("form.deliveryMethod")}</h2>
         <CheckoutDeliveryFields
           boxfulLocations={boxfulLocations} requiresDistrict={requiresDistrict}
           cartDetail={cartDetail}
@@ -280,11 +281,11 @@ function CheckoutForm({
         />
       </section>
 
-      <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-        <h2 className="text-base font-black text-ca-navy-950">{t("form.payment")}</h2>
-        <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-ca-border bg-ca-background px-4 text-sm font-bold text-ca-navy-950">
+      <section className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+        <h2 className="text-base font-bold text-ca-navy">{t("form.payment")}</h2>
+        <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 rounded-ca-control border border-ca-border bg-ca-bg px-4 text-sm font-bold text-ca-navy">
           <input
-            className="h-4 w-4 accent-ca-navy-950"
+            className="h-4 w-4 accent-ca-navy"
             defaultChecked
             name="paymentMethod"
             type="radio"
@@ -315,13 +316,13 @@ function CheckoutField({
   const id = `field-${name}`;
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-bold text-ca-navy-950">
+      <label htmlFor={id} className="block text-sm font-bold text-ca-navy">
         {label}
       </label>
       <input
         id={id}
         autoComplete={autoComplete}
-        className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm text-ca-navy-950 outline-none focus:border-ca-navy-950"
+        className="mt-2 h-11 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm text-ca-navy focus:border-ca-navy"
         name={name}
         required={required}
         type={type}
@@ -341,8 +342,8 @@ function CheckoutFieldReadonly({
 }) {
   return (
     <div>
-      <p className="block text-sm font-bold text-ca-navy-950">{label}</p>
-      <p className="mt-2 flex h-11 items-center rounded-xl border border-ca-border bg-ca-background px-3 text-sm text-ca-text-secondary">
+      <p className="block text-sm font-bold text-ca-navy">{label}</p>
+      <p className="mt-2 flex h-11 items-center rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm text-ca-text-secondary">
         {value || <span className="italic">{emptyLabel}</span>}
       </p>
     </div>
@@ -351,18 +352,18 @@ function CheckoutFieldReadonly({
 
 function EmptyCheckout({ hasIssues, t }: { hasIssues: boolean; t: CheckoutTranslator }) {
   return (
-    <div className="rounded-2xl border border-ca-border bg-white p-10 text-center shadow-ca-soft">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-ca-navy-950/5">
-        <MapPin className="h-8 w-8 text-ca-navy-950" strokeWidth={1.5} />
+    <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-10 text-center">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-ca-control bg-ca-navy/5">
+        <MapPin className="h-8 w-8 text-ca-navy" strokeWidth={1.5} />
       </div>
-      <h2 className="mt-4 text-xl font-black text-ca-navy-950">
+      <h2 className="mt-4 text-xl font-bold text-ca-navy">
         {hasIssues ? t("empty.issuesTitle") : t("empty.emptyTitle")}
       </h2>
       <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ca-text-secondary">
         {hasIssues ? t("empty.issuesDescription") : t("empty.emptyDescription")}
       </p>
       <Link
-        className="mt-5 inline-flex h-12 items-center justify-center rounded-[14px] bg-ca-navy-950 px-6 text-sm font-black text-white transition hover:bg-ca-navy-800"
+        className={buttonVariants({ size: "lg", className: "mt-5" })}
         href={hasIssues ? "/cart" : "/catalog"}
       >
         {hasIssues ? t("empty.issuesAction") : t("empty.emptyAction")}
@@ -375,9 +376,9 @@ function CheckoutNotice({ message, status }: { message: string; status: string }
   const isError = status !== "created";
   return (
     <div
-      className={`flex gap-2 rounded-xl p-3 text-sm font-semibold ${
-        isError ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"
-      }`}
+      className={`flex gap-2 rounded-ca-control p-3 text-sm font-semibold ${
+ isError ? "bg-danger/10 text-danger" : "bg-ca-surface text-success"
+ }`}
     >
       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
       {message}

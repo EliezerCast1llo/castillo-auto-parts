@@ -23,5 +23,6 @@
   "viewImage": "Ver imagen {index}: {alt}",
   "ogAlt": "Repuesto de {siteName}",
   "supportMessage": "Hola, necesito validar compatibilidad del repuesto {name} (SKU {sku}, parte {partNumber}).",
-  "deliveryTitle": "Envío nacional o retiro en bodega"
+  "deliveryTitle": "Envío nacional o retiro en bodega",
+  "priceIncludesVat": "Precio con IVA incluido"
 }

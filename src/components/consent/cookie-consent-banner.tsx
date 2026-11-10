@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { buildCookieConsentSetCookie } from "@/lib/cookie-consent";
@@ -29,20 +30,20 @@ export function CookieConsentBanner() {
       // checkout, así que quien no había aceptado las cookies no podía pagar
       // sin descartarlo antes. Con `sticky` reserva su alto, sigue pegado al
       // borde inferior mientras se navega, y nunca se apoya sobre nada.
-      className="sticky bottom-0 z-50 border-t border-ca-border bg-white/97 backdrop-blur-md"
+      className="sticky bottom-0 z-50 border-t border-ca-border bg-ca-surface"
       data-testid="cookie-consent"
       role="region"
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-6 lg:px-8">
+      <div className="ca-container flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:gap-6">
         <div className="min-w-0 flex-1">
-          <p className="font-display text-sm font-black text-ca-navy-950" id={headingId}>
+          <p className="text-sm font-bold text-ca-navy" id={headingId}>
             {t("title")}
           </p>
           <p className="mt-1 text-sm leading-6 text-ca-text-secondary">{t("description")}</p>
         </div>
 
         <button
-          className="inline-flex h-11 shrink-0 items-center justify-center rounded-ca-control bg-ca-navy-950 px-6 text-sm font-black text-white transition hover:bg-ca-navy-800"
+          className={buttonVariants({ className: "shrink-0" })}
           onClick={() => {
             document.cookie = buildCookieConsentSetCookie();
             setDismissed(true);

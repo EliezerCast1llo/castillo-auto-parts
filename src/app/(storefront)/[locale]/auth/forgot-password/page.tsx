@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigation";
 import { KeyRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -36,10 +37,10 @@ export default async function ForgotPasswordPage({
     <main className="min-h-screen bg-background text-foreground">
       <SiteHeader locale={locale} />
 
-      <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="ca-container flex py-10">
         <div className="mx-auto w-full max-w-md">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-primary text-white">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-ca-control bg-primary text-white">
               <KeyRound className="h-5 w-5" />
             </span>
             <div>
@@ -49,11 +50,11 @@ export default async function ForgotPasswordPage({
           </div>
 
           {sent ? (
-            <div className="mt-6 rounded-md bg-success/10 p-4 text-sm font-semibold text-success">
+            <div className="mt-6 rounded-ca-control bg-ca-surface p-4 text-sm font-semibold text-success">
               {t("sent")}
             </div>
           ) : rateLimited ? (
-            <div className="mt-6 rounded-md bg-destructive/10 p-4 text-sm font-semibold text-destructive">
+            <div className="mt-6 rounded-ca-control bg-destructive/10 p-4 text-sm font-semibold text-destructive">
               {t("rateLimited")}
             </div>
           ) : (
@@ -70,13 +71,13 @@ export default async function ForgotPasswordPage({
                     required
                     type="email"
                     autoComplete="email"
-                    className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                    className="mt-2 h-11 w-full rounded-ca-control border border-border bg-background px-3 text-sm focus:border-primary"
                   />
                 </label>
 
                 <button
                   type="submit"
-                  className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white"
+                  className={buttonVariants({ className: "w-full" })}
                 >
                   {t("submit")}
                 </button>

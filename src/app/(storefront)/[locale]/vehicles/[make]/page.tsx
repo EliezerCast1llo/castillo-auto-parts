@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import type { Metadata } from "next";
 import { Link } from "@/lib/i18n/navigation";
 import { notFound } from "next/navigation";
@@ -72,36 +73,36 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
     await getFilteredCatalogProducts(filters, page, sort, locale);
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="ca-container py-6">
         <nav
           aria-label={tCatalog("breadcrumbAriaLabel")}
           className="flex flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
         >
-          <Link className="transition hover:text-ca-navy-950" href="/">
+          <Link className="transition hover:text-ca-navy" href="/">
             {tVehicles("home")}
           </Link>
           <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
-          <Link className="transition hover:text-ca-navy-950" href="/catalog">
+          <Link className="transition hover:text-ca-navy" href="/catalog">
             {tVehicles("catalogLink")}
           </Link>
           <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
-          <span className="text-ca-navy-950">{make}</span>
+          <span className="text-ca-navy">{make}</span>
         </nav>
 
-        <section className="mt-5 overflow-hidden rounded-2xl border border-ca-border bg-white shadow-ca-soft">
+        <section className="mt-5 overflow-hidden rounded-ca-surface border border-ca-border bg-ca-surface">
           <div className="flex flex-wrap items-center justify-between gap-4 p-5 md:p-6">
             <div className="flex items-center gap-4">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-ca-navy-950 text-white">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-ca-control bg-ca-navy text-white">
                 <Car className="h-7 w-7" strokeWidth={1.7} />
               </span>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+                <p className="text-xs font-bold text-ca-text-secondary">
                   {tVehicles("eyebrow")}
                 </p>
-                <h1 className="mt-1 text-2xl font-black leading-tight text-ca-navy-950 sm:text-3xl">
+                <h1 className="mt-1 text-2xl font-bold leading-tight text-ca-navy sm:text-ca-title">
                   {tVehicles("title", { make })}
                 </h1>
                 <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
@@ -110,7 +111,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
               </div>
             </div>
             <Link
-              className="inline-flex h-11 items-center gap-2 rounded-xl border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+              className={buttonVariants()}
               href={{ pathname: "/catalog", query: { vehicleMake: make } }}
             >
               <SlidersHorizontal className="h-4 w-4" />
@@ -121,9 +122,9 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
 
         <section className="mt-6 space-y-5">
           {status === "unavailable" ? (
-            <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-ca-soft">
-              <p className="text-sm font-black uppercase tracking-widest text-red-500">No disponible</p>
-              <h2 className="mt-1 text-xl font-black text-ca-navy-950">
+            <div className="rounded-ca-surface border border-danger/20 bg-ca-surface p-6">
+              <p className="text-sm font-bold text-danger">No disponible</p>
+              <h2 className="mt-1 text-xl font-bold text-ca-navy">
                 {tCatalog("unavailableTitle")}
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">

@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
@@ -75,37 +76,37 @@ export default async function TwoFactorPage({
   const isSuccess = estado === SUCCESS_STATUS;
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
-      <section className="mx-auto flex max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="ca-container flex py-10">
         <div className="mx-auto w-full max-w-md">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-white shadow-ca-button-hover">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-ca-control bg-ca-navy text-white">
               <ShieldCheck className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+              <p className="text-xs font-bold text-ca-text-secondary">
                 {t("eyebrow")}
               </p>
-              <h1 className="text-2xl font-black text-ca-navy-950">{t("title")}</h1>
+              <h1 className="text-2xl font-bold text-ca-navy">{t("title")}</h1>
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-ca-border bg-white p-6 shadow-ca-premium">
+          <div className="mt-6 rounded-ca-surface border border-ca-border bg-ca-surface p-6">
             {statusMessage ? (
               <div
                 className={
                   isSuccess
-                    ? "mb-5 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-700"
-                    : "mb-5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600"
+                    ? "mb-5 rounded-ca-control bg-ca-surface p-3 text-sm font-semibold text-success"
+                    : "mb-5 rounded-ca-control bg-danger/10 p-3 text-sm font-semibold text-danger"
                 }
               >
                 {statusMessage}
               </div>
             ) : null}
 
-            <p className="text-sm font-medium leading-6 text-ca-text-secondary">
+            <p className="text-sm font-semibold leading-6 text-ca-text-secondary">
               {t("description", { email: maskEmail(user.email) })}
             </p>
 
@@ -113,7 +114,7 @@ export default async function TwoFactorPage({
               <input type="hidden" name="next" value={nextPath} />
 
               <div>
-                <label htmlFor="code" className="block text-sm font-bold text-ca-navy-950">
+                <label htmlFor="code" className="block text-sm font-bold text-ca-navy">
                   {t("codeLabel")}
                 </label>
                 <input
@@ -126,7 +127,7 @@ export default async function TwoFactorPage({
                   inputMode="numeric"
                   pattern={`\\d{${TWO_FACTOR_LIMITS.codeLength}}`}
                   maxLength={TWO_FACTOR_LIMITS.codeLength}
-                  className="mt-2 h-14 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-center font-mono text-2xl font-black tracking-[0.4em] text-ca-navy-950 outline-none focus:border-ca-navy-950"
+                  className="mt-2 h-14 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-center tabular-nums text-2xl font-bold text-ca-navy focus:border-ca-navy"
                 />
                 <p className="mt-2 text-xs font-semibold leading-5 text-ca-text-secondary">
                   {t("codeHelper", { minutes: TWO_FACTOR_EXPIRES_IN_MINUTES })}
@@ -135,7 +136,7 @@ export default async function TwoFactorPage({
 
               <button
                 type="submit"
-                className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
+                className={buttonVariants({ size: "lg", className: "w-full" })}
               >
                 {t("submit")}
               </button>
@@ -148,7 +149,7 @@ export default async function TwoFactorPage({
                 <input type="hidden" name="next" value={nextPath} />
                 <button
                   type="submit"
-                  className="text-xs font-bold text-ca-blue-700 hover:underline"
+                  className="text-xs font-bold text-ca-navy-hover hover:underline"
                 >
                   {t("resend")}
                 </button>

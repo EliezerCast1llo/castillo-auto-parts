@@ -32,12 +32,12 @@ export async function AccountOverviewHeader({
   const active = isActive !== false;
 
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-7">
+    <section className="rounded-ca-surface border border-ca-border bg-ca-surface p-5 sm:p-7">
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <span
             aria-label={t("avatarAlt", { name: displayName })}
-            className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ca-navy-950 text-3xl font-black text-white shadow-[0_14px_32px_rgba(6,25,51,0.22)] ring-4 ring-ca-background sm:h-24 sm:w-24 sm:text-4xl"
+            className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-ca-control bg-ca-navy text-ca-title font-bold text-white ring-4 ring-ca-bg sm:h-24 sm:w-24 sm:text-ca-title"
             role="img"
             style={image ? { backgroundImage: `url(${image})`, backgroundPosition: "center", backgroundSize: "cover" } : undefined}
           >
@@ -45,10 +45,10 @@ export async function AccountOverviewHeader({
           </span>
 
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-ca-gold-500">
+            <p className="text-xs font-bold text-ca-text-secondary">
               {t("brandEyebrow")}
             </p>
-            <h1 className="mt-1 text-3xl font-black tracking-tight text-ca-navy-950 sm:text-4xl">
+            <h1 className="mt-1 text-ca-title font-bold tracking-tight text-ca-navy sm:text-ca-title">
               {t("title")}
             </h1>
             <p className="mt-2 break-words text-sm font-semibold text-ca-text-secondary sm:text-base">
@@ -80,7 +80,7 @@ export async function AccountOverviewHeader({
 
         <form action={logoutAction} className="w-full md:w-auto">
           <button
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 text-sm font-black text-red-600 transition hover:border-red-400 hover:bg-red-50 md:w-auto"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-ca-surface border border-danger/20 bg-ca-surface px-5 text-sm font-bold text-danger transition hover:border-danger/20 hover:bg-danger/10 md:w-auto"
             type="submit"
           >
             <LogOut className="h-4 w-4" strokeWidth={2} />
@@ -103,13 +103,13 @@ function Badge({
 }) {
   const className =
     tone === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-success/20 bg-ca-surface text-success"
       : tone === "danger"
-        ? "border-red-200 bg-red-50 text-red-600"
-        : "border-ca-border bg-ca-background text-ca-navy-950";
+        ? "border-danger/20 bg-danger/10 text-danger"
+        : "border-ca-border bg-ca-bg text-ca-navy";
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-black ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-ca-control border px-3 py-1 text-xs font-bold ${className}`}>
       {icon}
       {children}
     </span>

@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigation";
 import { Search } from "lucide-react";
 import { categoryLabelOf } from "@/data/catalog-filters";
@@ -39,10 +40,10 @@ export function ProductFilters({ applyFiltersLabel,
     <section className="border-t border-ca-border pt-4">
       <label className="block">
         <FilterHeading>{searchLegend}</FilterHeading>
-        <div className="mt-2 flex h-10 items-center gap-2 rounded-ca-control border border-ca-border bg-white px-2.5 transition focus-within:border-ca-blue-700">
+        <div className="mt-2 flex h-10 items-center gap-2 rounded-ca-control border border-ca-border bg-ca-surface px-2.5 transition focus-within:border-ca-navy-hover">
           <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" />
           <input
-            className="w-full bg-transparent text-sm text-ca-navy-950 outline-none placeholder:text-ca-text-secondary"
+            className="w-full bg-transparent text-sm text-ca-navy placeholder:text-ca-text-secondary"
             defaultValue={filters.query}
             name="q"
             placeholder={searchPlaceholder}
@@ -90,12 +91,12 @@ export function ProductFilters({ applyFiltersLabel,
 
       <div className="mt-4 grid gap-2 border-t border-ca-border pt-4">
         {/* Los filtros se aplican al cambiar; el botón es el camino sin JS. */}
-        <button className="inline-flex h-10 items-center justify-center rounded-ca-control border border-ca-navy-950 bg-white px-4 text-sm font-bold text-ca-navy-950 transition hover:bg-ca-navy-950 hover:text-white">
+        <button className={buttonVariants()}>
           {applyFiltersLabel}
         </button>
         {activeFilterCount > 0 ? (
           <Link
-            className="inline-flex h-10 items-center justify-center rounded-ca-control px-4 text-sm font-bold text-ca-text-secondary underline-offset-2 transition hover:text-ca-navy-950 hover:underline"
+            className="inline-flex h-10 items-center justify-center rounded-ca-control px-4 text-sm font-bold text-ca-text-secondary underline-offset-2 transition hover:text-ca-navy hover:underline"
             href="/catalog"
           >
             Limpiar filtros ({activeFilterCount})
@@ -108,7 +109,7 @@ export function ProductFilters({ applyFiltersLabel,
 
 function FilterHeading({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-xs font-black uppercase tracking-[0.1em] text-ca-navy-950">
+    <span className="text-xs font-bold text-ca-navy">
       {children}
     </span>
   );
@@ -143,9 +144,9 @@ function FilterOption({
   value?: string;
 }) {
   return (
-    <label className="flex min-h-8 cursor-pointer items-center gap-2 text-sm text-ca-text-primary transition hover:text-ca-blue-700">
+    <label className="flex min-h-8 cursor-pointer items-center gap-2 text-sm text-ca-text transition hover:text-ca-navy-hover">
       <input
-        className="h-4 w-4 shrink-0 accent-ca-navy-950"
+        className="h-4 w-4 shrink-0 accent-ca-navy"
         defaultChecked={defaultChecked}
         name={name}
         type="checkbox"

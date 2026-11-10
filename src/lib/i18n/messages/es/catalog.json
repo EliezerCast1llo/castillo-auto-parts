@@ -75,5 +75,7 @@
   "shopByCategory": "Comprar por categoría",
   "clearAll": "Limpiar todo",
   "activeFiltersHint": "Quita un filtro específico o limpia todo para ampliar resultados.",
-  "applyFilters": "Aplicar filtros"
+  "applyFilters": "Aplicar filtros",
+  "exploreCategory": "Explorar {category}",
+  "filterCatalog": "Filtrar catálogo"
 }

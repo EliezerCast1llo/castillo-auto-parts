@@ -41,8 +41,8 @@ type LocaleSwitchProps = {
 const TONE_CLASSES = {
   onDark: { current: "text-white", other: "text-white/60 hover:text-white" },
   onLight: {
-    current: "text-ca-navy-950",
-    other: "text-ca-text-secondary hover:text-ca-navy-950",
+    current: "text-ca-navy",
+    other: "text-ca-text-secondary hover:text-ca-navy",
   },
 } as const;
 
@@ -61,8 +61,8 @@ export function LocaleSwitch({ current, label, tone = "onDark" }: LocaleSwitchPr
           <Link
             aria-current={isCurrent ? "true" : undefined}
             className={`inline-flex min-h-11 items-center rounded px-1.5 text-xs font-bold transition ${
-              isCurrent ? TONE_CLASSES[tone].current : TONE_CLASSES[tone].other
-            }`}
+ isCurrent ? TONE_CLASSES[tone].current : TONE_CLASSES[tone].other
+ }`}
             // El `href` sale de la ruta actual; `params` reconstruye los
             // segmentos dinámicos que `usePathname` ya resolvió.
             href={{ pathname, params } as never}

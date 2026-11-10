@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -48,10 +49,10 @@ export function QuantityStepper({
   }
 
   return (
-    <div className="flex h-11 overflow-hidden rounded-md border border-border bg-background">
+    <div className="flex h-11 overflow-hidden rounded-ca-control border border-border bg-background">
       <button
         aria-label={t("quantity.decrease")}
-        className="flex w-11 items-center justify-center border-r border-border text-primary disabled:text-muted-foreground"
+        className={buttonVariants({ variant: "outline", className: "h-full w-11 shrink-0 border-0 px-0 focus-visible:-outline-offset-2" })}
         disabled={disabled || quantity <= safeMin}
         onClick={() => updateQuantity(quantity - 1)}
         type="button"
@@ -60,7 +61,7 @@ export function QuantityStepper({
       </button>
       <input
         aria-label={t("quantityControl.quantityAriaLabel")}
-        className="min-w-0 flex-1 bg-transparent px-2 text-center text-sm font-semibold outline-none"
+        className="min-w-0 flex-1 bg-transparent px-2 text-center text-sm font-semibold"
         disabled={disabled}
         inputMode="numeric"
         max={safeMax}
@@ -75,7 +76,7 @@ export function QuantityStepper({
       />
       <button
         aria-label={t("quantity.increase")}
-        className="flex w-11 items-center justify-center border-l border-border text-primary disabled:text-muted-foreground"
+        className={buttonVariants({ variant: "outline", className: "h-full w-11 shrink-0 border-0 px-0 focus-visible:-outline-offset-2" })}
         disabled={disabled || quantity >= safeMax}
         onClick={() => updateQuantity(quantity + 1)}
         type="button"

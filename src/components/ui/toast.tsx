@@ -66,12 +66,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
  className={cn(
  "pointer-events-auto flex items-center gap-2.5 rounded-ca-control border px-4 py-3 text-sm font-bold shadow-ca-overlay",
  toast.tone === "success"
- ? "border-ca-border bg-ca-navy-950 text-white"
- : "border-red-200 bg-white text-red-700",
+ ? "border-ca-border bg-ca-navy text-white"
+ : "border-danger/20 bg-ca-surface text-danger",
  )}
  >
  {toast.tone === "success" ? (
- <CheckCircle2 className="h-4 w-4 shrink-0 text-ca-gold-400" />
+ <CheckCircle2 className="h-4 w-4 shrink-0 text-ca-text-secondary" />
  ) : (
  <CircleAlert className="h-4 w-4 shrink-0" />
  )}

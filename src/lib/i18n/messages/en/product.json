@@ -23,5 +23,6 @@
   "viewImage": "View image {index}: {alt}",
   "ogAlt": "Part from {siteName}",
   "supportMessage": "Hi, I need to check whether {name} fits my vehicle (SKU {sku}, part {partNumber}).",
-  "deliveryTitle": "National shipping or warehouse pickup"
+  "deliveryTitle": "National shipping or warehouse pickup",
+  "priceIncludesVat": "Price includes VAT"
 }

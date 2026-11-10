@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { useCheckoutShippingState } from "./checkout-form-state";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -79,19 +80,19 @@ export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtota
   const whatsapp = buildContactLinks(undefined, `${t("whatsappRequest")}\n${cartDetail}\n${address.city}, ${address.department}`).whatsapp;
   return <div className="mt-4 space-y-4">
     <div className="grid gap-3 sm:grid-cols-2">
-      {(["PICKUP", "NATIONAL_SHIPPING"] as const).map((value) => <label className="flex min-h-12 items-center gap-3 rounded-xl border border-ca-border px-3 font-semibold" key={value}>
+      {(["PICKUP", "NATIONAL_SHIPPING"] as const).map((value) => <label className="flex min-h-12 items-center gap-3 rounded-ca-control border border-ca-border px-3 font-semibold" key={value}>
         <input type="radio" name="fulfillmentMethod" value={value} checked={method === value} onChange={() => { setMethod(value); invalidate(value); }} />
         {t(value === "PICKUP" ? "pickup" : "nationalShipping")}
       </label>)}
     </div>
-    {method === "PICKUP" ? <div className="rounded-xl bg-ca-background p-4 text-sm">
+    {method === "PICKUP" ? <div className="rounded-ca-control bg-ca-bg p-4 text-sm">
       <h3 className="font-bold">{t("pickup")}</h3>
       <p className="font-bold">{pickupLocation.name} · {t("pickupCost", { amount: formatCurrency(0, locale) })}</p>
       <p>{pickupLocation.address}</p><p>{pickupLocation.pickupHours}</p><p>{pickupLocation.pickupInstructions}</p>
-      <iframe title={t("warehouseMapTitle")} src={pickupLocation.mapUrl} className="mt-3 h-56 w-full rounded-xl border-0" loading="lazy" />
+      <iframe title={t("warehouseMapTitle")} src={pickupLocation.mapUrl} className="mt-3 h-56 w-full rounded-ca-control border-0" loading="lazy" />
     </div> : <>
       {savedAddresses.length ? <label className="block text-sm font-semibold">{t("savedAddress")}
-        <select className="mt-2 min-h-11 w-full rounded-xl border p-2" defaultValue="" onChange={(e) => {
+        <select className="mt-2 min-h-11 w-full rounded-ca-control border p-2" defaultValue="" onChange={(e) => {
           const saved = savedAddresses.find((item) => item.id === e.target.value);
           invalidate(); setCityId("");
           setAddress(saved ? { addressLine1: saved.addressLine1, addressLine2: saved.addressLine2 ?? "", city: isNationalAddress(saved.department, saved.city) ? saved.city : "", department: saved.department, landmark: saved.landmark ?? "", deliveryNotes: saved.deliveryNotes ?? "" } : emptyNationalAddress);
@@ -101,18 +102,18 @@ export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtota
       </label> : null}
       <NationalAddressInputs value={address} onChange={(next) => { invalidate(); setAddress(next); if (next.city !== address.city || next.department !== address.department) setCityId(""); }} />
       {requiresDistrict ? <label className="block text-sm font-semibold">{t("district")}
-        <select name="shippingCityId" required value={cityId} className="mt-2 min-h-11 w-full rounded-xl border p-2" onChange={(e) => { invalidate(); setCityId(e.target.value); }}>
+        <select name="shippingCityId" required value={cityId} className="mt-2 min-h-11 w-full rounded-ca-control border p-2" onChange={(e) => { invalidate(); setCityId(e.target.value); }}>
           <option value="">{t("selectDistrict")}</option>
           {districtOptions.map((l) => <option key={l.cityId} value={l.cityId}>{l.district}</option>)}
         </select>
       </label> : null}
       <CheckoutLocationPicker key={mapKey} initialCoordinates={coordinates} onCoordinatesChange={(next) => { invalidate(); setCoordinates(next); }} />
-      <button type="button" disabled={!canQuote || status === "loading"} onClick={quote} className="min-h-11 rounded-xl bg-ca-navy-950 px-4 font-bold text-white disabled:opacity-50">{t(status === "loading" ? "quoting" : "quote")}</button>
+      <button type="button" disabled={!canQuote || status === "loading"} onClick={quote} className={buttonVariants()}>{t(status === "loading" ? "quoting" : "quote")}</button>
       <input type="hidden" name="shippingOption" value={option} />
       <input type="hidden" name="shippingQuoteToken" value={quoteToken} />
       <input type="hidden" name="shippingQuoteExpiresAt" value={expiresAt} />
       <div aria-live="polite" className="space-y-3">
-        {rates.map((rate) => <label key={shippingRateKey(rate)} className="flex min-h-12 items-center gap-3 rounded-xl border p-3">
+        {rates.map((rate) => <label key={shippingRateKey(rate)} className="flex min-h-12 items-center gap-3 rounded-ca-control border p-3">
           <input type="radio" name="shippingRateChoice" required checked={option === shippingRateKey(rate)} disabled={status !== "ready" || !quoteToken} onChange={() => { if (expiresAt <= Date.now()) { void quote(); return; } const key = shippingRateKey(rate); chosenOption.current = key; setOption(key); setBlocked(false); }} />
           <span>{rate.courierName} · {t(rate.serviceType === "same-day" ? "sameDay" : "nextDay")} · {formatCurrency(rate.chargedCents, locale)}
             {rate.chargedCents === 0 ? ` (${t("promotion")})` : ""}
@@ -123,7 +124,7 @@ export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtota
       </div>
 
     </>}
-    <div className="rounded-xl bg-ca-background p-4 text-sm" aria-live="polite">
+    <div className="rounded-ca-control bg-ca-bg p-4 text-sm" aria-live="polite">
       <p>{t("totalsProducts")}: {formatCurrency(subtotalCents, locale)}</p>
       <p>{t("totalsShipping")}: {method === "PICKUP" ? formatCurrency(0, locale) : selectedRate ? formatCurrency(selectedRate.chargedCents, locale) : t("pendingQuote")}</p>
       <p className="mt-2 font-bold">{t("totalsEstimated")}: {method === "PICKUP" || selectedRate ? formatCurrency(subtotalCents + (selectedRate?.chargedCents ?? 0), locale) : t("pendingQuote")}</p>

@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { ShieldCheck, ShieldOff, ShieldQuestion } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/config";
@@ -22,14 +23,14 @@ export async function AccountTwoFactorForm({
   const t = await getTranslations({ locale, namespace: "Account.twoFactor" });
 
   return (
-    <section className="h-full rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
+    <section className="h-full rounded-ca-surface border border-ca-border bg-ca-surface p-5 sm:p-6">
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ca-background text-ca-navy-950">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-bg text-ca-navy">
           <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
         </span>
         <div>
-          <h2 className="text-xl font-black text-ca-navy-950">{t("title")}</h2>
-          <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
+          <h2 className="text-xl font-bold text-ca-navy">{t("title")}</h2>
+          <p className="mt-1 text-sm font-semibold leading-6 text-ca-text-secondary">
             {t("description")}
           </p>
         </div>
@@ -43,8 +44,8 @@ export async function AccountTwoFactorForm({
             <span
               className={
                 enabled
-                  ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700"
-                  : "inline-flex items-center gap-1.5 rounded-full bg-ca-background px-3 py-1 text-xs font-black text-ca-text-secondary"
+                  ? "inline-flex items-center gap-1.5 rounded-ca-control bg-ca-surface px-3 py-1 text-xs font-bold text-success"
+                  : "inline-flex items-center gap-1.5 rounded-ca-control bg-ca-bg px-3 py-1 text-xs font-bold text-ca-text-secondary"
               }
             >
               {enabled ? (
@@ -57,21 +58,21 @@ export async function AccountTwoFactorForm({
           </div>
 
           <button
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-ca-navy-950 bg-white px-5 text-sm font-black text-ca-navy-950 transition hover:bg-ca-navy-950 hover:text-white sm:w-auto"
+            className={buttonVariants({ className: "w-full sm:w-auto" })}
             type="submit"
           >
             {enabled ? t("disable") : t("enable")}
           </button>
         </form>
       ) : (
-        <div className="mt-6 rounded-2xl border border-ca-border bg-ca-background p-5">
+        <div className="mt-6 rounded-ca-control border border-ca-border bg-ca-bg p-5">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-ca-navy-950">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-surface text-ca-navy">
               <ShieldQuestion className="h-5 w-5" strokeWidth={1.8} />
             </span>
             <div>
-              <p className="font-black text-ca-navy-950">{t("providerTitle")}</p>
-              <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
+              <p className="font-bold text-ca-navy">{t("providerTitle")}</p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-ca-text-secondary">
                 {t("providerDescription")}
               </p>
             </div>

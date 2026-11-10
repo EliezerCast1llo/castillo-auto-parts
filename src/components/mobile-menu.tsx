@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import { Menu, ShoppingCart, User, X } from "lucide-react";
@@ -12,7 +13,6 @@ type MobileMenuProps = {
   cartItemCount: number;
   accountHref: LocaleHref;
   accountLabel: string;
-  variant?: "dark" | "light";
 };
 
 
@@ -20,7 +20,6 @@ export function MobileMenu({
   cartItemCount,
   accountHref,
   accountLabel,
-  variant = "dark",
 }: MobileMenuProps) {
   const t = useTranslations("Nav");
   const [open, setOpen] = useState(false);
@@ -63,35 +62,30 @@ export function MobileMenu({
     };
   }, [open]);
 
-  const toggleClass =
-    variant === "dark"
-      ? "inline-flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10"
-      : "inline-flex h-10 w-10 items-center justify-center rounded-md border border-ca-border text-ca-navy-950 hover:bg-ca-background";
-
   const portal = mounted && open
     ? createPortal(
         <>
           {/* Overlay — rendered at body level, no stacking context trap */}
           <div
-            className="fixed inset-0 z-[90] bg-ca-navy-950/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-ca-navy/60"
             aria-hidden
             onClick={() => setOpen(false)}
           />
 
           {/* Drawer lateral */}
           <div
-            className="fixed inset-y-0 right-0 z-[100] flex w-72 max-w-[85vw] flex-col bg-white shadow-ca-hero"
+            className="fixed inset-y-0 right-0 z-[100] flex w-72 max-w-[85vw] flex-col bg-ca-surface shadow-ca-overlay"
             role="dialog"
             aria-modal
             aria-label={t("menu")}
           >
             {/* Header del drawer */}
             <div className="flex items-center justify-between border-b border-ca-border px-5 py-4">
-              <p className="text-sm font-black uppercase tracking-[0.12em] text-ca-navy-950">{t("menu")}</p>
+              <p className="text-sm font-bold text-ca-navy">{t("menu")}</p>
               <button
                 type="button"
                 aria-label={t("closeMenu")}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-ca-background"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-ca-control hover:bg-ca-bg"
                 onClick={() => setOpen(false)}
                 ref={closeButtonRef}
               >
@@ -106,7 +100,7 @@ export function MobileMenu({
                   key={link.key}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="flex h-12 items-center rounded-xl px-4 text-base font-bold text-ca-navy-950 transition hover:bg-ca-background"
+                  className="flex h-12 items-center rounded-ca-control px-4 text-base font-bold text-ca-navy transition hover:bg-ca-bg"
                 >
                   {t(link.key)}
                 </Link>
@@ -120,7 +114,7 @@ export function MobileMenu({
               <Link
                 href={accountHref}
                 onClick={() => setOpen(false)}
-                className="flex h-12 items-center gap-3 rounded-xl px-4 text-base font-bold text-ca-navy-950 transition hover:bg-ca-background"
+                className="flex h-12 items-center gap-3 rounded-ca-control px-4 text-base font-bold text-ca-navy transition hover:bg-ca-bg"
               >
                 <User className="h-5 w-5 text-ca-text-secondary" strokeWidth={1.8} />
                 {accountLabel}
@@ -128,12 +122,12 @@ export function MobileMenu({
               <Link
                 href="/cart"
                 onClick={() => setOpen(false)}
-                className="flex h-12 items-center gap-3 rounded-xl px-4 text-base font-bold text-ca-navy-950 transition hover:bg-ca-background"
+                className="flex h-12 items-center gap-3 rounded-ca-control px-4 text-base font-bold text-ca-navy transition hover:bg-ca-bg"
               >
                 <div className="relative">
                   <ShoppingCart className="h-5 w-5 text-ca-text-secondary" strokeWidth={1.8} />
                   {cartItemCount > 0 ? (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ca-navy-950 px-0.5 text-[10px] font-black text-white">
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-ca-control bg-ca-navy px-0.5 text-xs font-bold text-white">
                       {cartItemCount}
                     </span>
                   ) : null}
@@ -152,7 +146,7 @@ export function MobileMenu({
               <Link
                 href="/catalog"
                 onClick={() => setOpen(false)}
-                className="flex h-12 items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white transition hover:bg-ca-navy-800"
+                className={buttonVariants({ size: "lg" })}
               >
                 {t("viewFullCatalog")}
               </Link>
@@ -169,7 +163,7 @@ export function MobileMenu({
         type="button"
         aria-label={open ? t("closeMenu") : t("openMenu")}
         aria-expanded={open}
-        className={toggleClass}
+        className={buttonVariants({ variant: "outline", className: "w-10 px-0" })}
         onClick={() => setOpen(true)}
         ref={triggerRef}
       >

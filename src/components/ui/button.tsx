@@ -2,23 +2,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * Primitiva de botón del design system. Variantes tomadas de los patrones
- * repetidos en el sitio (navy primario, gold de acento, outline del header).
- *
- * Para enlaces con apariencia de botón usar `buttonVariants()` directamente
- * en el className del <Link>.
- */
-export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-ca-control font-black transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ca-blue-700 disabled:pointer-events-none disabled:bg-ca-disabled-bg disabled:text-ca-disabled-text disabled:shadow-none",
+const buttonStyles = cva(
+  "inline-flex items-center justify-center gap-2 rounded-ca-control border border-transparent font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ca-navy-hover disabled:pointer-events-none disabled:border-ca-border disabled:bg-ca-bg disabled:text-ca-text-secondary",
   {
     variants: {
       variant: {
-        primary: "bg-ca-navy-950 text-white hover:bg-ca-navy-800",
-        accent: "bg-ca-gold-400 text-ca-navy-950 hover:bg-ca-gold-500",
-        outline:
-          "border border-ca-border bg-white text-ca-navy-950 hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white",
-        ghost: "font-bold text-ca-text-secondary hover:text-ca-navy-950",
+        primary: "bg-ca-navy text-white hover:bg-ca-navy-hover",
+        outline: "border-ca-border bg-ca-surface text-ca-navy hover:border-ca-navy hover:bg-ca-bg",
+        ghost: "text-ca-text-secondary hover:bg-ca-bg hover:text-ca-navy",
+        whatsapp: "border-ca-whatsapp bg-ca-surface text-ca-navy hover:bg-ca-whatsapp/10",
       },
       size: {
         sm: "h-9 px-3 text-xs",
@@ -32,6 +24,13 @@ export const buttonVariants = cva(
     },
   },
 );
+
+type ButtonStyleProps = VariantProps<typeof buttonStyles> & { className?: string };
+
+/** Use buttonVariants for links that look like buttons. */
+export function buttonVariants({ className, ...variants }: ButtonStyleProps = {}) {
+  return cn(buttonStyles(variants), className);
+}
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants>;

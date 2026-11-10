@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 
 import { useState } from "react";
@@ -51,12 +52,12 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
   const emailValid = isValidEmail(email);
 
   const inputClass = (valid: boolean, wasTouched: boolean) =>
-    `mt-2 h-11 w-full rounded-xl border bg-ca-background px-3 text-sm outline-none transition focus:ring-2 ${
+    `mt-2 h-11 w-full rounded-ca-control border bg-ca-bg px-3 text-sm transition focus:ring-2 ${
       wasTouched && !valid
-        ? "border-red-400 focus:border-red-400 focus:ring-red-100"
+        ? "border-danger/20 focus:border-danger/20 focus:ring-red-100"
         : wasTouched && valid
-          ? "border-emerald-400 focus:border-emerald-400 focus:ring-emerald-100"
-          : "border-ca-border focus:border-ca-navy-950 focus:ring-ca-navy-950/10"
+          ? "border-success/20 focus:border-success/20 focus:ring-emerald-100"
+          : "border-ca-border focus:border-ca-navy focus:ring-ca-navy/10"
     }`;
 
   return (
@@ -64,14 +65,14 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
       <input type="hidden" name="next" value={nextPath} />
 
       {errorMessage ? (
-        <div className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">
+        <div className="rounded-ca-control bg-danger/10 p-3 text-sm font-semibold text-danger">
           {errorMessage}
         </div>
       ) : null}
 
       {/* Nombre */}
       <div>
-        <label htmlFor="name" className="block text-sm font-bold text-ca-navy-950">
+        <label htmlFor="name" className="block text-sm font-bold text-ca-navy">
           {t("fullName")}
         </label>
         <input
@@ -86,7 +87,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
           className={inputClass(nameValid, touched.name)}
         />
         {touched.name && !nameValid && (
-          <p className="mt-1 text-xs text-red-500">
+          <p className="mt-1 text-xs text-danger">
             {t("nameHelper")}
           </p>
         )}
@@ -94,7 +95,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-sm font-bold text-ca-navy-950">
+        <label htmlFor="email" className="block text-sm font-bold text-ca-navy">
           {t("email")}
         </label>
         <input
@@ -109,7 +110,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
           className={inputClass(emailValid, touched.email)}
         />
         {touched.email && !emailValid && (
-          <p className="mt-1 text-xs text-red-500">
+          <p className="mt-1 text-xs text-danger">
             {t("emailHelper")}
           </p>
         )}
@@ -117,7 +118,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
 
       {/* Contraseña */}
       <div>
-        <label htmlFor="password" className="block text-sm font-bold text-ca-navy-950">
+        <label htmlFor="password" className="block text-sm font-bold text-ca-navy">
           {t("password")}
         </label>
         <input
@@ -128,13 +129,13 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm outline-none transition focus:border-ca-navy-950 focus:ring-2 focus:ring-ca-navy-950/10"
+          className="mt-2 h-11 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm transition focus:border-ca-navy focus:ring-2 focus:ring-ca-navy/10"
         />
       </div>
 
       {/* Confirmar contraseña */}
       <div>
-        <label htmlFor="passwordConfirm" className="block text-sm font-bold text-ca-navy-950">
+        <label htmlFor="passwordConfirm" className="block text-sm font-bold text-ca-navy">
           {t("confirmPassword")}
         </label>
         <input
@@ -145,25 +146,25 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
           autoComplete="new-password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className="mt-2 h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm outline-none transition focus:border-ca-navy-950 focus:ring-2 focus:ring-ca-navy-950/10"
+          className="mt-2 h-11 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm transition focus:border-ca-navy focus:ring-2 focus:ring-ca-navy/10"
         />
       </div>
 
       {/* Requisitos de contraseña */}
       {password.length > 0 || confirm.length > 0 ? (
-        <ul className="space-y-1.5 rounded-xl border border-ca-border bg-ca-background px-4 py-3">
+        <ul className="space-y-1.5 rounded-ca-control border border-ca-border bg-ca-bg px-4 py-3">
           {requirements.map((req) => (
             <li key={req.key} className="flex items-center gap-2 text-xs font-semibold">
               {req.met ? (
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-ca-control bg-ca-surface0 text-white">
                   <Check className="h-2.5 w-2.5" strokeWidth={3} />
                 </span>
               ) : (
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-400 text-white">
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-ca-control bg-danger text-white">
                   <X className="h-2.5 w-2.5" strokeWidth={3} />
                 </span>
               )}
-              <span className={req.met ? "text-emerald-700" : "text-red-500"}>
+              <span className={req.met ? "text-success" : "text-danger"}>
                 {t(`rule.${req.key}`)}
               </span>
             </li>
@@ -173,12 +174,12 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
 
       {/* Teléfono */}
       <div>
-        <label htmlFor="phone" className="block text-sm font-bold text-ca-navy-950">
+        <label htmlFor="phone" className="block text-sm font-bold text-ca-navy">
           {t("phone")}{" "}
           <span className="font-normal text-ca-text-secondary">{t("optional")}</span>
         </label>
-        <div className="mt-2 flex h-11 overflow-hidden rounded-xl border border-ca-border bg-ca-background focus-within:border-ca-navy-950 focus-within:ring-2 focus-within:ring-ca-navy-950/10 transition">
-          <span className="flex items-center border-r border-ca-border bg-white px-3 text-sm font-bold text-ca-navy-950 select-none">
+        <div className="mt-2 flex h-11 overflow-hidden rounded-ca-control border border-ca-border bg-ca-bg focus-within:border-ca-navy focus-within:ring-2 focus-within:ring-ca-navy/10 transition">
+          <span className="flex items-center border-r border-ca-border bg-ca-surface px-3 text-sm font-bold text-ca-navy select-none">
             +503
           </span>
           <input
@@ -189,14 +190,14 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
             placeholder="7000-0000"
             pattern="[0-9]{4}-?[0-9]{4}"
             maxLength={9}
-            className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-ca-text-secondary/50"
+            className="min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-ca-text-secondary"
           />
         </div>
       </div>
 
       <button
         type="submit"
-        className="inline-flex h-[52px] w-full items-center justify-center rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
+        className={buttonVariants({ size: "lg", className: "w-full" })}
       >
         {t("submit")}
       </button>
@@ -205,7 +206,7 @@ export function RegisterForm({ nextPath, errorMessage }: Props) {
         {t("haveAccount")}{" "}
         <Link
           href={{ pathname: "/auth/login", query: { next: nextPath } }}
-          className="font-bold text-ca-blue-700 hover:underline"
+          className="font-bold text-ca-navy-hover hover:underline"
         >
           {t("signIn")}
         </Link>

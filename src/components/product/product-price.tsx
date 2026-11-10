@@ -22,7 +22,7 @@ export function ProductPrice({
   return (
     <p
       className={cn(
-        "font-sans font-semibold leading-none text-ca-navy-950",
+        "font-sans font-semibold leading-none text-ca-navy",
         size === "lg" ? "text-3xl" : "text-xl",
         className,
       )}

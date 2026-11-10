@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { KeyRound, Lock, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/config";
@@ -16,14 +17,14 @@ export async function AccountPasswordForm({
   const t = await getTranslations({ locale, namespace: "Account.password" });
 
   return (
-    <section className="h-full rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
+    <section className="h-full rounded-ca-surface border border-ca-border bg-ca-surface p-5 sm:p-6">
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ca-background text-ca-navy-950">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-bg text-ca-navy">
           <Lock className="h-5 w-5" strokeWidth={1.8} />
         </span>
         <div>
-          <h2 className="text-xl font-black text-ca-navy-950">{t("title")}</h2>
-          <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
+          <h2 className="text-xl font-bold text-ca-navy">{t("title")}</h2>
+          <p className="mt-1 text-sm font-semibold leading-6 text-ca-text-secondary">
             {t("description")}
           </p>
         </div>
@@ -52,7 +53,7 @@ export async function AccountPasswordForm({
             />
           </div>
           <button
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-ca-navy-950 bg-white px-5 text-sm font-black text-ca-navy-950 transition hover:bg-ca-navy-950 hover:text-white sm:w-auto"
+            className={buttonVariants({ className: "w-full sm:w-auto" })}
             type="submit"
           >
             <KeyRound className="h-4 w-4" strokeWidth={2} />
@@ -60,16 +61,16 @@ export async function AccountPasswordForm({
           </button>
         </form>
       ) : (
-        <div className="mt-6 rounded-2xl border border-ca-border bg-ca-background p-5">
+        <div className="mt-6 rounded-ca-control border border-ca-border bg-ca-bg p-5">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-ca-navy-950">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-surface text-ca-navy">
               <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
             </span>
             <div>
-              <p className="font-black text-ca-navy-950">
+              <p className="font-bold text-ca-navy">
                 {t("providerTitle")}
               </p>
-              <p className="mt-1 text-sm font-medium leading-6 text-ca-text-secondary">
+              <p className="mt-1 text-sm font-semibold leading-6 text-ca-text-secondary">
                 {t("providerDescription")}
               </p>
             </div>
@@ -97,12 +98,12 @@ function PasswordField({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-black text-ca-navy-950">
+      <label htmlFor={id} className="block text-sm font-bold text-ca-navy">
         {label}
       </label>
       <input
         autoComplete={autoComplete}
-        className="mt-2 h-12 w-full rounded-xl border border-ca-border bg-ca-background px-3 text-sm font-semibold text-ca-navy-950 outline-none transition focus:border-ca-navy-950 focus:ring-2 focus:ring-ca-navy-950/10"
+        className="mt-2 h-12 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm font-semibold text-ca-navy transition focus:border-ca-navy focus:ring-2 focus:ring-ca-navy/10"
         id={id}
         minLength={minLength}
         name={name}

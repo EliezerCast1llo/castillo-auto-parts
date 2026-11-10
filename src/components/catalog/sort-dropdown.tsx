@@ -25,14 +25,14 @@ export function SortDropdown({ sortLabel, ariaLabel, value }: SortDropdownProps)
 
   return (
     <label className="flex w-full flex-col gap-1.5 sm:w-auto">
-      <span className="text-[11px] font-black uppercase tracking-[0.12em] text-ca-text-secondary">
+      <span className="text-xs font-bold text-ca-text-secondary">
         {sortLabel}
       </span>
-      <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition focus-within:border-ca-blue-700">
-        <ArrowUpDown className="h-4 w-4 shrink-0 text-ca-blue-700" strokeWidth={1.9} />
+      <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-ca-control border border-ca-border bg-ca-surface px-3 text-sm font-bold text-ca-navy transition focus-within:border-ca-navy-hover">
+        <ArrowUpDown className="h-4 w-4 shrink-0 text-ca-navy-hover" strokeWidth={1.9} />
         <select
           aria-label={ariaLabel}
-          className="h-full w-full bg-transparent outline-none"
+          className="h-full w-full bg-transparent"
           onChange={(event) => {
             const nextSort = event.target.value as CatalogSort;
             const params = new URLSearchParams(searchParams.toString());

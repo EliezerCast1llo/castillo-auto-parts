@@ -29,7 +29,7 @@ export default async function BoxfulAdmin({ searchParams }: { searchParams: Prom
     <form action={recordBoxfulTopup} className="space-x-3 rounded-xl border p-4">
       <input type="hidden" name="id" value={randomUUID()} />
       <label>Recarga confirmada (centavos USD) <input name="amountCents" type="number" min="1" max="100000000" required className="border p-2" /></label>
-      <button className="rounded bg-ca-navy-950 p-3 text-white">Registrar recarga</button>
+      <button className="rounded bg-ca-navy p-3 text-white">Registrar recarga</button>
     </form>
     {user.role === "ADMIN" ? <section className="space-y-4">
       <h2 className="text-xl font-bold">Distritos verificados</h2>
@@ -42,7 +42,7 @@ export default async function BoxfulAdmin({ searchParams }: { searchParams: Prom
         <input type="hidden" name="department" value={department} /><input type="hidden" name="stateId" value={state.id} />
         <label>Municipio <select name="municipality" required className="w-full border p-2">{municipalitiesByDepartment[department].map((m) => <option key={m}>{m}</option>)}</select></label>
         <label>Distrito en Boxful <select name="cityId" required className="w-full border p-2">{state.Cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-        <button className="rounded bg-ca-navy-950 p-3 text-white">Confirmo el mapeo y guardar</button>
+        <button className="rounded bg-ca-navy p-3 text-white">Confirmo el mapeo y guardar</button>
       </form> : department ? <p role="alert">Catálogo no disponible. Revisa las credenciales QA y el acceso a la API.</p> : null}
       <ul className="space-y-3">{locations.map((l) => <li key={l.id} className="flex justify-between gap-4 rounded border p-3"><span>{l.department} / {l.municipality} / {l.district}</span><form action={deleteBoxfulLocation}><input type="hidden" name="id" value={l.id} /><button className="underline">Quitar</button></form></li>)}</ul>
     </section> : null}

@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createAddress } from "@/lib/actions/account-addresses";
@@ -23,16 +24,16 @@ export function AddAddressForm({ onSave, errorMessages }: { onSave?: () => void;
     }}>
       <NationalAddressInputs value={fields} onChange={setFields} />
       <CheckoutLocationPicker />
-      <button type="submit" className="min-h-11 w-full rounded-xl bg-ca-navy-950 px-4 font-bold text-white">{t("review")}</button>
+      <button type="submit" className={buttonVariants({ className: "w-full" })}>{t("review")}</button>
     </form>
     {reviewing ? <section className="space-y-4">
       <h3 className="font-bold">{t("confirmTitle")}</h3>
       <p>{t("verifyBeforeSaving")}</p>
-      <div className="rounded-xl bg-ca-background p-4 text-sm"><p>{fields.addressLine1}, {fields.addressLine2}</p><p>{fields.city}, {fields.department}</p><p>{fields.landmark}</p><p>{fields.deliveryNotes}</p></div>
-      {error ? <p role="alert" className="text-sm text-red-600">{errorMessages[error]}</p> : null}
+      <div className="rounded-ca-control bg-ca-bg p-4 text-sm"><p>{fields.addressLine1}, {fields.addressLine2}</p><p>{fields.city}, {fields.department}</p><p>{fields.landmark}</p><p>{fields.deliveryNotes}</p></div>
+      {error ? <p role="alert" className="text-sm text-danger">{errorMessages[error]}</p> : null}
       <div className="flex gap-3">
-        <button type="button" className="min-h-11 rounded-xl border px-4" onClick={() => setReviewing(false)}>{t("edit")}</button>
-        <button type="button" disabled={saving} className="min-h-11 rounded-xl bg-ca-navy-950 px-4 font-bold text-white disabled:opacity-50" onClick={async () => {
+        <button type="button" className="min-h-11 rounded-ca-control border px-4" onClick={() => setReviewing(false)}>{t("edit")}</button>
+        <button type="button" disabled={saving} className={buttonVariants()} onClick={async () => {
           if (!formRef.current || saving) return;
           const data = new FormData(formRef.current);
           setSaving(true); setError(undefined);

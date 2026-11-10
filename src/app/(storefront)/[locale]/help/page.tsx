@@ -81,30 +81,28 @@ export default async function HelpPage({
   const t = await getTranslations({ locale, namespace: "Help" });
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-surface text-ca-text">
       <SiteHeader locale={locale} />
 
       <HelpHero t={t} />
 
-      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-        {/* Las opciones de entrega montan sobre el hero: cierran el bloque navy
-            en lugar de dejar un corte plano entre las dos superficies. */}
+      <div className="ca-container pb-16">
         <section
           aria-label={t("delivery.ariaLabel")}
-          className="relative z-10 -mt-16 grid gap-4 md:grid-cols-2"
+          className="grid gap-4 md:grid-cols-2"
         >
           {deliveryOptions.map((option) => (
             <div
               className={cn(
                 cardVariants({ padding: "md" }),
-                "flex items-center gap-3 transition-colors hover:border-ca-navy-950/30",
+                "flex items-center gap-3 transition-colors hover:border-ca-navy/30",
               )}
               key={option.key}
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-background text-ca-blue-700">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-bg text-ca-navy-hover">
                 <option.icon className="h-5 w-5" strokeWidth={1.8} />
               </span>
-              <p className="text-sm font-bold leading-5 text-ca-navy-950">{t(`delivery.${option.key}`)}</p>
+              <p className="text-sm leading-6 text-ca-text">{t(`delivery.${option.key}`)}</p>
             </div>
           ))}
         </section>
@@ -129,79 +127,38 @@ export default async function HelpPage({
 
 function HelpHero({ t }: { t: HelpTranslator }) {
   return (
-    <section className="ca-noise relative overflow-hidden bg-ca-navy-950 text-white">
-      {/* Textura y halos: mismo tratamiento que el hero del home para que las
-          dos superficies navy del sitio se lean como la misma marca. */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="ca-grid-bg absolute inset-0" />
-        <div className="absolute -right-28 -top-40 h-[460px] w-[460px] rounded-full bg-ca-blue-700/20 blur-[90px]" />
-        <div className="absolute -bottom-32 -left-24 h-[320px] w-[420px] rounded-full bg-ca-gold-500/10 blur-[70px]" />
-      </div>
-
-      <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 lg:px-8 lg:pb-28 lg:pt-16">
-        <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
-          <div>
-            <p className="ca-section-label animate-fade-up">
-              <span className="h-px w-6 bg-ca-gold-400" />
-              {t("hero.eyebrow")}
-            </p>
-
-            <h1 className="animate-fade-up delay-100 mt-4 max-w-xl font-display text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl">
-              {t("hero.titleBefore")}{" "}
-              <span className="ca-gold-shimmer">{t("hero.titleHighlight")}</span>{" "}
-              {t("hero.titleAfter")}
-            </h1>
-
-            <p className="animate-fade-up delay-200 mt-5 max-w-xl text-base leading-7 text-white/75">
-              {t("hero.description")}
-            </p>
-
-            <div className="animate-fade-up delay-300 mt-8 flex flex-col gap-3 sm:flex-row">
-              <WhatsAppCTA label={t("hero.whatsapp")} phone={SUPPORT_WHATSAPP_NUMBER} />
-              <Link
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-ca-control border border-white/20 bg-white/10 px-5 text-sm font-black text-white transition hover:border-white/35 hover:bg-white/[0.18]"
-                href="/catalog"
-              >
-                {t("hero.browseCatalog")}
-              </Link>
-            </div>
+    <section className="ca-container py-8 sm:py-12">
+      <div className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          <p className="text-sm font-semibold text-ca-text-secondary">{t("hero.eyebrow")}</p>
+          <h1 className="mt-2 max-w-xl text-ca-title font-bold text-ca-navy">
+            {t("hero.titleBefore")} {t("hero.titleHighlight")} {t("hero.titleAfter")}
+          </h1>
+          <p className="mt-4 max-w-xl text-base leading-6 text-ca-text-secondary">
+            {t("hero.description")}
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <WhatsAppCTA label={t("hero.whatsapp")} phone={SUPPORT_WHATSAPP_NUMBER} />
+            <Link className={buttonVariants({ variant: "outline", size: "lg" })} href="/catalog">
+              {t("hero.browseCatalog")}
+            </Link>
           </div>
+        </div>
 
-          {/* Panel de datos: la pregunta "¿qué te mando?" resuelta como lista
-              numerada en vez de un párrafo dentro del texto de apoyo. */}
-          <div className="animate-fade-up delay-300 relative overflow-hidden rounded-ca-surface border border-white/[0.09] bg-ca-navy-900/80 p-6 backdrop-blur-sm sm:p-7">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_-10%,rgba(18,103,197,0.28),transparent_22rem)]" />
-
-            <div className="relative">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-ca-gold-400">
-                {t("intake.eyebrow")}
-              </p>
-              <h2 className="mt-2 text-lg font-bold leading-tight">
-                {t("intake.title")}
-              </h2>
-
-              <ol className="mt-6 space-y-3">
-                {requestChecklist.map((item, index) => (
-                  <li
-                    className="flex items-start gap-3 rounded-ca-control border border-white/[0.07] bg-white/[0.04] p-3 transition hover:border-ca-gold-400/30 hover:bg-white/[0.07]"
-                    key={item.key}
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ca-control border border-ca-gold-400/20 bg-ca-gold-400/10 text-ca-gold-400">
-                      <item.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                    </span>
-                    <p className="pt-1.5 text-sm font-bold leading-5">
-                      <span className="mr-2 text-ca-gold-400">{index + 1}.</span>
-                      {t(`intake.${item.key}`)}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-
-              <p className="mt-6 border-t border-white/15 pt-5 text-sm leading-6 text-white/75">
-                {t("intake.note")}
-              </p>
-            </div>
-          </div>
+        <div className={cardVariants({ padding: "lg" })}>
+          <p className="text-sm font-semibold text-ca-text-secondary">{t("intake.eyebrow")}</p>
+          <h2 className="mt-2 text-xl font-bold text-ca-navy">{t("intake.title")}</h2>
+          <ul className="mt-4 divide-y divide-ca-border">
+            {requestChecklist.map(({ icon: Icon, key }) => (
+              <li className="flex items-center gap-3 py-3 text-sm text-ca-text" key={key}>
+                <Icon aria-hidden="true" className="h-5 w-5 shrink-0 text-ca-navy" />
+                {t(`intake.${key}`)}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 border-t border-ca-border pt-4 text-sm leading-6 text-ca-text-secondary">
+            {t("intake.note")}
+          </p>
         </div>
       </div>
     </section>
@@ -217,11 +174,10 @@ function ProcessSection({ t }: { t: HelpTranslator }) {
     <section className="mt-14">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="ca-section-label">
-            <span className="h-px w-6 bg-ca-gold-400" />
+          <p className="text-sm font-semibold text-ca-text-secondary">
             {t("steps.eyebrow")}
           </p>
-          <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight text-ca-navy-950 sm:text-[28px]">
+          <h2 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-ca-navy sm:text-ca-title">
             {t("steps.title")}
           </h2>
         </div>
@@ -235,14 +191,14 @@ function ProcessSection({ t }: { t: HelpTranslator }) {
           <article
             className={cn(
               cardVariants({ padding: "lg" }),
-              "transition-colors hover:border-ca-navy-950/30",
+              "transition-colors hover:border-ca-navy/30",
             )}
             key={step.number}
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-ca-control bg-ca-background text-sm font-black tracking-[0.08em] text-ca-blue-700">
+            <span className="flex h-11 w-11 items-center justify-center rounded-ca-control bg-ca-bg text-sm font-bold text-ca-navy-hover">
               {step.number}
             </span>
-            <h3 className="mt-4 text-base font-bold text-ca-navy-950">{t(`steps.${step.key}Title`)}</h3>
+            <h3 className="mt-4 text-base font-bold text-ca-navy">{t(`steps.${step.key}Title`)}</h3>
             <p className="mt-2 text-sm leading-6 text-ca-text-secondary">
               {t(`steps.${step.key}Description`)}
             </p>
@@ -261,7 +217,7 @@ function FaqSection({ t }: { t: HelpTranslator }) {
   return (
     <section className="mt-14 grid gap-8 lg:grid-cols-[320px_1fr] lg:gap-10">
       <div className="lg:sticky lg:top-28 lg:self-start">
-        <h2 className="text-2xl font-black leading-tight tracking-tight text-ca-navy-950 sm:text-[28px]">
+        <h2 className="text-2xl font-bold leading-tight tracking-tight text-ca-navy sm:text-ca-title">
           {t("faq.title")}
         </h2>
         <p className="mt-3 text-sm leading-6 text-ca-text-secondary">
@@ -274,15 +230,15 @@ function FaqSection({ t }: { t: HelpTranslator }) {
           <details
             className={cn(
               cardVariants({ padding: "none" }),
-              "group transition-colors hover:border-ca-navy-950/30 open:border-ca-navy-950/30",
+              "group transition-colors hover:border-ca-navy/30 open:border-ca-navy/30",
             )}
             key={faq}
           >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-ca-surface p-5 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ca-blue-700 [&::-webkit-details-marker]:hidden">
-              <span className="text-base font-bold leading-6 text-ca-navy-950">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-ca-surface p-5 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ca-navy-hover [&::-webkit-details-marker]:hidden">
+              <span className="text-base font-bold leading-6 text-ca-navy">
                 {t(`faq.${faq}Question`)}
               </span>
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-ca-control border border-ca-border bg-ca-background text-ca-navy-950 transition group-open:border-ca-navy-950 group-open:bg-ca-navy-950 group-open:text-white">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-ca-control border border-ca-border bg-ca-bg text-ca-navy transition group-open:border-ca-navy group-open:bg-ca-navy group-open:text-white">
                 <ChevronDown
                   className="h-4 w-4 transition-transform duration-200 group-open:rotate-180"
                   strokeWidth={2.2}
@@ -301,11 +257,11 @@ function FaqSection({ t }: { t: HelpTranslator }) {
         <div
           className={cn(
             cardVariants({ padding: "md" }),
-            "flex flex-col gap-4 border-dashed bg-ca-background sm:flex-row sm:items-center sm:justify-between",
+            "flex flex-col gap-4 border-dashed bg-ca-bg sm:flex-row sm:items-center sm:justify-between",
           )}
         >
           <div>
-            <p className="text-sm font-bold text-ca-navy-950">{t("faq.ctaTitle")}</p>
+            <p className="text-sm font-bold text-ca-navy">{t("faq.ctaTitle")}</p>
             <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
               {t("faq.ctaText")}
             </p>
@@ -334,11 +290,11 @@ function FaqSection({ t }: { t: HelpTranslator }) {
 function PolicyNote({ t }: { t: HelpTranslator }) {
   return (
     <section className={cn(cardVariants({ padding: "lg" }), "mt-12 flex items-start gap-4")}>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-background text-ca-text-secondary">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ca-control bg-ca-bg text-ca-text-secondary">
         <RotateCcw className="h-5 w-5" strokeWidth={1.9} />
       </span>
       <div>
-        <h2 className="text-base font-bold text-ca-navy-950">{t("policyTitle")}</h2>
+        <h2 className="text-base font-bold text-ca-navy">{t("policyTitle")}</h2>
         <p className="mt-1.5 max-w-3xl text-sm leading-6 text-ca-text-secondary">
           {t("policyNote")}
         </p>
@@ -353,21 +309,18 @@ function PolicyNote({ t }: { t: HelpTranslator }) {
 
 function ClosingCta({ t }: { t: HelpTranslator }) {
   return (
-    <section className="ca-noise relative mt-4 overflow-hidden rounded-ca-surface bg-ca-navy-950 px-6 py-8 text-white sm:px-8">
-      <div className="ca-grid-bg pointer-events-none absolute inset-0" />
-      <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-ca-blue-700/20 blur-[70px]" />
-
-      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <section className={cn(cardVariants({ padding: "lg" }), "mt-4")}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-black tracking-tight sm:text-2xl">
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
             {t("closing.title")}
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-white/72">
+          <p className="mt-2 max-w-xl text-sm leading-6 text-ca-text-secondary">
             {t("closing.description")}
           </p>
         </div>
         <Link
-          className={cn(buttonVariants({ variant: "accent", size: "lg" }), "shrink-0")}
+          className={cn(buttonVariants({ size: "lg" }), "shrink-0")}
           href="/catalog"
         >
           {t("closing.action")}

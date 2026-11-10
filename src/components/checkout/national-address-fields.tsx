@@ -5,7 +5,7 @@ import { departments, getMunicipalities } from "@/data/el-salvador";
 
 export type NationalAddressFields = { addressLine1: string; addressLine2: string; department: string; city: string; landmark: string; deliveryNotes: string };
 export const emptyNationalAddress: NationalAddressFields = { addressLine1: "", addressLine2: "", department: "", city: "", landmark: "", deliveryNotes: "" };
-const inputClass = "mt-2 min-h-11 w-full rounded-xl border border-ca-border bg-ca-background px-3 py-2 text-sm";
+const inputClass = "mt-2 min-h-11 w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 py-2 text-sm";
 
 export function NationalAddressInputs({ value, onChange }: { value: NationalAddressFields; onChange: (value: NationalAddressFields) => void }) {
   const t = useTranslations("Checkout.delivery");

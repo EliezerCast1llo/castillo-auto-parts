@@ -22,11 +22,11 @@ export function MyVehicleChip() {
   return (
     <Link
       aria-label={t("viewPartsForVehicle", { vehicle: label })}
-      className="hidden h-10 max-w-56 items-center gap-2 rounded-xl border border-ca-blue-700/25 bg-ca-blue-700/5 px-3 text-sm font-bold text-ca-navy-950 transition hover:border-ca-blue-700/45 hover:bg-ca-blue-700/10 lg:inline-flex"
+      className="hidden h-10 max-w-56 items-center gap-2 rounded-ca-control border border-ca-navy-hover/25 bg-ca-navy-hover/5 px-3 text-sm font-bold text-ca-navy transition hover:border-ca-navy-hover/45 hover:bg-ca-navy-hover/10 lg:inline-flex"
       href="/catalog"
       title={t("myVehicle", { vehicle: label })}
     >
-      <Car className="h-4 w-4 shrink-0 text-ca-blue-700" />
+      <Car className="h-4 w-4 shrink-0 text-ca-navy-hover" />
       <span className="truncate">{label}</span>
     </Link>
   );

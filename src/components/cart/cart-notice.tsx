@@ -9,23 +9,23 @@ type NoticeVariant = "success" | "error" | "info" | "warning";
 
 const variantStyles: Record<NoticeVariant, { bg: string; text: string; icon: typeof CheckCircle2 }> = {
   success: {
-    bg: "bg-emerald-50 border border-emerald-200",
-    text: "text-emerald-700",
+    bg: "bg-ca-surface border border-success/20",
+    text: "text-success",
     icon: CheckCircle2,
   },
   error: {
-    bg: "bg-red-50 border border-red-200",
-    text: "text-red-600",
+    bg: "bg-danger/10 border border-danger/20",
+    text: "text-danger",
     icon: AlertCircle,
   },
   warning: {
-    bg: "bg-amber-50 border border-amber-200",
-    text: "text-amber-700",
+    bg: "bg-warning/10 border border-warning/20",
+    text: "text-warning",
     icon: AlertCircle,
   },
   info: {
-    bg: "bg-ca-navy-950/5 border border-ca-navy-950/10",
-    text: "text-ca-navy-950",
+    bg: "bg-ca-navy/5 border border-ca-navy/10",
+    text: "text-ca-navy",
     icon: Info,
   },
 };
@@ -102,15 +102,15 @@ export function CartNotice({ message, status }: CartNoticeProps) {
     <div
       role="status"
       aria-live="polite"
-      className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${bg} ${text} ${
-        exiting ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
-      }`}
+      className={`flex items-center gap-3 rounded-ca-control px-4 py-3 text-sm font-semibold transition-all duration-300 ${bg} ${text} ${
+ exiting ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
+ }`}
     >
       <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
       <span className="flex-1">{message}</span>
       <button
         aria-label={t("dismiss")}
-        className="ml-1 rounded-md p-1 opacity-50 transition hover:opacity-100"
+        className="ml-1 rounded-ca-control p-1 opacity-50 transition hover:opacity-100"
         onClick={() => setExiting(true)}
         type="button"
       >

@@ -8,17 +8,17 @@ export async function AccountSupportCard({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Account.support" });
 
   return (
-    <section className="rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] sm:p-6">
+    <section className="rounded-ca-surface border border-ca-border bg-ca-surface p-5 sm:p-6">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-ca-navy-950 text-white shadow-[0_10px_24px_rgba(6,25,51,0.2)]">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-ca-control bg-ca-navy text-white">
             <Headphones className="h-7 w-7" strokeWidth={1.8} />
           </span>
           <div>
-            <h2 className="text-xl font-black text-ca-navy-950">
+            <h2 className="text-xl font-bold text-ca-navy">
               {t("title")}
             </h2>
-            <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-ca-text-secondary">
+            <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-ca-text-secondary">
               {t("description")}
             </p>
           </div>

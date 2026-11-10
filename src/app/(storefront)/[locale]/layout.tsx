@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, Outfit } from "next/font/google";
+import { Outfit } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CookieConsentSlot } from "@/components/consent/cookie-consent-slot";
@@ -9,14 +9,6 @@ import { defaultLocale, isPublishedLocale, locales, type Locale } from "@/lib/i1
 import { loadMessages, pickClientMessages } from "@/lib/i18n/messages";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "../../globals.css";
-
-// Solo se usan los pesos 800 y 900 de la fuente display en el storefront.
-// Cada peso estático extra añade una descarga que compite con la imagen LCP.
-const barlowCondensed = Barlow_Condensed({
-  subsets: ["latin"],
-  weight: ["800", "900"],
-  variable: "--font-display",
-});
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -103,7 +95,7 @@ export default async function StorefrontLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${barlowCondensed.variable} ${outfit.variable} font-sans antialiased`}>
+      <body className={`${outfit.variable} font-sans antialiased`}>
         <NextIntlClientProvider locale={locale} messages={pickClientMessages(messages)}>
           <ToastProvider>{children}</ToastProvider>
           <CookieConsentSlot />

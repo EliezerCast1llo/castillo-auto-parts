@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTransition, useState } from "react";
@@ -43,22 +44,22 @@ export function CartQuantityControl({
   return (
     <div className={`flex items-center gap-3 transition-opacity ${pending ? "opacity-50" : ""}`}>
       {/* Stepper */}
-      <div className="flex h-10 items-center overflow-hidden rounded-xl border border-ca-border bg-white">
+      <div className="flex h-10 items-center overflow-hidden rounded-ca-surface border border-ca-border bg-ca-surface">
         <button
           aria-label={t("decrease")}
-          className="flex w-10 items-center justify-center text-ca-navy-950 transition hover:bg-ca-background disabled:text-ca-border"
+          className={buttonVariants({ variant: "outline", className: "h-full w-10 shrink-0 border-0 px-0 focus-visible:-outline-offset-2" })}
           disabled={!canDecrease || pending}
           onClick={() => submit(quantity - 1)}
           type="button"
         >
           <Minus className="h-3.5 w-3.5" strokeWidth={2.2} />
         </button>
-        <span className="min-w-[2rem] px-2 text-center text-sm font-black text-ca-navy-950">
+        <span className="min-w-[2rem] px-2 text-center text-sm font-bold text-ca-navy">
           {quantity}
         </span>
         <button
           aria-label={t("increase")}
-          className="flex w-10 items-center justify-center text-ca-navy-950 transition hover:bg-ca-background disabled:text-ca-border"
+          className={buttonVariants({ variant: "outline", className: "h-full w-10 shrink-0 border-0 px-0 focus-visible:-outline-offset-2" })}
           disabled={!canIncrease || pending}
           onClick={() => submit(quantity + 1)}
           type="button"
@@ -69,13 +70,13 @@ export function CartQuantityControl({
 
       {/* Spinner discreto mientras actualiza */}
       {pending ? (
-        <span className="h-4 w-4 animate-spin rounded-full border-2 border-ca-navy-950 border-t-transparent" />
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-ca-navy border-t-transparent" />
       ) : null}
 
       {/* Eliminar */}
       <button
         aria-label={t("remove")}
-        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ca-border px-3 text-sm font-bold text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+        className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border px-3 text-sm font-bold text-danger transition hover:bg-danger/10 disabled:opacity-50"
         disabled={pending}
         onClick={handleRemove}
         type="button"

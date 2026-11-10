@@ -149,16 +149,17 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
   );
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="ca-container py-6">
         {/* Botón de filtros mobile + drawer */}
         <FilterDrawer
             activeFilterCount={activeFilterCount}
             closeLabel={t("closeFilters")}
             viewPartsLabel={t("viewParts")}
             filtersLabel={t("filters")}
+            filterCatalogLabel={t("filterCatalog")}
           >
           {filterContent}
         </FilterDrawer>
@@ -166,7 +167,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           {/* Sidebar de filtros — solo visible en desktop. La superficie la
               pone el aside: dentro solo hay secciones separadas por reglas. */}
-          <aside className="hidden rounded-ca-surface border border-ca-border bg-white p-4 lg:block lg:sticky lg:top-6 lg:self-start">
+          <aside className="hidden rounded-ca-surface border border-ca-border bg-ca-surface p-4 lg:block lg:sticky lg:top-6 lg:self-start">
             {filterContent}
           </aside>
 
@@ -179,13 +180,13 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
                 empiezan lo antes posible en lugar de tras un banner. */}
             <div className="flex flex-col justify-between gap-3 border-b border-ca-border pb-4 md:flex-row md:items-end">
               <div>
-                <h1 className="text-xl font-black text-ca-navy-950">{t("title")}</h1>
+                <h1 className="text-xl font-bold text-ca-navy">{t("title")}</h1>
                 <p className="mt-1 text-sm text-ca-text-secondary">
                   {getCatalogSummary(t, filters, totalCount, filterOptions)}
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-bold text-ca-navy-950">
+                <span className="text-sm font-bold text-ca-navy">
                   {t("productCount", { count: totalCount })}
                 </span>
                 {totalPages > 1 ? (
@@ -281,19 +282,19 @@ function CatalogBreadcrumb({
       aria-label={t("breadcrumb.ariaLabel")}
       className="flex flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
     >
-      <Link className="transition hover:text-ca-navy-950" href="/">
+      <Link className="transition hover:text-ca-navy" href="/">
         {t("breadcrumb.home")}
       </Link>
       <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
       {!hasCurrent ? (
-        <span className="text-ca-navy-950">{catalogLabel}</span>
+        <span className="text-ca-navy">{catalogLabel}</span>
       ) : (
         <>
-          <Link className="transition hover:text-ca-navy-950" href="/catalog">
+          <Link className="transition hover:text-ca-navy" href="/catalog">
             {catalogLabel}
           </Link>
           <ChevronRight className="h-4 w-4 text-ca-text-secondary/50" />
-          <span className="text-ca-navy-950">{current}</span>
+          <span className="text-ca-navy">{current}</span>
         </>
       )}
     </nav>
@@ -302,11 +303,11 @@ function CatalogBreadcrumb({
 
 function CatalogUnavailableState({ t }: { t: CatalogTranslator }) {
   return (
-    <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-ca-soft">
-      <p className="text-sm font-black uppercase tracking-widest text-red-500">
+    <div className="rounded-ca-surface border border-danger/20 bg-ca-surface p-6">
+      <p className="text-sm font-bold text-danger">
         {t("unavailable.badge")}
       </p>
-      <h2 className="mt-1 text-xl font-black text-ca-navy-950">{t("unavailable.title")}</h2>
+      <h2 className="mt-1 text-xl font-bold text-ca-navy">{t("unavailable.title")}</h2>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-ca-text-secondary">
         {t("unavailable.description")}
       </p>

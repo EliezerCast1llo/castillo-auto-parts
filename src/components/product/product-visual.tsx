@@ -43,7 +43,7 @@ export function ProductVisual({
   kind,
   seed,
   size = "card",
-  tone = "text-ca-border-hover",
+  tone = "text-ca-border",
 }: ProductVisualProps) {
   const visualType = getProductVisualType(kind ?? seed);
 

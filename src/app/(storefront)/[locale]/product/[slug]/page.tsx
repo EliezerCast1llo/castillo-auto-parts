@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigation";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, ChevronRight, Truck } from "lucide-react";
@@ -103,12 +104,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <JsonLd data={buildProductJsonLd(product, locale)} />
       <JsonLd data={buildBreadcrumbJsonLd(breadcrumbs, locale)} />
       <SiteHeader locale={locale} />
 
-      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+      <div className="ca-container py-5">
         <ProductBreadcrumb product={product} t={t} />
 
         {/* Cuerpo principal — aside va abajo en mobile, lateral en lg */}
@@ -116,7 +117,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           {/* Panel izquierdo: galería + descripción + compatibilidad */}
           <div className="space-y-4">
-            <div className="rounded-ca-surface border border-ca-border bg-white p-4">
+            <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-4">
               <ProductGallery
                 images={product.images.map((image, index) => ({
                   ...image,
@@ -127,14 +128,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             </div>
 
-            <div className="rounded-ca-surface border border-ca-border bg-white p-5">
-              <h2 className="text-base font-black text-ca-navy-950">{t("description")}</h2>
+            <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+              <h2 className="text-base font-bold text-ca-navy">{t("description")}</h2>
               <p className="mt-3 text-sm leading-6 text-ca-text-secondary">{product.description}</p>
             </div>
 
             {product.compatibleVehicles.length > 0 ? (
-              <div className="rounded-ca-surface border border-ca-border bg-white p-5">
-                <h2 className="text-base font-black text-ca-navy-950">{t("compatibleVehicles")}</h2>
+              <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+                <h2 className="text-base font-bold text-ca-navy">{t("compatibleVehicles")}</h2>
                 <div className="mt-3 empty:hidden">
                   <MyVehicleCompatibility compatibilities={product.vehicleCompatibilities} />
                 </div>
@@ -142,7 +143,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {product.compatibleVehicles.map((vehicle) => (
                     <div
                       key={vehicle}
-                      className="flex min-h-11 items-center gap-2 rounded-ca-control bg-ca-background px-3 text-sm font-medium text-ca-text-primary"
+                      className="flex min-h-11 items-center gap-2 rounded-ca-control bg-ca-bg px-3 text-sm font-semibold text-ca-text"
                     >
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-ca-success" />
                       {vehicle}
@@ -153,8 +154,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ) : null}
 
             {product.technicalDetails.length > 0 ? (
-              <div className="rounded-ca-surface border border-ca-border bg-white p-5">
-                <h2 className="text-base font-black text-ca-navy-950">{t("technicalDetails")}</h2>
+              <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+                <h2 className="text-base font-bold text-ca-navy">{t("technicalDetails")}</h2>
                 <ul className="mt-3 space-y-2">
                   {product.technicalDetails.map((detail) => (
                     <li key={detail} className="flex items-start gap-2 text-sm text-ca-text-secondary">
@@ -168,14 +169,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           {/* Panel derecho: precio + compra (en mobile va después de la galería) */}
-          <aside className="h-fit rounded-ca-surface border border-ca-border bg-white p-5">
+          <aside className="h-fit rounded-ca-surface border border-ca-border bg-ca-surface p-5">
             {/* Categoría + título + badge */}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+                <p className="text-xs font-bold text-ca-text-secondary">
                   {product.category}
                 </p>
-                <h1 className="mt-1 text-2xl font-black leading-tight text-ca-navy-950">
+                <h1 className="mt-1 text-2xl font-bold leading-tight text-ca-navy">
                   {product.name}
                 </h1>
               </div>
@@ -191,16 +192,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </dl>
 
             {/* Precio */}
-            <div className="mt-5 rounded-ca-control bg-ca-background px-4 py-3">
-              <p className="text-xs font-bold text-ca-text-secondary">Precio con IVA incluido</p>
+            <div className="mt-5 rounded-ca-control bg-ca-bg px-4 py-3">
+              <p className="text-xs font-bold text-ca-text-secondary">{t("priceIncludesVat")}</p>
               <ProductPrice className="mt-1.5" cents={product.priceCents} size="lg" />
             </div>
 
-            <div className="mt-4 rounded-ca-control border border-ca-border bg-white p-4">
+            <div className="mt-4 rounded-ca-control border border-ca-border bg-ca-surface p-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
                 <div>
-                  <p className="text-sm font-black text-ca-navy-950">Revisa la compatibilidad antes de comprar</p>
+                  <p className="text-sm font-bold text-ca-navy">Revisa la compatibilidad antes de comprar</p>
                   <p className="mt-1 text-sm leading-6 text-ca-text-secondary">
                     {t("checkCompatibility")}
                   </p>
@@ -217,7 +218,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               label={t("addToCart")}
               sku={product.sku}
             >
-              <label className="block text-sm font-bold text-ca-navy-950">
+              <label className="block text-sm font-bold text-ca-navy">
                 {t("quantity")}
                 <div className="mt-2">
                   <QuantityStepper disabled={!isAvailable} max={product.stockQuantity} />
@@ -233,10 +234,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
 
             {/* Envío */}
-            <div className="mt-4 flex items-start gap-3 rounded-ca-control bg-ca-background p-4 text-sm">
+            <div className="mt-4 flex items-start gap-3 rounded-ca-control bg-ca-bg p-4 text-sm">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ca-success" />
               <div>
-                <p className="font-bold text-ca-navy-950">{t("deliveryTitle")}</p>
+                <p className="font-bold text-ca-navy">{t("deliveryTitle")}</p>
                 <p className="mt-1 text-ca-text-secondary">
                   {t("deliveryNotice")}
                 </p>
@@ -248,7 +249,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {/* Productos relacionados */}
         {relatedProducts.length > 0 ? (
           <section className="mt-10">
-            <h2 className="text-xl font-black text-ca-navy-950">Productos relacionados</h2>
+            <h2 className="text-xl font-bold text-ca-navy">Productos relacionados</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {relatedProducts.map((item) => (
                 <ProductCard key={item.sku} locale={locale} product={item} />
@@ -277,27 +278,27 @@ function ProductBreadcrumb({
         aria-label={t("breadcrumbAriaLabel")}
         className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm font-bold text-ca-text-secondary"
       >
-        <Link className="transition hover:text-ca-navy-950" href="/">
+        <Link className="transition hover:text-ca-navy" href="/">
           {t("home")}
         </Link>
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
-        <Link className="transition hover:text-ca-navy-950" href="/catalog">
+        <Link className="transition hover:text-ca-navy" href="/catalog">
           {t("catalog")}
         </Link>
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
         <Link
-          className="transition hover:text-ca-navy-950"
+          className="transition hover:text-ca-navy"
           href={{ pathname: "/catalog", query: { category: categorySlugOf(product) } }}
         >
           {product.category}
         </Link>
         <ChevronRight className="h-4 w-4 shrink-0 text-ca-text-secondary/50" />
-        <span className="line-clamp-1 text-ca-navy-950">{product.name}</span>
+        <span className="line-clamp-1 text-ca-navy">{product.name}</span>
       </nav>
 
       <Link
         href="/catalog"
-        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+        className={buttonVariants({ className: "shrink-0" })}
       >
         <ArrowLeft className="h-4 w-4" />
         {t("backToCatalog")}
@@ -308,9 +309,9 @@ function ProductBreadcrumb({
 
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-ca-control bg-ca-background p-3">
-      <dt className="text-[11px] font-bold uppercase tracking-wider text-ca-text-secondary">{label}</dt>
-      <dd className="mt-0.5 text-sm font-bold text-ca-navy-950">{value}</dd>
+    <div className="rounded-ca-control bg-ca-bg p-3">
+      <dt className="text-xs font-bold text-ca-text-secondary">{label}</dt>
+      <dd className="mt-0.5 text-sm font-bold text-ca-navy">{value}</dd>
     </div>
   );
 }

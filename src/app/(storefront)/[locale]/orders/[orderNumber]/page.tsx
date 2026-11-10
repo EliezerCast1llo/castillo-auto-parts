@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigation";
 import { notFound } from "next/navigation";
 import { CheckCircle2, Clock3, CreditCard, Info, PackageCheck } from "lucide-react";
@@ -70,10 +71,10 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
       ) : null}
       <SiteHeader locale={locale} />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="ca-container py-6">
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-4">
-            <div className="rounded-md border border-border bg-card p-5">
+            <div className="rounded-ca-control border border-border bg-card p-5">
               <p className={`text-sm font-semibold ${isPaymentProcessing ? "text-primary" : "text-success"}`}>
                 {isPaymentProcessing ? t("detail.paymentInProgress") : t("detail.orderCreated")}
               </p>
@@ -85,12 +86,12 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               </p>
             </div>
 
-            <div className="rounded-md border border-border bg-card p-5">
-              <h2 className="text-lg font-bold text-primary">{t("detail.productsSection")}</h2>
+            <div className="rounded-ca-control border border-border bg-card p-5">
+              <h2 className="text-xl font-bold text-primary">{t("detail.productsSection")}</h2>
               <div className="mt-4 space-y-3">
                 {order.items.map((item) => (
                   <div
-                    className="flex flex-col justify-between gap-2 rounded-md bg-background p-3 text-sm md:flex-row"
+                    className="flex flex-col justify-between gap-2 rounded-ca-control bg-background p-3 text-sm md:flex-row"
                     key={item.id}
                   >
                     <div>
@@ -106,8 +107,8 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               </div>
             </div>
 
-            <div className="rounded-md border border-border bg-card p-5">
-              <h2 className="text-lg font-bold text-primary">{t("detail.deliverySection")}</h2>
+            <div className="rounded-ca-control border border-border bg-card p-5">
+              <h2 className="text-xl font-bold text-primary">{t("detail.deliverySection")}</h2>
               <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
                 <InfoItem
                   label={t("detail.method")}
@@ -131,10 +132,10 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
             </div>
           </div>
 
-          <aside className="h-fit rounded-md border border-border bg-card p-5 shadow-ca-card">
+          <aside className="h-fit rounded-ca-control border border-border bg-card p-5">
             <div className="flex items-center gap-2">
               <PackageCheck className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold text-primary">{t("detail.summarySection")}</h2>
+              <h2 className="text-xl font-bold text-primary">{t("detail.summarySection")}</h2>
             </div>
 
             <dl className="mt-5 space-y-3 text-sm">
@@ -153,12 +154,12 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               />
             </dl>
 
-            <div className="mt-4 flex gap-2 rounded-md bg-primary/5 p-3 text-sm font-semibold text-primary">
+            <div className="mt-4 flex gap-2 rounded-ca-control bg-primary/5 p-3 text-sm font-semibold text-primary">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
               {t("detail.taxNotice")}
             </div>
 
-            <div className="mt-5 rounded-md bg-background p-4 text-sm">
+            <div className="mt-5 rounded-ca-control bg-background p-4 text-sm">
               <div className="flex gap-2 font-semibold text-foreground">
                 {isPaymentProcessing ? (
                   <Clock3 className="h-4 w-4 text-primary" />
@@ -175,7 +176,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
             </div>
 
             <Link
-              className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white"
+              className={buttonVariants({ className: "mt-5 w-full" })}
               href="/catalog"
             >
               <CheckCircle2 className="h-4 w-4" />
@@ -195,8 +196,8 @@ function shipmentMethodKey(method: string | null | undefined) {
 
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-background p-3">
-      <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
+    <div className="rounded-ca-control bg-background p-3">
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
       <p className="mt-1 font-semibold">{value}</p>
     </div>
   );

@@ -1,0 +1,20 @@
+{
+  "title": "Store design system",
+  "description": "The palette, typography and components used in the store.",
+  "palette": "Color palette",
+  "typography": "Typography",
+  "radii": "Corner radii",
+  "overlays": "Floating panels",
+  "overlayDescription": "Only menus, floating panels and notifications use a shadow.",
+  "overlayExample": "Show panel",
+  "control": "Input control",
+  "surface": "Surface",
+  "counter": "Counter",
+  "buttons": "Buttons",
+  "primary": "Primary action",
+  "outline": "Secondary action",
+  "textSample": "Parts for your vehicle",
+  "normal": "Regular weight",
+  "semibold": "Semibold",
+  "bold": "Bold weight"
+}

@@ -5,6 +5,7 @@ import Catalog from "./catalog.json";
 import Checkout from "./checkout.json";
 import Common from "./common.json";
 import Consent from "./consent.json";
+import Design from "./design.json";
 import Email from "./email.json";
 import Errors from "./errors.json";
 import Footer from "./footer.json";
@@ -33,6 +34,7 @@ const messages = {
   Checkout,
   Common,
   Consent,
+  Design,
   Email,
   Errors,
   Footer,

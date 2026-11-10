@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
  * Primitiva de tarjeta del design system: el contenedor blanco redondeado
  * repetido en catálogo, PDP, cuenta y checkout.
  */
-export const cardVariants = cva("rounded-ca-surface border border-ca-border bg-white", {
+export const cardVariants = cva("rounded-ca-surface border border-ca-border bg-ca-surface", {
   variants: {
     // Las superficies planas no llevan sombra; `overlay` queda para lo que de
     // verdad flota sobre la página (modales, drawers).

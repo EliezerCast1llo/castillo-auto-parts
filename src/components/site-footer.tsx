@@ -1,9 +1,10 @@
+import { BrandLockup } from "@/components/brand-lockup";
 import { Link } from "@/lib/i18n/navigation";
-import { MapPin, ShieldCheck, Truck, Wrench } from "lucide-react";
+import { MapPin, ShieldCheck, Truck } from "lucide-react";
 import { getCatalogFacets } from "@/data/products";
 import { vehicleMakeSlug } from "@/data/vehicle-catalog";
 import { SUPPORT_WHATSAPP_NUMBER, buildContactLinks } from "@/lib/contact";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import { SITE_NAME } from "@/lib/site";
 import type { Locale } from "@/lib/i18n/config";
 import { getTranslations } from "next-intl/server";
 import type { LocaleHref } from "@/lib/i18n/navigation";
@@ -28,33 +29,23 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-white/10 bg-ca-navy-950 text-white">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-5 lg:px-8">
+    <footer className="border-t border-ca-border bg-ca-surface text-ca-text">
+      <div className="ca-container grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-5">
         {/* Marca */}
         <div>
-          <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-ca-control bg-ca-gold-400 text-ca-navy-950">
-              <Wrench className="h-5 w-5" strokeWidth={2} />
-            </span>
-            <span className="leading-none">
-              <span className="block font-display text-base font-black tracking-[0.12em]">CASTILLO</span>
-              <span className="mt-1 block text-[10px] font-bold tracking-[0.28em] text-white/70">
-                AUTO PARTS
-              </span>
-            </span>
-          </Link>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-white/70">{SITE_DESCRIPTION}</p>
-          <div className="mt-4 space-y-2 text-sm font-semibold text-white/80">
+          <BrandLockup />
+          <p className="mt-4 max-w-xs text-sm leading-6 text-ca-text-secondary">{t("description")}</p>
+          <div className="mt-4 space-y-2 text-sm font-semibold text-ca-text-secondary">
             <p className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-ca-gold-400" />
+              <ShieldCheck className="h-4 w-4 text-ca-text-secondary" />
               {t("checkCompatibility")}
             </p>
             <p className="flex items-center gap-2">
-              <Truck className="h-4 w-4 text-ca-gold-400" />
+              <Truck className="h-4 w-4 text-ca-text-secondary" />
               {t("deliveryArea")}
             </p>
             <p className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-ca-gold-400" />
+              <MapPin className="h-4 w-4 text-ca-text-secondary" />
               {t("country")}
             </p>
           </div>
@@ -98,7 +89,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           <FooterLink href="/help">{t("helpCenter")}</FooterLink>
           {SUPPORT_WHATSAPP_NUMBER ? (
             <a
-              className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"
+              className="block text-sm font-semibold text-ca-text-secondary transition hover:text-ca-navy hover:underline"
               href={buildContactLinks(SUPPORT_WHATSAPP_NUMBER, tWhatsApp("message")).whatsapp}
               rel="noopener noreferrer"
               target="_blank"
@@ -109,8 +100,8 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         </FooterColumn>
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs font-semibold text-white/55 sm:flex-row sm:px-6 lg:px-8">
+      <div className="border-t border-ca-border">
+        <div className="ca-container flex flex-col items-center justify-between gap-2 py-4 text-xs font-semibold text-ca-text-secondary sm:flex-row">
           <p>
             {t("rights", { siteName: SITE_NAME, year })}
           </p>
@@ -124,7 +115,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
 function FooterColumn({ children, title }: { children: React.ReactNode; title: string }) {
   return (
     <div>
-      <h2 className="text-sm font-black uppercase tracking-[0.14em] text-ca-gold-400">{title}</h2>
+      <h2 className="text-sm font-semibold text-ca-navy">{title}</h2>
       <div className="mt-4 space-y-2.5">{children}</div>
     </div>
   );
@@ -133,7 +124,7 @@ function FooterColumn({ children, title }: { children: React.ReactNode; title: s
 function FooterLink({ children, href }: { children: React.ReactNode; href: LocaleHref }) {
   return (
     <Link
-      className="block text-sm font-semibold text-white/70 transition hover:text-ca-gold-400"
+      className="block text-sm font-semibold text-ca-text-secondary transition hover:text-ca-navy hover:underline"
       href={href}
     >
       {children}

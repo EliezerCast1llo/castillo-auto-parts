@@ -1,108 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --ca-navy-950: #061933;
-  --ca-navy-900: #082447;
-  --ca-navy-800: #0b3268;
-  --ca-blue-700: #0f5fb8;
-  --ca-blue-600: #1267c5;
-  --ca-gold-500: #d9a21b;
-  --ca-gold-400: #f2b72a;
-  --ca-surface: #ffffff;
-  --ca-background: #f4f6f9;
-  --ca-border: #d8e0ea;
-  --ca-border-hover: #c3cfdd;
-  --ca-surface-tint: #dde7f1;
-  --ca-disabled-bg: #eef2f6;
-  --ca-disabled-text: #7b8798;
-  --ca-text-primary: #0f172a;
-  --ca-text-secondary: #5b6678;
-  --ca-success: #16803a;
-  --ca-radius-sm: 10px;
-  --ca-radius-md: 14px;
-  --ca-radius-lg: 20px;
-  --ca-radius-xl: 28px;
-  /* Escala plana para superficies de datos (catálogo). Sustituye a la escala
-     redondeada de arriba, que queda para las páginas aún sin migrar: el radio
-     grande y la sombra suave son lo que hace que una grilla de repuestos
-     parezca una landing en vez de una tienda. */
+  --ca-bg: #F7F8FA;
+  --ca-surface: #FFFFFF;
+  --ca-border: #E3E7ED;
+  --ca-text: #111827;
+  --ca-text-secondary: #5B6678;
+  --ca-navy: #082447;
+  --ca-navy-hover: #0B3268;
+  --ca-accent: #D9A21B;
+  --ca-success: #16803A;
+  --ca-warning: #8A5A0C;
+  --ca-danger: #B42318;
+  --ca-whatsapp: #128C4A;
   --ca-radius-control: 4px;
   --ca-radius-surface: 6px;
-  /* Sombra única, y solo para lo que de verdad flota sobre la página. */
-  --ca-shadow-overlay: 0 4px 16px rgba(6, 25, 51, 0.12);
-  --ca-shadow-soft: 0 8px 24px rgba(6, 25, 51, 0.07);
-  --ca-shadow-premium: 0 16px 42px rgba(6, 25, 51, 0.13);
-  --ca-shadow-hero: 0 28px 72px rgba(6, 25, 51, 0.25);
-  --ca-shadow-card: 0 16px 40px rgba(18, 50, 74, 0.08);
-  --ca-shadow-button: 0 6px 14px rgba(6, 25, 51, 0.18);
-  --ca-shadow-button-hover: 0 10px 20px rgba(6, 25, 51, 0.22);
-  --background: var(--ca-background);
-  --foreground: var(--ca-text-primary);
-  --card: #ffffff;
-  --card-foreground: var(--ca-text-primary);
-  --graphite: #1f2933;
-  --steel: var(--ca-text-secondary);
-  --primary: var(--ca-navy-900);
-  --primary-foreground: #ffffff;
-  --accent: var(--ca-gold-500);
-  --accent-foreground: #1a1200;
-  --success: var(--ca-success);
-  /* Ámbar de advertencia. Mismo tono que el dorado de marca (~34°), oscurecido
-     para cumplir WCAG AA como texto: 5.92:1 sobre blanco, 5.16:1 sobre
-     `bg-warning/10` y 4.77:1 sobre `bg-warning/15`, que son los tres fondos
-     donde se usa. El valor anterior (#b7791f) daba 3.64:1 y fallaba. */
-  --warning: #8a5a0c;
-  --danger: #b42318;
-  --info: #0f766e;
-  --muted: #eef3f8;
-  --muted-foreground: var(--ca-text-secondary);
-  --border: var(--ca-border);
+  --ca-radius-pill: 999px;
+  --ca-shadow-overlay: 0 4px 16px rgba(17, 24, 39, .12);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-graphite: var(--graphite);
-  --color-steel: var(--steel);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-danger: var(--danger);
-  --color-info: var(--info);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-ca-navy-950: var(--ca-navy-950);
-  --color-ca-navy-900: var(--ca-navy-900);
-  --color-ca-navy-800: var(--ca-navy-800);
-  --color-ca-blue-700: var(--ca-blue-700);
-  --color-ca-blue-600: var(--ca-blue-600);
-  --color-ca-gold-500: var(--ca-gold-500);
-  --color-ca-gold-400: var(--ca-gold-400);
-  --color-ca-background: var(--ca-background);
+  --color-ca-bg: var(--ca-bg);
   --color-ca-surface: var(--ca-surface);
   --color-ca-border: var(--ca-border);
-  --color-ca-border-hover: var(--ca-border-hover);
-  --color-ca-surface-tint: var(--ca-surface-tint);
-  --color-ca-disabled-bg: var(--ca-disabled-bg);
-  --color-ca-disabled-text: var(--ca-disabled-text);
-  --color-ca-text-primary: var(--ca-text-primary);
+  --color-ca-text: var(--ca-text);
   --color-ca-text-secondary: var(--ca-text-secondary);
+  --color-ca-navy: var(--ca-navy);
+  --color-ca-navy-hover: var(--ca-navy-hover);
+  --color-ca-accent: var(--ca-accent);
+  --color-ca-success: var(--ca-success);
+  --color-ca-whatsapp: var(--ca-whatsapp);
+  --color-background: var(--ca-bg);
+  --color-foreground: var(--ca-text);
+  --color-card: var(--ca-surface);
+  --color-card-foreground: var(--ca-text);
+  --color-primary: var(--ca-navy);
+  --color-primary-foreground: var(--ca-surface);
+  --color-accent: var(--ca-accent);
+  --color-accent-foreground: var(--ca-text);
+  --color-success: var(--ca-success);
+  --color-warning: var(--ca-warning);
+  --color-danger: var(--ca-danger);
+  --color-destructive: var(--ca-danger);
+  --color-info: var(--ca-navy-hover);
+  --color-muted: var(--ca-bg);
+  --color-muted-foreground: var(--ca-text-secondary);
+  --color-border: var(--ca-border);
   --radius-ca-control: var(--ca-radius-control);
   --radius-ca-surface: var(--ca-radius-surface);
+  --radius-ca-pill: var(--ca-radius-pill);
   --shadow-ca-overlay: var(--ca-shadow-overlay);
-  --shadow-ca-soft: var(--ca-shadow-soft);
-  --shadow-ca-premium: var(--ca-shadow-premium);
-  --shadow-ca-hero: var(--ca-shadow-hero);
-  --shadow-ca-card: var(--ca-shadow-card);
-  --shadow-ca-button: var(--ca-shadow-button);
-  --shadow-ca-button-hover: var(--ca-shadow-button-hover);
-  --font-display: var(--font-display);
+  --text-ca-title: 2rem;
+  --text-ca-title--line-height: 1.2;
   --font-sans: var(--font-sans);
 }
 
@@ -118,8 +67,8 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--ca-bg);
+  color: var(--ca-text);
 }
 
 a {
@@ -136,115 +85,29 @@ select {
   font: inherit;
 }
 
-:where(a, button, input, select):focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--primary) 75%, white);
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--ca-navy);
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--ca-navy-hover);
   outline-offset: 2px;
 }
 
-/* ── Keyframe animations ─────────────────────────────────────── */
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-/* ── Animation utilities ─────────────────────────────────────── */
-
-.animate-fade-up {
-  animation: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.delay-100 { animation-delay: 0.10s; }
-.delay-200 { animation-delay: 0.20s; }
-.delay-300 { animation-delay: 0.30s; }
-.delay-400 { animation-delay: 0.40s; }
-.delay-500 { animation-delay: 0.50s; }
-
-/* ── Container ───────────────────────────────────────────────── */
-
 .ca-container {
-  width: min(100% - 2rem, 1440px);
+  width: 100%;
+  max-width: 80rem;
   margin-inline: auto;
+  padding-inline: 1rem;
 }
 
-/* ── Premium shell (light sections) ─────────────────────────── */
-
-.ca-premium-shell {
-  background:
-    radial-gradient(ellipse 80% 60% at 90% -10%, rgba(15, 95, 184, 0.07), transparent),
-    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(217, 162, 27, 0.05), transparent),
-    linear-gradient(180deg, #ffffff 0%, var(--background) 24rem);
+@media (min-width: 40rem) {
+  .ca-container { padding-inline: 1.5rem; }
 }
 
-/* ── Noise texture overlay ───────────────────────────────────── */
-
-.ca-noise::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
-  opacity: 0.5;
-  mix-blend-mode: overlay;
-}
-
-/* ── Gold shimmer text ───────────────────────────────────────── */
-
-.ca-gold-shimmer {
-  background: linear-gradient(
-    105deg,
-    var(--ca-gold-400) 0%,
-    #ffe175 40%,
-    var(--ca-gold-400) 55%,
-    #f2b72a 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 3.5s linear infinite;
-}
-
-/* ── Display font helper ─────────────────────────────────────── */
-
-.font-display {
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.01em;
-}
-
-/* ── Section label ───────────────────────────────────────────── */
-
-.ca-section-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ca-gold-500);
-}
-
-/* ── Mechanical grid background pattern ──────────────────────── */
-
-.ca-grid-bg {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+@media (min-width: 64rem) {
+  .ca-container { padding-inline: 2rem; }
 }
 
 /* ── Bloques de producto fuera del pliegue ───────────────────── */

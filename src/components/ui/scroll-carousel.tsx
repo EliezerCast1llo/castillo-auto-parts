@@ -180,9 +180,9 @@ function CarouselArrow({
   return (
     <button
       aria-label={ariaLabel}
-      className={`absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-ca-control border border-ca-border bg-white text-ca-navy-950 shadow-ca-overlay transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white sm:inline-flex ${
-        direction === "left" ? "-left-3" : "-right-3"
-      }`}
+      className={`absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-ca-control border border-ca-border bg-ca-surface text-ca-navy transition hover:border-ca-navy hover:bg-ca-navy hover:text-white sm:inline-flex ${
+ direction ==="left" ? "-left-3" : "-right-3"
+ }`}
       onClick={onClick}
       type="button"
     >

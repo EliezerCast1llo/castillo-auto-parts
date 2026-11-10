@@ -1,0 +1,20 @@
+{
+  "title": "Sistema visual de la tienda",
+  "description": "Paleta, tipografía y componentes que usa la tienda.",
+  "palette": "Paleta",
+  "typography": "Tipografía",
+  "radii": "Radios",
+  "overlays": "Paneles flotantes",
+  "overlayDescription": "La sombra se reserva para menús, paneles flotantes y avisos.",
+  "overlayExample": "Mostrar panel",
+  "control": "Control",
+  "surface": "Superficie",
+  "counter": "Contador",
+  "buttons": "Botones",
+  "primary": "Acción principal",
+  "outline": "Acción secundaria",
+  "textSample": "Repuestos para tu vehículo",
+  "normal": "Regular",
+  "semibold": "Seminegrita",
+  "bold": "Negrita"
+}

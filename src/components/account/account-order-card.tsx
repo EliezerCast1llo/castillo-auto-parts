@@ -63,13 +63,13 @@ export async function AccountOrderCard({ locale, order }: AccountOrderCardProps)
   const supportMessage = t("supportMessage", { orderNumber: order.orderNumber });
 
   return (
-    <article className="grid gap-4 rounded-2xl border border-ca-border bg-white p-4 shadow-[var(--ca-shadow-soft)] lg:grid-cols-[230px_minmax(0,1fr)_190px] lg:gap-0 lg:p-0">
+    <article className="grid gap-4 rounded-ca-surface border border-ca-border bg-ca-surface p-4 lg:grid-cols-[230px_minmax(0,1fr)_190px] lg:gap-0 lg:p-0">
       <section className="lg:border-r lg:border-ca-border lg:p-5">
         <p className="text-xs font-bold text-ca-text-secondary">{t("card.orderLabel")}</p>
-        <h2 className="mt-1 break-words text-xl font-black leading-tight text-ca-navy-950">
+        <h2 className="mt-1 break-words text-xl font-bold leading-tight text-ca-navy">
           {order.orderNumber}
         </h2>
-        <p className="mt-2 text-sm font-medium text-ca-text-secondary">
+        <p className="mt-2 text-sm font-semibold text-ca-text-secondary">
           {formatDateTime(order.createdAt, locale)}
         </p>
         <p className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-ca-text-secondary">
@@ -101,7 +101,7 @@ export async function AccountOrderCard({ locale, order }: AccountOrderCardProps)
       <aside className="flex flex-col justify-between gap-4 lg:p-5">
         <div className="flex items-start justify-between gap-3 lg:block">
           <StatusBadge className="hidden lg:inline-flex" t={t} tracking={tracking} />
-          <p className="text-right text-2xl font-black text-ca-navy-950 lg:mt-5">
+          <p className="text-right text-2xl font-bold text-ca-navy lg:mt-5">
             {formatCurrency(order.totalCents, locale)}
           </p>
         </div>
@@ -139,7 +139,7 @@ function StatusBadge({
 }) {
   return (
     <span
-      className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${tracking.badgeClassName} ${className}`}
+      className={`w-fit rounded-ca-control border px-3 py-1 text-xs font-bold ${tracking.badgeClassName} ${className}`}
     >
       {t(`tracking.${tracking.labelKey}`)}
     </span>
@@ -166,13 +166,13 @@ function ProductSummary({
       <div className="flex min-w-0 gap-3">
         <ProductThumb item={item} />
         <div className="min-w-0">
-          <p className="line-clamp-2 text-sm font-black text-ca-navy-950">
+          <p className="line-clamp-2 text-sm font-bold text-ca-navy">
             {item.productNameSnapshot}
           </p>
           <p className="mt-1 text-sm font-semibold text-ca-text-secondary">
             {t("card.unitCount", { count: item.quantity })}
           </p>
-          <p className="mt-1 text-xs font-bold uppercase tracking-[0.06em] text-ca-text-secondary">
+          <p className="mt-1 text-xs font-bold text-ca-text-secondary">
             {t("card.sku", { sku: item.skuSnapshot })}
           </p>
           {item.partNumberSnapshot ? (
@@ -199,21 +199,21 @@ function ProductSummary({
           <ProductThumb item={item} key={item.id} />
         ))}
         {extraCount > 0 ? (
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-ca-border bg-ca-background text-sm font-black text-ca-text-secondary">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-ca-control border border-ca-border bg-ca-bg text-sm font-bold text-ca-text-secondary">
             +{extraCount}
           </span>
         ) : null}
       </div>
 
       <div className="mt-3 min-w-0">
-        <p className="text-sm font-black text-ca-navy-950">
+        <p className="text-sm font-bold text-ca-navy">
           {t("productCount", { count: productCount })}
         </p>
         <p className="mt-1 line-clamp-2 text-sm leading-5 text-ca-text-secondary">
           {summarizeProducts(order, t)}
         </p>
         <details className="mt-1 group">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-black text-ca-navy-950">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-bold text-ca-navy">
             {t("card.viewProducts")}
             <ChevronDown className="h-3.5 w-3.5 transition group-open:rotate-180" />
           </summary>
@@ -234,7 +234,7 @@ function ProductThumb({ item }: { item: AccountOrderCardOrder["items"][number] }
   const image = item.product.images[0];
 
   return (
-    <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-ca-border bg-ca-background">
+    <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-ca-control border border-ca-border bg-ca-bg">
       {image ? (
         <Image
           alt={image.alt}
@@ -287,9 +287,9 @@ function FulfillmentSummary({
   return (
     <div className="grid content-start gap-2 border-t border-ca-border pt-4 text-sm md:border-l md:border-t-0 md:pl-4 md:pt-0">
       <div className="flex items-start gap-2">
-        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-ca-navy-950" strokeWidth={1.8} />
+        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-ca-navy" strokeWidth={1.8} />
         <div>
-          <p className="font-black text-ca-navy-950">{t(`fulfillment.${tracking.fulfillmentKey}`)}</p>
+          <p className="font-bold text-ca-navy">{t(`fulfillment.${tracking.fulfillmentKey}`)}</p>
           {order.shipment?.deliveryZone ? (
             <p className="mt-0.5 text-xs font-semibold text-ca-text-secondary">
               {order.shipment.deliveryZone}
@@ -304,7 +304,7 @@ function FulfillmentSummary({
           <p className="font-semibold text-ca-text-secondary">
             {t(`dateLabel.${tracking.dateLabelKey}`)}:
           </p>
-          <p className="font-black text-ca-navy-950">
+          <p className="font-bold text-ca-navy">
             {formatTrackingDate(tracking.dateValue, locale, t("dateLabel.pending"))}
           </p>
         </div>
@@ -379,8 +379,8 @@ function OrderAction({
 
 function getActionClassName(primary: boolean) {
   return primary
-    ? "inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-ca-navy-950 px-4 text-sm font-black text-white shadow-[0_8px_18px_rgba(6,25,51,0.16)] transition hover:bg-ca-navy-800"
-    : "inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 transition hover:bg-ca-background";
+    ? "inline-flex h-11 w-full items-center justify-center gap-2 rounded-ca-control bg-ca-navy px-4 text-sm font-bold text-white transition hover:bg-ca-navy-hover"
+    : "inline-flex h-10 w-full items-center justify-center gap-2 rounded-ca-surface border border-ca-border bg-ca-surface px-4 text-sm font-bold text-ca-navy transition hover:bg-ca-bg";
 }
 
 function getOrderProductCount(order: AccountOrderCardOrder) {

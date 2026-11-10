@@ -17,6 +17,7 @@
  *   - Las páginas anteriores/siguientes más lejanas se truncan con "…".
  */
 
+import { buttonVariants } from "@/components/ui/button";
 import { Link, type LocaleHref } from "@/lib/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/config";
@@ -67,13 +68,13 @@ export async function CatalogPagination({
       {currentPage > 1 ? (
         <Link
           href={buildHref(currentPage - 1)}
-          className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+          className={buttonVariants({ variant: "outline" })}
           aria-label={t("previousPage")}
         >
           ‹ Anterior
         </Link>
       ) : (
-        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
+        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-ca-surface px-3 text-sm font-bold text-ca-text-secondary opacity-50">
           ‹ Anterior
         </span>
       )}
@@ -92,7 +93,7 @@ export async function CatalogPagination({
           <span
             key={item}
             aria-current="page"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-ca-control bg-ca-navy-950 text-sm font-black text-white"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-ca-control bg-ca-navy text-sm font-bold text-white"
           >
             {item}
           </span>
@@ -100,7 +101,7 @@ export async function CatalogPagination({
           <Link
             key={item}
             href={buildHref(item)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-ca-control border border-ca-border bg-white text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-background"
+            className={buttonVariants({ variant: "outline", className: "w-10 px-0" })}
             aria-label={t("pageNumber", { page: item })}
           >
             {item}
@@ -112,13 +113,13 @@ export async function CatalogPagination({
       {currentPage < totalPages ? (
         <Link
           href={buildHref(currentPage + 1)}
-          className="inline-flex h-10 items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+          className={buttonVariants({ variant: "outline" })}
           aria-label={t("nextPage")}
         >
           {t("next")}
         </Link>
       ) : (
-        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-text-secondary opacity-50">
+        <span className="inline-flex h-10 cursor-not-allowed items-center gap-1.5 rounded-ca-control border border-ca-border bg-ca-surface px-3 text-sm font-bold text-ca-text-secondary opacity-50">
           {t("next")}
         </span>
       )}

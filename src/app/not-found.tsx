@@ -8,15 +8,15 @@ import "./globals.css";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-ca-background px-4 text-ca-text-primary">
-      <div className="w-full max-w-md rounded-2xl border border-ca-border bg-white p-8 text-center shadow-ca-premium">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ca-navy-950 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-ca-bg px-4 text-ca-text">
+      <div className="w-full max-w-md rounded-ca-surface border border-ca-border bg-ca-surface p-8 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-ca-control bg-ca-navy text-white">
           <SearchX className="h-7 w-7" />
         </span>
-        <p className="mt-5 text-xs font-black uppercase tracking-widest text-ca-gold-500">
+        <p className="mt-5 text-xs font-bold text-ca-text-secondary">
           Error 404
         </p>
-        <h1 className="mt-1 font-display text-2xl font-black text-ca-navy-950">
+        <h1 className="mt-1 text-2xl font-bold text-ca-navy">
           Página no encontrada
         </h1>
         <p className="mt-3 text-sm leading-6 text-ca-text-secondary">

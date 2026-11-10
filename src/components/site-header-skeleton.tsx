@@ -15,14 +15,14 @@ export function SiteHeaderSkeleton() {
   return (
     <div
       aria-hidden
-      className="sticky top-0 z-50 border-b border-ca-border bg-white/95 backdrop-blur-md"
+      className="sticky top-0 z-50 border-b border-ca-border bg-ca-surface"
     >
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Skeleton className="h-9 w-9 shrink-0 rounded-[10px]" />
+      <div className="ca-container flex items-center gap-3 py-3">
+        <Skeleton className="h-9 w-9 shrink-0 rounded-ca-control" />
         <Skeleton className="hidden h-9 w-32 sm:block" />
         <Skeleton className="h-10 min-w-0 flex-1" />
         <Skeleton className="hidden h-10 w-56 lg:block" />
-        <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+        <Skeleton className="h-10 w-10 shrink-0 rounded-ca-control" />
       </div>
     </div>
   );

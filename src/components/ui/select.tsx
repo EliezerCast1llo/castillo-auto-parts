@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * fondo gris, borde azul en focus.
  */
 export const selectVariants = cva(
-  "w-full rounded-ca-control border border-ca-border bg-ca-background px-3 text-sm font-bold text-ca-navy-950 outline-none transition focus:border-ca-blue-700 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60",
+  "w-full rounded-ca-control border border-ca-border bg-ca-bg px-3 text-sm font-bold text-ca-navy transition focus:border-ca-navy-hover focus:bg-ca-surface disabled:cursor-not-allowed disabled:opacity-60",
   {
     variants: {
       size: {

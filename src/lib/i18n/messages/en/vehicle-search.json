@@ -8,17 +8,17 @@
   "yearAriaLabel": "Vehicle year",
   "year": "Year",
   "chooseModel": "Choose the model",
-  "heroSignal": "Search by vehicle",
-  "heroImageAlt": "Modern sedan for finding compatible parts",
   "selectYear": "Select a year",
   "chooseModelFirst": "Choose the model first",
   "selectMake": "Select a make",
   "selectModel": "Select a model",
   "chooseMakeFirst": "Choose the make first",
-  "heroTitle": "Find parts for your vehicle",
   "heroDescription": "Select your vehicle details to find compatible options.",
   "heroTitleBefore": "Find parts",
   "heroTitleHighlight": "that fit your vehicle",
-  "visibleAvailability": "Visible availability",
-  "nationalShipping": "Shipping throughout El Salvador"
+  "heroSearchDescription": "Search by vehicle, category, brand or part number. We can help you check fitment before buying.",
+  "warehousePickup": "Free warehouse pickup",
+  "boxfulDelivery": "Nationwide shipping with Boxful",
+  "cardPayment": "Card payment",
+  "searchParts": "Search for parts"
 }

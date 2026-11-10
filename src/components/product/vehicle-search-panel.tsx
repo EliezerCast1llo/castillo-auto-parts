@@ -7,7 +7,7 @@ import { useVehicleSelection } from "@/components/product/use-vehicle-selection"
 import { Select } from "@/components/ui/select";
 
 /** Aplana la primitiva Select a la escala del catálogo (radio y peso menores). */
-const FLAT_SELECT = "h-10 rounded-ca-control bg-white font-normal";
+const FLAT_SELECT = "h-10 rounded-ca-control bg-ca-surface font-normal";
 
 type VehicleSearchPanelProps = {
   filters: CatalogFilters;
@@ -25,7 +25,7 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
 
   return (
     <section>
-      <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-ca-navy-950">
+      <h2 className="flex items-center gap-1.5 text-xs font-bold text-ca-navy">
         <Car aria-hidden className="h-4 w-4 shrink-0 text-ca-text-secondary" />
         {t("title")}
       </h2>

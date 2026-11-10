@@ -1,13 +1,13 @@
 import { cn } from "@/lib/utils";
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-xl bg-ca-border/60", className)} />;
+  return <div className={cn("animate-pulse rounded-ca-control bg-ca-border/60", className)} />;
 }
 
 /** Skeleton con la geometría de ProductCard para los grids de catálogo. */
 export function ProductCardSkeleton() {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-ca-border bg-white shadow-ca-soft">
+    <div className="flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-ca-surface">
       <Skeleton className="h-44 rounded-none" />
       <div className="flex flex-1 flex-col gap-2.5 p-4">
         <Skeleton className="h-3 w-1/3" />

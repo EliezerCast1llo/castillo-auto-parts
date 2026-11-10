@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigation";
 import { X } from "lucide-react";
 import { categoryLabelOf } from "@/data/catalog-filters";
@@ -52,16 +53,16 @@ export async function CatalogActiveFilters({
   }
 
   return (
-    <section className="rounded-ca-surface border border-ca-border bg-white p-4">
+    <section className="rounded-ca-surface border border-ca-border bg-ca-surface p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-black text-ca-navy-950">Filtros activos</p>
-          <p className="mt-1 text-xs font-medium text-ca-text-secondary">
+          <p className="text-sm font-bold text-ca-navy">Filtros activos</p>
+          <p className="mt-1 text-xs font-semibold text-ca-text-secondary">
             {t("activeFiltersHint")}
           </p>
         </div>
         <Link
-          className="inline-flex h-9 items-center justify-center rounded-ca-control border border-ca-border bg-white px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white"
+          className={buttonVariants()}
           href={sort === "relevance" ? "/catalog" : { pathname: "/catalog", query: { sort } }}
         >
           {t("clearAll")}
@@ -73,7 +74,7 @@ export async function CatalogActiveFilters({
           <Link
             key={chip.label}
             aria-label={t("removeFilter", { filter: chip.label })}
-            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-ca-navy-950/10 bg-ca-navy-950/5 px-3 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950/25 hover:bg-ca-background"
+            className="inline-flex min-h-9 items-center gap-2 rounded-ca-control border border-ca-navy/10 bg-ca-navy/5 px-3 text-sm font-bold text-ca-navy transition hover:border-ca-navy/25 hover:bg-ca-bg"
             href={chip.href}
           >
             {chip.label}

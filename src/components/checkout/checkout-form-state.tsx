@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { PackageCheck } from "lucide-react";
 import { useFormStatus } from "react-dom";
@@ -18,7 +19,7 @@ export function CheckoutFormState({ action, children }: { action: (form: FormDat
 export function CheckoutPayButton({ children }: { children: ReactNode }) {
   const { blocked } = useCheckoutShippingState();
   const { pending } = useFormStatus();
-  return <button disabled={blocked || pending} className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800 disabled:opacity-50">
+  return <button disabled={blocked || pending} className={buttonVariants({ size: "lg", className: "w-full" })}>
     <PackageCheck className="h-4 w-4" strokeWidth={2} />{children}
   </button>;
 }

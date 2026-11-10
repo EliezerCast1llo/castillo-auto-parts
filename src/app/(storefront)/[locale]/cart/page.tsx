@@ -1,3 +1,4 @@
+import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/navigation";
 import {
   AlertCircle,
@@ -56,13 +57,13 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
   const noticeMessage = await getStatusMessage("cart", status, locale);
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
-      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+      <div className="ca-container py-5">
         <Link
           href="/catalog"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("backToCatalog")}
@@ -75,11 +76,11 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
           {/* Columna de items */}
           <div className="space-y-4">
             {/* Header */}
-            <div className="rounded-2xl border border-ca-border bg-white p-5 shadow-ca-soft">
-              <p className="text-xs font-black uppercase tracking-widest text-ca-gold-500">
+            <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-5">
+              <p className="text-xs font-bold text-ca-text-secondary">
                 {t("eyebrow")}
               </p>
-              <h1 className="mt-1 text-2xl font-black text-ca-navy-950">{t("title")}</h1>
+              <h1 className="mt-1 text-2xl font-bold text-ca-navy">{t("title")}</h1>
               {cart.lines.length > 0 ? (
                 <p className="mt-1 text-sm text-ca-text-secondary">
                   {t("itemCount", { count: cart.itemCount })}
@@ -101,10 +102,10 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
           </div>
 
           {/* Resumen del pedido */}
-          <aside className="h-fit rounded-2xl border border-ca-border bg-white p-5 shadow-ca-premium lg:sticky lg:top-6">
+          <aside className="h-fit rounded-ca-surface border border-ca-border bg-ca-surface p-5 lg:sticky lg:top-6">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-ca-navy-950" strokeWidth={1.8} />
-              <h2 className="text-lg font-black text-ca-navy-950">{t("summary.title")}</h2>
+              <ShoppingCart className="h-5 w-5 text-ca-navy" strokeWidth={1.8} />
+              <h2 className="text-xl font-bold text-ca-navy">{t("summary.title")}</h2>
             </div>
 
             <dl className="mt-4 space-y-3 text-sm">
@@ -121,7 +122,7 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
               </div>
             </dl>
 
-            <div className="mt-4 flex gap-2 rounded-xl bg-ca-navy-950/5 p-3 text-sm font-semibold text-ca-navy-950">
+            <div className="mt-4 flex gap-2 rounded-ca-control bg-ca-navy/5 p-3 text-sm font-semibold text-ca-navy">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
               {t("summary.taxNotice")}
             </div>
@@ -133,14 +134,14 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
             <CheckoutReadiness hasBlockingIssues={cart.hasBlockingIssues} t={t} />
 
             {cart.hasBlockingIssues ? (
-              <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">
+              <div className="mt-4 rounded-ca-control bg-danger/10 p-3 text-sm font-semibold text-danger">
                 {t("blockingIssues")}
               </div>
             ) : null}
 
             {cart.lines.length > 0 && !cart.hasBlockingIssues ? (
               <Link
-                className="mt-5 inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-ca-navy-950 text-sm font-black text-white shadow-ca-button-hover transition hover:bg-ca-navy-800"
+                className={buttonVariants({ size: "lg", className: "mt-5 w-full" })}
                 href="/checkout"
               >
                 {t("continueToCheckout")}
@@ -149,7 +150,7 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
             ) : null}
 
             <Link
-              className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-ca-border bg-white text-sm font-bold text-ca-navy-950 transition hover:bg-ca-background"
+              className={buttonVariants({ variant: "outline", className: "mt-3 w-full" })}
               href="/catalog"
             >
               {t("addMore")}
@@ -174,12 +175,12 @@ function CartLineItem({
   const isUnavailable = line.issue === "unavailable";
 
   return (
-    <article className="rounded-2xl border border-ca-border bg-white p-4 shadow-ca-soft">
+    <article className="rounded-ca-surface border border-ca-border bg-ca-surface p-4">
       <div className="flex gap-4">
         {/* Imagen/visual */}
         <Link
           aria-label={t("line.viewDetail", { name: line.product.name })}
-          className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-ca-background"
+          className="flex h-24 w-24 shrink-0 items-center justify-center rounded-ca-control bg-ca-bg"
           href={{ pathname: "/product/[slug]", params: { slug: line.product.slug } }}
         >
           <ProductVisual seed={line.product.sku} size="thumb" />
@@ -189,11 +190,11 @@ function CartLineItem({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-widest text-ca-gold-500">
+              <p className="text-xs font-bold text-ca-text-secondary">
                 {line.product.category}
               </p>
               <Link
-                className="mt-0.5 block font-black leading-snug text-ca-navy-950 transition hover:text-ca-blue-700 sm:text-lg"
+                className="mt-0.5 block font-bold leading-snug text-ca-navy transition hover:text-ca-navy-hover sm:text-xl"
                 href={{ pathname: "/product/[slug]", params: { slug: line.product.slug } }}
               >
                 {line.product.name}
@@ -220,7 +221,7 @@ function CartLineItem({
           <p className="text-xs font-semibold text-ca-text-secondary">
             {formatCurrency(line.product.priceCents, locale)} × {line.quantity}
           </p>
-          <p className="text-xl font-black text-ca-navy-950">
+          <p className="text-xl font-bold text-ca-navy">
             {formatCurrency(line.lineTotalCents, locale)}
           </p>
         </div>
@@ -251,11 +252,11 @@ function CheckoutReadiness({
   ];
 
   return (
-    <div className="mt-4 rounded-xl border border-ca-border bg-ca-background p-3">
+    <div className="mt-4 rounded-ca-control border border-ca-border bg-ca-bg p-3">
       <ul className="grid gap-2 text-sm">
         {items.map((item) => (
           <li key={item.label} className="flex items-center gap-2 text-ca-text-secondary">
-            <span className={item.ok ? "text-ca-success" : "text-amber-500"}>{item.icon}</span>
+            <span className={item.ok ? "text-ca-success" : "text-warning"}>{item.icon}</span>
             {item.label}
           </li>
         ))}
@@ -271,8 +272,8 @@ function LineIssue({ line, t }: { line: CartLine; t: CartTranslator }) {
       : t("issue.limited", { units: t("units", { count: line.availableQuantity }) });
 
   return (
-    <div className="mt-3 rounded-xl bg-red-50 p-3">
-      <div className="flex gap-2 text-sm font-semibold text-red-600">
+    <div className="mt-3 rounded-ca-control bg-danger/10 p-3">
+      <div className="flex gap-2 text-sm font-semibold text-danger">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
         {message}
       </div>
@@ -280,20 +281,20 @@ function LineIssue({ line, t }: { line: CartLine; t: CartTranslator }) {
         <input name="sku" type="hidden" value={line.product.sku} />
         <input name="requestedQuantity" type="hidden" value={line.quantity} />
         <input
-          className="h-10 rounded-xl border border-ca-border bg-white px-3 text-sm"
+          className="h-10 rounded-ca-surface border border-ca-border bg-ca-surface px-3 text-sm"
           name="customerEmail"
           placeholder={t("alert.emailPlaceholder")}
           type="email"
           aria-label={t("alert.emailAriaLabel")}
         />
         <input
-          className="h-10 rounded-xl border border-ca-border bg-white px-3 text-sm"
+          className="h-10 rounded-ca-surface border border-ca-border bg-ca-surface px-3 text-sm"
           name="customerPhone"
           placeholder={t("alert.phonePlaceholder")}
           type="tel"
           aria-label={t("alert.phoneAriaLabel")}
         />
-        <button className="h-10 rounded-xl bg-ca-navy-950 px-4 text-sm font-black text-white transition hover:bg-ca-navy-800">
+        <button className={buttonVariants()}>
           {t("alert.submit")}
         </button>
       </form>
@@ -318,7 +319,7 @@ function SummaryRow({ label, strong, value }: { label: string; strong?: boolean;
   return (
     <div className="flex items-center justify-between gap-3">
       <dt className="text-ca-text-secondary">{label}</dt>
-      <dd className={strong ? "text-xl font-black text-ca-navy-950" : "font-bold text-ca-navy-950"}>
+      <dd className={strong ? "text-xl font-bold text-ca-navy" : "font-bold text-ca-navy"}>
         {value}
       </dd>
     </div>

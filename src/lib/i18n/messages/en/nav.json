@@ -23,5 +23,7 @@
   "brandTagline": "Auto parts · El Salvador",
   "cartItemCount": "{count, plural, one {# product} other {# products}}",
   "nationalDelivery": "Shipping throughout El Salvador",
-  "languageSwitch": "Language"
+  "languageSwitch": "Language",
+  "signIn": "Sign in",
+  "myAccount": "My account"
 }

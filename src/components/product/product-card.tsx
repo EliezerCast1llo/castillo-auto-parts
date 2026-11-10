@@ -27,10 +27,10 @@ export async function ProductCard({
   const href = { pathname: "/product/[slug]", params: { slug: product.slug } } as const;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-white transition-colors hover:border-ca-navy-950/30">
+    <article className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-ca-surface transition-colors hover:border-ca-navy/30">
       <Link
         aria-label={t("viewDetailsFor", { name: product.name })}
-        className="relative flex h-40 items-center justify-center border-b border-ca-border bg-white p-3"
+        className="relative flex h-40 items-center justify-center border-b border-ca-border bg-ca-surface p-3"
         href={href}
       >
         {product.primaryImageUrl ? (
@@ -48,16 +48,16 @@ export async function ProductCard({
 
       <div className="flex flex-1 flex-col p-3">
         <div className="flex items-baseline justify-between gap-2">
-          <p className="truncate text-[11px] font-bold uppercase tracking-[0.12em] text-ca-text-secondary">
+          <p className="truncate text-xs font-bold text-ca-text-secondary">
             {product.category}
           </p>
-          <p className="shrink-0 text-[11px] font-black uppercase tracking-[0.08em] text-ca-navy-950">
+          <p className="shrink-0 text-xs font-bold text-ca-navy">
             {product.brand}
           </p>
         </div>
 
         <Link
-          className="mt-1 line-clamp-2 min-h-10 text-sm font-bold leading-snug text-ca-navy-950 underline-offset-2 group-hover:underline"
+          className="mt-1 line-clamp-2 min-h-10 text-sm font-bold leading-snug text-ca-navy underline-offset-2 group-hover:underline"
           href={href}
         >
           {product.name}
@@ -66,7 +66,7 @@ export async function ProductCard({
         <p className="mt-1 text-xs text-ca-text-secondary">SKU {product.sku}</p>
 
         <p className="mt-2 line-clamp-2 min-h-8 text-xs leading-snug text-ca-text-secondary">
-          <span className="font-bold text-ca-navy-950">{t("compatibleVehicle")}</span>
+          <span className="font-bold text-ca-navy">{t("compatibleVehicle")}</span>
           {product.compatibility}
         </p>
 
@@ -80,7 +80,7 @@ export async function ProductCard({
           <AddToCartForm
             available={isAvailable}
             productName={product.name}
-            buttonClassName="mt-2 w-full rounded-ca-control shadow-none hover:shadow-none"
+            buttonClassName="mt-2 w-full rounded-ca-control "
             sku={product.sku}
           />
         </div>

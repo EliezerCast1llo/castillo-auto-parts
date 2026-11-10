@@ -62,25 +62,25 @@ function QuickActionCard({
   return (
     <Link
       aria-label={label}
-      className="group flex min-h-32 items-center gap-4 rounded-2xl border border-ca-border bg-white p-5 shadow-[var(--ca-shadow-soft)] transition hover:-translate-y-0.5 hover:border-ca-navy-950/30 hover:shadow-[var(--ca-shadow-premium)]"
+      className="group flex min-h-32 items-center gap-4 rounded-ca-surface border border-ca-border bg-ca-surface p-5 transition hover:border-ca-navy/30"
       href={href}
     >
-      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-ca-background text-ca-navy-950 transition group-hover:bg-ca-navy-950 group-hover:text-white">
+      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-ca-control bg-ca-bg text-ca-navy transition group-hover:bg-ca-navy group-hover:text-white">
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-lg font-black text-ca-navy-950">{label}</span>
-        <span className="mt-1 block max-w-sm text-sm font-medium leading-6 text-ca-text-secondary">
+        <span className="block text-xl font-bold text-ca-navy">{label}</span>
+        <span className="mt-1 block max-w-sm text-sm font-semibold leading-6 text-ca-text-secondary">
           {description}
         </span>
         {count ? (
-          <span className="mt-2 inline-flex rounded-full bg-ca-background px-2.5 py-1 text-xs font-black text-ca-text-secondary">
+          <span className="mt-2 inline-flex rounded-ca-control bg-ca-bg px-2.5 py-1 text-xs font-bold text-ca-text-secondary">
             {count}
           </span>
         ) : null}
       </span>
       <ChevronRight
-        className="h-5 w-5 shrink-0 text-ca-navy-950 transition group-hover:translate-x-1"
+        className="h-5 w-5 shrink-0 text-ca-navy transition group-hover:translate-x-1"
         strokeWidth={2.2}
       />
     </Link>

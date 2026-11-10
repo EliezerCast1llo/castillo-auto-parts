@@ -75,14 +75,14 @@ export async function CategoryProductRails({
       {visible.map((rail) => (
         <section className="ca-defer-offscreen space-y-3" key={rail.slug}>
           <div className="flex items-baseline justify-between gap-4 border-b border-ca-border pb-2">
-            <h2 className="font-display text-lg font-extrabold text-ca-navy-950">
+            <h2 className="text-xl font-bold text-ca-navy">
               {rail.label}
             </h2>
             <Link
-              className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-blue-700 transition hover:text-ca-navy-950"
+              className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-ca-navy-hover transition hover:text-ca-navy"
               href={{ pathname: "/catalog", query: { category: rail.slug } }}
             >
-              Explorar {rail.label}
+              {t("exploreCategory", { category: rail.label })}
               {typeof options.categoryCounts[rail.slug] === "number"
                 ? ` (${options.categoryCounts[rail.slug]})`
                 : ""}
@@ -120,13 +120,13 @@ async function EmptyCatalogNotice({
 }) {
   const t = await getTranslations({ locale, namespace: "Catalog" });
   return (
-    <div className="rounded-ca-surface border border-ca-border bg-white p-8">
+    <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-8">
       <div className="flex items-start gap-4">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-ca-control bg-ca-navy-950/[0.07] text-ca-navy-900">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-ca-control bg-ca-navy/[0.07] text-ca-navy">
           <PackageSearch className="h-6 w-6" />
         </span>
         <div>
-          <h2 className="text-lg font-black text-ca-navy-950">
+          <h2 className="text-xl font-bold text-ca-navy">
             {status === "unavailable"
               ? t("railsUnavailableTitle")
               : t("railsEmptyTitle")}

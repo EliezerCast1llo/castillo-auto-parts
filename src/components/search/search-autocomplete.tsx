@@ -14,6 +14,7 @@
  * - Al seleccionar una sugerencia navega directamente al producto.
  */
 
+import { buttonVariants } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useRouter } from "@/lib/i18n/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -176,13 +177,13 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
     return (
       <form
         action="/catalog"
-        className="relative z-40 flex items-center gap-2 rounded-[18px] border border-white/15 bg-white p-2 shadow-ca-premium"
+        className="relative z-40 flex items-center gap-2 rounded-ca-surface border border-ca-border bg-ca-surface p-2"
         onSubmit={handleSubmit}
       >
         <div className="relative flex-1">
-          <label className="flex min-h-12 items-center gap-3 rounded-[12px] bg-ca-background px-4">
+          <label className="flex min-h-12 items-center gap-3 rounded-ca-control bg-ca-bg px-4 focus-within:outline-2 focus-within:outline-ca-navy-hover">
             <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" strokeWidth={1.8} />
-            <span className="sr-only">Buscar repuesto</span>
+            <span className="sr-only">{t("searchAriaLabel")}</span>
             <input
               ref={inputRef}
               aria-autocomplete="list"
@@ -190,7 +191,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
               aria-expanded={isOpen}
               aria-label={t("searchAriaLabel")}
               autoComplete="off"
-              className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-ca-text-secondary/60"
+              className="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-ca-text-secondary"
               name="q"
               placeholder={t("searchPlaceholderLong")}
               role="combobox"
@@ -201,7 +202,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
               onKeyDown={handleKeyDown}
             />
             {isLoading ? (
-              <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-ca-navy-950 border-t-transparent" />
+              <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-ca-navy border-t-transparent" />
             ) : null}
           </label>
 
@@ -210,7 +211,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
               ref={dropdownRef}
               id="search-dropdown"
               role="listbox"
-              className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-ca-premium"
+              className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-ca-surface border border-ca-border bg-ca-surface shadow-ca-overlay"
             >
               <SearchDropdownItems
                 results={results}
@@ -225,7 +226,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
 
         <button
           type="submit"
-          className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[12px] bg-ca-navy-950 px-5 text-sm font-black text-white transition hover:bg-ca-navy-800"
+          className={buttonVariants({ size: "lg", className: "shrink-0" })}
         >
           <Search className="h-4 w-4" strokeWidth={2} />
           <span>{t("search")}</span>
@@ -238,11 +239,11 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
   return (
     <form
       action="/catalog"
-      className="relative flex h-10 items-center rounded-full border border-ca-border bg-ca-background pl-4 pr-1 transition focus-within:border-ca-navy-800 focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(8,36,71,0.08)]"
+      className="relative flex h-10 items-center rounded-ca-control border border-ca-border bg-ca-bg pl-4 pr-1 transition focus-within:border-ca-navy-hover focus-within:bg-ca-surface focus-within:outline-2 focus-within:outline-ca-navy-hover"
       onSubmit={handleSubmit}
     >
       <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" strokeWidth={1.8} />
-      <span className="sr-only">Buscar repuesto</span>
+      <span className="sr-only">{t("searchAriaLabel")}</span>
       <input
         ref={inputRef}
         aria-autocomplete="list"
@@ -250,7 +251,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
         aria-expanded={isOpen}
         aria-label={t("searchAriaLabel")}
         autoComplete="off"
-        className="min-w-0 flex-1 bg-transparent px-2.5 text-sm outline-none placeholder:text-ca-text-secondary/55"
+        className="min-w-0 flex-1 bg-transparent px-2.5 text-sm outline-none placeholder:text-ca-text-secondary"
         name="q"
         placeholder={t("searchPlaceholderShort")}
         role="combobox"
@@ -261,12 +262,12 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
         onKeyDown={handleKeyDown}
       />
       {isLoading ? (
-        <span className="mr-2 h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-ca-navy-950 border-t-transparent" />
+        <span className="mr-2 h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-ca-navy border-t-transparent" />
       ) : null}
       <button
         type="submit"
         aria-label={t("search")}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ca-navy-950 text-white transition hover:bg-ca-navy-800"
+        className={buttonVariants({ className: "w-8 shrink-0 px-0" })}
       >
         <Search className="h-3.5 w-3.5" strokeWidth={2.2} />
       </button>
@@ -276,7 +277,7 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
           ref={dropdownRef}
           id="search-dropdown"
           role="listbox"
-          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-ca-border bg-white shadow-ca-premium"
+          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-ca-surface border border-ca-border bg-ca-surface shadow-ca-overlay"
         >
           <SearchDropdownItems
             results={results}
@@ -313,20 +314,20 @@ function SearchDropdownItems({
           type="button"
           role="option"
           aria-selected={index === activeIndex}
-          className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-ca-background ${
-            index === activeIndex ? "bg-ca-background" : ""
-          }`}
+          className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-ca-bg ${
+ index === activeIndex ? "bg-ca-bg" : ""
+ }`}
           onMouseDown={(e) => { e.preventDefault(); onSelect(result); }}
           onMouseEnter={() => onHover(index)}
         >
           <div className="min-w-0 flex-1">
-            <p className="truncate font-bold text-ca-navy-950">{result.name}</p>
+            <p className="truncate font-bold text-ca-navy">{result.name}</p>
             <p className="mt-0.5 text-xs text-ca-text-secondary">
               {result.category} · SKU {result.sku}
             </p>
           </div>
           <div className="shrink-0 text-right">
-            <p className="font-black text-ca-navy-950">{result.formattedPrice}</p>
+            <p className="font-bold text-ca-navy">{result.formattedPrice}</p>
             <StockDot status={result.stockStatus} />
           </div>
         </button>
@@ -334,7 +335,7 @@ function SearchDropdownItems({
       <div className="border-t border-ca-border px-4 py-2.5">
         <button
           type="submit"
-          className="w-full text-left text-xs font-bold text-ca-blue-700 hover:underline"
+          className="w-full text-left text-xs font-bold text-ca-navy-hover hover:underline"
         >
           {t("seeAllResults", { query })}
         </button>
@@ -351,7 +352,7 @@ function StockDot({ status }: { status: StockStatus }) {
     return <span className="mt-0.5 block text-xs font-bold text-ca-success">{label}</span>;
   }
   if (status === "LOW_STOCK") {
-    return <span className="mt-0.5 block text-xs font-bold text-amber-600">{label}</span>;
+    return <span className="mt-0.5 block text-xs font-bold text-warning">{label}</span>;
   }
-  return <span className="mt-0.5 block text-xs font-bold text-red-500">{label}</span>;
+  return <span className="mt-0.5 block text-xs font-bold text-danger">{label}</span>;
 }

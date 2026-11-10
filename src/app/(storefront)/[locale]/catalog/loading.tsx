@@ -3,10 +3,10 @@ import { SiteHeaderSkeleton } from "@/components/site-header-skeleton";
 
 export default function CatalogLoading() {
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeaderSkeleton />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="ca-container py-6">
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="hidden lg:block">
             <Skeleton className="h-[420px]" />

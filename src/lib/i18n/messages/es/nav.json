@@ -23,5 +23,7 @@
   "brandTagline": "Repuestos automotrices · El Salvador",
   "cartItemCount": "{count, plural, one {# producto} other {# productos}}",
   "nationalDelivery": "Envíos a todo El Salvador",
-  "languageSwitch": "Idioma"
+  "languageSwitch": "Idioma",
+  "signIn": "Ingresar",
+  "myAccount": "Mi cuenta"
 }

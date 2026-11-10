@@ -64,42 +64,42 @@ export default async function AccountAddressesPage({
     });
 
   return (
-    <main className="min-h-screen bg-ca-background text-ca-text-primary">
+    <main className="min-h-screen bg-ca-bg text-ca-text">
       <SiteHeader locale={locale} />
 
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
         <Link
           href="/account"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy-950"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ca-text-secondary transition hover:text-ca-navy"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("backToAccount")}
         </Link>
 
         <div className="mt-4 flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-black text-ca-navy-950">{t("title")}</h1>
+          <h1 className="text-2xl font-bold text-ca-navy">{t("title")}</h1>
           <AddAddressModal errorMessages={errorMessages} />
         </div>
 
         {noticeMessage ? (
           <div
-            className={`mt-4 flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
-              noticeIsSuccess
-                ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border border-red-200 bg-red-50 text-red-600"
-            }`}
+            className={`mt-4 flex items-center gap-2 rounded-ca-control px-4 py-3 text-sm font-semibold ${
+ noticeIsSuccess
+ ? "border border-success/20 bg-ca-surface text-success"
+ : "border border-danger/20 bg-danger/10 text-danger"
+ }`}
           >
             {noticeMessage}
           </div>
         ) : null}
 
         {addresses.length === 0 ? (
-          <div className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-ca-border bg-white py-14 text-center shadow-ca-soft">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ca-navy-950/[0.07] text-ca-navy-950">
+          <div className="mt-6 flex flex-col items-center gap-4 rounded-ca-surface border border-ca-border bg-ca-surface py-14 text-center">
+            <span className="flex h-14 w-14 items-center justify-center rounded-ca-control bg-ca-navy/[0.07] text-ca-navy">
               <MapPin className="h-7 w-7" strokeWidth={1.6} />
             </span>
             <div>
-              <p className="font-black text-ca-navy-950">{t("emptyTitle")}</p>
+              <p className="font-bold text-ca-navy">{t("emptyTitle")}</p>
               <p className="mt-1 max-w-xs text-sm text-ca-text-secondary">
                 {t("emptyDescription")}
               </p>
@@ -111,15 +111,15 @@ export default async function AccountAddressesPage({
             {addresses.map((address) => (
               <div
                 key={address.id}
-                className="rounded-2xl border border-ca-border bg-white p-4 shadow-ca-soft"
+                className="rounded-ca-surface border border-ca-border bg-ca-surface p-4"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ca-navy-950/[0.07] text-ca-navy-950">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-ca-control bg-ca-navy/[0.07] text-ca-navy">
                       <MapPin className="h-4 w-4" strokeWidth={1.8} />
                     </span>
                     <div>
-                      <p className="text-sm font-bold text-ca-navy-950">{address.addressLine1}</p>
+                      <p className="text-sm font-bold text-ca-navy">{address.addressLine1}</p>
                       {address.addressLine2 ? (
                         <p className="text-sm text-ca-text-secondary">{address.addressLine2}</p>
                       ) : null}
@@ -140,7 +140,7 @@ export default async function AccountAddressesPage({
                     <button
                       type="submit"
                       aria-label={t("delete")}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-ca-border text-ca-text-secondary transition hover:border-red-300 hover:bg-red-50 hover:text-red-500"
+                      className="flex h-8 w-8 items-center justify-center rounded-ca-control border border-ca-border text-ca-text-secondary transition hover:border-danger/20 hover:bg-danger/10 hover:text-danger"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>

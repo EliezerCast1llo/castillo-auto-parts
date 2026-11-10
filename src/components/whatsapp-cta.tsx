@@ -1,3 +1,5 @@
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Link } from "@/lib/i18n/navigation";
 import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -30,48 +32,34 @@ export function WhatsAppCTA({
  : null;
  // El texto visible da el nombre accesible, incluido el fallback localizado.
 
- const baseClass = getVariantClassName(variant);
+ const baseClass = variant === "inline"
+   ? "inline-flex items-center gap-2 text-sm font-semibold text-ca-navy hover:underline"
+   : cn(
+       buttonVariants({
+         variant: whatsappUrl && variant !== "subtle" ? "whatsapp" : variant === "subtle" ? "outline" : "primary",
+         size: variant === "subtle" ? "md" : "lg",
+       }),
+       variant === "floating" && "fixed bottom-4 right-4 z-40",
+     );
 
  if (whatsappUrl) {
  return (
  <a
- className={`${baseClass} ${className}`}
+ className={cn(baseClass, className)}
  href={whatsappUrl}
  rel="noopener noreferrer"
  target="_blank"
  >
- <MessageCircle className={getIconClassName(variant)} strokeWidth={2} />
+ <MessageCircle aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
  <span>{resolvedLabel}</span>
  </a>
  );
  }
 
  return (
- <Link className={`${baseClass} ${className}`} href="/help">
- <MessageCircle className={getIconClassName(variant)} strokeWidth={2} />
+ <Link className={cn(baseClass, className)} href="/help">
+ <MessageCircle aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
  <span>{variant === "inline" ? t("helpFind") : resolvedLabel}</span>
  </Link>
  );
-}
-
-function getVariantClassName(variant: WhatsAppCtaVariant) {
- if (variant === "floating") {
- return "fixed bottom-5 right-5 z-40 inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-[#128C4A] px-5 text-sm font-black text-white shadow-ca-overlay transition hover:-translate-y-0.5 hover:bg-[#0F7B40]";
- }
-
- if (variant === "inline") {
- return "inline-flex items-center gap-1.5 text-sm font-black text-ca-blue-700 transition hover:text-ca-navy-950 hover:underline";
- }
-
- if (variant === "subtle") {
- return "inline-flex h-10 items-center justify-center gap-2 rounded-ca-control border border-ca-border bg-white px-4 text-sm font-black text-ca-navy-950 transition hover:border-ca-navy-950 hover:bg-ca-navy-950 hover:text-white";
- }
-
- return "inline-flex h-11 items-center justify-center gap-2 rounded-ca-control bg-[#128C4A] px-5 text-sm font-black text-white transition hover:bg-[#0F7B40] ";
-}
-
-function getIconClassName(variant: WhatsAppCtaVariant) {
- if (variant === "inline") return "h-4 w-4";
- if (variant === "floating") return "h-5 w-5";
- return "h-4 w-4";
 }

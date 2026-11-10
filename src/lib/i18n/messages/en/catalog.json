@@ -75,5 +75,7 @@
   "shopByCategory": "Shop by category",
   "clearAll": "Clear all",
   "activeFiltersHint": "Remove one filter or clear everything to widen the results.",
-  "applyFilters": "Apply filters"
+  "applyFilters": "Apply filters",
+  "exploreCategory": "Explore {category}",
+  "filterCatalog": "Filter catalog"
 }
