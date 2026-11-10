@@ -12,7 +12,6 @@ import { ProductFilters } from "@/components/product/product-filters";
 import { VehicleSearchPanel } from "@/components/product/vehicle-search-panel";
 import { FilterDrawer } from "@/components/catalog/filter-drawer";
 import { MyVehicleBanner } from "@/components/catalog/my-vehicle-banner";
-import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { formatMyVehicle } from "@/lib/my-vehicle";
 import { getMyVehicle } from "@/lib/my-vehicle-server";
@@ -103,6 +102,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
   }
 
   const filters = parseCatalogFilters(resolvedParams);
+  const activeNav = filters.stockStatuses.includes("LOW_STOCK") ? "lastUnits" : filters.brands.length ? "brands" : "catalog";
   const sort = parseCatalogSort(resolvedParams);
   const page = Math.max(1, Number(resolvedParams.page ?? 1) || 1);
 
@@ -150,7 +150,7 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
 
   return (
     <main className="min-h-screen bg-ca-bg text-ca-text">
-      <SiteHeader locale={locale} />
+      <SiteHeader locale={locale} activeNav={activeNav} />
 
       <div className="ca-container py-6">
         {/* Botón de filtros mobile + drawer */}
@@ -251,7 +251,6 @@ export default async function CatalogPage({ params: routeParams, searchParams }:
           </section>
         </div>
       </div>
-      <SiteFooter locale={locale} />
     </main>
   );
 }

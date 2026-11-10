@@ -6,7 +6,6 @@ import { Car, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { CatalogPagination } from "@/components/catalog-pagination";
 import { EmptyState } from "@/components/empty-state";
 import { ProductCard } from "@/components/product/product-card";
-import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import {
   parseCatalogFilters,
@@ -74,7 +73,7 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
 
   return (
     <main className="min-h-screen bg-ca-bg text-ca-text">
-      <SiteHeader locale={locale} />
+      <SiteHeader locale={locale} activeNav="catalog" />
 
       <div className="ca-container py-6">
         <nav
@@ -156,7 +155,6 @@ export default async function VehicleMakePage({ params, searchParams }: VehicleM
           )}
         </section>
       </div>
-      <SiteFooter locale={locale} />
     </main>
   );
 }

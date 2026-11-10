@@ -16,7 +16,6 @@ import { ProductPrice } from "@/components/product/product-price";
 import { QuantityStepper } from "@/components/product/quantity-stepper";
 import { StockBadge } from "@/components/product/stock-badge";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import {
   getCatalogProductBySlug,
@@ -107,7 +106,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <main className="min-h-screen bg-ca-bg text-ca-text">
       <JsonLd data={buildProductJsonLd(product, locale)} />
       <JsonLd data={buildBreadcrumbJsonLd(breadcrumbs, locale)} />
-      <SiteHeader locale={locale} />
+      <SiteHeader locale={locale} activeNav="catalog" />
 
       <div className="ca-container py-5">
         <ProductBreadcrumb product={product} t={t} />
@@ -194,7 +193,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {/* Precio */}
             <div className="mt-5 rounded-ca-control bg-ca-bg px-4 py-3">
               <p className="text-xs font-bold text-ca-text-secondary">{t("priceIncludesVat")}</p>
-              <ProductPrice className="mt-1.5" cents={product.priceCents} size="lg" />
+              <div className="mt-1.5 flex items-center gap-2">
+                <span aria-hidden="true" className="h-5 w-0.5 bg-ca-accent" />
+                <ProductPrice cents={product.priceCents} size="lg" />
+              </div>
             </div>
 
             <div className="mt-4 rounded-ca-control border border-ca-border bg-ca-surface p-4">
@@ -258,7 +260,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         ) : null}
       </div>
-      <SiteFooter locale={locale} />
     </main>
   );
 }

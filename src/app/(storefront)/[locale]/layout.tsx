@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Barlow_Condensed, Outfit } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CookieConsentSlot } from "@/components/consent/cookie-consent-slot";
 import { GoogleAdsTag } from "@/components/analytics/google-ads-tag";
+import { SiteFooter } from "@/components/site-footer";
 import { ToastProvider } from "@/components/ui/toast";
 import { defaultLocale, isPublishedLocale, locales, type Locale } from "@/lib/i18n/config";
 import { loadMessages, pickClientMessages } from "@/lib/i18n/messages";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "../../globals.css";
+
+const display = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-display",
+});
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -95,9 +102,10 @@ export default async function StorefrontLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${outfit.variable} font-sans antialiased`}>
+      <body className={`${outfit.variable} ${display.variable} ca-storefront font-sans antialiased`}>
         <NextIntlClientProvider locale={locale} messages={pickClientMessages(messages)}>
           <ToastProvider>{children}</ToastProvider>
+          <SiteFooter locale={locale} />
           <CookieConsentSlot />
         </NextIntlClientProvider>
         <GoogleAdsTag />

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { resolveAndPublishRouteLocale } from "@/lib/i18n/params";
@@ -85,7 +84,6 @@ export default async function DesignPage({ params }: Props) {
           </details>
         </Card>
       </div>
-      <SiteFooter locale={locale} />
     </main>
   );
 }

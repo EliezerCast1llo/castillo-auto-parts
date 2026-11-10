@@ -6,10 +6,12 @@ import { Link } from "@/lib/i18n/navigation";
 import { Menu, ShoppingCart, User, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { siteNavItems as navLinks } from "@/lib/nav";
+import { cn } from "@/lib/utils";
+import { siteNavItems as navLinks, type SiteNavKey } from "@/lib/nav";
 import type { LocaleHref } from "@/lib/i18n/navigation";
 
 type MobileMenuProps = {
+  activeNav?: SiteNavKey;
   cartItemCount: number;
   accountHref: LocaleHref;
   accountLabel: string;
@@ -17,6 +19,7 @@ type MobileMenuProps = {
 
 
 export function MobileMenu({
+  activeNav,
   cartItemCount,
   accountHref,
   accountLabel,
@@ -100,7 +103,11 @@ export function MobileMenu({
                   key={link.key}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="flex h-12 items-center rounded-ca-control px-4 text-base font-bold text-ca-navy transition hover:bg-ca-bg"
+                  aria-current={activeNav === link.key ? "true" : undefined}
+                  className={cn(
+                    "flex h-12 items-center rounded-ca-control border-b-2 border-transparent px-4 text-base font-bold text-ca-navy transition hover:bg-ca-bg",
+                    activeNav === link.key && "border-ca-accent",
+                  )}
                 >
                   {t(link.key)}
                 </Link>
@@ -127,7 +134,7 @@ export function MobileMenu({
                 <div className="relative">
                   <ShoppingCart className="h-5 w-5 text-ca-text-secondary" strokeWidth={1.8} />
                   {cartItemCount > 0 ? (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-ca-control bg-ca-navy px-0.5 text-xs font-bold text-white">
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-ca-pill bg-ca-accent px-0.5 text-xs font-bold text-ca-navy">
                       {cartItemCount}
                     </span>
                   ) : null}

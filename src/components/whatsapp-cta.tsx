@@ -32,12 +32,12 @@ export function WhatsAppCTA({
  : null;
  // El texto visible da el nombre accesible, incluido el fallback localizado.
 
- const baseClass = variant === "inline"
+ const baseClass = variant === "inline" && !whatsappUrl
    ? "inline-flex items-center gap-2 text-sm font-semibold text-ca-navy hover:underline"
    : cn(
        buttonVariants({
-         variant: whatsappUrl && variant !== "subtle" ? "whatsapp" : variant === "subtle" ? "outline" : "primary",
-         size: variant === "subtle" ? "md" : "lg",
+         variant: whatsappUrl ? "whatsapp" : variant === "subtle" ? "outline" : "primary",
+         size: variant === "inline" ? "sm" : variant === "subtle" ? "md" : "lg",
        }),
        variant === "floating" && "fixed bottom-4 right-4 z-40",
      );

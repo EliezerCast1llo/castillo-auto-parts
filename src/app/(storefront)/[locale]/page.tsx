@@ -3,7 +3,6 @@ import { CategoryQuickLinks } from "@/components/home/category-rail";
 import { SiteHeader } from "@/components/site-header";
 import { SearchHero } from "@/components/home/search-hero";
 import { JsonLd } from "@/components/seo/json-ld";
-import { SiteFooter } from "@/components/site-footer";
 import { getCatalogFacets, getFeaturedCatalogProductsResult } from "@/data/products";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/structured-data";
 import type { Metadata } from "next";
@@ -44,7 +43,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           options={filterOptions}
         />
       </div>
-      <SiteFooter locale={locale} />
     </main>
   );
 }

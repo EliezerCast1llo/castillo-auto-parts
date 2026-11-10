@@ -10,7 +10,7 @@ const buttonStyles = cva(
         primary: "bg-ca-navy text-white hover:bg-ca-navy-hover",
         outline: "border-ca-border bg-ca-surface text-ca-navy hover:border-ca-navy hover:bg-ca-bg",
         ghost: "text-ca-text-secondary hover:bg-ca-bg hover:text-ca-navy",
-        whatsapp: "border-ca-whatsapp bg-ca-surface text-ca-navy hover:bg-ca-whatsapp/10",
+        whatsapp: "bg-ca-whatsapp-action text-white hover:bg-ca-whatsapp-hover",
       },
       size: {
         sm: "h-9 px-3 text-xs",

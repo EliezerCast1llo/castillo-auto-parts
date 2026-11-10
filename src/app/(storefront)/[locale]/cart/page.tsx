@@ -15,7 +15,6 @@ import { CartQuantityControl } from "@/components/cart/cart-quantity-control";
 import { CartNotice } from "@/components/cart/cart-notice";
 import { EmptyState } from "@/components/empty-state";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { getCart, type CartLine } from "@/lib/cart";
 import { formatCurrency } from "@/lib/money";
 import { firstValue } from "@/lib/url-utils";
@@ -158,7 +157,6 @@ export default async function CartPage({ params: routeParams, searchParams }: Ca
           </aside>
         </div>
       </div>
-      <SiteFooter locale={locale} />
     </main>
   );
 }

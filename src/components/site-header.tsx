@@ -8,7 +8,7 @@ import { SearchAutocomplete } from "@/components/search/search-autocomplete";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { buttonVariants } from "@/components/ui/button";
 import { SUPPORT_WHATSAPP_NUMBER } from "@/lib/contact";
-import { siteNavItems } from "@/lib/nav";
+import { siteNavItems, type SiteNavKey } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { BrandLockup } from "@/components/brand-lockup";
 import { getTranslations } from "next-intl/server";
@@ -18,9 +18,10 @@ import { LocaleSwitch } from "@/components/locale-switch";
 type SiteHeaderProps = {
   locale: Locale;
   showSearch?: boolean;
+  activeNav?: SiteNavKey;
 };
 
-export async function SiteHeader({ locale, showSearch = true }: SiteHeaderProps) {
+export async function SiteHeader({ locale, showSearch = true, activeNav }: SiteHeaderProps) {
   const [tNav, cartItemCount, session] = await Promise.all([
     getTranslations({ locale, namespace: "Nav" }),
     getCartItemCount(),
@@ -54,7 +55,11 @@ export async function SiteHeader({ locale, showSearch = true }: SiteHeaderProps)
             <nav aria-label={tNav("ariaLabel")} data-testid="site-nav" className="hidden items-center gap-1 lg:flex">
               {siteNavItems.map((item) => (
                 <Link
-                  className="inline-flex h-10 items-center rounded-ca-control px-3 text-sm font-bold text-ca-navy transition hover:bg-ca-bg"
+                  aria-current={activeNav === item.key ? "true" : undefined}
+                  className={cn(
+                    "inline-flex h-10 items-center rounded-ca-control border-b-2 border-transparent px-3 text-sm font-bold text-ca-navy transition hover:bg-ca-bg",
+                    activeNav === item.key && "border-ca-accent",
+                  )}
                   href={item.href}
                   key={item.key}
                 >
@@ -103,6 +108,7 @@ export async function SiteHeader({ locale, showSearch = true }: SiteHeaderProps)
 
             <div className="lg:hidden">
               <MobileMenu
+                activeNav={activeNav}
                 cartItemCount={cartItemCount}
                 accountHref={accountHref}
                 accountLabel={accountLabel}

@@ -29,23 +29,23 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-ca-border bg-ca-surface text-ca-text">
+    <footer className="ca-on-navy bg-ca-navy text-white">
       <div className="ca-container grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-5">
         {/* Marca */}
         <div>
-          <BrandLockup />
-          <p className="mt-4 max-w-xs text-sm leading-6 text-ca-text-secondary">{t("description")}</p>
-          <div className="mt-4 space-y-2 text-sm font-semibold text-ca-text-secondary">
+          <BrandLockup onDark />
+          <p className="mt-4 max-w-xs text-sm leading-6 text-white/80">{t("description")}</p>
+          <div className="mt-4 space-y-2 text-sm font-semibold text-white/80">
             <p className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-ca-text-secondary" />
+              <ShieldCheck className="h-4 w-4 text-white/80" />
               {t("checkCompatibility")}
             </p>
             <p className="flex items-center gap-2">
-              <Truck className="h-4 w-4 text-ca-text-secondary" />
+              <Truck className="h-4 w-4 text-white/80" />
               {t("deliveryArea")}
             </p>
             <p className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-ca-text-secondary" />
+              <MapPin className="h-4 w-4 text-white/80" />
               {t("country")}
             </p>
           </div>
@@ -89,7 +89,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           <FooterLink href="/help">{t("helpCenter")}</FooterLink>
           {SUPPORT_WHATSAPP_NUMBER ? (
             <a
-              className="block text-sm font-semibold text-ca-text-secondary transition hover:text-ca-navy hover:underline"
+              className="block text-sm font-semibold text-white/80 transition hover:text-white hover:underline"
               href={buildContactLinks(SUPPORT_WHATSAPP_NUMBER, tWhatsApp("message")).whatsapp}
               rel="noopener noreferrer"
               target="_blank"
@@ -100,8 +100,8 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         </FooterColumn>
       </div>
 
-      <div className="border-t border-ca-border">
-        <div className="ca-container flex flex-col items-center justify-between gap-2 py-4 text-xs font-semibold text-ca-text-secondary sm:flex-row">
+      <div className="border-t border-white/20">
+        <div className="ca-container flex flex-col items-center justify-between gap-2 py-4 text-xs font-semibold text-white/80 sm:flex-row">
           <p>
             {t("rights", { siteName: SITE_NAME, year })}
           </p>
@@ -115,7 +115,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
 function FooterColumn({ children, title }: { children: React.ReactNode; title: string }) {
   return (
     <div>
-      <h2 className="text-sm font-semibold text-ca-navy">{title}</h2>
+      <h2 className="text-base font-bold text-white">{title}</h2>
       <div className="mt-4 space-y-2.5">{children}</div>
     </div>
   );
@@ -124,7 +124,7 @@ function FooterColumn({ children, title }: { children: React.ReactNode; title: s
 function FooterLink({ children, href }: { children: React.ReactNode; href: LocaleHref }) {
   return (
     <Link
-      className="block text-sm font-semibold text-ca-text-secondary transition hover:text-ca-navy hover:underline"
+      className="block text-sm font-semibold text-white/80 transition hover:text-white hover:underline"
       href={href}
     >
       {children}

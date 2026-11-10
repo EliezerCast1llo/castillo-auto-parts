@@ -10,7 +10,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppCTA } from "@/components/whatsapp-cta";
 import { buttonVariants } from "@/components/ui/button";
 import { cardVariants } from "@/components/ui/card";
@@ -82,11 +81,11 @@ export default async function HelpPage({
 
   return (
     <main className="min-h-screen bg-ca-surface text-ca-text">
-      <SiteHeader locale={locale} />
+      <SiteHeader locale={locale} activeNav="help" />
 
       <HelpHero t={t} />
 
-      <div className="ca-container pb-16">
+      <div className="ca-container py-8 sm:py-12">
         <section
           aria-label={t("delivery.ariaLabel")}
           className="grid gap-4 md:grid-cols-2"
@@ -115,8 +114,6 @@ export default async function HelpPage({
 
         <ClosingCta t={t} />
       </div>
-
-      <SiteFooter locale={locale} />
     </main>
   );
 }
@@ -127,25 +124,30 @@ export default async function HelpPage({
 
 function HelpHero({ t }: { t: HelpTranslator }) {
   return (
-    <section className="ca-container py-8 sm:py-12">
-      <div className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+    <section className="ca-on-navy bg-ca-navy text-white">
+      <div className="ca-container grid items-start gap-8 py-8 sm:py-12 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <p className="text-sm font-semibold text-ca-text-secondary">{t("hero.eyebrow")}</p>
-          <h1 className="mt-2 max-w-xl text-ca-title font-bold text-ca-navy">
-            {t("hero.titleBefore")} {t("hero.titleHighlight")} {t("hero.titleAfter")}
+          <p className="text-sm font-semibold text-white/80">{t("hero.eyebrow")}</p>
+          <span aria-hidden="true" className="mt-4 block h-0.5 w-12 bg-ca-accent" />
+          <h1 className="mt-3 max-w-xl text-4xl font-bold leading-none sm:text-5xl">
+            {t("hero.titleBefore")} <span className="text-ca-accent">{t("hero.titleHighlight")}</span> {t("hero.titleAfter")}
           </h1>
-          <p className="mt-4 max-w-xl text-base leading-6 text-ca-text-secondary">
+          <p className="mt-4 max-w-xl text-base leading-6 text-white/90">
             {t("hero.description")}
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <WhatsAppCTA label={t("hero.whatsapp")} phone={SUPPORT_WHATSAPP_NUMBER} />
+            <WhatsAppCTA
+              label={t("hero.whatsapp")}
+              phone={SUPPORT_WHATSAPP_NUMBER}
+              className={SUPPORT_WHATSAPP_NUMBER ? undefined : "border-white/50 hover:border-white"}
+            />
             <Link className={buttonVariants({ variant: "outline", size: "lg" })} href="/catalog">
               {t("hero.browseCatalog")}
             </Link>
           </div>
         </div>
 
-        <div className={cardVariants({ padding: "lg" })}>
+        <div className={cardVariants({ padding: "lg", className: "text-ca-text" })}>
           <p className="text-sm font-semibold text-ca-text-secondary">{t("intake.eyebrow")}</p>
           <h2 className="mt-2 text-xl font-bold text-ca-navy">{t("intake.title")}</h2>
           <ul className="mt-4 divide-y divide-ca-border">

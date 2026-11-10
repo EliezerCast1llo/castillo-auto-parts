@@ -38,12 +38,12 @@ export async function CategoryQuickLinks({
               key={slug}
             >
               <Link
-                className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border bg-ca-surface transition-colors hover:border-ca-navy/30"
+                className="group flex h-full flex-col overflow-hidden rounded-ca-surface border border-ca-border border-t-2 border-t-ca-accent bg-ca-surface transition-colors hover:border-ca-navy/30"
                 href={{ pathname: "/catalog", query: { category: slug } }}
               >
                 <span className="px-4 pb-3 pt-3.5">
                   <span className="block text-sm font-semibold text-ca-navy">
-                    {t("exploreCategory", { category })}
+                    {category}
                   </span>
                   {typeof options.categoryCounts[slug] === "number" ? (
                     <span className="mt-0.5 block text-xs text-ca-text-secondary">
@@ -59,6 +59,7 @@ export async function CategoryQuickLinks({
                     kind={slug}
                     seed={slug}
                     size="card"
+                    tone="text-ca-navy"
                   />
                 </span>
               </Link>
