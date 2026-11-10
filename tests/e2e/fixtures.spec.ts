@@ -73,6 +73,7 @@ test.describe("reserva de productos entre specs", () => {
       "checkout-idempotency.spec.ts",
       "i18n.spec.ts",
       "responsive.spec.ts",
+      "storefront-review.spec.ts",
     ]);
   });
 });
