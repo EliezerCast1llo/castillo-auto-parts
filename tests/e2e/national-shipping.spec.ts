@@ -3,6 +3,14 @@ import { expect, test } from "@playwright/test";
 import { addProductToCart, fillCustomerFields, prisma, ES } from "./helpers";
 import { departments, municipalitiesByDepartment } from "../../src/data/el-salvador";
 
+// Install before the shared checkout setup can schedule a native quote timer.
+const renewalTest = test.extend({
+  page: async ({ page }, runTest) => {
+    await page.clock.install();
+    await runTest(page);
+  },
+});
+
 let sku: string;
 let slug: string;
 test.afterAll(async () => { await prisma.$disconnect(); });
@@ -67,8 +75,7 @@ test("no rates provides WhatsApp and blocks payment; pickup remains usable on mo
 });
 
 
-test("automatically renews after 300 seconds, preserves fields and stops after leaving national checkout", async ({ page }) => {
-  await page.clock.install();
+renewalTest("automatically renews after 300 seconds, preserves fields and stops after leaving national checkout", async ({ page }) => {
   let requests = 0;
   await page.route("**/api/shipping/rates", async (route) => {
     requests++;
@@ -79,13 +86,19 @@ test("automatically renews after 300 seconds, preserves fields and stops after l
   await page.getByRole("button", { name: "Calcular envío" }).click();
   await page.getByRole("radio", { name: /Paquetería de prueba Express/ }).check();
   await expect(page.getByRole("button", { name: "Confirmar y pagar" })).toBeEnabled();
+  const expiry = page.locator('input[name="shippingQuoteExpiresAt"]');
+  const initialExpiry = Number(await expiry.inputValue());
+  expect(initialExpiry).toBeGreaterThan(0);
   const before = requests;
-  await page.clock.fastForward(300001);
-  await expect.poll(() => requests).toBe(before + 1);
+  await page.clock.fastForward(300_001);
+  await expect.poll(async () => Number(await expiry.inputValue())).toBeGreaterThan(initialExpiry);
+  expect(requests).toBe(before + 1);
   await expect(page.getByRole("button", { name: "Confirmar y pagar" })).toBeEnabled();
   await expect(page.getByLabel("Dirección", { exact: true })).toHaveValue("Calle 5 casa 3");
   await expect(page.getByLabel("Punto de referencia", { exact: true })).toHaveValue("Frente al parque");
   await page.getByRole("radio", { name: "Retiro en bodega", exact: true }).check();
-  await page.clock.fastForward(600001);
+  await expect(page.getByText("Costo de retiro: $0.00")).toBeVisible();
+  await expect(expiry).toHaveCount(0);
+  await page.clock.fastForward(600_001);
   expect(requests).toBe(before + 1);
 });
