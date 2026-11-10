@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "title": "Tu carrito | Castillo Auto Parts",
+    "title": "Tu carrito",
     "description": "Revisa tu selección de repuestos y continúa con la compra."
   },
   "backToCatalog": "Seguir comprando",
@@ -12,7 +12,8 @@
     "title": "Resumen del pedido",
     "products": "Productos",
     "subtotal": "Subtotal",
-    "taxNotice": "Precios con IVA incluido (13%)."
+    "taxNotice": "Precios con IVA incluido (13%).",
+    "deliveryNotice": "Envíos a todo El Salvador con tarifa de Boxful. En checkout cotizas el costo y el plazo estimado de entrega y revisas el total de productos + envío antes de confirmar el pago. Retiro en bodega gratis ($0). Envío gratis solo con una promoción aplicable."
   },
   "readiness": {
     "availabilityPending": "Disponibilidad pendiente",

@@ -1,6 +1,6 @@
 {
   "list": {
-    "metadataTitle": "My orders | Castillo Auto Parts",
+    "metadataTitle": "My orders",
     "metadataDescription": "Your purchase history at Castillo Auto Parts.",
     "emptyTitle": "You have no orders yet",
     "emptyDescription": "Once you buy a part, you will be able to check its status, estimated date and delivery details here.",
@@ -63,7 +63,7 @@
     "paymentConfirmed": "Payment confirmed",
     "waitingProvider": "We are waiting for the provider to confirm. This order is not ready for preparation yet.",
     "readyForPreparation": "Payment was confirmed and the order is ready for preparation.",
-    "metadataTitle": "Order {orderNumber} | Castillo Auto Parts",
+    "metadataTitle": "Order {orderNumber}",
     "currentStatus": "Current status: {status}.",
     "productsSection": "Products",
     "deliverySection": "Delivery",

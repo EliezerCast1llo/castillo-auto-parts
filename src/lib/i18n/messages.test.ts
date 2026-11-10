@@ -54,6 +54,18 @@ describe("message catalogs", () => {
     expect(blank).toEqual([]);
   });
 
+  it("leaves the brand suffix to the storefront metadata template", () => {
+    for (const catalog of [flatEs, flatEn]) {
+      const titles = Object.entries(catalog).filter(([key]) =>
+        /(?:metadataTitle|notFoundTitle|metaTitle(?:Filtered)?|metadata\.title)$/.test(key),
+      );
+      expect(titles.length).toBeGreaterThan(10);
+      for (const [key, title] of titles) {
+        expect(title, key).not.toContain("Castillo Auto Parts");
+      }
+    }
+  });
+
   it("has no English value left identical to the Spanish one", () => {
     const untranslated = Object.entries(flatEs)
       .filter(([key, value]) => {

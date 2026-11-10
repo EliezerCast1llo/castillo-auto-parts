@@ -1,5 +1,5 @@
 {
-  "metadataTitle": "My account | Castillo Auto Parts",
+  "metadataTitle": "My account",
   "metadataDescription": "Manage your profile, review your orders and your saved addresses.",
   "header": {
     "brandEyebrow": "Castillo Auto Parts",
@@ -65,7 +65,7 @@
     "review": "Review address",
     "save": "Save address",
     "saving": "Saving…",
-    "metadataTitle": "My addresses | Castillo Auto Parts",
+    "metadataTitle": "My addresses",
     "backToAccount": "My account",
     "title": "My addresses",
     "emptyTitle": "No saved addresses",

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, Outfit } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CookieConsentSlot } from "@/components/consent/cookie-consent-slot";
 import { GoogleAdsTag } from "@/components/analytics/google-ads-tag";
 import { ToastProvider } from "@/components/ui/toast";
@@ -37,11 +37,12 @@ export async function generateMetadata({
   const { locale: requestedLocale } = await params;
   const locale = hasLocale(locales, requestedLocale) ? requestedLocale : defaultLocale;
   const indexable = isPublishedLocale(locale);
+  const t = await getTranslations({ locale, namespace: "Common" });
 
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: SITE_NAME,
+      default: `${t("homeMetadataTitle")} | ${SITE_NAME}`,
       template: `%s | ${SITE_NAME}`,
     },
     description: SITE_DESCRIPTION,

@@ -1,5 +1,5 @@
 {
-  "notFoundTitle": "Product not found | Castillo Auto Parts",
+  "notFoundTitle": "Product not found",
   "metaDescription": "{name} by {brand} · {compatibility}. Check availability and delivery options.",
   "description": "Description",
   "compatibleVehicles": "Compatible vehicles",
@@ -13,7 +13,7 @@
   "addToCart": "Add to cart",
   "quantity": "Quantity",
   "validateWithAdvisor": "Check with an advisor",
-  "deliveryNotice": "We ship throughout El Salvador. Delivery cost and timing are calculated at checkout by courier; same-day delivery is available in some areas. Free warehouse pickup.",
+  "deliveryNotice": "Shipping throughout El Salvador at Boxful rates. At checkout, get a shipping cost and estimated delivery time, then review the products + shipping total before confirming payment. Free warehouse pickup ($0). Free shipping only with an applicable promotion.",
   "breadcrumbAriaLabel": "Product breadcrumb",
   "home": "Home",
   "catalog": "Catalog",
