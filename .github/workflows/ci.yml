@@ -99,7 +99,8 @@ jobs:
 
   e2e:
     name: e2e
-    runs-on: ubuntu-latest
+    # Playwright 1.60 no instala Chromium en Ubuntu 26.04.
+    runs-on: ubuntu-24.04
     env:
       E2E_DATABASE_SCHEMA: e2e_${{ github.run_id }}_${{ github.run_attempt }}
 
