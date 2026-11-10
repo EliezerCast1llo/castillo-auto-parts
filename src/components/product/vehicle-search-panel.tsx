@@ -25,7 +25,7 @@ export function VehicleSearchPanel({ filters, options }: VehicleSearchPanelProps
 
   return (
     <section>
-      <h2 className="flex items-center gap-1.5 text-xs font-bold text-ca-navy">
+      <h2 className="flex items-center gap-1.5 text-xs font-semibold text-ca-navy">
         <Car aria-hidden className="h-4 w-4 shrink-0 text-ca-text-secondary" />
         {t("title")}
       </h2>

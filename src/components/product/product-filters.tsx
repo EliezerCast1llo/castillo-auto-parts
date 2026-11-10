@@ -96,7 +96,7 @@ export function ProductFilters({ applyFiltersLabel,
         </button>
         {activeFilterCount > 0 ? (
           <Link
-            className="inline-flex h-10 items-center justify-center rounded-ca-control px-4 text-sm font-bold text-ca-text-secondary underline-offset-2 transition hover:text-ca-navy hover:underline"
+            className="inline-flex h-10 items-center justify-center rounded-ca-control px-4 text-sm font-semibold text-ca-text-secondary underline-offset-2 transition hover:text-ca-navy hover:underline"
             href="/catalog"
           >
             Limpiar filtros ({activeFilterCount})
@@ -109,7 +109,7 @@ export function ProductFilters({ applyFiltersLabel,
 
 function FilterHeading({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-xs font-bold text-ca-navy">
+    <span className="text-xs font-semibold text-ca-navy">
       {children}
     </span>
   );

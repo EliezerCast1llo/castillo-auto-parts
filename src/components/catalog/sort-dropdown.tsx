@@ -25,10 +25,10 @@ export function SortDropdown({ sortLabel, ariaLabel, value }: SortDropdownProps)
 
   return (
     <label className="flex w-full flex-col gap-1.5 sm:w-auto">
-      <span className="text-xs font-bold text-ca-text-secondary">
+      <span className="text-xs font-semibold text-ca-text-secondary">
         {sortLabel}
       </span>
-      <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-ca-control border border-ca-border bg-ca-surface px-3 text-sm font-bold text-ca-navy transition focus-within:border-ca-navy-hover">
+      <span className="inline-flex h-11 min-w-[210px] items-center gap-2 rounded-ca-control border border-ca-border bg-ca-surface px-3 text-sm font-semibold text-ca-navy transition focus-within:border-ca-navy-hover">
         <ArrowUpDown className="h-4 w-4 shrink-0 text-ca-navy-hover" strokeWidth={1.9} />
         <select
           aria-label={ariaLabel}
