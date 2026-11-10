@@ -120,7 +120,7 @@ test("customer can view empty orders list", async ({ page }) => {
   const email = uniqueEmail("orders");
   await registerUser(page, email);
 
-  await page.getByRole("link", { name: "Mis pedidos" }).click();
+  await page.getByRole("main").getByRole("link", { name: "Mis pedidos" }).click();
   await expect(page).toHaveURL(/\/account\/orders/);
   await expect(page.getByRole("heading", { name: "Mis pedidos" })).toBeVisible();
   await expect(page.getByText("Todavía no tienes pedidos")).toBeVisible();
