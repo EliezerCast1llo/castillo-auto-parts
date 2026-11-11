@@ -36,12 +36,12 @@ cookies de seguimiento ni reportadores de errores externos. Teléfono y WhatsApp
 
 ## Google Ads — B20 / #117
 
-La URL pública de la portada es `https://castillo-auto-parts.vercel.app/`.
-`/robots.txt` permite todos los crawlers (incluido AdsBot-Google) y apunta a
-`/sitemap.xml`, que solo lista `/`. No publica enlaces a catálogo o productos.
-`NEXT_PUBLIC_SITE_URL`, si se configura, debe contener el origen público canónico;
-en landing el valor por defecto es `https://castillo-auto-parts.vercel.app`.
-Los archivos de robots y sitemap de la tienda mantienen su comportamiento.
+La URL pública canónica de la portada es `https://castilloautoparts.com/`.
+`NEXT_PUBLIC_SITE_URL` define el origen para robots, sitemap, canonical y
+Open Graph. La portada y la tienda usan `https://castilloautoparts.com` como
+valor por defecto; una variable de Production que aún apunte a `vercel.app`
+debe actualizarse y requiere un nuevo despliegue. El sitemap de la portada
+lista `/` y `/en`, sin enlaces a catálogo ni productos.
 
 Variables públicas opcionales (vacías por defecto en `.env.example`):
 
@@ -65,21 +65,42 @@ si el navegador lo deniega, en memoria durante esa página (Google también reci
 fragmento de la URL y del referrer para no transmitir tokens de acceso al pedido.
 Landing no compila el componente de conversión ni requiere pagos o DB.
 
-Después de revisar y fusionar el PR, **Eliezer**:
+## Migración del dominio de producción — #136
 
-1. Agrega los IDs en Vercel y vuelve a desplegar.
-2. Confirma que Production no tenga Deployment Protection/Vercel Authentication,
-   y revisa los logs por errores 5xx o fallos de arranque en frío.
-3. Comprueba `curl -A 'AdsBot-Google' -I https://castillo-auto-parts.vercel.app/`
-   (200, sin redirecciones), robots/sitemap y Tag Assistant (`AW-18533725490`).
-4. Usa exactamente `https://castillo-auto-parts.vercel.app/` como URL final de
-   los anuncios; la URL visible debe usar el mismo dominio. Otras rutas dan 404.
-5. Apela en el Administrador de políticas. Este PR no garantiza la aprobación.
+Pasos de Eliezer en Vercel, DNS y Google Ads:
 
-La conversión real solo se prueba cuando la tienda con Wompi (#90) esté en
-producción. Al comprar el dominio propio (#89), conectarlo en Vercel, redirigir
-`.vercel.app` con 308 y actualizar URL visible/final de los anuncios al mismo
-dominio. Esa operación queda fuera de este cambio.
+1. En [Variables de entorno](https://vercel.com/docs/environment-variables),
+   pon `NEXT_PUBLIC_SITE_URL=https://castilloautoparts.com` solo en Production
+   y vuelve a desplegar. Comprueba que robots, sitemap, canonical y Open Graph
+   anuncien ese dominio y que AdsBot-Google reciba 200 en la raíz.
+2. [Agrega `www.castilloautoparts.com`](https://vercel.com/docs/domains/working-with-domains/add-a-domain),
+   aplica el registro DNS indicado por Vercel y espera a que el certificado
+   esté listo. Configura la [redirección de dominio](https://vercel.com/docs/domains/working-with-domains/deploying-and-redirecting)
+   permanente (308) de `www` a `castilloautoparts.com`. Comprueba también HTTP → HTTPS.
+3. Actualiza la URL final de Google Ads a `https://castilloautoparts.com/` y
+   confirma que ya no apunte al dominio anterior.
+4. **Solo después del paso 3**, pon `LEGACY_VERCEL_REDIRECT_ENABLED=true`
+   en Production y vuelve a desplegar una versión que incluya la regla.
+   La regla requiere `VERCEL_ENV=production` (variable de sistema de Vercel)
+   y el origen canónico configurado. Responde 308 solo a
+   `castillo-auto-parts.vercel.app`, conservando ruta y parámetros; los
+   previews quedan fuera. Para retirar la regla, elimina la variable o
+   ponla en `false` y vuelve a desplegar.
+
+Verifica sin seguir las redirecciones para ver el código y `Location`:
+
+```sh
+curl -sS -I -A AdsBot-Google https://castilloautoparts.com/
+curl -fsS https://castilloautoparts.com/robots.txt
+curl -fsS https://castilloautoparts.com/sitemap.xml
+curl -sS -I http://castilloautoparts.com/
+curl -sS -I 'https://www.castilloautoparts.com/x?y=1'
+curl -sS -I 'https://castillo-auto-parts.vercel.app/?gclid=x'
+```
+
+El último debe devolver `308` y `Location: https://castilloautoparts.com/?gclid=x`
+después de la activación. El `www` debe devolver `308` y
+`Location: https://castilloautoparts.com/x?y=1`.
 
 ## Conectar y desplegar en la cuenta de Eliezer
 

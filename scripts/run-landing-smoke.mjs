@@ -19,11 +19,20 @@ assert(!("NEXTAUTH_SECRET" in environment), "Auth settings must be absent");
 const port = process.env.LANDING_SMOKE_PORT || "3211";
 const origin = `http://localhost:${port}`;
 const withGoogleAds = process.argv.includes("--google-ads");
+const withLegacyRedirect = process.argv.includes("--legacy-redirect");
 // 320 es el piso real de un telefono en uso; 360 y 390 son los dos anchos en
 // los que llega casi todo el trafico movil, y 1440 el escritorio.
 const widths = [320, 360, 390, 1440];
 const adsId = "AW-123456789";
+const canonicalOrigin = "https://castilloautoparts.com";
 if (withGoogleAds) environment.NEXT_PUBLIC_GOOGLE_ADS_ID = adsId;
+if (withLegacyRedirect) {
+  Object.assign(environment, {
+    VERCEL_ENV: "production",
+    NEXT_PUBLIC_SITE_URL: canonicalOrigin,
+    LEGACY_VERCEL_REDIRECT_ENABLED: "true",
+  });
+}
 
 async function build() {
   const child = spawn("npm", ["run", "build"], { env: environment, stdio: "inherit" });
@@ -130,11 +139,26 @@ try {
   const adsBot = await context.request.get(origin, { headers: { "User-Agent": "AdsBot-Google" }, maxRedirects: 0 });
   assert.equal(adsBot.status(), 200, "AdsBot-Google must receive the landing directly");
   assert.equal(adsBot.headers().location, undefined);
+  const legacyHost = "castillo-auto-parts.vercel.app";
+  for (const path of ["/?gclid=x", "/en?gclid=a%2Bb&tag=one&tag=two"]) {
+    const legacy = await context.request.get(`${origin}${path}`, {
+      headers: { Host: legacyHost, "User-Agent": "AdsBot-Google" },
+      maxRedirects: 0,
+    });
+    assert.equal(legacy.status(), withLegacyRedirect ? 308 : 200);
+    assert.equal(legacy.headers().location, withLegacyRedirect ? `${canonicalOrigin}${path}` : undefined);
+  }
+  const preview = await context.request.get(`${origin}/?gclid=x`, {
+    headers: { Host: "castillo-auto-parts-git-feature.vercel.app" },
+    maxRedirects: 0,
+  });
+  assert.equal(preview.status(), 200);
+  assert.equal(preview.headers().location, undefined);
   const robots = await context.request.get(`${origin}/robots.txt`);
   assert.equal(robots.status(), 200);
   assert.match(await robots.text(), /User-Agent: \*\s+Allow: \//i);
   assert(!(await robots.text()).includes("Disallow:"));
-  assert((await robots.text()).includes("Sitemap: https://castillo-auto-parts.vercel.app/sitemap.xml"));
+  assert((await robots.text()).includes(`Sitemap: ${canonicalOrigin}/sitemap.xml`));
   // Los rastreadores de asistentes se nombran uno por uno: varios solo entran
   // cuando se los nombra, y que estén escritos deja constancia de que fue una
   // decisión. Si alguien los quita, esto lo dice.
@@ -144,7 +168,7 @@ try {
   const sitemap = await context.request.get(`${origin}/sitemap.xml`);
   assert.equal(sitemap.status(), 200);
   const sitemapBody = await sitemap.text();
-  assert.deepEqual([...sitemapBody.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]), ["https://castillo-auto-parts.vercel.app/", "https://castillo-auto-parts.vercel.app/en"]);
+  assert.deepEqual([...sitemapBody.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]), [`${canonicalOrigin}/`, `${canonicalOrigin}/en`]);
   // Sin los alternates, un buscador trata el inglés como contenido duplicado
   // del español en vez de indexarlo aparte.
   for (const lang of ["es", "en", "x-default"]) {
@@ -162,6 +186,9 @@ try {
   // entiendan qué negocio es este. No pueden declarar lo que no existe.
   for (const path of ["/", "/en"]) {
     await page.goto(`${origin}${path}`);
+    const canonicalUrl = `${canonicalOrigin}${path}`;
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), canonicalUrl);
+    assert.equal(await page.locator('meta[property="og:url"]').getAttribute("content"), canonicalUrl);
     const jsonLd = JSON.parse(await page.locator('script[type="application/ld+json"]').innerText());
     assert.equal(jsonLd["@type"], "AutoPartsStore");
     assert.equal(jsonLd.areaServed.name, "El Salvador");

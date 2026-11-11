@@ -141,7 +141,7 @@ jobs:
       - name: Landing smoke without application secrets
         run: |
           npm run test:landing
-          npm run test:landing -- --google-ads
+          npm run test:landing -- --google-ads --legacy-redirect
 
       - name: Run Playwright tests
         run: npm run test:e2e
