@@ -9,7 +9,7 @@ const viewports = [
 
 const customerPages = [
   {
-    heading: "Encuentra repuestos compatibles con tu vehículo",
+    heading: "Encuentra el repuesto para tu vehículo",
     path: "/",
   },
   {

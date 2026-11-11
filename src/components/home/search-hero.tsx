@@ -29,37 +29,45 @@ export async function SearchHero({
 
   return (
     <section className="bg-ca-navy text-white">
-      <div className="ca-container grid gap-4 py-5 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-6 lg:py-10">
-        <div className="lg:col-start-1 lg:row-start-1">
-          <h1 className="max-w-xl text-balance text-ca-hero-mobile font-bold lg:text-ca-hero">
-            {t("heroTitleBefore")} {t("heroTitleHighlight")}
+      <div className="ca-container grid gap-y-4 py-5 lg:grid-cols-[0.9fr_1.1fr] lg:gap-x-8 lg:gap-y-0 lg:pb-8 lg:pt-0">
+        <div className="lg:col-start-1 lg:row-start-1 lg:py-8">
+          <h1 className="text-ca-hero-mobile font-bold lg:text-ca-hero">
+            {t("heroTitleBefore")}{" "}
+            <span className="block text-ca-accent">{t("heroTitleHighlight")}</span>
           </h1>
-          <p className="mt-3 max-w-xl text-base leading-6 text-white/90">
+          <p className="mt-3 max-w-lg text-base leading-6 text-white/90">
             {t("heroSearchDescription")}
           </p>
         </div>
 
-        <div className="min-w-0 lg:col-start-1 lg:row-start-2 lg:self-end">
-          <SearchAutocomplete variant="hero" />
+        <div className="rounded-ca-surface border border-ca-border bg-ca-surface p-3 text-ca-text lg:col-span-2 lg:row-start-2 lg:p-4">
+          <div className="grid items-center gap-2 lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-6">
+            <h2 className="font-sans text-sm font-semibold text-ca-navy">
+              {t("partSearchTitle")}
+            </h2>
+            <SearchAutocomplete variant="hero" />
+          </div>
+          <div className="mt-3 grid items-center gap-2 border-t border-ca-border pt-3 lg:mt-4 lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-6 lg:pt-4">
+            <h2 className="font-sans text-sm font-semibold text-ca-navy">
+              {t("title")}
+            </h2>
+            <VehicleSelector filterOptions={filterOptions} />
+          </div>
         </div>
 
-        <div className="lg:col-span-2 lg:row-start-3">
-          <VehicleSelector filterOptions={filterOptions} />
-        </div>
-
-        <div className="relative h-40 overflow-hidden rounded-ca-surface sm:h-52 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-72">
+        <div className="relative h-40 overflow-hidden rounded-ca-surface sm:h-52 lg:col-start-2 lg:row-start-1 lg:h-auto lg:rounded-none">
           <Image
             src="/hero-vehicle.jpg"
             alt={t("heroImageAlt")}
             fill
-            sizes="(min-width: 1280px) 588px, (min-width: 1024px) calc(50vw - 52px), 100vw"
+            sizes="(min-width: 1280px) 652px, (min-width: 1024px) 55vw, 100vw"
             fetchPriority="high"
             loading="eager"
-            className="object-cover"
+            className="object-cover object-right"
           />
         </div>
 
-        <ul className="ca-on-navy grid grid-cols-2 items-center gap-x-3 gap-y-2 border-t border-white/20 pt-4 text-xs font-semibold lg:col-span-2 lg:row-start-4 lg:grid-cols-4 lg:gap-x-5 lg:text-sm">
+        <ul className="ca-on-navy grid grid-cols-2 items-center gap-x-3 gap-y-2 pt-1 text-xs font-semibold lg:col-span-2 lg:row-start-3 lg:mt-5 lg:grid-cols-4 lg:gap-x-5 lg:text-sm">
           {deliverySignals.map(({ icon: Icon, key }) => (
             <li className="flex items-center gap-2" key={key}>
               <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-ca-accent" />

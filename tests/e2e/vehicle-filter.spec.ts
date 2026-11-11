@@ -52,7 +52,7 @@ for (const [locale, formName] of [["es", "Busca por vehículo"], ["en", "Search 
         expect(photo.y).toBeGreaterThan(selector.bottom);
       } else {
         expect(photo.x).toBeGreaterThan(title.right);
-        expect(photo.bottom).toBeGreaterThanOrEqual(search.bottom);
+        expect(photo.y).toBeLessThan(search.y);
         expect(photo.bottom).toBeLessThan(selector.y);
       }
     });

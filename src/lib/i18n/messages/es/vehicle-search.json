@@ -15,11 +15,12 @@
   "chooseMakeFirst": "Elige la marca primero",
   "heroDescription": "Selecciona los datos de tu vehículo para encontrar opciones compatibles.",
   "heroImageAlt": "Vehículo en un taller automotriz",
-  "heroTitleBefore": "Encuentra repuestos",
-  "heroTitleHighlight": "compatibles con tu vehículo",
-  "heroSearchDescription": "Busca por vehículo, categoría, marca o número de parte. Te ayudamos a comprobar la compatibilidad antes de comprar.",
+  "heroTitleBefore": "Encuentra el repuesto",
+  "heroTitleHighlight": "para tu vehículo",
+  "heroSearchDescription": "Busca por nombre o número de parte, o selecciona tu vehículo.",
   "warehousePickup": "Retiro gratis en bodega",
   "boxfulDelivery": "Envíos a todo El Salvador con Boxful",
   "cardPayment": "Pago con tarjeta",
-  "searchParts": "Buscar repuestos"
+  "searchParts": "Buscar repuestos",
+  "partSearchTitle": "Busca un repuesto"
 }

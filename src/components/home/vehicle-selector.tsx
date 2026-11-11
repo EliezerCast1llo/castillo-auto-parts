@@ -23,7 +23,7 @@ export function VehicleSelector({ filterOptions }: { filterOptions: CatalogFilte
     <form
       action="/catalog"
       aria-label={t("title")}
-      className="grid items-end gap-3 rounded-ca-surface border border-ca-border bg-ca-surface p-4 text-ca-text lg:grid-cols-[repeat(3,minmax(0,1fr))_auto]"
+      className="grid items-end gap-2 text-ca-text lg:grid-cols-[repeat(3,minmax(0,1fr))_auto] lg:gap-3"
       onSubmit={(event) => {
         event.preventDefault();
         // El botón ya va deshabilitado, pero un Enter en un select también
@@ -125,9 +125,9 @@ function VehicleSelectField({
 }) {
   return (
     <label className="block text-sm font-bold text-ca-navy">
-      <span className="mb-1.5 flex items-center gap-2">
+      <span className="mb-1 flex items-center gap-2">
         <span
-          className={`flex h-6 w-6 items-center justify-center rounded-ca-control text-xs font-bold ${
+          className={`flex h-5 w-5 items-center justify-center rounded-ca-control text-xs font-bold ${
  disabled ? "bg-ca-bg text-ca-text-secondary" : "bg-ca-navy text-white"
  }`}
         >

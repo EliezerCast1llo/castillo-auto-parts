@@ -15,11 +15,12 @@
   "chooseMakeFirst": "Choose the make first",
   "heroDescription": "Select your vehicle details to find compatible options.",
   "heroImageAlt": "Car in an auto workshop",
-  "heroTitleBefore": "Find parts",
-  "heroTitleHighlight": "that fit your vehicle",
-  "heroSearchDescription": "Search by vehicle, category, brand or part number. We can help you check fitment before buying.",
+  "heroTitleBefore": "Find the right part",
+  "heroTitleHighlight": "for your vehicle",
+  "heroSearchDescription": "Search by part name or number, or choose your vehicle.",
   "warehousePickup": "Free warehouse pickup",
   "boxfulDelivery": "Nationwide shipping with Boxful",
   "cardPayment": "Card payment",
-  "searchParts": "Search for parts"
+  "searchParts": "Search for parts",
+  "partSearchTitle": "Search for a part"
 }

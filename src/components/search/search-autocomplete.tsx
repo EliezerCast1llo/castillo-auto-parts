@@ -177,11 +177,12 @@ export function SearchAutocomplete({ variant = "default" }: SearchAutocompletePr
     return (
       <form
         action="/catalog"
-        className="relative z-40 flex items-center gap-2 rounded-ca-surface border border-ca-border bg-ca-surface p-2 text-ca-text"
+        aria-label={t("search")}
+        className="relative z-40 flex items-center gap-2 text-ca-text"
         onSubmit={handleSubmit}
       >
         <div className="relative min-w-0 flex-1">
-          <label className="flex min-h-12 items-center gap-3 rounded-ca-control bg-ca-bg px-4 focus-within:outline-2 focus-within:outline-ca-navy-hover">
+          <label className="flex min-h-12 items-center gap-3 rounded-ca-control border border-ca-border bg-ca-bg px-3 focus-within:outline-2 focus-within:outline-ca-navy-hover">
             <Search className="h-4 w-4 shrink-0 text-ca-text-secondary" strokeWidth={1.8} />
             <span className="sr-only">{t("searchAriaLabel")}</span>
             <input
