@@ -99,9 +99,14 @@ jobs:
 
   e2e:
     name: e2e
-    # Playwright 1.60 no instala Chromium en Ubuntu 26.04.
     runs-on: ubuntu-24.04
+    container:
+      # Keep this tag in sync with @playwright/test in package-lock.json.
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --ipc=host
     env:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/castillo_auto_parts
+      DIRECT_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/castillo_auto_parts
       E2E_DATABASE_SCHEMA: e2e_${{ github.run_id }}_${{ github.run_attempt }}
 
     services:
@@ -111,8 +116,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: castillo_auto_parts
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d castillo_auto_parts"
           --health-interval 10s
@@ -131,9 +134,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
 
       - name: Generate Prisma client
         run: npm run prisma:generate
