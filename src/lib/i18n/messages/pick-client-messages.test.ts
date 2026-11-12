@@ -11,6 +11,7 @@ describe("pickClientMessages", () => {
       "Account",
       "Auth",
       "Cart",
+      "Catalog",
       "Checkout",
       "Common",
       "Consent",

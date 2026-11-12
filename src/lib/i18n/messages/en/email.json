@@ -26,5 +26,9 @@
     "intro": "Use this code to finish signing in:",
     "validFor": "The code expires in {minutes} minutes and works only once.",
     "ignore": "If you did not try to sign in, ignore this message and consider changing your password."
+  },
+  "refund": {
+    "subject": "Refund recorded: {orderNumber}",
+    "body": "The refund for your order {orderNumber} has been recorded. The time it takes to appear depends on your bank. Contact us if you have any questions."
   }
 }

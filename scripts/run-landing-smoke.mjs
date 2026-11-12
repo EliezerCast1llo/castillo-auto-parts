@@ -196,6 +196,10 @@ try {
       assert(!(invented in jsonLd), `structured data must not invent ${invented}`);
     }
   }
+  const spanishAlias = await context.request.get(`${origin}/es?source=qa`, { maxRedirects: 0 });
+  assert.equal(spanishAlias.status(), 308);
+  assert.equal(new URL(spanishAlias.headers().location, origin).href, `${origin}/?source=qa`);
+  assert(spanishAlias.headers()["content-security-policy"]);
   for (const path of ["/catalog", "/es/catalog", "/en/catalog", "/cart", "/es/cart", "/checkout", "/es/checkout", "/account", "/es/account", "/auth/login", "/es/auth/login", "/admin", "/admin/login", "/api/auth/session", "/api/health", "/api/monitoring", "/api/webhooks/wompi", "/api/internal/expire-payment-reservations", "/_next/image?url=https://example.com/image.jpg&w=64&q=75"]) {
     const response = await context.request.get(`${origin}${path}`, { maxRedirects: 0 });
     assert.equal(response.status(), 404, `${path} must be disabled without invoking services`);

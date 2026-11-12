@@ -26,5 +26,9 @@
     "intro": "Usa este código para completar tu ingreso:",
     "validFor": "El código vence en {minutes} minutos y sirve una sola vez.",
     "ignore": "Si no intentaste ingresar, ignora este mensaje y considera cambiar tu contraseña."
+  },
+  "refund": {
+    "subject": "Reembolso registrado: {orderNumber}",
+    "body": "El reembolso de tu pedido {orderNumber} ha sido registrado. El plazo para verlo reflejado depende de tu banco. Si tienes dudas, contáctanos."
   }
 }

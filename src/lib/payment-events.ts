@@ -103,7 +103,8 @@ export async function processPaymentWebhookEvent(
       });
 
       if (
-        currentPayment.status === PrismaPaymentStatus.PAID
+        currentPayment.status === PrismaPaymentStatus.PAID ||
+        currentPayment.status === PrismaPaymentStatus.REFUNDED
       ) {
         return { status: "already_processed" as const };
       }

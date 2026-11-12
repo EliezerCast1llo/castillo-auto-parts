@@ -1,5 +1,6 @@
 "use server";
 
+import { sendRefundNotification } from "@/lib/email/refund";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -24,9 +25,12 @@ export async function updateAdminOrderStatus(formData: FormData) {
 
   try {
     await observeOperation("reconciliation", async () => {
-      await db.$transaction(async (tx) => {
-        await updateOrderStatusForAdmin(tx, { orderNumber, status });
+      const transition = await db.$transaction(async (tx) => {
+        return updateOrderStatusForAdmin(tx, { orderNumber, status });
       });
+      if (transition?.nextStatus === "REFUNDED" && transition.previousStatus !== "REFUNDED") {
+        await sendRefundNotification(orderNumber);
+      }
       await logInfo({ context: "reconciliation", outcome: "completed" });
     }, undefined, { isExpectedError: (error) => error instanceof AdminOrderStatusError });
   } catch (error) {

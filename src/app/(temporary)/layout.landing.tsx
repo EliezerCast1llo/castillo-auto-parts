@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Overpass } from "next/font/google";
+import localFont from "next/font/local";
 import { getTranslations } from "next-intl/server";
 import { GoogleAdsTag } from "@/components/analytics/google-ads-tag";
 import { landingSiteUrl } from "@/lib/landing-site-url";
@@ -8,13 +8,17 @@ import "./landing.css";
 /**
  * Overpass está dibujada a partir del lettering vial de la FHWA, que es el
  * mundo de esta página. Se sirve desde el propio origen —`next/font` la
- * descarga al compilar— porque esta landing no hace pedidos externos salvo la
+ * incluye desde el paquete local— porque esta landing no hace pedidos externos salvo la
  * etiqueta de anuncios opcional.
  */
-export const overpass = Overpass({
-  subsets: ["latin"],
+export const overpass = localFont({
+  src: [
+    { path: "../../../node_modules/@fontsource/overpass/files/overpass-latin-400-normal.woff2", weight: "400" },
+    { path: "../../../node_modules/@fontsource/overpass/files/overpass-latin-600-normal.woff2", weight: "600" },
+    { path: "../../../node_modules/@fontsource/overpass/files/overpass-latin-800-normal.woff2", weight: "800" },
+  ],
   variable: "--sign-face",
-  weight: ["400", "600", "800"],
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {

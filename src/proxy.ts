@@ -86,7 +86,14 @@ export async function proxy(request: NextRequest) {
   const csp = buildContentSecurityPolicy({ nonce });
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("x-route-locale", pathname.split("/")[1] === "en" ? "en" : "es");
   requestHeaders.set("Content-Security-Policy", csp);
+
+  if (request.method === "OPTIONS") {
+    const response = new NextResponse(null, { status: 204 });
+    response.headers.set("Allow", "GET, HEAD, POST, OPTIONS");
+    return withCspHeaders(response, csp, nonce);
+  }
 
   // 1. El panel admin no lleva prefijo de idioma.
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {

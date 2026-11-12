@@ -36,6 +36,7 @@ const CLIENT_NAMESPACES = [
   "Account",
   "Auth",
   "Cart",
+  "Catalog",
   "Checkout",
   "Common",
   "Consent",

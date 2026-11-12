@@ -88,7 +88,7 @@ function errorMessage(code: string, existingSku?: string) {
     db_unavailable: "No se pudo guardar el producto. Revisa PostgreSQL.",
     duplicate: "Ya existe un producto con ese SKU o slug.",
     invalid:
-      "Revisa los campos. Para activar el producto completa peso, largo, ancho y alto; sin medidas puedes guardarlo como borrador.",
+      "Revisa los campos indicados antes de guardar.",
     invalid_sku: SKU_FORMAT_MESSAGE,
     not_found: "El producto ya no existe.",
   };
@@ -114,7 +114,7 @@ export function AdminProductForm({
   const router = useRouter();
 
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
-  const [error, setError] = useState<{ code: string; existingSku?: string } | null>(null);
+  const [error, setError] = useState<{ code: string; existingSku?: string; fieldErrors?: Record<string, string> } | null>(null);
   const [stage, setStage] = useState<"idle" | "saving" | "uploading">("idle");
 
   /**
@@ -143,7 +143,7 @@ export function AdminProductForm({
 
       if (!result) return;
       if (result.status === "error") {
-        setError({ code: result.code, existingSku: result.existingSku });
+        setError({ code: result.code, existingSku: result.existingSku, fieldErrors: result.fieldErrors });
         return;
       }
 
@@ -191,6 +191,7 @@ export function AdminProductForm({
       {error ? (
         <div role="alert" className="rounded-md bg-danger/10 p-3 text-sm font-semibold text-danger">
           {errorMessage(error.code, error.existingSku)}
+          {error.fieldErrors ? <ul>{Object.entries(error.fieldErrors).map(([field, message]) => <li key={field}>{message}</li>)}</ul> : null}
         </div>
       ) : null}
 
@@ -198,22 +199,22 @@ export function AdminProductForm({
         <h2 className="text-lg font-bold text-primary">Producto</h2>
         {product?.isDemo ? <p className="mt-2 text-sm text-warning">Producto de demostración. Guardar esta ficha lo marcará como real y lo excluirá de la limpieza de demo.</p> : null}
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <AdminTextField defaultValue={product?.name} label="Nombre" name="name" required />
-          <AdminTextField defaultValue={product?.slug} label="Slug" name="slug" />
-          <AdminTextField defaultValue={product?.brand} label="Marca" name="brand" required />
+          <AdminTextField defaultValue={product?.name} label="Nombre" name="name" error={error?.fieldErrors?.name} required />
+          <AdminTextField defaultValue={product?.slug} label="Slug" name="slug" error={error?.fieldErrors?.slug} />
+          <AdminTextField defaultValue={product?.brand} label="Marca" name="brand" error={error?.fieldErrors?.brand} required />
           <div>
-            <AdminTextField aria-describedby="admin-product-sku-help" defaultValue={product?.sku} label="SKU" name="sku" required />
+            <AdminTextField aria-describedby="admin-product-sku-help" defaultValue={product?.sku} label="SKU" name="sku" error={error?.fieldErrors?.sku} required />
             <p id="admin-product-sku-help" className="mt-1 text-xs text-muted-foreground">{SKU_FORMAT_MESSAGE} No puede coincidir con otro producto.</p>
           </div>
           <AdminTextField
             defaultValue={product?.partNumber ?? ""}
             label="Número de parte"
-            name="partNumber"
+            name="partNumber" error={error?.fieldErrors?.partNumber}
           />
           <AdminTextField
             defaultValue={product ? formatAdminPriceInput(product.priceCents) : ""}
             label="Precio USD"
-            name="price"
+            name="price" error={error?.fieldErrors?.price}
             required
             step="0.01"
             type="number"
@@ -227,6 +228,7 @@ export function AdminProductForm({
               className="mt-2 h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
               defaultValue={product?.categoryId ?? ""}
               name="categoryId"
+              aria-invalid={error?.fieldErrors?.categoryId ? true : undefined}
             >
               <option value="">Seleccionar</option>
               {categories.map((category) => (
@@ -236,7 +238,8 @@ export function AdminProductForm({
               ))}
             </select>
           </label>
-          <AdminTextField label="Nueva categoría" name="newCategoryName" />
+          {error?.fieldErrors?.categoryId ? <p className="text-sm text-danger">{error.fieldErrors.categoryId}</p> : null}
+          <AdminTextField label="Nueva categoría" name="newCategoryName" error={error?.fieldErrors?.newCategoryName} />
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -270,7 +273,7 @@ export function AdminProductForm({
             defaultValue={String(stock?.quantityOnHand ?? 0)}
             label="Cantidad"
             min="0"
-            name="quantityOnHand"
+            name="quantityOnHand" error={error?.fieldErrors?.quantityOnHand}
             required
             type="number"
           />
@@ -278,7 +281,7 @@ export function AdminProductForm({
             defaultValue={String(stock?.reorderPoint ?? 2)}
             label="Alerta desde"
             min="0"
-            name="reorderPoint"
+            name="reorderPoint" error={error?.fieldErrors?.reorderPoint}
             required
             type="number"
           />
@@ -304,10 +307,10 @@ export function AdminProductForm({
         <p className="text-sm text-muted-foreground">Obligatorios para activar el producto. Sin medidas, guárdalo como borrador.</p>
         <p className="mt-2 text-sm text-muted-foreground">Completa los cuatro valores para preparar la cotización de envíos. Sin ellos no se podrá cotizar con Boxful.</p>
         <div className="mt-4 grid gap-4 md:grid-cols-4">
-          <AdminTextField label="Peso (kg)" name="weightKg" type="number" min="0.001" step="0.001" defaultValue={product?.weightGrams ? String(product.weightGrams / 1000) : ""} />
-          <AdminTextField label="Largo (cm)" name="lengthCm" type="number" min="0.1" step="0.1" defaultValue={product?.lengthMm ? String(product.lengthMm / 10) : ""} />
-          <AdminTextField label="Ancho (cm)" name="widthCm" type="number" min="0.1" step="0.1" defaultValue={product?.widthMm ? String(product.widthMm / 10) : ""} />
-          <AdminTextField label="Alto (cm)" name="heightCm" type="number" min="0.1" step="0.1" defaultValue={product?.heightMm ? String(product.heightMm / 10) : ""} />
+          <AdminTextField label="Peso (kg)" name="weightKg" error={error?.fieldErrors?.weightKg} type="number" min="0.001" step="0.001" defaultValue={product?.weightGrams ? String(product.weightGrams / 1000) : ""} />
+          <AdminTextField label="Largo (cm)" name="lengthCm" error={error?.fieldErrors?.lengthCm} type="number" min="0.1" step="0.1" defaultValue={product?.lengthMm ? String(product.lengthMm / 10) : ""} />
+          <AdminTextField label="Ancho (cm)" name="widthCm" error={error?.fieldErrors?.widthCm} type="number" min="0.1" step="0.1" defaultValue={product?.widthMm ? String(product.widthMm / 10) : ""} />
+          <AdminTextField label="Alto (cm)" name="heightCm" error={error?.fieldErrors?.heightCm} type="number" min="0.1" step="0.1" defaultValue={product?.heightMm ? String(product.heightMm / 10) : ""} />
         </div>
       </section>
 
@@ -348,7 +351,7 @@ export function AdminProductForm({
           <AdminTextField
             defaultValue={product?.translationEn?.name ?? ""}
             label="Nombre en inglés"
-            name="nameEn"
+            name="nameEn" error={error?.fieldErrors?.nameEn}
           />
           <AdminTextarea
             defaultValue={product?.translationEn?.shortDescription ?? ""}
@@ -388,6 +391,7 @@ export function AdminProductForm({
 }
 
 function AdminTextField({
+  error,
   defaultValue,
   label,
   name,
@@ -395,6 +399,7 @@ function AdminTextField({
   type = "text",
   ...props
 }: {
+  error?: string;
   defaultValue?: string;
   label: string;
   name: string;
@@ -411,7 +416,9 @@ function AdminTextField({
         required={required}
         type={type}
         {...props}
+        aria-invalid={error ? true : undefined}
       />
+      {error ? <span className="mt-1 block text-sm text-danger">{error}</span> : null}
     </label>
   );
 }

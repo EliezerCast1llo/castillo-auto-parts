@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { cancelPaymentProcessingOrder } from "@/lib/payment-reservations";
 import { processPaymentWebhookEvent } from "@/lib/payment-events";
 import { isMockPaymentAvailable } from "@/lib/payments/mock-access";
 import { locales } from "@/lib/i18n/config";
@@ -10,6 +11,7 @@ import { locales } from "@/lib/i18n/config";
 export async function confirmMockPayment(formData: FormData) {
   if (!isMockPaymentAvailable()) notFound();
 
+  const status = formData.get("outcome") === "rejected" ? "FAILED" : "PAID";
   const externalPaymentId = stringValue(formData.get("externalPaymentId"));
   const returnTo = safeReturnUrl(stringValue(formData.get("returnTo")));
   if (!externalPaymentId || !returnTo) notFound();
@@ -19,6 +21,11 @@ export async function confirmMockPayment(formData: FormData) {
     where: { externalPaymentId, provider: "mock" },
   });
   if (!payment) notFound();
+
+  if (status === "FAILED") {
+    await cancelPaymentProcessingOrder({ orderNumber: payment.order.orderNumber, paymentStatus: "FAILED", rawStatus: "MOCK_PAYMENT_REJECTED" });
+    redirect(returnTo);
+  }
 
   const result = await processPaymentWebhookEvent(
     {
@@ -32,7 +39,7 @@ export async function confirmMockPayment(formData: FormData) {
       occurredAt: new Date(),
       provider: "mock",
       rawPayload: { simulation: true },
-      status: "PAID",
+      status,
     },
     { expectedProduction: false },
   );

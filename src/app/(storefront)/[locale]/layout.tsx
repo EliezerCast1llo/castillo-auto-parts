@@ -46,15 +46,6 @@ export async function generateMetadata({
       template: `%s | ${SITE_NAME}`,
     },
     description: SITE_DESCRIPTION,
-    // Canonical al idioma actual, con hreflang hacia el otro: le dice al
-    // buscador que son la misma pagina en dos idiomas y no contenido duplicado.
-    alternates: {
-      canonical: `/${locale}`,
-      languages: {
-        ...Object.fromEntries(locales.map((item) => [item, `/${item}`])),
-        "x-default": `/${defaultLocale}`,
-      },
-    },
     openGraph: {
       type: "website",
       locale: OG_LOCALES[locale],

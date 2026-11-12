@@ -1,5 +1,6 @@
 "use server";
 
+import { adminProductFieldErrors } from "@/lib/admin-product-validation";
 import { InventoryStatus, Prisma } from "@prisma/client";
 import { revalidatePath, updateTag } from "next/cache";
 import { revalidateStorefrontPath } from "@/lib/i18n/revalidate";
@@ -36,7 +37,7 @@ const DEFAULT_LOCATION_CODE = "MAIN";
  */
 export type AdminProductFormState =
   | { status: "created"; productId: string; slug: string }
-  | { status: "error"; code: string; existingSku?: string }
+  | { status: "error"; code: string; existingSku?: string; fieldErrors?: Record<string, string> }
   | null;
 
 type AdminProductInput = {
@@ -70,6 +71,8 @@ export async function createAdminProduct(
     return { status: "error", code: "invalid_sku" };
   }
 
+  const fieldErrors = adminProductFieldErrors(formData);
+  if (Object.keys(fieldErrors).length) return { status: "error", code: "invalid", fieldErrors };
   const input = parseAdminProductFormData(formData);
   if (!input) return { status: "error", code: "invalid" };
 

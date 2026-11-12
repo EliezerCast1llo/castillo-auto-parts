@@ -50,6 +50,14 @@ describe.skipIf(!process.env.DATABASE_URL)("payment event processing", () => {
     expect(eventCount).toBe(1);
   });
 
+  it("does not overwrite a manually refunded payment on a later approval event", async () => {
+    const fixture = await createPaymentFixture();
+    await db.payment.update({ where: { id: fixture.paymentId }, data: { status: "REFUNDED", rawStatus: "ADMIN_MANUAL_REFUND" } });
+    await db.order.update({ where: { orderNumber: fixture.orderNumber }, data: { status: "REFUNDED" } });
+    expect(await processPaymentWebhookEvent(buildEvent(fixture), { expectedProduction: false })).toEqual({ status: "already_processed" });
+    expect(await db.payment.findUniqueOrThrow({ where: { id: fixture.paymentId } })).toMatchObject({ status: "REFUNDED", rawStatus: "ADMIN_MANUAL_REFUND" });
+  });
+
   it("rejects a mismatched amount without fulfilling or releasing stock", async () => {
     const fixture = await createPaymentFixture();
     const event = buildEvent(fixture, { amountCents: fixture.amountCents - 1 });

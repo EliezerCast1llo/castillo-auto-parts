@@ -130,6 +130,10 @@ export async function updateOrderStatusForAdmin(
     await restoreOrderStock(tx, existingOrder.items);
   }
 
+  if (status === OrderStatus.REFUNDED) {
+    await tx.payment.updateMany({ where: { orderId: existingOrder.id, status: "PAID" }, data: { status: "REFUNDED", rawStatus: "ADMIN_MANUAL_REFUND" } });
+  }
+
   await tx.order.update({
     data: {
       shipment: {

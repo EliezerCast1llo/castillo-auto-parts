@@ -148,6 +148,8 @@ describe.skipIf(!process.env.DATABASE_URL)("admin order status integration", () 
       status: OrderStatus.PAID_PENDING_SHIPMENT,
     });
 
+    const persistedOrder = await db.order.findUniqueOrThrow({ where: { orderNumber: fixture.orderNumber } });
+    await db.payment.create({ data: { orderId: persistedOrder.id, provider: "mock", amountCents: 100, status: "PAID" } });
     await db.$transaction((tx) =>
       updateOrderStatusForAdmin(tx, {
         orderNumber: fixture.orderNumber,
@@ -179,6 +181,7 @@ describe.skipIf(!process.env.DATABASE_URL)("admin order status integration", () 
       }),
     ]);
 
+    expect((await db.payment.findFirstOrThrow({ where: { orderId: (await db.order.findUniqueOrThrow({ where: { orderNumber: fixture.orderNumber } })).id } })).status).toBe("REFUNDED");
     expect(order.status).toBe(OrderStatus.REFUNDED);
     expect(order.shipment?.status).toBe("CANCELLED");
     expect(stock.quantityOnHand).toBe(3);
