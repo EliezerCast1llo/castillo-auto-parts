@@ -1,6 +1,8 @@
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 import { sitePageExtensions } from "./src/lib/site-mode";
+import { CANONICAL_SITE_ORIGIN } from "./src/lib/site";
+import { landingSiteUrl } from "./src/lib/landing-site-url";
 
 function getHostnameFromUrl(value: string | undefined) {
   if (!value) return null;
@@ -73,6 +75,22 @@ const nextConfig: NextConfig = {
   // por lockfiles ajenos en directorios superiores.
   turbopack: {
     root: __dirname,
+  },
+  async redirects() {
+    // Turn on only after the campaign uses the new final URL. The fixed host
+    // match keeps deployment/branch previews and the apex out of this rule.
+    if (
+      process.env.VERCEL_ENV !== "production" ||
+      process.env.LEGACY_VERCEL_REDIRECT_ENABLED !== "true" ||
+      landingSiteUrl() !== CANONICAL_SITE_ORIGIN
+    ) return [];
+
+    const has = [{ type: "host" as const, value: "castillo-auto-parts\\.vercel\\.app" }];
+    // The optional catch-all compiles the root without its trailing slash.
+    return [
+      { source: "/", has, destination: `${CANONICAL_SITE_ORIGIN}/`, permanent: true },
+      { source: "/:path+", has, destination: `${CANONICAL_SITE_ORIGIN}/:path+`, permanent: true },
+    ];
   },
   async headers() {
     return [

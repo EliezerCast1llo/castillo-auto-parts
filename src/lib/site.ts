@@ -3,7 +3,8 @@
  * JSON-LD y OG images. Única fuente de verdad para URL/nombre/descripción.
  */
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://castilloautoparts.com";
+export const CANONICAL_SITE_ORIGIN = "https://castilloautoparts.com";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim() || CANONICAL_SITE_ORIGIN;
 
 export const SITE_NAME = "Castillo Auto Parts";
 
