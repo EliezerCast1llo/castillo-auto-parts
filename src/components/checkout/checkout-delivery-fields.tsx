@@ -24,8 +24,6 @@ export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtota
   const locale = useLocale();
   const { setBlocked } = useCheckoutShippingState();
   const [method, setMethod] = useState("PICKUP");
-  // A queued expiry callback can run before React cleans up its old effect.
-  const currentMethod = useRef("PICKUP");
   const [address, setAddress] = useState<NationalAddressFields>(emptyNationalAddress);
   const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number }>();
   const [rates, setRates] = useState<Rate[]>([]);
@@ -45,7 +43,7 @@ export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtota
   const canQuote = shippingConfigured && (!requiresDistrict || Boolean(cityId)) && Boolean(address.addressLine1.trim() && address.landmark.trim() && isNationalAddress(address.department, address.city) && isNationalCoordinate(coordinates?.latitude, coordinates?.longitude));
   function invalidate(nextMethod = method) { setBlocked(nextMethod !== "PICKUP"); revision.current++; abort.current?.abort(); chosenOption.current = ""; setQuoteToken(""); setExpiresAt(0); setRates([]); setOption(""); setStatus("idle"); }
   const quote = useCallback(async () => {
-    if (!canQuote || pending || method !== "NATIONAL_SHIPPING" || currentMethod.current !== "NATIONAL_SHIPPING") return;
+    if (!canQuote || pending || method !== "NATIONAL_SHIPPING") return;
     if (autoTimer.current) clearTimeout(autoTimer.current);
     abort.current?.abort();
     const controller = new AbortController(); abort.current = controller;
@@ -82,7 +80,7 @@ export function CheckoutDeliveryFields({ pickupLocation, savedAddresses, subtota
   return <div className="mt-4 space-y-4">
     <div className="grid gap-3 sm:grid-cols-2">
       {(["PICKUP", "NATIONAL_SHIPPING"] as const).map((value) => <label className="flex min-h-12 items-center gap-3 rounded-xl border border-ca-border px-3 font-semibold" key={value}>
-        <input type="radio" name="fulfillmentMethod" value={value} checked={method === value} onChange={() => { currentMethod.current = value; setMethod(value); invalidate(value); }} />
+        <input type="radio" name="fulfillmentMethod" value={value} checked={method === value} onChange={() => { setMethod(value); invalidate(value); }} />
         {t(value === "PICKUP" ? "pickup" : "nationalShipping")}
       </label>)}
     </div>
