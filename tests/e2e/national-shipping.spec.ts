@@ -80,12 +80,16 @@ test("automatically renews after 300 seconds, preserves fields and stops after l
   await page.getByRole("radio", { name: /Paquetería de prueba Express/ }).check();
   await expect(page.getByRole("button", { name: "Confirmar y pagar" })).toBeEnabled();
   const before = requests;
+  const previousExpiry = await page.locator('input[name="shippingQuoteExpiresAt"]').inputValue();
   await page.clock.fastForward(300001);
   await expect.poll(() => requests).toBe(before + 1);
+  // A request being observed does not mean React has applied its response yet.
+  await expect(page.locator('input[name="shippingQuoteExpiresAt"]')).not.toHaveValue(previousExpiry);
   await expect(page.getByRole("button", { name: "Confirmar y pagar" })).toBeEnabled();
   await expect(page.getByLabel("Dirección", { exact: true })).toHaveValue("Calle 5 casa 3");
   await expect(page.getByLabel("Punto de referencia", { exact: true })).toHaveValue("Frente al parque");
   await page.getByRole("radio", { name: "Retiro en bodega", exact: true }).check();
+  await expect(page.getByRole("button", { name: "Calcular envío" })).toHaveCount(0);
   await page.clock.fastForward(600001);
   expect(requests).toBe(before + 1);
 });
