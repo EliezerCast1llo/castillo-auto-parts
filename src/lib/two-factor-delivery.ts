@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { getEmailProvider } from "@/lib/email";
+import { sendAuditedEmail } from "@/lib/email/audited-delivery";
 import { buildTwoFactorCodeEmail } from "@/lib/email/templates";
 import type { Locale } from "@/lib/i18n/config";
 import { logError } from "@/lib/logger";
@@ -38,8 +38,7 @@ export async function deliverTwoFactorChallenge(
   const { challengeId, code } = await createTwoFactorChallenge(userId);
 
   try {
-    const provider = getEmailProvider();
-    await provider.sendEmail(
+    const sent = await sendAuditedEmail(
       buildTwoFactorCodeEmail({
         code,
         customerEmail: user.email,
@@ -49,7 +48,9 @@ export async function deliverTwoFactorChallenge(
         expiresInMinutes: EXPIRES_IN_MINUTES,
         locale,
       }),
+      "two_factor_code",
     );
+    if (!sent) return "unavailable";
   } catch (error) {
     // El fallo **no** se silencia como en "olvidé mi contraseña". Ahí el
     // silencio es a propósito, para no revelar si el correo existe; acá quien

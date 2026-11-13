@@ -25,6 +25,14 @@ describe("mock payment provider", () => {
     expect(payment.paidAt).toBeUndefined();
   });
 
+  it.each(["es", "en"])("opens checkout directly in %s and preserves the return token", async (locale) => {
+    const redirectUrl = `http://localhost:3000/${locale}/orders/CAP-1?token=test`;
+    const payment = await mockPaymentProvider.createPayment({ amountCents: 100, currency: "USD", customerEmail: "fixture@example.com", orderNumber: "CAP-1", redirectUrl });
+    const url = new URL(payment.checkoutUrl);
+    expect(url.pathname).toBe(`/${locale}/payments/mock/MOCK-CAP-1`);
+    expect(url.searchParams.get("returnTo")).toBe(redirectUrl);
+  });
+
   it("verifies valid mock webhook payloads", async () => {
     const request = new Request("http://localhost/api/payments/mock/webhook", {
       body: JSON.stringify({

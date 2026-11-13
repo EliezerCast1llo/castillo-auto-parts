@@ -2,10 +2,11 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AdminOrderStatusError } from "@/lib/admin-orders";
 import { updateAdminOrderStatus } from "./actions";
 
-const mocks = vi.hoisted(() => ({ transaction: vi.fn(), update: vi.fn(), requireAdmin: vi.fn(), revalidate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ transaction: vi.fn(), update: vi.fn(), requireAdmin: vi.fn(), revalidate: vi.fn(), refund: vi.fn() }));
 vi.mock("@/lib/admin-auth", () => ({ requireAdminRole: mocks.requireAdmin }));
 vi.mock("@/lib/db", () => ({ db: { $transaction: mocks.transaction } }));
 vi.mock("@/lib/admin-orders", async (original) => ({ ...await original<typeof import("@/lib/admin-orders")>(), updateOrderStatusForAdmin: mocks.update }));
+vi.mock("@/lib/email/refund", () => ({ sendRefundNotification: mocks.refund }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`redirect:${path}`); } }));
 const form = () => { const data = new FormData(); data.set("orderNumber", "fixture-order"); data.set("status", "SHIPPED"); return data; };
@@ -39,4 +40,14 @@ it("unexpected infrastructure errors are still reported with their local code an
   expect(body).toContain(local.correlationId);
   expect(body).not.toContain("errorCode");
   expect(body).not.toContain("private@example.com");
+});
+
+it("notifies only after a committed refund transition", async () => {
+  mocks.update.mockResolvedValue({ nextStatus: "REFUNDED", previousStatus: "PAID_PENDING_SHIPMENT" });
+  await expect(updateAdminOrderStatus(form())).rejects.toThrow("estado=updated");
+  expect(mocks.refund).toHaveBeenCalledWith("fixture-order");
+  mocks.refund.mockClear();
+  mocks.update.mockResolvedValue({ nextStatus: "REFUNDED", previousStatus: "REFUNDED" });
+  await expect(updateAdminOrderStatus(form())).rejects.toThrow("estado=updated");
+  expect(mocks.refund).not.toHaveBeenCalled();
 });

@@ -1,3 +1,4 @@
+import { defaultLocale, locales } from "@/lib/i18n/config";
 import type {
   PaymentProvider,
   PaymentStatus,
@@ -8,8 +9,10 @@ export const mockPaymentProvider: PaymentProvider = {
 
   async createPayment(input) {
     const externalPaymentId = buildMockPaymentId(input.orderNumber);
+    const segment = new URL(input.redirectUrl).pathname.split("/")[1];
+    const locale = locales.find((locale) => locale === segment) ?? defaultLocale;
     const checkoutUrl = new URL(
-      `/payments/mock/${encodeURIComponent(externalPaymentId)}`,
+      `/${locale}/payments/mock/${encodeURIComponent(externalPaymentId)}`,
       input.redirectUrl,
     );
     checkoutUrl.searchParams.set("returnTo", input.redirectUrl);

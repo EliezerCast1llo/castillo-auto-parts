@@ -110,7 +110,7 @@ describe.skipIf(!process.env.DATABASE_URL)("manual product SKU writes with isola
     expect((await submit(() => createAdminProduct(null, incomplete))).searchParams.get("estado")).toBe("created");
     const product = await db.product.findUniqueOrThrow({ where: { sku: "DRAFT-PACKAGE" } });
     incomplete.set("productId", product.id); incomplete.set("isActive", "true");
-    expect((await submit(() => updateAdminProduct(null, incomplete))).searchParams.get("estado")).toBe("invalid");
+    expect(await updateAdminProduct(null, incomplete)).toMatchObject({ status: "error", code: "invalid", fieldErrors: { weightKg: expect.any(String), lengthCm: expect.any(String), widthCm: expect.any(String), heightCm: expect.any(String) } });
     expect((await db.product.findUniqueOrThrow({ where: { id: product.id } })).isActive).toBe(false);
   });
 

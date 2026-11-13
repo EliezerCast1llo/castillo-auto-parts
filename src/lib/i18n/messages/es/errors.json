@@ -3,5 +3,12 @@
     "badge": "Algo salió mal",
     "title": "No pudimos cargar esta página",
     "description": "Es un problema temporal de nuestro lado. Intenta de nuevo; si persiste, vuelve en unos minutos."
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "El enlace puede estar vencido o el producto ya no está disponible.",
+    "catalog": "Ir al catálogo",
+    "home": "Volver al inicio",
+    "badge": "Código 404"
   }
 }

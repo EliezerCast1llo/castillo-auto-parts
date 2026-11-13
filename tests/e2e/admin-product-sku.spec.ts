@@ -151,3 +151,51 @@ test("historical invalid SKU requires correction before changing price and prese
   await expect(error).toContainText("punto, guion, barra o guion bajo");
   expect(await prisma.product.findUniqueOrThrow({ where: { id: before.id } })).toEqual(before);
 });
+
+test("creation identifies an empty category without losing data or blaming dimensions", async ({ page }) => {
+  await prepareProduct(page, `${prefix}-CATEGORY`, `${slugPrefix}-category-error`);
+  await page.getByLabel(/^Categoría/).selectOption("");
+  await page.getByRole("button", { name: "Crear producto", exact: true }).click();
+  const notice = page.getByRole("alert").filter({ hasText: "Revisa los campos indicados" });
+  await expect(notice).toContainText("Categoría: selecciona una o escribe una nueva.");
+  await expect(notice).not.toContainText("medidas");
+  await expect(page.getByLabel("Nombre", { exact: true })).toHaveValue(`Repuesto ${slugPrefix}-category-error`);
+});
+
+test("admin deactivation invalidates a previously loaded product page", async ({ page }) => {
+  const slug = `${slugPrefix}-deactivate`;
+  await prepareProduct(page, `${prefix}-DEACTIVATE`, slug);
+  await page.getByRole("button", { name: "Crear producto", exact: true }).click();
+  await expect(page).toHaveURL(/estado=created$/);
+  await page.goto(`/es/product/${slug}`);
+  await expect(page.getByRole("heading", { name: `Repuesto ${slug}` })).toBeVisible();
+  await page.goto(`/admin/products/${slug}/edit`);
+  await page.locator('input[name="isActive"]').uncheck();
+  await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+  await expect(page).toHaveURL(/estado=updated$/);
+  await page.goto(`/es/product/${slug}`);
+  await expect(page.getByRole("heading", { name: "Página no encontrada" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Agregar al carrito", exact: true })).toHaveCount(0);
+});
+
+test("edit reports each invalid field and preserves corrections without saving", async ({ page }) => {
+  const slug = `${slugPrefix}-edit-validation`;
+  await prepareProduct(page, `${prefix}-EDIT-VALIDATE`, slug);
+  await page.getByRole("button", { name: "Crear producto", exact: true }).click();
+  await expect(page).toHaveURL(/estado=created$/);
+  await page.getByLabel(/^Categoría/).selectOption("");
+  await page.getByLabel("Peso (kg)", { exact: true }).fill("");
+  await page.getByLabel("Marca", { exact: true }).fill("Corrección pendiente");
+  await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+  const notice = page.getByRole("alert").filter({ hasText: "Revisa los campos indicados" });
+  await expect(notice).toContainText("Categoría: selecciona una o escribe una nueva.");
+  await expect(notice).toContainText("Peso:");
+  await expect(page.getByLabel("Peso (kg)", { exact: true })).toHaveAttribute("aria-invalid", "true");
+  await expect(page.getByLabel("Marca", { exact: true })).toHaveValue("Corrección pendiente");
+  expect((await prisma.product.findUniqueOrThrow({ where: { slug } })).brand).toBe("Proveedor SKU");
+  await page.getByLabel(/^Categoría/).selectOption(categoryId);
+  await page.getByLabel("Peso (kg)", { exact: true }).fill("1");
+  await page.getByRole("button", { name: "Guardar producto", exact: true }).click();
+  await expect(page).toHaveURL(/estado=updated$/);
+  expect((await prisma.product.findUniqueOrThrow({ where: { slug } })).brand).toBe("Corrección pendiente");
+});

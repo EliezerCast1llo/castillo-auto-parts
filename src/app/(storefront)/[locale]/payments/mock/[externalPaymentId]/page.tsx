@@ -66,6 +66,9 @@ export default async function MockPaymentPage({ params, searchParams }: MockPaym
               <ShieldCheck className="h-5 w-5" aria-hidden="true" />
               Simular pago aprobado
             </button>
+            <button className="mt-3 min-h-12 w-full rounded-xl border border-border px-5 py-3 font-semibold" type="submit" name="outcome" value="rejected">
+              Simular pago rechazado
+            </button>
           </form>
         </div>
       </section>

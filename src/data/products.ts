@@ -377,7 +377,8 @@ export async function getCatalogProductBySlug(
   try {
     const product = await findDbProductBySlug(slug, locale);
 
-    return product ? mapDbProduct(product) : getFallbackProductBySlug(slug);
+    if (product) return product.isActive ? mapDbProduct(product) : undefined;
+    return getFallbackProductBySlug(slug);
   } catch (error) {
     logCatalogDataError(error);
     return getFallbackProductBySlug(slug);

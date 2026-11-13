@@ -66,6 +66,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: { globalNotFound: true },
   pageExtensions: sitePageExtensions(),
   // Conservar el origen de los rewrites de next-intl. Next normaliza las IP
   // loopback a `localhost`; ligado a 127.0.0.1, el rewrite /es/ayuda → /es/help
