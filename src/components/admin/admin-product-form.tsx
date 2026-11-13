@@ -388,6 +388,7 @@ function AdminTextField({
   type?: string;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
+    <div>
     <label className="block text-sm font-semibold">
       {label}
       <input
@@ -398,9 +399,11 @@ function AdminTextField({
         type={type}
         {...props}
         aria-invalid={error ? true : undefined}
+        aria-describedby={[props["aria-describedby"], error ? `admin-product-${name}-error` : undefined].filter(Boolean).join(" ") || undefined}
       />
-      {error ? <span className="mt-1 block text-sm text-danger">{error}</span> : null}
     </label>
+    {error ? <span id={`admin-product-${name}-error`} className="mt-1 block text-sm text-danger">{error}</span> : null}
+    </div>
   );
 }
 
