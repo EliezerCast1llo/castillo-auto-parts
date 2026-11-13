@@ -196,6 +196,15 @@ try {
       assert(!(invented in jsonLd), `structured data must not invent ${invented}`);
     }
   }
+  for (const path of ["/", "/es", "/en"]) {
+    const options = await context.request.fetch(`${origin}${path}`, { method: "OPTIONS", maxRedirects: 0 });
+    assert.equal(options.status(), 204, `OPTIONS ${path} is explicit in landing`);
+    assert.equal(options.headers().allow, "GET, HEAD, OPTIONS");
+    assert(options.headers()["content-security-policy"]);
+    assert.equal(options.headers()["set-cookie"], undefined);
+  }
+  const disabledOptions = await context.request.fetch(`${origin}/admin`, { method: "OPTIONS", maxRedirects: 0 });
+  assert.equal(disabledOptions.status(), 404);
   const spanishAlias = await context.request.get(`${origin}/es?source=qa`, { maxRedirects: 0 });
   assert.equal(spanishAlias.status(), 308);
   assert.equal(new URL(spanishAlias.headers().location, origin).href, `${origin}/?source=qa`);

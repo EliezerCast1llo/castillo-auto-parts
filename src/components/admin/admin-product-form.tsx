@@ -125,7 +125,8 @@ export function AdminProductForm({
    * y no hay a dónde ir hasta que las imágenes subieron— y escrito como
    * reacción habría que defenderse de que se dispare dos veces.
    *
-   * La edición no vuelve de acá: redirige del lado del servidor.
+   * La edición devuelve errores por campo; al guardar correctamente redirige
+   * del lado del servidor para recargar los valores normalizados.
    */
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     // `event.preventDefault()` y no `<form action={...}>` por un detalle que
@@ -164,28 +165,8 @@ export function AdminProductForm({
 
   const busy = stage !== "idle";
 
-  /**
-   * Los dos caminos usan mecanismos distintos a propósito.
-   *
-   * **Crear** va por `onSubmit`: no navega, así que lo tipeado sobrevive al
-   * error y los archivos de imagen siguen esperando en el navegador.
-   *
-   * **Editar** va por `action`: React vacía el formulario al terminar la
-   * acción, que acá es justo lo que se quiere. El servidor normaliza —el SKU se
-   * guarda en mayúsculas y sin espacios—, y tras un guardado fallido la ficha
-   * debe volver a mostrar lo que está en la base, no lo que se intentó. Un
-   * formulario que conserva un SKU rechazado dice que se guardó.
-   */
-  const formProps = isNew
-    ? { onSubmit: handleSubmit }
-    : {
-        action: (formData: FormData) => {
-          void action(null, formData);
-        },
-      };
-
   return (
-    <form className="space-y-4" {...formProps}>
+    <form className="space-y-4" onSubmit={handleSubmit}>
       {product ? <input name="productId" type="hidden" value={product.id} /> : null}
 
       {error ? (

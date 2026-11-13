@@ -19,7 +19,10 @@ export function middleware(request: NextRequest) {
   const allowed = path === "/" || path === "/en" || path.startsWith("/_next/static/")
     || path === "/icon.svg" || path === "/robots.txt" || path === "/sitemap.xml"
     || path === "/og.png";
-  const response = readable && path === "/es"
+  const pageOptions = request.method === "OPTIONS" && ["/", "/es", "/en"].includes(path);
+  const response = pageOptions
+    ? new NextResponse(null, { status: 204, headers: { Allow: "GET, HEAD, OPTIONS" } })
+    : readable && path === "/es"
     ? NextResponse.redirect(new URL("/" + request.nextUrl.search, request.url), 308)
     : !readable || !allowed
     ? new NextResponse(null, { status: 404 })

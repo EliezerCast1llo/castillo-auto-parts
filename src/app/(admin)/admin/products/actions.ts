@@ -132,10 +132,9 @@ export async function createAdminProduct(
 }
 
 /**
- * La edición sí redirige: ahí no hay nada esperando al guardado —las imágenes
- * se suben aparte, contra un producto que ya existe— y el redirect recarga la
- * ficha con los datos que quedaron. El primer parámetro existe solo para que
- * comparta firma con la creación y el mismo formulario sirva para las dos.
+ * La edición devuelve los errores por campo sin navegar. Los errores de SKU
+ * conservan el redirect a la ficha persistida; el guardado correcto también
+ * recarga la ficha para mostrar los datos normalizados.
  */
 export async function updateAdminProduct(
   _previousState: AdminProductFormState,
@@ -146,6 +145,10 @@ export async function updateAdminProduct(
 
   const input = parseAdminProductFormData(formData);
   if (!productId) redirect(`/admin/products?estado=invalid`);
+  if (isValidCatalogSku(formString(formData, "sku"))) {
+    const fieldErrors = adminProductFieldErrors(formData);
+    if (Object.keys(fieldErrors).length) return { status: "error", code: "invalid", fieldErrors };
+  }
 
   let redirectPath = "/admin/products";
   let errorPath = "/admin/products";

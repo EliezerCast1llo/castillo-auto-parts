@@ -42,6 +42,16 @@ REFUNDED registra un reembolso previamente confirmado por el operador; **no**
 ordena una devolución de dinero a Wompi. Confirmar el movimiento en el proveedor
 antes de cambiar el estado. No borra `paidAt` ni eventos históricos del pago.
 El correo es posterior al commit: un fallo de envío queda en EmailLog como
-FAILED, sin revertir el reembolso. No hay outbox/reintento automático en esta
-entrega; soporte debe revisar FAILED. La clave de idempotencia limita duplicados
-cuando el proveedor la admite.
+FAILED, sin revertir el reembolso. Se permite un único reintento automático (dos intentos como máximo, con
+límite de 10 segundos por solicitud), sin outbox. Ambos usan la misma clave de
+idempotencia. Un registro SENT para esa clave impide volver a enviar el aviso;
+si ambos intentos fallan, soporte debe revisar FAILED. Los reintentos solo
+envían correo: no modifican el pedido, el pago ni el stock.
+
+## Revisión del comentario 6842806795
+
+- Edición usa la misma validación por campo del alta, conserva lo escrito ante
+  esos errores y mantiene los redirects de SKU y del guardado correcto.
+- La landing responde OPTIONS en /, /es y /en con 204, Allow y CSP, sin
+  cookies ni acceso a servicios; las rutas deshabilitadas siguen en 404.
+- El correo de reembolso dispone del reintento acotado descrito arriba.

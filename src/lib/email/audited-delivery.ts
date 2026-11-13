@@ -20,7 +20,7 @@ export async function sendAuditedEmail(message: EmailMessage, template: string) 
 
   async function record(result: { provider: string; status: string; externalId?: string; sentAt?: Date; errorMessage?: string }) {
     try {
-      await db.emailLog.create({ data: { ...result, template, recipient: message.to, subject: template === "two_factor_code" ? "Two-factor authentication" : message.subject } });
+      await db.emailLog.create({ data: { ...result, template, ...(template === "order_refund" && message.idempotencyKey ? { payloadJson: { notificationKey: message.idempotencyKey } } : {}), recipient: message.to, subject: template === "two_factor_code" ? "Two-factor authentication" : message.subject } });
     } catch (error) {
       logError({ context: "emailDeliveryAudit" }, error);
     }
