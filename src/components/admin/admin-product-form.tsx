@@ -112,6 +112,7 @@ export function AdminProductForm({
   const stock = product?.inventoryStocks[0];
   const isNew = !product;
   const router = useRouter();
+  const [formRevision, setFormRevision] = useState(0);
 
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [error, setError] = useState<{ code: string; existingSku?: string; fieldErrors?: Record<string, string> } | null>(null);
@@ -142,7 +143,12 @@ export function AdminProductForm({
     try {
       const result = await action(null, formData);
 
-      if (!result) return;
+      if (!result) {
+        // Redirect responses reload persisted fields, including rejected or
+        // normalized SKUs. Field-validation responses keep the current input.
+        if (product) setFormRevision((revision) => revision + 1);
+        return;
+      }
       if (result.status === "error") {
         setError({ code: result.code, existingSku: result.existingSku, fieldErrors: result.fieldErrors });
         return;
@@ -166,7 +172,7 @@ export function AdminProductForm({
   const busy = stage !== "idle";
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form key={`${formRevision}:${product ? JSON.stringify(product) : "new"}`} className="space-y-4" onSubmit={handleSubmit}>
       {product ? <input name="productId" type="hidden" value={product.id} /> : null}
 
       {error ? (
