@@ -25,6 +25,8 @@ import {
 import { uploadPendingImages } from "@/components/admin/upload-pending-images";
 import type { AdminProductFormState } from "@/app/(admin)/admin/products/actions";
 import { adminSkuConflictMessage, formatAdminPriceInput } from "@/lib/admin-products";
+import { adminProductFieldErrors } from "@/lib/admin-product-validation";
+import { isValidCatalogSku } from "@/lib/product-sku";
 import { SKU_FORMAT_MESSAGE } from "@/lib/product-sku";
 
 type AdminProductFormProduct = {
@@ -112,7 +114,6 @@ export function AdminProductForm({
   const stock = product?.inventoryStocks[0];
   const isNew = !product;
   const router = useRouter();
-  const [formRevision, setFormRevision] = useState(0);
 
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [error, setError] = useState<{ code: string; existingSku?: string; fieldErrors?: Record<string, string> } | null>(null);
@@ -143,12 +144,7 @@ export function AdminProductForm({
     try {
       const result = await action(null, formData);
 
-      if (!result) {
-        // Redirect responses reload persisted fields, including rejected or
-        // normalized SKUs. Field-validation responses keep the current input.
-        if (product) setFormRevision((revision) => revision + 1);
-        return;
-      }
+      if (!result) return;
       if (result.status === "error") {
         setError({ code: result.code, existingSku: result.existingSku, fieldErrors: result.fieldErrors });
         return;
@@ -171,8 +167,26 @@ export function AdminProductForm({
 
   const busy = stage !== "idle";
 
+  // Block field errors before React's form action resets uncontrolled inputs.
+  // The server repeats this same validation; valid edits retain the established
+  // form-action reset/redirect behavior for persisted and normalized values.
+  function validateEdit(event: React.FormEvent<HTMLFormElement>) {
+    const data = new FormData(event.currentTarget);
+    const sku = data.get("sku");
+    const fieldErrors = adminProductFieldErrors(data);
+    if (typeof sku === "string" && isValidCatalogSku(sku) && Object.keys(fieldErrors).length) {
+      event.preventDefault();
+      setError({ code: "invalid", fieldErrors });
+    } else {
+      setError(null);
+    }
+  }
+  const formProps = isNew
+    ? { onSubmit: handleSubmit }
+    : { onSubmit: validateEdit, action: (data: FormData) => { void action(null, data); } };
+
   return (
-    <form key={`${formRevision}:${product ? JSON.stringify(product) : "new"}`} className="space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-4" {...formProps}>
       {product ? <input name="productId" type="hidden" value={product.id} /> : null}
 
       {error ? (
